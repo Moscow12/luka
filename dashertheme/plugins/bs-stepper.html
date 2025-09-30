@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<!-- Mirrored from dasher-ui.netlify.app/plugins/bs-stepper by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Sep 2025 10:38:08 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+    <!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta content="Codescandy" name="author">
+    <title>Bs Stepper | Dasher - Responsive Bootstrap 5 Admin Dashboard</title>
+    <!-- dropzone -->
+    <link href="../assets/libs/prismjs/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <!-- Favicon icon-->
+<link rel="apple-touch-icon" sizes="57x57" href="../assets/images/favicon/apple-icon-57x57.png" />
+<link rel="apple-touch-icon" sizes="60x60" href="../assets/images/favicon/apple-icon-60x60.png" />
+<link rel="apple-touch-icon" sizes="72x72" href="../assets/images/favicon/apple-icon-72x72.png" />
+<link rel="apple-touch-icon" sizes="76x76" href="../assets/images/favicon/apple-icon-76x76.png" />
+<link rel="apple-touch-icon" sizes="114x114" href="../assets/images/favicon/apple-icon-114x114.png" />
+<link rel="apple-touch-icon" sizes="120x120" href="../assets/images/favicon/apple-icon-120x120.png" />
+<link rel="apple-touch-icon" sizes="144x144" href="../assets/images/favicon/apple-icon-144x144.png" />
+<link rel="apple-touch-icon" sizes="152x152" href="../assets/images/favicon/apple-icon-152x152.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/images/favicon/apple-icon-180x180.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/images/favicon/android-icon-192x192.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="../assets/images/favicon/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon-16x16.png" />
+
+<meta name="msapplication-TileColor" content="#ffffff" />
+<meta name="msapplication-TileImage" content="../assets/images/favicon/ms-icon-144x144.png" />
+<meta name="theme-color" content="#ffffff" />
+<!-- Color modes -->
+<script src="../assets/js/vendors/color-modes.js"></script>
+<script>
+  if (localStorage.getItem('sidebarExpanded') === 'false') {
+    document.documentElement.classList.add('collapsed');
+    document.documentElement.classList.remove('expanded');
+  } else {
+    document.documentElement.classList.remove('collapsed');
+    document.documentElement.classList.add('expanded');
+  }
+</script>
+<!-- Libs CSS -->
+<link rel="preconnect" href="https://fonts.googleapis.com/" />
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" />
+<link rel="stylesheet" href="../assets/libs/simplebar/dist/simplebar.min.css" />
+<link rel="stylesheet" href="../assets/libs/%40tabler/icons-webfont/tabler-icons.min.css" />
+
+<!-- Theme CSS -->
+<link rel="stylesheet" href="../assets/css/theme.min.css">
+
+  </head>
+  <body class>
+    <!-- main -->
+    <div>
+      <nav class="navbar navbar-expand-lg navbar-light bg-white shadow">
+  <div class="container">
+    <a class='d-flex align-items-center gap-2 order-lg-1' href='../index.html'>
+      <img src="../assets/images/brand/logo/logo-icon.svg" alt="" />
+      <span class="fw-bold fs-4 site-logo-text">Dasher</span>
+    </a>
+    <div class="d-flex align-items-center gap-2 order-lg-3">
+      <div class="dropdown">
+        <button class="btn btn-ghost btn-icon rounded-circle d-flex align-items-center" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+          <i class="ti theme-icon-active lh-1 fs-5"><i class="ti theme-icon ti-sun"></i></i>
+          <span class="visually-hidden bs-theme-text">Toggle theme</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="light" aria-pressed="true">
+              <i class="ti theme-icon ti ti-sun"></i>
+              <span class="ms-2">Light</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+              <i class="ti theme-icon ti-moon-stars"></i>
+              <span class="ms-2">Dark</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
+              <i class="ti theme-icon ti-circle-half-2"></i>
+              <span class="ms-2">Auto</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <a href="#" class="btn btn-primary">Buy Now</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse order-lg-2" id="navbarSupportedContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a aria-current='page' class='nav-link active' href='../index.html'>Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='../components/accordions.html'>Components</a>
+        </li>
+
+        <li class="nav-item">
+          <a class='nav-link' href='../docs/index.html'>Docs</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+ <div class="bg-gray-200 py-10">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <h1>Bs Stepper</h1>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="#">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href='../components/components.html'>Plugins</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Bs Stepper</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="pt-lg-10 mt-10 position-relative">
+        <div class="container">
+          <div class="row">
+            <aside class="col-xl-2 col-lg-3 col-md-4 mb-6 mb-md-0 d-none d-lg-block"><div id="sidebar" class="side-nav">
+  <div class="sidebar__inner">
+    <ul class="nav flex-column" id="sidebarnav" data-simplebar>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Getting Started</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/index.html'>Introduction</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/environment-setup.html'>Environment setup</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/working-with-gulp.html'>Working with Gulp</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/compiled-files.html'>Compiled Files</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/file-structure.html'>File Structure</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/resources-assets.html'>Resources & assets</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/changelog.html'>Changelog</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Foundation</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../components/typography.html'>Typography</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/colors.html'>Colors</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/shadows.html'>Shadows</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Components</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../components/accordions.html'>Accordions</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/alerts.html'>Alerts</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/avatar.html'>Avatar</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/badge.html'>Badge</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/breadcrumb.html'>Breadcrumb</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/buttons.html'>Buttons</a>
+          </li>
+
+          <li class="nav-item">
+            <a class='nav-link' href='../components/card.html'>Card</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/carousel.html'>Carousel</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/collapse.html'>Collapse</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/dropdowns.html'>Dropdowns</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/forms.html'> Forms </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/forms-floating.html'> Floating Forms </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/list-group.html'> List group </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/modal.html'>Modal</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/navs-tabs.html'> Navs & tabs </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/offcanvas.html'>Offcanvas</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/pagination.html'>Pagination</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/placeholders.html'>Placeholders</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/popovers.html'>Popovers</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/progress.html'>Progress</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/scrollspy.html'>Scrollspy</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/spinners.html'>Spinners</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/tables.html'>Tables</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/toasts.html'>Toasts</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/tooltips.html'>Tooltips</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Plugins</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='bs-stepper.html'>Bs Stepper</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='choice-js.html'>Choice Js</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='dragula.html'>Dragula</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='dropzone.html'>Dropzone</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='flatpickr.html'>Flatpickr</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='imask.html'>Imask</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='jsvectormap.html'>Jsvectormap</a>
+          </li>
+
+          <li class="nav-item">
+            <a class='nav-link' href='list-js.html'>List Js</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='quill.html'>Quill</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='swiper.html'>Swiper</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='tippy-js.html'>Tippy Js</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Utilities</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/background.html'>Background</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/borders.html'>Borders</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/colored-links.html'> Colored Links </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/colors.html'>Colors</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/display.html'>Display</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/flex.html'>Flex</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/float.html'>Float</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/opacity.html'>Opacity</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/overflow.html'>Overflow</a>
+          </li>
+
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/stacks.html'>Stacks</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/vertical-rule.html'> Vertical rule</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+</aside>
+            <div class="col-lg-9 col-md-12 mb-6 mb-md-0 mx-auto">
+              <div class="mb-12 product-content d-flex flex-column gap-8">
+                <div class="col-12 mx-auto">
+                  <div class="mb-5" id="intro">
+                    <p class="lead">The Stepper component serves as a container for organizing and presenting sequential steps of a process.</p>
+                    <div class="alert alert-warning d-flex gap-3">
+                      <div>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                          <path d="M12 9h.01" />
+                          <path d="M11 12h1v4h1" />
+                        </svg>
+                      </div>
+                      <div>
+                        Requires JS.
+                        <div class="my-2 fw-semibold">assets/js/vendors/beStepper.js</div>
+
+                        <div class="mt-1">
+                          Note that this component requires the use of the third-party
+                          <a href="https://johann-s.github.io/bs-stepper/" class="alert-link" target="_blank">bs-stepper</a>
+                          plugin.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="border rounded-3 overflow-hidden">
+                  <div class="row align-items-center py-2 px-5">
+                    <div class="col-lg-8 col-xl-8 col-7">
+                      <div>
+                        <h3 class="text-truncate h5 mb-0">Stepper</h3>
+                      </div>
+                    </div>
+                    <div class="col-lg-4 col-xl-4 col-5 d-flex justify-content-end">
+                      <ul class="nav nav-pills nav-custom-pill" id="pills-tabTwo" role="tablist">
+                        <li class="nav-item" role="presentation">
+                          <a
+                            class="nav-link active"
+                            id="pills-stepper-preview-tab"
+                            data-bs-toggle="pill"
+                            href="#pills-stepper-preview"
+                            role="tab"
+                            aria-controls="pills-stepper-preview"
+                            aria-selected="true"
+                          >
+                            <span class="lh-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-eye"
+                              >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                              </svg>
+                            </span>
+                            <span class="ms-1 d-none d-lg-block">Preview</span>
+                          </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <a
+                            class="nav-link"
+                            id="pills-stepper-code-tab"
+                            data-bs-toggle="pill"
+                            href="#pills-stepper-code"
+                            role="tab"
+                            aria-controls="pills-stepper-code"
+                            aria-selected="false"
+                            tabindex="-1"
+                          >
+                            <span class="lh-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-code"
+                              >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M7 8l-4 4l4 4" />
+                                <path d="M17 8l4 4l-4 4" />
+                                <path d="M14 4l-4 16" />
+                              </svg>
+                            </span>
+                            <span class="ms-1 d-none d-lg-block">Code</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="tab-content border-top" id="pills-tabTwoContent">
+                        <div class="tab-pane tab-example-preview fade show active p-5 bg-gray-100" id="pills-stepper-preview" role="tabpanel" aria-labelledby="pills-stepper-preview-tab">
+                          <div>
+                            <!-- stepper -->
+                            <div id="stepperForm" class="bs-stepper">
+                              <!-- Stepper Button -->
+                              <div class="bs-stepper-header p-0 bg-transparent mb-4" role="tablist">
+                                <div class="step" data-target="#test-l-1">
+                                  <button type="button" class="step-trigger" role="tab" id="stepperFormtrigger1" aria-controls="test-l-1">
+                                    <span class="bs-stepper-circle me-2 d-flex align-items-center">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="icon icon-tabler icon-tabler-users"
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="1.5"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      >
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+                                      </svg>
+                                    </span>
+                                    <span class="bs-stepper-label">Email</span>
+                                  </button>
+                                </div>
+                                <div class="bs-stepper-line"></div>
+                                <!-- Stepper Button -->
+                                <div class="step" data-target="#test-l-2">
+                                  <button type="button" class="step-trigger" role="tab" id="stepperFormtrigger2" aria-controls="test-l-2">
+                                    <span class="bs-stepper-circle me-2 d-flex align-items-center">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="icon icon-tabler icon-tabler-shopping-bag"
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="1.5"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      >
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M6.331 8h11.339a2 2 0 0 1 1.977 2.304l-1.255 8.152a3 3 0 0 1 -2.966 2.544h-6.852a3 3 0 0 1 -2.965 -2.544l-1.255 -8.152a2 2 0 0 1 1.977 -2.304z" />
+                                        <path d="M9 11v-5a3 3 0 0 1 6 0v5" />
+                                      </svg>
+                                    </span>
+                                    <span class="bs-stepper-label">Password</span>
+                                  </button>
+                                </div>
+                                <div class="bs-stepper-line"></div>
+                                <!-- Stepper Button -->
+                                <div class="step" data-target="#test-l-3">
+                                  <button type="button" class="step-trigger" role="tab" id="stepperFormtrigger3" aria-controls="test-l-3">
+                                    <span class="bs-stepper-circle me-2 d-flex align-items-center">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="icon icon-tabler icon-tabler-credit-card"
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="1.5"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      >
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M3 5m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z"></path>
+                                        <path d="M3 10l18 0"></path>
+                                        <path d="M7 15l.01 0"></path>
+                                        <path d="M11 15l2 0"></path>
+                                      </svg>
+                                    </span>
+                                    <span class="bs-stepper-label">Validate</span>
+                                  </button>
+                                </div>
+                              </div>
+                              <!-- card -->
+                              <div class="card card-lg">
+                                <div class="card-body px-6 py-5">
+                                  <!-- Stepper content -->
+                                  <div class="bs-stepper-content">
+                                    <form onSubmit="return false">
+                                      <!-- Content one -->
+                                      <div id="test-l-1" role="tabpanel" class="bs-stepper-pane fade" aria-labelledby="stepperFormtrigger1">
+                                        <div class="mb-3">
+                                          <label for="exampleInputEmail1" class="form-label">Email address</label>
+                                          <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
+                                          <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                                        </div>
+
+                                        <!-- Button -->
+                                        <div class="d-flex justify-content-end">
+                                          <button class="btn btn-primary" onclick="stepperForm.next()">Next</button>
+                                        </div>
+                                      </div>
+                                      <!-- Content two -->
+                                      <div id="test-l-2" role="tabpanel" class="bs-stepper-pane fade" aria-labelledby="stepperFormtrigger2">
+                                        <div class="mb-3">
+                                          <label for="exampleInputPassword1" class="form-label">Password</label>
+                                          <input type="password" class="form-control" id="exampleInputPassword1" />
+                                        </div>
+
+                                        <!-- Button -->
+                                        <div class="d-md-flex justify-content-between mt-4">
+                                          <button class="btn btn-outline-primary mb-2 mb-md-0" onclick="stepperForm.previous()">Back</button>
+                                          <!-- Button -->
+                                          <button class="btn btn-primary" onclick="stepperForm.next()">Continue</button>
+                                        </div>
+                                      </div>
+                                      <!-- Content three -->
+                                      <div id="test-l-3" role="tabpanel" class="bs-stepper-pane fade" aria-labelledby="stepperFormtrigger3">
+                                        <p class="text-center fs-4">Form Submit</p>
+                                        <!-- Button -->
+                                        <div class="d-flex justify-content-between">
+                                          <!-- Button -->
+                                          <button class="btn btn-outline-primary mt-3" onclick="stepperForm.previous()">Back</button>
+                                          <!-- Button -->
+                                          <button type="submit" class="btn btn-primary mt-3" onclick=" location.href='#!' ">Submit</button>
+                                        </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tab-pane tab-example-code fade" id="pills-stepper-code" role="tabpanel" aria-labelledby="pills-stepper-code-tab">
+                          <pre class="language-markup" tabindex="0"><code class="language-markup"><span class="token comment">&lt;!-- stepper --&gt;</span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperForm<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+  <span class="token comment">&lt;!-- Stepper Button --&gt;</span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-header p-0 bg-transparent mb-4<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tablist<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>step<span class="token punctuation">"</span></span> <span class="token attr-name">data-target</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#test-l-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>button<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>step-trigger<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tab<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperFormtrigger1<span class="token punctuation">"</span></span> <span class="token attr-name">aria-controls</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>test-l-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-circle me-2 d-flex align-items-center<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+            <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+            <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icon-tabler-users<span class="token punctuation">"</span></span>
+            <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span>
+            <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span>
+            <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>1.5<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+            <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-linecap</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-linejoin</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+          <span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M16 3.13a4 4 0 0 1 0 7.75<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M21 21v-2a4 4 0 0 0 -3 -3.85<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-label<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Email<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-line<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+    <span class="token comment">&lt;!-- Stepper Button --&gt;</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>step<span class="token punctuation">"</span></span> <span class="token attr-name">data-target</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#test-l-2<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>button<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>step-trigger<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tab<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperFormtrigger2<span class="token punctuation">"</span></span> <span class="token attr-name">aria-controls</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>test-l-2<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-circle me-2 d-flex align-items-center<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+            <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+            <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icon-tabler-shopping-bag<span class="token punctuation">"</span></span>
+            <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span>
+            <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span>
+            <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>1.5<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+            <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-linecap</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-linejoin</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+          <span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M6.331 8h11.339a2 2 0 0 1 1.977 2.304l-1.255 8.152a3 3 0 0 1 -2.966 2.544h-6.852a3 3 0 0 1 -2.965 -2.544l-1.255 -8.152a2 2 0 0 1 1.977 -2.304z<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M9 11v-5a3 3 0 0 1 6 0v5<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-label<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Password<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-line<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+    <span class="token comment">&lt;!-- Stepper Button --&gt;</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>step<span class="token punctuation">"</span></span> <span class="token attr-name">data-target</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#test-l-3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>button<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>step-trigger<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tab<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperFormtrigger3<span class="token punctuation">"</span></span> <span class="token attr-name">aria-controls</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>test-l-3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-circle me-2 d-flex align-items-center<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+            <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+            <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icon-tabler-credit-card<span class="token punctuation">"</span></span>
+            <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span>
+            <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span>
+            <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>1.5<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+            <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-linecap</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+            <span class="token attr-name">stroke-linejoin</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+          <span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>path</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M3 5m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>path</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M3 10l18 0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>path</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M7 15l.01 0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>path</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M11 15l2 0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>path</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-label<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Validate<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+  <span class="token comment">&lt;!-- card --&gt;</span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>card card-lg<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>card-body px-6 py-5<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+      <span class="token comment">&lt;!-- Stepper content --&gt;</span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-content<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>form</span> <span class="token attr-name">onSubmit</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>return false<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+          <span class="token comment">&lt;!-- Content one --&gt;</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>test-l-1<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tabpanel<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-pane fade<span class="token punctuation">"</span></span> <span class="token attr-name">aria-labelledby</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperFormtrigger1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>mb-3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>exampleInputEmail1<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-label<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Email address<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>email<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-control<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>exampleInputEmail1<span class="token punctuation">"</span></span> <span class="token attr-name">aria-describedby</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>emailHelp<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>emailHelp<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-text<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>We'll never share your email with anyone else.<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+
+            <span class="token comment">&lt;!-- Button --&gt;</span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex justify-content-end<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-primary<span class="token punctuation">"</span></span> <span class="token attr-name">onclick</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperForm.next()<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Next<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+          <span class="token comment">&lt;!-- Content two --&gt;</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>test-l-2<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tabpanel<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-pane fade<span class="token punctuation">"</span></span> <span class="token attr-name">aria-labelledby</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperFormtrigger2<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>mb-3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>exampleInputPassword1<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-label<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Password<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>password<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-control<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>exampleInputPassword1<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+
+            <span class="token comment">&lt;!-- Button --&gt;</span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-md-flex justify-content-between mt-4<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-outline-primary mb-2 mb-md-0<span class="token punctuation">"</span></span> <span class="token attr-name">onclick</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperForm.previous()<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Back<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+              <span class="token comment">&lt;!-- Button --&gt;</span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-primary<span class="token punctuation">"</span></span> <span class="token attr-name">onclick</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperForm.next()<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Continue<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+          <span class="token comment">&lt;!-- Content three --&gt;</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>test-l-3<span class="token punctuation">"</span></span> <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>tabpanel<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>bs-stepper-pane fade<span class="token punctuation">"</span></span> <span class="token attr-name">aria-labelledby</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperFormtrigger3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text-center fs-4<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Form Submit<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">&gt;</span></span>
+            <span class="token comment">&lt;!-- Button --&gt;</span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex justify-content-between<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+              <span class="token comment">&lt;!-- Button --&gt;</span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-outline-primary mt-3<span class="token punctuation">"</span></span> <span class="token attr-name">onclick</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stepperForm.previous()<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Back<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+              <span class="token comment">&lt;!-- Button --&gt;</span>
+              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>submit<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-primary mt-3<span class="token punctuation">"</span></span> <span class="token attr-name">onclick</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span> location.href='#!' <span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Submit<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>form</span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span></code></pre>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="container-fluid py-3 border-top bg-gray-100 text-center position-relative z-1">
+          <div class="row align-items-center">
+            <div class="col-12">
+              <div class="small">
+                Copyright © 2025
+                <span class="text-primary">
+                  <a href="#">Dasher Admin Bootstrap 5 Theme</a>
+                </span>
+                | Designed by
+                <span class="text-primary">
+                  <a href="#">CodesCandy</a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+    <!-- Libs JS -->
+<script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/libs/simplebar/dist/simplebar.min.js"></script>
+
+<!-- Theme JS -->
+<script src="../assets/js/theme.min.js"></script>
+
+    <script src="../assets/libs/sticky-sidebar/dist/sticky-sidebar.min.js"></script>
+    <script src="../assets/js/vendors/sticky.js"></script>
+    <script src="../assets/libs/bs-stepper/dist/js/bs-stepper.min.js"></script>
+    <script src="../assets/js/vendors/beStepper.js"></script>
+    <script src="../assets/js/vendors/sidebar-menu.js"></script>
+  </body>
+
+<!-- Mirrored from dasher-ui.netlify.app/plugins/bs-stepper by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Sep 2025 10:38:08 GMT -->
+</html>

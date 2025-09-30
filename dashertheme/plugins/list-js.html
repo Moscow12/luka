@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<!-- Mirrored from dasher-ui.netlify.app/plugins/list-js by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Sep 2025 10:38:08 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+    <!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta content="Codescandy" name="author">
+    <title>List Js | Dasher - Responsive Bootstrap 5 Admin Dashboard</title>
+    <!-- dropzone -->
+    <link href="../assets/libs/dropzone/dist/dropzone.css" rel="stylesheet" />
+    <link href="../assets/libs/prismjs/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <!-- Favicon icon-->
+<link rel="apple-touch-icon" sizes="57x57" href="../assets/images/favicon/apple-icon-57x57.png" />
+<link rel="apple-touch-icon" sizes="60x60" href="../assets/images/favicon/apple-icon-60x60.png" />
+<link rel="apple-touch-icon" sizes="72x72" href="../assets/images/favicon/apple-icon-72x72.png" />
+<link rel="apple-touch-icon" sizes="76x76" href="../assets/images/favicon/apple-icon-76x76.png" />
+<link rel="apple-touch-icon" sizes="114x114" href="../assets/images/favicon/apple-icon-114x114.png" />
+<link rel="apple-touch-icon" sizes="120x120" href="../assets/images/favicon/apple-icon-120x120.png" />
+<link rel="apple-touch-icon" sizes="144x144" href="../assets/images/favicon/apple-icon-144x144.png" />
+<link rel="apple-touch-icon" sizes="152x152" href="../assets/images/favicon/apple-icon-152x152.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/images/favicon/apple-icon-180x180.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/images/favicon/android-icon-192x192.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="../assets/images/favicon/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon-16x16.png" />
+
+<meta name="msapplication-TileColor" content="#ffffff" />
+<meta name="msapplication-TileImage" content="../assets/images/favicon/ms-icon-144x144.png" />
+<meta name="theme-color" content="#ffffff" />
+<!-- Color modes -->
+<script src="../assets/js/vendors/color-modes.js"></script>
+<script>
+  if (localStorage.getItem('sidebarExpanded') === 'false') {
+    document.documentElement.classList.add('collapsed');
+    document.documentElement.classList.remove('expanded');
+  } else {
+    document.documentElement.classList.remove('collapsed');
+    document.documentElement.classList.add('expanded');
+  }
+</script>
+<!-- Libs CSS -->
+<link rel="preconnect" href="https://fonts.googleapis.com/" />
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" />
+<link rel="stylesheet" href="../assets/libs/simplebar/dist/simplebar.min.css" />
+<link rel="stylesheet" href="../assets/libs/%40tabler/icons-webfont/tabler-icons.min.css" />
+
+<!-- Theme CSS -->
+<link rel="stylesheet" href="../assets/css/theme.min.css">
+
+  </head>
+  <body class>
+    <!-- main -->
+    <div>
+      <nav class="navbar navbar-expand-lg navbar-light bg-white shadow">
+  <div class="container">
+    <a class='d-flex align-items-center gap-2 order-lg-1' href='../index.html'>
+      <img src="../assets/images/brand/logo/logo-icon.svg" alt="" />
+      <span class="fw-bold fs-4 site-logo-text">Dasher</span>
+    </a>
+    <div class="d-flex align-items-center gap-2 order-lg-3">
+      <div class="dropdown">
+        <button class="btn btn-ghost btn-icon rounded-circle d-flex align-items-center" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+          <i class="ti theme-icon-active lh-1 fs-5"><i class="ti theme-icon ti-sun"></i></i>
+          <span class="visually-hidden bs-theme-text">Toggle theme</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="light" aria-pressed="true">
+              <i class="ti theme-icon ti ti-sun"></i>
+              <span class="ms-2">Light</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+              <i class="ti theme-icon ti-moon-stars"></i>
+              <span class="ms-2">Dark</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
+              <i class="ti theme-icon ti-circle-half-2"></i>
+              <span class="ms-2">Auto</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <a href="#" class="btn btn-primary">Buy Now</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse order-lg-2" id="navbarSupportedContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a aria-current='page' class='nav-link active' href='../index.html'>Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='../components/accordions.html'>Components</a>
+        </li>
+
+        <li class="nav-item">
+          <a class='nav-link' href='../docs/index.html'>Docs</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+ <div class="bg-gray-200 py-10">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <h1>List js</h1>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="#">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href='../components/components.html'>Plugins</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">List js</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="pt-lg-10 mt-10 position-relative">
+        <div class="container">
+          <div class="row">
+            <aside class="col-xl-2 col-lg-3 col-md-4 mb-6 mb-md-0 d-none d-lg-block"><div id="sidebar" class="side-nav">
+  <div class="sidebar__inner">
+    <ul class="nav flex-column" id="sidebarnav" data-simplebar>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Getting Started</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/index.html'>Introduction</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/environment-setup.html'>Environment setup</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/working-with-gulp.html'>Working with Gulp</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/compiled-files.html'>Compiled Files</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/file-structure.html'>File Structure</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/resources-assets.html'>Resources & assets</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../docs/changelog.html'>Changelog</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Foundation</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../components/typography.html'>Typography</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/colors.html'>Colors</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/shadows.html'>Shadows</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Components</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../components/accordions.html'>Accordions</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/alerts.html'>Alerts</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/avatar.html'>Avatar</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/badge.html'>Badge</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/breadcrumb.html'>Breadcrumb</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/buttons.html'>Buttons</a>
+          </li>
+
+          <li class="nav-item">
+            <a class='nav-link' href='../components/card.html'>Card</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/carousel.html'>Carousel</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/collapse.html'>Collapse</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/dropdowns.html'>Dropdowns</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/forms.html'> Forms </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/forms-floating.html'> Floating Forms </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/list-group.html'> List group </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/modal.html'>Modal</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/navs-tabs.html'> Navs & tabs </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/offcanvas.html'>Offcanvas</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/pagination.html'>Pagination</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/placeholders.html'>Placeholders</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/popovers.html'>Popovers</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/progress.html'>Progress</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/scrollspy.html'>Scrollspy</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/spinners.html'>Spinners</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/tables.html'>Tables</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/toasts.html'>Toasts</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../components/tooltips.html'>Tooltips</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Plugins</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='bs-stepper.html'>Bs Stepper</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='choice-js.html'>Choice Js</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='dragula.html'>Dragula</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='dropzone.html'>Dropzone</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='flatpickr.html'>Flatpickr</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='imask.html'>Imask</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='jsvectormap.html'>Jsvectormap</a>
+          </li>
+
+          <li class="nav-item">
+            <a class='nav-link' href='list-js.html'>List Js</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='quill.html'>Quill</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='swiper.html'>Swiper</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='tippy-js.html'>Tippy Js</a>
+          </li>
+        </ul>
+      </li>
+      <li class="navbar-header mt-0">
+        <h5 class="heading fs-6">Utilities</h5>
+        <ul class="nav-ul list-unstyled">
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/background.html'>Background</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/borders.html'>Borders</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/colored-links.html'> Colored Links </a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/colors.html'>Colors</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/display.html'>Display</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/flex.html'>Flex</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/float.html'>Float</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/opacity.html'>Opacity</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/overflow.html'>Overflow</a>
+          </li>
+
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/stacks.html'>Stacks</a>
+          </li>
+          <li class="nav-item">
+            <a class='nav-link' href='../utilities/vertical-rule.html'> Vertical rule</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+</aside>
+            <div class="col-lg-9 col-md-12 mb-6 mb-md-0 mx-auto">
+              <div class="mb-12 product-content d-flex flex-column gap-8">
+                <div class="col-12 mx-auto">
+                  <div class="mb-5" id="intro">
+                    <p class="lead">
+                      Tiny, invisible and simple, yet powerful and incredibly fast vanilla JavaScript that adds search, sort, filters and flexibility to plain HTML lists, tables, or anything.
+                    </p>
+                    <div class="alert alert-warning d-flex gap-3">
+                      <div>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                          <path d="M12 9h.01" />
+                          <path d="M11 12h1v4h1" />
+                        </svg>
+                      </div>
+                      <div>
+                        Requires JS.
+                        <div class="my-2 fw-semibold">assets/js/vendors/list.js</div>
+
+                        <div class="mt-1">
+                          Note that this component requires the use of the third-party
+                          <a href="https://listjs.com/" class="alert-link" target="_blank">list.js</a>
+                          plugin.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="border rounded-3 overflow-hidden">
+                  <div class="row align-items-center py-2 px-5">
+                    <div class="col-lg-8 col-xl-8 col-7">
+                      <div>
+                        <h3 class="text-truncate h5 mb-0">Basic</h3>
+                      </div>
+                    </div>
+                    <div class="col-lg-4 col-xl-4 col-5 d-flex justify-content-end">
+                      <ul class="nav nav-pills nav-custom-pill" id="pills-tabTwo" role="tablist">
+                        <li class="nav-item" role="presentation">
+                          <a class="nav-link active" id="pills-list-preview-tab" data-bs-toggle="pill" href="#pills-list-preview" role="tab" aria-controls="pills-list-preview" aria-selected="true">
+                            <span class="lh-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-eye"
+                              >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                              </svg>
+                            </span>
+                            <span class="ms-1 d-none d-lg-block">Preview</span>
+                          </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <a class="nav-link" id="pills-list-code-tab" data-bs-toggle="pill" href="#pills-list-code" role="tab" aria-controls="pills-list-code" aria-selected="false" tabindex="-1">
+                            <span class="lh-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-code"
+                              >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M7 8l-4 4l4 4" />
+                                <path d="M17 8l4 4l-4 4" />
+                                <path d="M14 4l-4 16" />
+                              </svg>
+                            </span>
+                            <span class="ms-1 d-none d-lg-block">Code</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="tab-content border-top" id="pills-tabTwoContent">
+                        <div class="tab-pane tab-example-preview fade show active p-5 bg-gray-100" id="pills-list-preview" role="tabpanel" aria-labelledby="pills-list-preview-tab">
+                          <div class="card card-lg" id="crmCompany" data-list="company_name,company_owner,company_category,company_rating,company_location">
+                            <div class="card-header border-bottom-0">
+                              <div class="row">
+                                <div class="col-lg-4">
+                                  <input type="search" class="form-control listjs-search" placeholder="Search" />
+                                </div>
+                                <div class="col-lg-8 d-flex justify-content-end">
+                                  <div class="d-flex align-items-center gap-3">
+                                    <a href="#!" class="btn btn-dark d-md-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#contact-modal">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+                                      >
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M12 5l0 14" />
+                                        <path d="M5 12l14 0" />
+                                      </svg>
+                                      Add Company</a
+                                    >
+                                    <button type="button" class="btn btn-white">Import</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="table-responsive table-checkbox" data-simplebar>
+                              <table class="table text-nowrap table-centered table-hover mb-0" data-check-container>
+                                <thead class="sticky-top">
+                                  <tr>
+                                    <th class="pe-0">
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="checkAll" data-check-all />
+                                        <label class="form-check-label" for="checkAll"></label>
+                                      </div>
+                                    </th>
+                                    <th class="listjs-sorter ps-0" data-sort="company_name">Name</th>
+                                    <th class="listjs-sorter" data-sort="company_owner">Age</th>
+                                    <th class="listjs-sorter" data-sort="company_category">City</th>
+                                    <th class="listjs-sorter" data-sort="company_rating">Rating</th>
+                                  </tr>
+                                </thead>
+                                <tbody class="list">
+                                  <tr>
+                                    <td class="pe-0">
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="contactCheckbox2" />
+                                        <label class="form-check-label" for="contactCheckbox2"></label>
+                                      </div>
+                                    </td>
+                                    <td class="company_name ps-0">
+                                      <div>
+                                        <a href="#!" class="text-inherit">Jonas</a>
+                                      </div>
+                                    </td>
+                                    <td class="company_owner">-132</td>
+                                    <td class="company_category">Berlin</td>
+                                    <td>
+                                      <span class="d-flex align-items-center gap-2 lh-1">
+                                        <span>3.9</span>
+                                        <span
+                                          ><svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            class="icon icon-tabler icons-tabler-filled icon-tabler-star text-warning"
+                                          >
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                              d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
+                                            />
+                                          </svg>
+                                        </span>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="pe-0">
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="contactCheckbox3" />
+                                        <label class="form-check-label" for="contactCheckbox3"></label>
+                                      </div>
+                                    </td>
+                                    <td class="company_name ps-0">
+                                      <a href="#!" class="text-inherit">Fredrik </a>
+                                    </td>
+                                    <td class="company_owner">26</td>
+                                    <td class="company_category">Goteborg</td>
+                                    <td class="company_rating">
+                                      <span class="d-flex align-items-center gap-2 lh-1">
+                                        <span>4.9</span>
+                                        <span
+                                          ><svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            class="icon icon-tabler icons-tabler-filled icon-tabler-star text-warning"
+                                          >
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                              d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
+                                            />
+                                          </svg>
+                                        </span>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="pe-0">
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="contactCheckbox4" />
+                                        <label class="form-check-label" for="contactCheckbox4"></label>
+                                      </div>
+                                    </td>
+                                    <td class="company_name ps-0">
+                                      <a href="#!" class="text-inherit">Jonny </a>
+                                    </td>
+                                    <td class="company_owner">27</td>
+                                    <td class="company_category">Stockholm</td>
+                                    <td class="company_rating">
+                                      <span class="d-flex align-items-center gap-2 lh-1">
+                                        <span>4.0</span>
+                                        <span
+                                          ><svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            class="icon icon-tabler icons-tabler-filled icon-tabler-star text-warning"
+                                          >
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                              d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
+                                            />
+                                          </svg>
+                                        </span>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="pe-0">
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="contactCheckbox5" />
+                                        <label class="form-check-label" for="contactCheckbox5"></label>
+                                      </div>
+                                    </td>
+                                    <td class="company_name ps-0">
+                                      <a href="#!" class="text-inherit">Gustaf </a>
+                                    </td>
+                                    <td class="company_owner">23</td>
+                                    <td class="company_category">Sundsvall</td>
+                                    <td class="company_rating">
+                                      <span class="d-flex align-items-center gap-2 lh-1">
+                                        <span>3.0</span>
+                                        <span
+                                          ><svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            class="icon icon-tabler icons-tabler-filled icon-tabler-star text-warning"
+                                          >
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                              d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
+                                            />
+                                          </svg>
+                                        </span>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+
+                            <div class="btn-toolbar card-footer border-top border-dashed d-flex flex-md-row flex-column justify-content-md-between align-items-md-center">
+                              <p class="mb-0 listjs-showing-items-label"></p>
+                              <div class="d-flex gap-4">
+                                <div class="d-flex align-items-center gap-2">
+                                  <label class="form-label text-nowrap mb-0">Rows per page:</label>
+                                  <select class="form-select listjs-items-per-page" data-choices="">
+                                    <option value="4" selected>4</option>
+                                    <option value="11">11</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <div class="pagination-buttons d-flex">
+                                    <button class="btn btn-white prev">Previous</button>
+                                    <ul class="pagination mb-0 ms-1"></ul>
+                                    <button class="btn btn-white next">Next</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tab-pane tab-example-code fade" id="pills-list-code" role="tabpanel" aria-labelledby="pills-list-code-tab">
+                          <pre
+                            class="language-markup"
+                            tabindex="0"
+                          ><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>card card-lg<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>crmCompany<span class="token punctuation">"</span></span> <span class="token attr-name">data-list</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_name,company_owner,company_category,company_rating,company_location<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>card-header border-bottom-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>row<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>col-lg-4<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>search<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-control listjs-search<span class="token punctuation">"</span></span> <span class="token attr-name">placeholder</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Search<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>col-lg-8 d-flex justify-content-end<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex align-items-center gap-3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#!<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-dark d-md-flex align-items-center gap-2<span class="token punctuation">"</span></span> <span class="token attr-name">data-bs-toggle</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>modal<span class="token punctuation">"</span></span> <span class="token attr-name">data-bs-target</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#contact-modal<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+                                          <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>18<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>18<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">stroke-width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>1.5<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">stroke-linecap</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">stroke-linejoin</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>round<span class="token punctuation">"</span></span>
+                                          <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icons-tabler-outline icon-tabler-plus<span class="token punctuation">"</span></span>
+                                        <span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M12 5l0 14<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M5 12l14 0<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+                                        Add Company<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span>
+                                      <span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>button<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-white<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Import<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+
+                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>table-responsive table-checkbox<span class="token punctuation">"</span></span> <span class="token attr-name">data-simplebar</span> <span class="token attr-name">style</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>height: 600px<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>table</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>table text-nowrap table-centered table-hover mb-0<span class="token punctuation">"</span></span> <span class="token attr-name">data-check-container</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>thead</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>sticky-top<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>th</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pe-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-input<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkbox<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkAll<span class="token punctuation">"</span></span> <span class="token attr-name">data-check-all</span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-label<span class="token punctuation">"</span></span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkAll<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>th</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>th</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>listjs-sorter ps-0<span class="token punctuation">"</span></span> <span class="token attr-name">data-sort</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_name<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Name<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>th</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>th</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>listjs-sorter<span class="token punctuation">"</span></span> <span class="token attr-name">data-sort</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_owner<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Age<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>th</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>th</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>listjs-sorter<span class="token punctuation">"</span></span> <span class="token attr-name">data-sort</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_category<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>City<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>th</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>th</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>listjs-sorter<span class="token punctuation">"</span></span> <span class="token attr-name">data-sort</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_rating<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Rating<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>th</span><span class="token punctuation">&gt;</span></span>
+
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>thead</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tbody</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>list<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pe-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-input<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkbox<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox2<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-label<span class="token punctuation">"</span></span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox2<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_name ps-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#!<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text-inherit<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Jonas<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">&gt;</span></span>
+
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_owner<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>-132	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_category<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Berlin<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex align-items-center gap-2 lh-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>3.9<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span>
+                                            <span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+                                              <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icons-tabler-filled icon-tabler-star text-warning<span class="token punctuation">"</span></span>
+                                            <span class="token punctuation">&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span>
+                                                <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z<span class="token punctuation">"</span></span>
+                                              <span class="token punctuation">/&gt;</span></span>
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+
+
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pe-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-input<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkbox<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox3<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-label<span class="token punctuation">"</span></span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox3<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_name ps-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#!<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text-inherit<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Fredrik	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">&gt;</span></span>
+
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_owner<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>26<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_category<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Goteborg	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_rating<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex align-items-center gap-2 lh-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>4.9<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span>
+                                            <span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+                                              <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icons-tabler-filled icon-tabler-star text-warning<span class="token punctuation">"</span></span>
+                                            <span class="token punctuation">&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span>
+                                                <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z<span class="token punctuation">"</span></span>
+                                              <span class="token punctuation">/&gt;</span></span>
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pe-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-input<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkbox<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox4<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-label<span class="token punctuation">"</span></span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox4<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_name ps-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#!<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text-inherit<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Jonny	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">&gt;</span></span>
+
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_owner<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>27<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_category<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Stockholm	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_rating<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex align-items-center gap-2 lh-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>4.0<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span>
+                                            <span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+                                              <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icons-tabler-filled icon-tabler-star text-warning<span class="token punctuation">"</span></span>
+                                            <span class="token punctuation">&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span>
+                                                <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z<span class="token punctuation">"</span></span>
+                                              <span class="token punctuation">/&gt;</span></span>
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pe-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-input<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>checkbox<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox5<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-check-label<span class="token punctuation">"</span></span> <span class="token attr-name">for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>contactCheckbox5<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_name ps-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#!<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text-inherit<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Gustaf	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">&gt;</span></span>
+
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_owner<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>23<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_category<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Sundsvall	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>company_rating<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex align-items-center gap-2 lh-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>3.0<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span>
+                                            <span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>svg</span>
+                                              <span class="token attr-name">xmlns</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.w3.org/2000/svg<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>14<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">viewBox</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>0 0 24 24<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>currentColor<span class="token punctuation">"</span></span>
+                                              <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>icon icon-tabler icons-tabler-filled icon-tabler-star text-warning<span class="token punctuation">"</span></span>
+                                            <span class="token punctuation">&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span> <span class="token attr-name">stroke</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M0 0h24v24H0z<span class="token punctuation">"</span></span> <span class="token attr-name">fill</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>none<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+                                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>path</span>
+                                                <span class="token attr-name">d</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z<span class="token punctuation">"</span></span>
+                                              <span class="token punctuation">/&gt;</span></span>
+                                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>svg</span><span class="token punctuation">&gt;</span></span>
+                                          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">&gt;</span></span>
+
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tbody</span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>table</span><span class="token punctuation">&gt;</span></span>
+                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+
+                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn-toolbar card-footer border-top border-dashed d-flex justify-content-between align-items-center<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>mb-0 listjs-showing-items-label<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex gap-4<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>d-flex align-items-center gap-2<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-label text-nowrap mb-0<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Rows per page:<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>select</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-select listjs-items-per-page<span class="token punctuation">"</span></span> <span class="token attr-name">data-choices</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>option</span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>8<span class="token punctuation">"</span></span> <span class="token attr-name">selected</span><span class="token punctuation">&gt;</span></span>8<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>option</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>option</span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>11<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>11<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>option</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>select</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pagination-buttons d-flex<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-white prev<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Previous<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ul</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>pagination mb-0 ms-1<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>ul</span><span class="token punctuation">&gt;</span></span>
+                                      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>btn btn-white next<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>Next<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">&gt;</span></span>
+                                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+                            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span></code></pre>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="container-fluid py-3 border-top bg-gray-100 text-center position-relative z-1">
+          <div class="row align-items-center">
+            <div class="col-12">
+              <div class="small">
+                Copyright © 2025
+                <span class="text-primary">
+                  <a href="#">Dasher Admin Bootstrap 5 Theme</a>
+                </span>
+                | Designed by
+                <span class="text-primary">
+                  <a href="#">CodesCandy</a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+    <!-- Libs JS -->
+<script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/libs/simplebar/dist/simplebar.min.js"></script>
+
+<!-- Theme JS -->
+<script src="../assets/js/theme.min.js"></script>
+
+    <script src="../assets/libs/sticky-sidebar/dist/sticky-sidebar.min.js"></script>
+    <script src="../assets/js/vendors/sticky.js"></script>
+    <script src="../assets/libs/list.js/dist/list.min.js"></script>
+    <script src="../assets/js/vendors/list.js"></script>
+    <script src="../assets/js/vendors/checkbox.js"></script>
+    <script src="../assets/js/vendors/sidebar-menu.js"></script>
+    <script src="../assets/libs/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="../assets/js/vendors/choice.js"></script>
+  </body>
+
+<!-- Mirrored from dasher-ui.netlify.app/plugins/list-js by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Sep 2025 10:38:08 GMT -->
+</html>

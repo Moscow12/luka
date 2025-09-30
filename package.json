@@ -1,0 +1,42 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.0.0",
+        "axios": "^1.11.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0.0",
+        "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "@tabler/icons": "^3.27.0",
+        "@yaireo/tagify": "^4.33.1",
+        "apexcharts": "^4.3.0",
+        "bootstrap": "^5.3.8",
+        "bs-stepper": "^1.7.0",
+        "choices.js": "^11.0.4",
+        "dragula": "^3.7.3",
+        "dropzone": "^5.9.3",
+        "flatpickr": "^4.6.13",
+        "@fullcalendar/core": "^6.1.15",
+        "@fullcalendar/daygrid": "^6.1.15",
+        "@fullcalendar/interaction": "^6.1.15",
+        "imask": "^7.6.1",
+        "jsvectormap": "^1.6.0",
+        "list.js": "^2.3.1",
+        "prismjs": "^1.29.0",
+        "quill": "^2.0.3",
+        "sass": "^1.93.2",
+        "simplebar": "^6.3.2",
+        "sticky-sidebar": "^3.3.1",
+        "swiper": "^11.2.0",
+        "tiny-slider": "^2.9.4",
+        "tippy.js": "^6.3.7"
+    }
+}
