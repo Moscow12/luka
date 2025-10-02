@@ -11,3 +11,16 @@ Route::group(['prefix' => 'auth'], function () {
     Route::get('2fa', \App\Livewire\Auth\TwoFactorsAuthentication::class)->name('2fa')->middleware('guest');
     Route::get('logout', \App\Livewire\Auth\Logout::class)->name('logout')->middleware('auth');
 });
+
+Route::group(['prefix' => 'users', 'middleware' => 'auth'], function () {
+    Route::get('profile', App\Livewire\Users\Profile\ProfileIndex::class)->name('user.profile');
+});
+
+Route::group([
+    'prefix' => 'acl',
+    'middleware' => ['auth'],
+], function () {
+    Route::get('/', \App\Livewire\Acl\RoleIndex::class)->name('acl.index');
+    Route::get('/create', \App\Livewire\Acl\RoleCreate::class)->name('acl.create');
+    Route::get('/show/{role}', \App\Livewire\Acl\RoleShow::class)->name('acl.show');
+});

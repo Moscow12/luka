@@ -7,7 +7,6 @@ namespace App\Livewire\Auth;
 use App\Models\PasswordResetToken;
 use App\Models\User;
 use App\Notifications\ResetPasswordCode;
-use Devrabiul\ToastMagic\Facades\ToastMagic;
 use Illuminate\View\View;
 use Livewire\Component;
 use Random\RandomException;
@@ -40,7 +39,11 @@ class ForgotPassword extends Component
         $user = User::where('email', $this->email)->first();
 
         if (! $user) {
-            ToastMagic::error('User Not Found', 'We could not find a user with that email address.');
+            $this->dispatch('toastMagic',
+                status: 'error',
+                title: 'User Not Found',
+                message: 'We could not find a user with that email address.'
+            );
 
             return null;
         }
@@ -49,7 +52,11 @@ class ForgotPassword extends Component
 
         $user->notify(new ResetPasswordCode($resetToken->token));
 
-        ToastMagic::success('Reset Code Sent', 'We have sent a reset code to your email address.');
+        $this->dispatch('toastMagic',
+            status: 'success',
+            title: 'Reset Code Sent',
+            message: 'We have sent a reset code to your email address.'
+        );
 
         return redirect()->route('reset-password', ['email' => $this->email]);
     }

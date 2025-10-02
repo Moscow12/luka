@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
-use Livewire\Component;
-use Illuminate\View\View;
-use Random\RandomException;
 use App\Models\TrustedDevice;
 use App\Models\TwoFactorToken;
-use Livewire\Attributes\Validate;
+use App\Models\User;
 use App\Notifications\TwoFactorCode;
-use Illuminate\Support\Facades\Auth;
 use App\Services\DeviceFingerprinter;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Devrabiul\ToastMagic\Facades\ToastMagic;
+use Illuminate\View\View;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
+use Random\RandomException;
 
 class TwoFactorsAuthentication extends Component
 {

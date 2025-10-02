@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'surname' => 'User',
             'email' => 'admin@hospital.test',
             'username' => 'admin',
-            'phone_number'=> '0717599994',
+            'phone_number' => '0717599994',
             'password' => Hash::make('admin@hospital.test'),
             'gender' => 'Male',
             'country' => 'Ghana',

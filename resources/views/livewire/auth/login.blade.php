@@ -46,7 +46,7 @@
                                         />
                                     </div>
 
-                                    <div><a class='text-primary' href='#'>Forgot Password</a></div>
+                                    <div><a class='text-primary' href='{{ route('forgot-password') }}'>Forgot Password</a></div>
                                 </div>
 
                                 <x-forms.button type="submit" :block="true" loadingText="Signing In...">

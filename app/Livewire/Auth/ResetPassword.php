@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Livewire\Auth;
 
 use App\Models\PasswordResetToken;
+use App\Models\TrustedDevice;
 use App\Models\User;
-use Devrabiul\ToastMagic\Facades\ToastMagic;
+use App\Services\DeviceFingerprinter;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
@@ -18,7 +20,7 @@ class ResetPassword extends Component
 {
     public string $email = '';
 
-    #[Validate('required|string|size:5')]
+    #[Validate('required|string|size:6')]
     public string $token = '';
 
     #[Validate('required|string|min:8|confirmed')]
@@ -45,7 +47,7 @@ class ResetPassword extends Component
 
     public function verifyToken(): void
     {
-        $this->validate(['token' => 'required|string|size:5']);
+        $this->validate(['token' => 'required|string|size:6']);
 
         $resetToken = PasswordResetToken::findValidToken($this->email, $this->token);
 
@@ -56,7 +58,11 @@ class ResetPassword extends Component
         }
 
         $this->showTokenForm = false;
-        ToastMagic::success('Code Verified', 'Please enter your new password.');
+        $this->dispatch('toastMagic',
+            status: 'success',
+            title: 'Code Verified',
+            message: 'Please enter your new password.'
+        );
     }
 
     public function resetPassword(): mixed
@@ -87,14 +93,50 @@ class ResetPassword extends Component
             return null;
         }
 
+        // Update password
         $user->update([
             'password' => Hash::make($this->password),
         ]);
 
         PasswordResetToken::query()->where('email', $this->email)->update(['used' => true]);
 
-        ToastMagic::success('Password Reset', 'Your password has been successfully reset.');
+        // Invalidate other sessions for security
+        Auth::logoutOtherDevices($this->password);
 
-        return redirect()->route('login');
+        // Regenerate session
+        session()->regenerate();
+
+        // Check device fingerprint
+        $fingerprinter = new DeviceFingerprinter(request());
+        $deviceFingerprint = $fingerprinter->generateFingerprint();
+
+        // Check if this device is already trusted
+        $trustedDevice = TrustedDevice::findValidDevice($user->id, $deviceFingerprint);
+
+        if ($trustedDevice) {
+            // Update last used for existing trusted device
+            $trustedDevice->updateLastUsed();
+        } else {
+            // Create new trusted device (auto-trust after password reset)
+            TrustedDevice::createForUser(
+                userId: $user->id,
+                deviceFingerprint: $deviceFingerprint,
+                deviceName: $fingerprinter->generateDeviceName(),
+                ipAddress: $fingerprinter->getCurrentIpAddress(),
+                userAgent: request()->userAgent() ?? '',
+                trustDays: 30
+            );
+        }
+
+        // Log the user in
+        Auth::login($user);
+
+        $this->dispatch('toastMagic',
+            status: 'success',
+            title: 'Welcome Back!',
+            message: 'Your password has been updated successfully. You are now logged in.'
+        );
+
+        return redirect()->route('dashboard');
     }
 }

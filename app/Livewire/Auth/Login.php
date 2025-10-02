@@ -2,18 +2,17 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
-use Livewire\Component;
-use Illuminate\View\View;
-use Jenssegers\Agent\Agent;
 use App\Models\LoginActivity;
 use App\Models\TrustedDevice;
-use Livewire\Attributes\Validate;
+use App\Models\User;
+use App\Services\DeviceFingerprinter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Services\DeviceFingerprinter;
-use Devrabiul\ToastMagic\Facades\ToastMagic;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+use Jenssegers\Agent\Agent;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class Login extends Component
 {
@@ -69,7 +68,11 @@ class Login extends Component
             $trustedDevice->updateLastUsed();
             Auth::login($user);
 
-            ToastMagic::success('Welcome Back', 'Logged in from trusted device');
+            $this->dispatch('toastMagic',
+                status: 'success',
+                title: 'Welcome Back',
+                message: 'Logged in from trusted device'
+            );
 
             return redirect()->route('dashboard');
         }
@@ -84,7 +87,11 @@ class Login extends Component
             '2fa_device_user_agent' => request()->userAgent() ?? '',
         ]);
 
-        ToastMagic::success('Credentials Verified', 'Please check your email for the verification code');
+        $this->dispatch('toastMagic',
+            status: 'success',
+            title: 'Credentials Verified',
+            message: 'Please check your email for the verification code'
+        );
 
         return redirect()->route('2fa');
     }
@@ -95,4 +102,3 @@ class Login extends Component
             ->layout('components.layouts.guest');
     }
 }
-

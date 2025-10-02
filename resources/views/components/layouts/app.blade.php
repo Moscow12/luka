@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="auto" class="expanded">
-  @include('components.partials.header')
+<html lang="en" data-bs-theme="auto" class="collapsed">
+  @include('components.layouts.partials.header')
   <body>
     <!-- Vertical Sidebar -->
     <div>
       <div id="miniSidebar" >
-        @include('components.partials.logo')
+        @include('components.layouts.partials.logo')
 
-        @include('components.partials.navbar-vertical')
+        @include('components.layouts.partials.navbar-vertical')
       </div>
       
       <!-- Offcanvas Sidebar -->
@@ -22,14 +22,14 @@
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-0">
-          @include('components.partials.navbar-vertical')
+          @include('components.layouts.partials.navbar-vertical')
         </div>
       </div>
 
       <!-- Main Content -->
       <div id="content" class="position-relative h-100">
         <!-- navbar -->
-        @include('components.partials.navbar-top')
+        @include('components.layouts.partials.navbar-top')
         <!--Offcanvas notification-->
 
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Auth;
 
-use Devrabiul\ToastMagic\Facades\ToastMagic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -17,7 +16,11 @@ class Logout extends Component
         session()->invalidate();
         session()->regenerateToken();
 
-        ToastMagic::success('Login out', 'Successfully logged out');
+        $this->dispatch('toastMagic',
+            status: 'success',
+            title: 'Logged out',
+            message: 'Successfully logged out'
+        );
 
         return redirect()->route('login');
     }

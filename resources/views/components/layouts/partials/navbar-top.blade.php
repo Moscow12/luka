@@ -23,59 +23,9 @@
           </svg>
         </a>
       </div>
-      <div class="d-none d-lg-block">
-        <a class="sidebar-toggle d-flex texttooltip p-3" href="javascript:void(0)" data-template="collapseMessage">
-          <span class="collapse-mini">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-bar-left text-secondary"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M4 12l10 0" />
-              <path d="M4 12l4 4" />
-              <path d="M4 12l4 -4" />
-              <path d="M20 4l0 16" />
-            </svg>
-          </span>
-          <span class="collapse-expanded">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-bar-right text-secondary"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M20 12l-10 0" />
-              <path d="M20 12l-4 4" />
-              <path d="M20 12l-4 -4" />
-              <path d="M4 4l0 16" />
-            </svg>
-            <div id="collapseMessage" class="d-none">
-              <span class="small">Collapse</span>
-            </div>
-          </span>
-        </a>
-      </div>
-      <!-- Logo -->
-      <!-- <div class="d-block d-md-none">
-        <a href="./index.html">
-          <img src="./assets/images/brand/logo/logo-icon.svg" alt="" />
-        </a>
-      </div> -->
+      
+      <x-ui.sidebar-toggle />
+
     </div>
 
     <!-- Navbar nav -->
@@ -107,32 +57,7 @@
       </li>
       <!-- Light dark mode-->
       <li>
-        <div class="dropdown">
-          <button class="btn btn-ghost btn-icon rounded-circle d-flex align-items-center" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
-            <i class="ti theme-icon-active lh-1 fs-5"><i class="ti theme-icon ti-sun"></i></i>
-            <span class="visually-hidden bs-theme-text">Toggle theme</span>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow">
-            <li>
-              <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="light" aria-pressed="true">
-                <i class="ti theme-icon ti ti-sun"></i>
-                <span class="ms-2">Light</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
-                <i class="ti theme-icon ti-moon-stars"></i>
-                <span class="ms-2">Dark</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
-                <i class="ti theme-icon ti-circle-half-2"></i>
-                <span class="ms-2">Auto</span>
-              </button>
-            </li>
-          </ul>
-        </div>
+        <x-ui.theme-switcher iconLibrary="ti" buttonClass="btn-ghost" :withWrapper="false" />
       </li>
       <!-- Bell icon -->
       <li>
@@ -174,7 +99,7 @@
               </div>
             </div>
             <div class="p-3 d-flex flex-column gap-1">
-              <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
+              <a href="{{ route('dashboard') }}" class="dropdown-item d-flex align-items-center gap-2">
                 <span
                   ><svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -259,7 +184,7 @@
                 </span>
                 <span> Activity</span>
               </a>
-              <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
+              <a href="{{ route('user.profile') }}" class="dropdown-item d-flex align-items-center gap-2">
                 <span
                   ><svg
                     xmlns="http://www.w3.org/2000/svg"
