@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class job_titles extends Model
+{
+    protected $table = 'job_titles';
+    protected $fillable = [
+        'name',
+        'description',
+        'added_by',
+    ];
+
+    public function added_by()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+}

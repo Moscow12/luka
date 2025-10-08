@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class shifts extends Model
+{
+    protected $table = 'shifts';
+    protected $fillable = [
+        'name',
+        'start_time',
+        'end_time',
+        'added_by',
+    ];
+
+    public function added_by()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+}
