@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('villages', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
-            $table->foreignId('ward_id')->constrained('wards')->cascadeOnDelete();
+            $table->foreignUuid('ward_id')->constrained('wards')->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('leaves', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->integer('days');
             $table->text('description')->nullable();
             $table->enum('gender', ['male', 'female', 'both'])->default('both');
             //status: active, inactive
             $table->boolean('status')->default(true);
-            $table->foreignId('added_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

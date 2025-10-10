@@ -2,22 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class workstations extends Model
 {
+    use HasFactory, HasUuids;
     protected $table = 'workstations';
     protected $fillable = [
-        'name',
-        'location',
-        'phone_number',
-        'tin_number',
-        'email_address',
-        'address',
-        'city',
-        'province',
-        'country',
-        'postal_code',
+        'Workstation_name',
+        'StationLocation',
+        'StationPhone_Number',
+        'Tin_Number',
+        'StationEmail_Address',
+        'StationAddress',
+        'StationCity',
+        'StationProvince',
+        'StationCountry',
+        'StationPostalCode',
         'added_by',
     ];
 

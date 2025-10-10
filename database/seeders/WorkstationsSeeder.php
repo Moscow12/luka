@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Workstation;
 use App\Models\User;
 use App\Models\workstations;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class WorkstationSeeder extends Seeder
+class WorkstationsSeeder extends Seeder
 {
     public function run()
     {
@@ -21,8 +20,8 @@ class WorkstationSeeder extends Seeder
             $this->command->error('No users found in database!');
             if ($this->command->confirm('Create a default user first?')) {
                 User::factory()->create([
-                    'name' => 'System Admin',
-                    'email' => 'admin@example.com',
+                    'Workstation_name' => 'System Admin',
+                    'StationEmail_Address' => 'admin@example.com',
                 ]);
                 $this->command->info('✅ Default user created.');
             }
@@ -68,7 +67,7 @@ class WorkstationSeeder extends Seeder
         $bar = $this->command->getOutput()->createProgressBar($count);
 
         workstations::factory()->count($count)->create([
-            'location' => $location,
+            'StationLocation' => $location,
             'added_by' => $adminUser->id,
         ])->each(function () use ($bar) {
             $bar->advance();
@@ -101,16 +100,16 @@ class WorkstationSeeder extends Seeder
             $addedBy = $adminUser ? $adminUser->id : 1;
 
             $workstations[] = [
-                'name' => $name,
-                'location' => $location,
-                'phone_number' => $phoneNumber,
-                'tin_number' => $tinNumber,
-                'email_address' => $emailAddress,
-                'address' => $address,
-                'city' => $city,
-                'province' => $province,
-                'country' => $country,
-                'postal_code' => $postalCode,
+                'Workstation_name' => $name,
+                'StationLocation' => $location,
+                'StationPhone_Number' => $phoneNumber,
+                'Tin_Number' => $tinNumber,
+                'StationEmail_Address' => $emailAddress,
+                'StationAddress' => $address,
+                'StationCity' => $city,
+                'StationProvince' => $province,
+                'StationCountry' => $country,
+                'StationPostalCode' => $postalCode,
                 'added_by' => $addedBy,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -133,52 +132,52 @@ class WorkstationSeeder extends Seeder
     {
         $sampleWorkstations = [
             [
-                'name' => 'Headquarters',
-                'location' => 'Main Building',
-                'phone_number' => '+1-555-1000',
-                'tin_number' => '11-2233445',
-                'email_address' => 'hq@company.com',
-                'address' => '123 Corporate Avenue',
-                'city' => 'New York',
-                'province' => 'NY',
-                'country' => 'USA',
-                'postal_code' => '10001',
+                'Workstation_name' => 'Headquarters',
+                'StationLocation' => 'Main Building',
+                'StationPhone_Number' => '+1-555-1000',
+                'Tin_Number' => '11-2233445',
+                'StationEmail_Address' => 'hq@company.com',
+                'StationAddress' => '123 Corporate Avenue',
+                'StationCity' => 'New York',
+                'StationProvince' => 'NY',
+                'StationCountry' => 'USA',
+                'StationPostalCode' => '10001',
             ],
             [
-                'name' => 'Downtown Branch',
-                'location' => 'City Center',
-                'phone_number' => '+1-555-1001',
-                'tin_number' => '11-2233446',
-                'email_address' => 'downtown@company.com',
-                'address' => '456 Business Street',
-                'city' => 'New York',
-                'province' => 'NY',
-                'country' => 'USA',
-                'postal_code' => '10002',
+                'Workstation_name' => 'Downtown Branch',
+                'StationLocation' => 'City Center',
+                'StationPhone_Number' => '+1-555-1001',
+                'Tin_Number' => '11-2233446',
+                'StationEmail_Address' => 'downtown@company.com',
+                'StationAddress' => '456 Business Street',
+                'StationCity' => 'New York',
+                'StationProvince' => 'NY',
+                'StationCountry' => 'USA',
+                'StationPostalCode' => '10002',
             ],
             [
-                'name' => 'Westside Office',
-                'location' => 'West District',
-                'phone_number' => '+1-555-1002',
-                'tin_number' => '11-2233447',
-                'email_address' => 'west@company.com',
-                'address' => '789 Innovation Road',
-                'city' => 'Los Angeles',
-                'province' => 'CA',
-                'country' => 'USA',
-                'postal_code' => '90210',
+                'Workstation_name' => 'Westside Office',
+                'StationLocation' => 'West District',
+                'StationPhone_Number' => '+1-555-1002',
+                'Tin_Number' => '11-2233447',
+                'StationEmail_Address' => 'west@company.com',
+                'StationAddress' => '789 Innovation Road',
+                'StationCity' => 'Los Angeles',
+                'StationProvince' => 'CA',
+                'StationCountry' => 'USA',
+                'StationPostalCode' => '90210',
             ],
             [
-                'name' => 'London UK Office',
-                'location' => 'Europe HQ',
-                'phone_number' => '+44-20-7946-0958',
-                'tin_number' => 'GB-123456789',
-                'email_address' => 'london@company.com',
-                'address' => '1 Business Square',
-                'city' => 'London',
-                'province' => 'Greater London',
-                'country' => 'United Kingdom',
-                'postal_code' => 'SW1A 1AA',
+                'Workstation_name' => 'London UK Office',
+                'StationLocation' => 'Europe HQ',
+                'StationPhone_Number' => '+44-20-7946-0958',
+                'Tin_Number' => 'GB-123456789',
+                'StationEmail_Address' => 'london@company.com',
+                'StationAddress' => '1 Business Square',
+                'StationCity' => 'London',
+                'StationProvince' => 'Greater London',
+                'StationCountry' => 'United Kingdom',
+                'StationPostalCode' => 'SW1A 1AA',
             ]
         ];
 

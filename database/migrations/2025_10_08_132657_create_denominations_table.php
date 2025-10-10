@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('denominations', function (Blueprint $table) {
-            $table->uuid();
+            $table->uuid('id')->primary();
             $table->string('name');
-            $table->foreignId('religion_id')->nullable()->constrained('religions')->nullOnDelete();
+            $table->foreignUuid('religion_id')->nullable()->constrained('religions')->nullOnDelete();
             $table->timestamps();
         });
     }

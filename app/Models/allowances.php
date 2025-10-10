@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class allowances extends Model
 {
+    Use HasFactory, HasUuids;
     protected $table = 'allowances';
     protected $fillable = [
         'Pay_Grade',
