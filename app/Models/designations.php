@@ -12,12 +12,18 @@ class designations extends Model
     protected $table = 'designations';
     protected $fillable = [
         'name',
-        'description',
+        'code',
         'added_by',
     ];
 
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
+    }
+
+    // Relationship with employees
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'designation_id');
     }
 }

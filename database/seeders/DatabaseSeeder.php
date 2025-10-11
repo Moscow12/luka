@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
             JobtitleSeeder::class,
             UserSeeder::class,
             AclSeeder::class,
+            ReligionsSeeder::class,
+            DenominationsSeeder::class,
         ]);
     }
 }

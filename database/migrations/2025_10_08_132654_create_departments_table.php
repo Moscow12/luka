@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->foreignUuid('supervisor')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

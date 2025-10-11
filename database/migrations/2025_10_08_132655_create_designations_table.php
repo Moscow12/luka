@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('designations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('title');
+            $table->string('name');
             $table->string('code')->unique();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
