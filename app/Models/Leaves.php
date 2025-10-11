@@ -5,14 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-class violations extends Model
+class Leaves extends Model
 {
     use HasFactory, HasUuids;
-    protected $table = 'violations';
+    protected $table = 'leaves';
     protected $fillable = [
-        'violation_type',
+        'name',
         'description',
+        'days',
+        'gender',
+        'status',
         'added_by',
     ];
 

@@ -45,7 +45,7 @@ class EmployeeFactory extends Factory
             
             'tin_number'=>null, // Assuming tin_number will be set later
             'designation_id'=>designations::factory(),
-            'workstation_id'=>\App\Models\workstations::inRandomOrder()->first()->id,
+            'workstation_id'=>\App\Models\Workstations::inRandomOrder()->first()->id,
             'denomination_id'=>\App\Models\denominations::inRandomOrder()->first()->id,
             'added_by'=>\App\Models\User::inRandomOrder()->first()->id,
             

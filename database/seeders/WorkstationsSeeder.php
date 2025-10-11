@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\workstations;
+use App\Models\Workstations;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -66,7 +66,7 @@ class WorkstationsSeeder extends Seeder
 
         $bar = $this->command->getOutput()->createProgressBar($count);
 
-        workstations::factory()->count($count)->create([
+        Workstations::factory()->count($count)->create([ 
             'StationLocation' => $StationLocation,
             'added_by' => $adminUser->id,
         ])->each(function () use ($bar) {
@@ -230,7 +230,7 @@ class WorkstationsSeeder extends Seeder
             $workstation['created_at'] = now();
             $workstation['updated_at'] = now();
 
-            workstations::create($workstation);
+            Workstations::create($workstation);
             $this->command->info("✅ Created: {$workstation['Workstation_name']}");
         }
 

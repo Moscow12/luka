@@ -5,16 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
 
-class leaves extends Model
+class Deductions extends Model
 {
-    use HasFactory, HasUuids,   SoftDeletes;
-    protected $table = 'leaves';
+    /** @use HasFactory<\Database\Factories\DeductionsFactory> */
+    use HasFactory, HasUuids;
+    protected $table = 'deductions';
     protected $fillable = [
         'name',
-        'description',
+        'modepercentage',
+        'Deduction_Type',
+        'Amount',
+        'Descriptions',
         'added_by',
     ];
 

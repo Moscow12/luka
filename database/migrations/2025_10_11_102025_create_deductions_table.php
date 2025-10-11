@@ -12,11 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('deductions', function (Blueprint $table) {
-            $table->uuid('id')->primary();            
+            $table->uuid('id')->primary();
             $table->string('name');
-            $table->decimal('value', 10, 2);
-            $table->enum('mode', ['percentage', 'fixed']);
-            $table->text('descriptions')->nullable();
+            $table->enum('modepercentage', ['true', 'false'])->default('false');// true or false
+            $table->string('Mode');
+            $table->string('Deduction_Type');
+            $table->string('Amount');
+            $table->string('Description');
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });

@@ -14,6 +14,9 @@ class shifts extends Model
         'name',
         'start_time',
         'end_time',
+        'status',
+        'count_early',
+        'count_late',
         'added_by',
     ];
 
