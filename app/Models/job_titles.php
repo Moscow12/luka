@@ -11,7 +11,8 @@ class job_titles extends Model
     use HasFactory, HasUuids;
     protected $table = 'job_titles';
     protected $fillable = [
-        'name',
+        'title',
+        'code',
         'description',
         'added_by',
     ];

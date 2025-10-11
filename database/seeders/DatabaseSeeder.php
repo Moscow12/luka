@@ -17,6 +17,14 @@ class DatabaseSeeder extends Seeder
             AclSeeder::class,
             ReligionsSeeder::class,
             DenominationsSeeder::class,
+            CountriesSeeder::class,
+            RegionsSeeder::class,
+            DistrictsSeeder::class,
+            WardsSeeder::class,
+            VillagesSeeder::class,    
+            DesignationsSeeder::class,
+            DepartmentsSeeder::class,
+            WorkstationsSeeder::class,
         ]);
     }
 }

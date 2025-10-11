@@ -56,18 +56,18 @@ class WorkstationsSeeder extends Seeder
     {
         $count = (int) $this->command->ask('How many workstations do you want to create?', 5);
         
-        $location = $this->command->choice('Primary location for these workstations?', [
+        $StationLocation = $this->command->choice('Primary location for these workstations?', [
             'New York', 'London', 'Tokyo', 'Sydney', 'Berlin', 'Toronto', 'Singapore', 'Paris'
         ], 'New York');
 
-        $this->command->info("Creating {$count} workstations in {$location}...");
+        $this->command->info("Creating {$count} workstations in {$StationLocation}...");
 
         $adminUser = User::first();
 
         $bar = $this->command->getOutput()->createProgressBar($count);
 
         workstations::factory()->count($count)->create([
-            'StationLocation' => $location,
+            'StationLocation' => $StationLocation,
             'added_by' => $adminUser->id,
         ])->each(function () use ($bar) {
             $bar->advance();
@@ -75,7 +75,7 @@ class WorkstationsSeeder extends Seeder
 
         $bar->finish();
         $this->command->newLine();
-        $this->command->info("✅ {$count} workstations created in {$location}!");
+        $this->command->info("✅ {$count} workstations created in {$StationLocation}!");
     }
 
     protected function interactiveCustomSeeding()
@@ -85,37 +85,37 @@ class WorkstationsSeeder extends Seeder
         while (true) {
             $this->command->info("\n--- Add New Workstation ---");
 
-            $name = $this->command->ask('Workstation name');
-            $location = $this->command->ask('Location', 'Main Office');
-            $phoneNumber = $this->command->ask('Phone number', '+1-555-0100');
-            $tinNumber = $this->command->ask('TIN number', '12-3456789');
-            $emailAddress = $this->command->ask('Email address', "contact@{$name}.com");
-            $address = $this->command->ask('Street address', '123 Main Street');
-            $city = $this->command->ask('City', 'New York');
-            $province = $this->command->ask('Province/State', 'NY');
-            $country = $this->command->ask('Country', 'USA');
-            $postalCode = $this->command->ask('Postal code', '10001');
+            $Workstation_name = $this->command->ask('Workstation name');
+            $StationLocation = $this->command->ask('Location', 'Main Office');
+            $StationPhone_Number = $this->command->ask('Phone number', '+1-555-0100');
+            $Tin_Number = $this->command->ask('TIN number', '12-3456789');
+            $StationEmail_Address = $this->command->ask('Email address', "contact@{$Workstation_name}.com");
+            $StationAddress = $this->command->ask('Street address', '123 Main Street');
+            $StationCity = $this->command->ask('City', 'New York');
+            $StationProvince = $this->command->ask('Province/State', 'NY');
+            $StationCountry = $this->command->ask('Country', 'USA');
+            $StationPostalCode = $this->command->ask('Postal code', '10001');
 
             $adminUser = User::first();
             $addedBy = $adminUser ? $adminUser->id : 1;
 
             $workstations[] = [
-                'Workstation_name' => $name,
-                'StationLocation' => $location,
-                'StationPhone_Number' => $phoneNumber,
-                'Tin_Number' => $tinNumber,
-                'StationEmail_Address' => $emailAddress,
-                'StationAddress' => $address,
-                'StationCity' => $city,
-                'StationProvince' => $province,
-                'StationCountry' => $country,
-                'StationPostalCode' => $postalCode,
+                'Workstation_name' => $Workstation_name,
+                'StationLocation' => $StationLocation,
+                'StationPhone_Number' => $StationPhone_Number,
+                'Tin_Number' => $Tin_Number,
+                'StationEmail_Address' => $StationEmail_Address,
+                'StationAddress' => $StationAddress,
+                'StationCity' => $StationCity,
+                'StationProvince' => $StationProvince,
+                'StationCountry' => $StationCountry,
+                'StationPostalCode' => $StationPostalCode,
                 'added_by' => $addedBy,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
 
-            $this->command->info("✅ Workstation '{$name}' added!");
+            $this->command->info("✅ Workstation '{$Workstation_name}' added!");
 
             if (!$this->command->confirm('Add another workstation?')) {
                 break;
@@ -183,7 +183,7 @@ class WorkstationsSeeder extends Seeder
 
         $this->command->info('Available sample workstations:');
         foreach ($sampleWorkstations as $index => $workstation) {
-            $this->command->line("{$index}. {$workstation['name']} - {$workstation['city']}, {$workstation['country']}");
+            $this->command->line("{$index}. {$workstation['Workstation_name']} - {$workstation['StationCity']}, {$workstation['StationCountry']}");
         }
 
         $choice = $this->command->choice(
@@ -203,7 +203,7 @@ class WorkstationsSeeder extends Seeder
                 $selected = $this->command->choice(
                     'Select workstations to create (comma-separated):',
                     array_map(function ($ws, $index) {
-                        return "{$index}. {$ws['name']}";
+                        return "{$index}. {$ws['Workstation_name']}";
                     }, $sampleWorkstations, array_keys($sampleWorkstations)),
                     null,
                     null,
@@ -231,7 +231,7 @@ class WorkstationsSeeder extends Seeder
             $workstation['updated_at'] = now();
 
             workstations::create($workstation);
-            $this->command->info("✅ Created: {$workstation['name']}");
+            $this->command->info("✅ Created: {$workstation['Workstation_name']}");
         }
 
         $this->command->info("🎉 Created " . count($workstationsToCreate) . " sample workstations!");

@@ -91,7 +91,7 @@ class Employee extends Model
 
     public function position()
     {
-        return $this->belongsTo(job_titles::class, 'job_title_id');
+        return $this->belongsTo(Jobtitle::class, 'title_id');
     }
 
     public function designation()

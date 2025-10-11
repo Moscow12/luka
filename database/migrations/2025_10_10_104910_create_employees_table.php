@@ -17,7 +17,7 @@ return new class extends Migration
             // Relationships
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->foreignUuid('department_id')->constrained('departments')->cascadeOnDelete();
-            $table->foreignUuid('job_title_id')->constrained('job_titles')->cascadeOnDelete();
+            $table->foreignUuid('title_id')->constrained('jobtitles')->cascadeOnDelete();
             $table->foreignUuid('designation_id')->constrained('designations')->cascadeOnDelete();
             $table->foreignUuid('country_id')->constrained('countries')->cascadeOnDelete();
             $table->foreignUuid('region_id')->constrained('regions')->cascadeOnDelete();
@@ -42,12 +42,12 @@ return new class extends Migration
             $table->string('employment_type')->nullable(); // e.g. Full-time, Part-time, Contract
             $table->date('hired_date')->nullable();
             $table->enum('status', ['Active', 'Suspended', 'Terminated', 'Retired'])->default('Active');
-            $table->enum('education_level', ['primary', 'diploma', 'certificate', 'degree', 'masters', 'phd'])->nullable();
+            $table->enum('education_level', ['Primary', 'Diploma', 'Certificate', 'Degree', 'Masters', 'PhD'])->nullable();
 
             // Other info
             $table->string('fpid')->nullable(); // Fingerprint ID or biometric ID
             $table->string('photo')->nullable(); // Path to photo in storage
-            $table->string('marital_status', 50)->nullable();
+            $table->string('marital_status', ['Single', 'Married', 'Divorced', 'Widowed', 'Separated', 'Never married', 'Not applicable'])->nullable();
             $table->string('tin_number', 50)->nullable();
             $table->timestamps();
         });
