@@ -7,6 +7,45 @@
 
     <!-- Nav item -->
     <li class="nav-item">
+      <div class="nav-heading">Setup & Configuration</div>
+      <hr class="mx-5 nav-line mb-1" />
+    </li>
+
+    <!-- Nav item -->
+     <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="nav-icon">
+          <svg  xmlns="http://www.w3.org/2000/svg"  width="20"   height="20"   viewBox="0 0 24 24"   fill="none"   stroke="currentColor"   stroke-width="1.5"   stroke-linecap="round"   stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-settings"  > <path stroke="none" d="M0 0h24v24H0z" fill="none" />  <path   d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"  />  <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />  </svg>
+        </span>
+        <span class="text">Setup & Config</span>
+      </a>
+      <ul class="dropdown-menu flex-column">
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-products.html'>Setup and Config</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-sliders"></i> Location</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-product-edit.html'>Approval Level</a>
+        </li>
+
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-cart.html'>Shopping cart</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-checkout.html'>Checkout</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-customer.html'>Customer</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='apps/e-commerce/ecommerce-seller.html'>Seller</a>
+        </li>
+      </ul>
+    </li>
+    <!-- Nav item -->
+    <li class="nav-item">
       <div class="nav-heading">Users & Permissions</div>
       <hr class="mx-5 nav-line mb-1" />
     </li>
