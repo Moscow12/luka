@@ -14,9 +14,9 @@
       <div class="offcanvasNav offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
 
-            <a class='d-flex align-items-center gap-2' href='index.html'>
+            <a class='d-flex align-items-center gap-2' href="{{ route('dashboard') }}">
               <img src="{{ asset('images/brand/logo/logo-icon.svg') }}" alt="" />
-              <span class="fw-bold fs-4  site-logo-text">Dasher</span>
+              <span class="fw-bold fs-4  site-logo-text">HRP</span>
             </a>
 
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
