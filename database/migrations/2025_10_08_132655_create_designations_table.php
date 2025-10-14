@@ -15,9 +15,14 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('code')->unique();
+            $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
+
+            //index on designations table
+            $table->index('code');
         });
+
     }
 
     /**

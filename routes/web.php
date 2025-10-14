@@ -24,3 +24,8 @@ Route::group([
     Route::get('/create', \App\Livewire\Acl\RoleCreate::class)->name('acl.create');
     Route::get('/show/{role}', \App\Livewire\Acl\RoleShow::class)->name('acl.show');
 });
+
+Route::prefix('setup')->middleware('auth')->group(function () {
+    Route::get('/', App\Livewire\Setup\Settings::class)->name('setup.index');
+    Route::get('/setup/finance', App\Livewire\Setup\Finances::class)->name('setup.finances');
+});

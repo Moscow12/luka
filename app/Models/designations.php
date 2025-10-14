@@ -13,6 +13,7 @@ class designations extends Model
     protected $fillable = [
         'name',
         'code',
+        'status',
         'added_by',
     ];
 

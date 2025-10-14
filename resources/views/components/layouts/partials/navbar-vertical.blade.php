@@ -1,7 +1,7 @@
 <ul class="navbar-nav flex-column  ">
     <!-- Nav item -->
     <li class="nav-item">
-      <a class='nav-link active' href='{{ route('dashboard') }}'><span class="nav-icon"><svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1.5"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-files"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 3v4a1 1 0 0 0 1 1h4" /><path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z" /><path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2" /></svg> <span class="text">Project</span></a
+      <a class='nav-link active' href="{{ route('dashboard') }}"><span class="nav-icon"><svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1.5"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-files"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 3v4a1 1 0 0 0 1 1h4" /><path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z" /><path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2" /></svg> <span class="text">Project</span></a
       >
     </li>
 
@@ -21,13 +21,13 @@
       </a>
       <ul class="dropdown-menu flex-column">
         <li class="nav-item">
-          <a class='nav-link' href='apps/e-commerce/ecommerce-products.html'>Setup and Config</a>
+          <a class='nav-link' href="{{ route('setup.index') }}"><i class="fa-solid fa-sliders"></i> Setup</a>
         </li>
         <li class="nav-item">
-          <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-sliders"></i> Location</a>
+          <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Location</a>
         </li>
         <li class="nav-item">
-          <a class='nav-link' href='apps/e-commerce/ecommerce-product-edit.html'>Approval Level</a>
+          <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-money-bill"></i> Finance Setup</a>
         </li>
 
         <li class="nav-item">
