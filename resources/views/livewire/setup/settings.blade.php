@@ -75,122 +75,134 @@
 
             <div class="tab-content" id="tabContent">
                 <div class="tab-pane fade show active" id="workstations" role="tabpanel" aria-labelledby="workstations-tab">
-                    <form class="row g-6 justify-content-center needs-validation" novalidate>
-                        <div class="col-xl-8 col-12">
-                           
-
-                            <!-- card -->
-                            <div class="card mb-6 card-lg">
-                                <div class="card-header border-bottom border-dashed">
-                                    <h5>Properties</h5>
-                                    <p class="mb-0 text-secondary">Additional functions and attributes...</p>
-                                </div>
-                                <!-- card body -->
-                                <div class="card-body px-6 py-5">
-                                    <!-- input -->
-                                    <div class="form-check form-switch mb-5">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchStock" checked />
-                                        <label class="form-check-label" for="flexSwitchStock">In Stock</label>
-                                    </div>
-                                    <!-- input -->
-                                    <div class="row g-4">
-                                        <div class="col-lg-6">
-                                            <label class="form-label visually-hidden" for="productCode">Product Code</label>
-                                            <input type="text" id="productCode" class="form-control" placeholder="Product Code" required />
-                                            <div class="invalid-feedback">Please enter code.</div>
-                                        </div>
-                                        <!-- input -->
-                                        <div class="col-lg-6">
-                                            <label class="form-label visually-hidden" for="productSKU">Product SKU</label>
-                                            <input type="text" id="productSKU" class="form-control" placeholder="Product SKU" required />
-                                            <div class="invalid-feedback">Please enter SKU.</div>
-                                        </div>
-                                        <!-- input -->
-                                        <div>
-                                            <h4 class="mb-3 fs-6">Gender</h4>
-
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" name="inlineCheckboxOptions" id="inlineCheckbox1" value="option1" />
-                                                <label class="form-check-label" for="inlineCheckbox1">Male</label>
-                                            </div>
-                                            <!-- input -->
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" name="inlineCheckboxOptions" id="inlineCheckbox2" value="option2" />
-                                                <label class="form-check-label" for="inlineCheckbox2">Female</label>
-                                            </div>
-                                            <!-- input -->
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" name="inlineCheckboxOptions" id="inlineCheckbox3" value="option2" />
-                                                <label class="form-check-label" for="inlineCheckbox3">Kids</label>
-                                            </div>
-                                        </div>
-                                        <!-- input -->
-
-                                        <!-- select menu -->
-                                        <div>
-                                            <label class="form-label visually-hidden" for="categorySelect">Category</label>
-                                            <select class="form-select" id="categorySelect" data-choices="">
-                                                <option selected>Shoe</option>
-                                                <option value="Sunglasses">Sunglasses</option>
-                                                <option value="Handbag">Handbag</option>
-                                                <option value="Slingbag">Slingbag</option>
-                                            </select>
-                                        </div>
-
-                                        <!-- tag -->
-
-                                        <div>
-                                            <label class="form-label visually-hidden">Status</label>
-                                            <select class="form-select" data-choices="">
-                                                <option selected>Published</option>
-                                                <option value="Unpublished">Unpublished</option>
-                                                <option value="Draft">Draft</option>
-                                            </select>
-                                        </div>
-                                        <!-- date -->
-                                        <div>
-                                            <div class="input-group me-3 rounded">
-                                                <input class="form-control flatpickr" type="text" value="Select Date" placeholder="Select Date" aria-describedby="basic-addon2" />
-
-                                                <span class="input-group-text text-secondary" id="basic-addon2">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        class="icon icon-tabler icon-tabler-calendar"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        stroke-width="1.5"
-                                                        stroke="currentColor"
-                                                        fill="none"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                                                        <path d="M16 3v4" />
-                                                        <path d="M8 3v4" />
-                                                        <path d="M4 11h16" />
-                                                        <path d="M11 15h1" />
-                                                        <path d="M12 15v3" />
-                                                    </svg>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label visually-hidden" for="tagsInput"></label>
-                                            <input type="text" id="tagsInput" class="form-control" value="" placeholder="Add Tags" data-choices="" data-choices-removeitembutton="true" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                           
-                            <!-- button -->
-                            <div>
-                                <button type="submit" class="btn btn-primary">Create Product</button>
+                    <div class="card card-md">
+                        <!-- card header -->
+                        <div class="card-header border-0 d-flex flex-wrap justify-content-between align-items-center py-3 pt-4 pb-0">
+                            <h2>Workstations</h2>
+                            <div class="d-flex align-items-center">
+                                <a href="#" class="btn btn-primary">Add Workstation</a>
                             </div>
                         </div>
-                    </form>
+                        <form class="row g-6 justify-content-center" wire:submit.prevent="storeWorkstation">
+                            @csrf
+                            <div class="row col-xl-12 col-12">
+                                <div class="row g-6 justify-content-center">
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom01" class="form-label">Workstation Name</label>
+                                            <input type="text" class="form-control" wire:model="workstation.name"  placeholder="Workstation Name" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom04" class="form-label">Tin Number</label>
+                                            <input type="text" class="form-control" wire:model="workstation.tin_number"  placeholder="Tin Number" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom05" class="form-label">Station Address</label>
+                                            <input type="text" class="form-control" wire:model="workstation.physical_address"  placeholder="Station Address" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom02" class="form-label">Station Location</label>
+                                            <input type="text" class="form-control" wire:model="workstation.location"  placeholder="Station Location" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom03" class="form-label">Phone Number</label>
+                                            <input type="text" class="form-control" wire:model="workstation.phone_number"  placeholder="Station Phone Number" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    <!-- country -->
+                                     <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom07" class="form-label">Country</label>
+                                            <select class="form-select" wire:model="workstation.country_id"  placeholder="Country" required>
+                                                <option selected disabled value="">Choose...</option>
+                                                @foreach($countries as $country)
+                                                    @if($country->code == 'TZ')
+                                                        <option value="{{ $country->id }}" selected>{{ $country->name }}</option>
+                                                    @else
+                                                        <option value="{{ $country->id }}">{{ $country->name }}</option>
+                                                    @endif
+                                                @endforeach
+                                                        
+                                            </select>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom06" class="form-label">Region</label>
+                                            <select class="form-select" wire:model="workstation.region_id"  placeholder="Region" required>
+                                                <option selected disabled value="">Choose...</option>
+                                                <option>...</option>
+                                            </select>                                            
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom07" class="form-label">District</label>
+                                            <select class="form-select" wire:model="workstation.district_id"  placeholder="District" required>
+                                                <option selected disabled value="">Choose...</option>
+                                                <option>...</option>
+                                            </select>                                            
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom08" class="form-label">Ward</label>
+                                            <select class="form-select" wire:model="workstation.ward_id"  placeholder="Ward" required>
+                                                <option selected disabled value="">Choose...</option>
+                                                <option>...</option>
+                                            </select>                                            
+                                        </div>                                    
+                                    </div>
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                            <label for="validationCustom09" class="form-label">Postal Code</label>
+                                            <input type="text" class="form-control" wire:model="workstation.postal_code"  placeholder="Postal Code" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                    
+                                    
+                                    <div class="col-xl-6 col-6">
+                                        <div class="mb-3">
+                                           <!-- button -->
+                                            <div>
+                                                <button type="submit" class="btn btn-primary btn-block btn-left">SUBMIT</button>
+                                            </div>
+                                        </div>                                    
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="tab-pane" id="departments" role="tabpanel" aria-labelledby="departments-tab">

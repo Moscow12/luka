@@ -16,21 +16,20 @@ class WorkstationsFactory extends Factory
      */
     public function definition(): array
     {
-        
         return [
-            'Workstation_name' => $this->faker->company(),
-            'StationLocation' => $this->faker->randomElement(['Main Office', 'Branch Office', 'Remote', 'Satellite']),
-            'StationPhone_Number' => $this->faker->phoneNumber(),
-            'Tin_Number' => $this->faker->numerify('##-#######'),
-            'StationEmail_Address' => $this->faker->companyEmail(),
-            'StationAddress' => $this->faker->streetAddress(),
-            'StationCity' => $this->faker->city(),
-            'StationProvince' => $this->faker->stateAbbr(),
-            'StationCountry' => $this->faker->countryCode(),
-            'StationPostalCode' => $this->faker->postcode(),
+            'workstation_name' => $this->faker->company(),
+            'location' => $this->faker->randomElement(['Main Office', 'Branch Office', 'Remote', 'Satellite']),
+            'address' => $this->faker->streetAddress(),
+            'phone_number' => $this->faker->phoneNumber(),
+            'tin_number' => $this->faker->numerify('##-#######'),
+            'email_address' => $this->faker->companyEmail(),
+            'physical_address' => $this->faker->streetAddress(),
+            'region_id' => \App\Models\regions::factory(),
+            'district_id' => \App\Models\districts::factory(),
+            'ward_id' => \App\Models\wards::factory(),
+            'country_id' => \App\Models\countries::factory(),
+            'postal_code' => $this->faker->postcode(),
             'added_by'  => \App\Models\User::factory(),
         ];
-
-        
     }
 }

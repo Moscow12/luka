@@ -87,7 +87,7 @@
         </div>
 
         <div class="tab-pane" id="draft" role="tabpanel" aria-labelledby="draft-tab">
-            <div class="card card-md" >
+            <div class="card card-lg overflow-hidden" id="designation" data-list="designation_name,designation_code,designation_status,added_by">
                     <!-- form for adding designation -->
                     <form  wire:submit.prevent="storeDesignation">
                         @csrf

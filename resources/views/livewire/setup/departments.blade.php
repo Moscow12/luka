@@ -1,617 +1,151 @@
 <div>
     <div>
-        <h5 class="mb-5">Notes</h5>
+        <h5 class="mb-5">Shifts</h5>
     </div>
-    <div class="card mb-4 card-lg">
-        <div class="card-body">
-            <div class="accordion d-flex flex-column" id="accordionExample8">
-                <div class="d-flex flex-lg-row flex-column align-items-lg-center gap-3 justify-content-between">
-                    <div>
-                        <a
-                            href="#"
-                            class="d-flex flex-row collapsed gap-2 text-inherit align-items-center"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseEight"
-                            aria-expanded="false"
-                            aria-controls="collapseEight">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right chevron-down">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M9 6l6 6l-6 6"></path>
-                            </svg>
-
-                            <div class="d-flex flex-md-row flex-column align-items-md-center gap-md-2">
-                                <h6 class="mb-0">Notes <span>by</span></h6>
-                                <span>Jitu Chauhan</span>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="d-flex flex-row gap-2 text-secondary">
-                        <span>Feb 22, 2025</span>
-                        <span>at 6:17 PM EST</span>
-                    </div>
+    <div class="d-flex flex-column gap-6">
+        <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
+            <div class="d-flex flex-row gap-3 align-items-center">
+                <div>
+                    <form>
+                        <input class="form-control" type="search" value="" placeholder="Search" />
+                    </form>
                 </div>
-                <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#accordionExample8">
-                    <div class="d-flex flex-column gap-4 ms-xl-5 mt-6">
-                        <div>Interaction Type: Phone Call</div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <div>Summary:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Discussed upcoming product launch event.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    John expressed interest in attending and requested more information about the agenda.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Promised to send John an email with event details and registration link by end of day.
-                                </li>
-
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Agreed to follow up with John next week to confirm attendance.
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <div>Follow-Up Actions:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Send email to John with event details and registration link.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Schedule follow-up call with John for next week.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <a href="#!" class="text-inherit">
+                    <span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M6 4v4" />
+                            <path d="M6 12v8" />
+                            <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M12 4v10" />
+                            <path d="M12 18v2" />
+                            <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M18 4v1" />
+                            <path d="M18 9v11" />
+                        </svg>
+                    </span>
+                    <span>Filter</span>
+                </a>
+            </div>
+            <div>
+                <a href="#!" class="btn btn-primary d-flex flex-row gap-1 align-items-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 5l0 14" />
+                        <path d="M5 12l14 0" />
+                    </svg>
+                    ADD SHIFT
+                </a>
             </div>
         </div>
-    </div>
-    <div class="card mb-4 card-lg">
-        <div class="card-body">
-            <div class="accordion d-flex flex-column" id="accordionExample9">
-                <div class="d-flex flex-lg-row flex-column align-items-lg-center gap-3 justify-content-between">
-                    <div>
-                        <a
-                            href="#"
-                            class="d-flex flex-row collapsed gap-2 text-inherit align-items-center"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseNine"
-                            aria-expanded="false"
-                            aria-controls="collapseNine">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right chevron-down">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M9 6l6 6l-6 6" />
-                            </svg>
+        <div>
+            <div class="card card-lg overflow-hidden" id="taskTable" data-list="task_title,task_type,task_assigned,task_date,task_priority">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault25" data-check-all="" />
+                                            <label class="form-check-label" for="flexCheckDefault25"></label>
+                                        </div>
+                                    </th>
+                                    <th class="listjs-sorter" data-sort="task_title"> name</th>
+                                    <th class="listjs-sorter" data-sort="task_type">Start Time</th>
+                                    <th class="listjs-sorter" data-sort="task_assigned">End Time</th>
+                                    <th class="listjs-sorter" data-sort="task_assigned">Count late at</th>
+                                    <th class="listjs-sorter" data-sort="task_date">Count late by</th>
+                                    <th class="listjs-sorter" data-sort="task_priority">Satus</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="list">
+                                @foreach($shifts as $shift)
+                                    <tr>
+                                        <td class="pe-0">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault65" />
+                                                <label class="form-check-label" for="flexCheckDefault65"></label>
+                                            </div>
+                                        </td>
+                                        <td class="task_title">{{ $shift->name }}</td>
+                                        <td class="task_type">{{ $shift->start_time }}</td>
+                                        <td class="task_assigned">{{ $shift->end_time }}</td>
+                                        <td class="task_date">{{ $shift->count_early }}</td>
+                                        <td class="task_priority">{{ $shift->count_late }}</td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <a href="#!" class="btn btn-icon btn-ghost btn-sm rounded-circle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        class="icon icon-tabler icon-tabler-dots-vertical"
+                                                        width="20"
+                                                        height="20"
+                                                        viewBox="0 0 24 24"
+                                                        stroke-width="1.5"
+                                                        stroke="currentColor"
+                                                        fill="none"
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                        <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                                        <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                                        <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                                    </svg>
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                
+                                
+                            </tbody>
+                        </table>
+                    </div>
 
-                            <div class="d-flex flex-md-row flex-column align-items-md-center gap-md-2">
-                                <div class="d-flex flex-md-row align-items-md-center gap-2">
-                                    <h6 class="mb-0">Notes <span>by</span></h6>
-                                    <span>Jitu Chauhan</span>
-                                </div>
-                                <span class="text-gray-800 fw-semi-bold">Follow-up Call with Client XYZ</span>
+                    <div class="btn-toolbar card-footer border-top border-dashed d-flex flex-md-row flex-column justify-content-md-between align-items-md-center">
+                        <p class="mb-0 listjs-showing-items-label"></p>
+                        <div class="d-flex gap-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="form-label text-nowrap mb-0">Rows per page:</label>
+                                <select class="form-select listjs-items-per-page" data-choices="">
+                                    <option value="5" selected>5</option>
+                                </select>
                             </div>
-                        </a>
-                    </div>
-                    <div class="d-flex flex-row gap-2 text-secondary">
-                        <span>Feb 22, 2025</span>
-                        <span>at 6:17 PM EST</span>
-                    </div>
-                </div>
-                <div id="collapseNine" class="accordion-collapse collapse" data-bs-parent="#accordionExample9">
-                    <div class="d-flex flex-column gap-4 ms-xl-5 mt-6">
-                        <div>Interaction Type: Phone Call</div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <div>Summary:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Discussed upcoming product launch event.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    John expressed interest in attending and requested more information about the agenda.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Promised to send John an email with event details and registration link by end of day.
-                                </li>
-
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Agreed to follow up with John next week to confirm attendance.
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <div>Follow-Up Actions:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Send email to John with event details and registration link.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Schedule follow-up call with John for next week.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card mb-4 card-lg">
-        <div class="card-body">
-            <div class="accordion d-flex flex-column" id="accordionExample10">
-                <div class="d-flex flex-lg-row flex-column align-items-xxl-center gap-3 justify-content-between">
-                    <div>
-                        <a
-                            href="#"
-                            class="d-flex flex-row collapsed gap-2 text-inherit align-items-center"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseTen"
-                            aria-expanded="false"
-                            aria-controls="collapseTen">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right chevron-down">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M9 6l6 6l-6 6" />
-                            </svg>
-
-                            <div class="d-flex flex-xxl-row flex-column align-items-xxl-center gap-xl-2">
-                                <div class="d-flex flex-row align-items-md-center gap-2">
-                                    <h6 class="mb-0">Notes <span>by</span></h6>
-                                    <span>Jitu Chauhan</span>
+                            <div>
+                                <div class="pagination-buttons d-flex">
+                                    <button class="btn btn-white prev">Previous</button>
+                                    <ul class="pagination mb-0 ms-1"></ul>
+                                    <button class="btn btn-white next">Next</button>
                                 </div>
-                                <span class="text-gray-800 fw-semi-bold">Follow-up Email Sent to Prospect ABC</span>
                             </div>
-                        </a>
-                    </div>
-                    <div class="d-flex flex-row gap-2 text-secondary">
-                        <span>Feb 22, 2025</span>
-                        <span>at 6:17 PM EST</span>
-                    </div>
-                </div>
-                <div id="collapseTen" class="accordion-collapse collapse" data-bs-parent="#accordionExample10">
-                    <div class="d-flex flex-column gap-4 ms-xl-5 mt-6">
-                        <div>Interaction Type: Phone Call</div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <div>Summary:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Discussed upcoming product launch event.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    John expressed interest in attending and requested more information about the agenda.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Promised to send John an email with event details and registration link by end of day.
-                                </li>
-
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Agreed to follow up with John next week to confirm attendance.
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <div>Follow-Up Actions:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Send email to John with event details and registration link.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Schedule follow-up call with John for next week.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mb-4 card-lg">
-        <div class="card-body">
-            <div class="accordion d-flex flex-column" id="accordionExample11">
-                <div class="d-flex flex-lg-row flex-column align-items-lg-center gap-3 justify-content-between">
-                    <div>
-                        <a
-                            href="#"
-                            class="d-flex flex-row collapsed gap-2 text-inherit align-items-center"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseEleven"
-                            aria-expanded="false"
-                            aria-controls="collapseEleven">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right chevron-down">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M9 6l6 6l-6 6" />
-                            </svg>
-
-                            <div class="d-flex flex-md-row flex-column align-items-md-center gap-md-2">
-                                <div class="d-flex flex-md-row align-items-md-center gap-2">
-                                    <h6 class="mb-0">Notes <span>by</span></h6>
-                                    <span>Anita Parmar</span>
-                                </div>
-                                <span class="text-gray-800 fw-semi-bold">Meeting with Client XYZ</span>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="d-flex flex-row gap-2 text-secondary">
-                        <span>Feb 22, 2025</span>
-                        <span>at 6:17 PM EST</span>
-                    </div>
-                </div>
-                <div id="collapseEleven" class="accordion-collapse collapse" data-bs-parent="#accordionExample11">
-                    <div class="d-flex flex-column gap-4 ms-xl-5 mt-6">
-                        <div>Interaction Type: Phone Call</div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <div>Summary:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Discussed upcoming product launch event.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    John expressed interest in attending and requested more information about the agenda.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Promised to send John an email with event details and registration link by end of day.
-                                </li>
-
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Agreed to follow up with John next week to confirm attendance.
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <div>Follow-Up Actions:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Send email to John with event details and registration link.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Schedule follow-up call with John for next week.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card mb-4 card-lg">
-        <div class="card-body">
-            <div class="accordion d-flex flex-column" id="accordionExample12">
-                <div class="d-flex flex-lg-row flex-column align-items-lg-center gap-3 justify-content-between">
-                    <div>
-                        <a
-                            href="#"
-                            class="d-flex flex-row collapsed gap-2 text-inherit align-items-center"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseTwelve"
-                            aria-expanded="false"
-                            aria-controls="collapseTwelve">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right chevron-down">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M9 6l6 6l-6 6" />
-                            </svg>
-
-                            <div class="d-flex flex-md-row flex-column align-items-md-center gap-md-2">
-                                <div class="d-flex flex-md-row align-items-md-center gap-2">
-                                    <h6 class="mb-0">Notes <span>by</span></h6>
-                                    <span>Sandip Chauhan</span>
-                                </div>
-                                <span class="text-gray-800 fw-semi-bold">Lead Follow-up Call</span>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="d-flex flex-row gap-2 text-secondary">
-                        <span>Feb 22, 2025</span>
-                        <span>at 6:17 PM EST</span>
-                    </div>
-                </div>
-                <div id="collapseTwelve" class="accordion-collapse collapse" data-bs-parent="#accordionExample12">
-                    <div class="d-flex flex-column gap-4 ms-xl-5 mt-6">
-                        <div>Interaction Type: Phone Call</div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <div>Summary:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Discussed upcoming product launch event.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    John expressed interest in attending and requested more information about the agenda.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Promised to send John an email with event details and registration link by end of day.
-                                </li>
-
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Agreed to follow up with John next week to confirm attendance.
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <div>Follow-Up Actions:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Send email to John with event details and registration link.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Schedule follow-up call with John for next week.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card mb-4 card-lg">
-        <div class="card-body">
-            <div class="accordion d-flex flex-column" id="accordionExample13">
-                <div class="d-flex flex-lg-row flex-column align-items-lg-center gap-3 justify-content-between">
-                    <div>
-                        <a
-                            href="#"
-                            class="d-flex flex-row collapsed gap-2 text-inherit align-items-center"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseThirteen"
-                            aria-expanded="false"
-                            aria-controls="collapseThirteen">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right chevron-down">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M9 6l6 6l-6 6" />
-                            </svg>
-
-                            <div class="d-flex flex-md-row flex-column align-items-md-center gap-md-2">
-                                <div class="d-flex flex-md-row align-items-md-center gap-2">
-                                    <h6 class="mb-0">Notes <span>by</span></h6>
-                                    <span>Manasvi Suthar</span>
-                                </div>
-                                <span class="text-gray-800 fw-semi-bold">Support Ticket Resolution</span>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="d-flex flex-row gap-2 text-secondary">
-                        <span>Feb 22, 2025</span>
-                        <span>at 6:17 PM EST</span>
-                    </div>
-                </div>
-                <div id="collapseThirteen" class="accordion-collapse collapse" data-bs-parent="#accordionExample13">
-                    <div class="d-flex flex-column gap-4 ms-xl-5 mt-6">
-                        <div>Interaction Type: Phone Call</div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <div>Summary:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Discussed upcoming product launch event.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    John expressed interest in attending and requested more information about the agenda.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Promised to send John an email with event details and registration link by end of day.
-                                </li>
-
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Agreed to follow up with John next week to confirm attendance.
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <div>Follow-Up Actions:</div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Send email to John with event details and registration link.
-                                </li>
-                                <li class="d-flex gap-2 d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-point">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-                                    </svg>
-                                    Schedule follow-up call with John for next week.
-                                </li>
-                            </ul>
                         </div>
                     </div>
                 </div>
