@@ -77,7 +77,7 @@
                 <div class="tab-pane fade show active" id="workstations" role="tabpanel" aria-labelledby="workstations-tab">
                     <div class="card card-md">
                         <!-- card header -->
-                        <div class="card-header border-0 d-flex flex-wrap justify-content-between align-items-center py-3 pt-4 pb-0">
+                        <div class="card-header header-secondary d-flex flex-wrap justify-content-between align-items-center py-3 pt-4 pb-0">
                             <h2>Workstations</h2>
                             <div class="d-flex align-items-center">
                                 <a href="#" class="btn btn-primary">Add Workstation</a>
@@ -108,10 +108,9 @@
                                     <div class="col-xl-6 col-6">
                                         <div class="mb-3">
                                             <label for="validationCustom05" class="form-label">Station Address</label>
-                                            <input type="text" class="form-control" wire:model="workstation.physical_address"  placeholder="Station Address" required>
-                                            <div class="valid-feedback">
-                                                Looks good!
-                                            </div>
+                                           <x-forms.input name="email" type="email" label="Email Address" placeholder="Enter your email" required />
+
+                                            
                                         </div>                                    
                                     </div>
                                     <div class="col-xl-6 col-6">
@@ -196,6 +195,7 @@
                                            <!-- button -->
                                             <div>
                                                 <button type="submit" class="btn btn-primary btn-block btn-left">SUBMIT</button>
+                                                
                                             </div>
                                         </div>                                    
                                     </div>

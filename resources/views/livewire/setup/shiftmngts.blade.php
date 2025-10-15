@@ -40,27 +40,13 @@
             </div>
             <div>
                 <a href="#!" class="btn btn-primary d-flex flex-row gap-1 align-items-center">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
+                    <i class="fa fa-plus"></i>
                     ADD SHIFT
                 </a>
             </div>
         </div>
         <div>
-            <div class="card card-lg overflow-hidden" id="taskTable" data-list="task_title,task_type,task_assigned,task_date,task_priority">
+            <div class="card card-lg overflow-hidden" id="taskTable" data-list="shift_title,shift_type,shift_assigned,shift_date,shift_priority">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
@@ -77,7 +63,6 @@
                                     <th class="listjs-sorter" data-sort="task_assigned">End Time</th>
                                     <th class="listjs-sorter" data-sort="task_assigned">Count late at</th>
                                     <th class="listjs-sorter" data-sort="task_date">Count late by</th>
-                                    <th class="listjs-sorter" data-sort="task_priority">Satus</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -96,31 +81,9 @@
                                         <td class="task_date">{{ $shift->count_early }}</td>
                                         <td class="task_priority">{{ $shift->count_late }}</td>
                                         <td class="text-center">
-                                            <div class="dropdown">
-                                                <a href="#!" class="btn btn-icon btn-ghost btn-sm rounded-circle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        class="icon icon-tabler icon-tabler-dots-vertical"
-                                                        width="20"
-                                                        height="20"
-                                                        viewBox="0 0 24 24"
-                                                        stroke-width="1.5"
-                                                        stroke="currentColor"
-                                                        fill="none"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                        <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                        <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                        <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                    </svg>
-                                                </a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                                </ul>
-                                            </div>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $shift->id }}')"><i class="fa fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $shift->id }}')" 
+                                                onclick="return confirm('Delete this shift?')"><i class="fa fa-trash"></i></button>
                                         </td>
                                     </tr>
                                 @endforeach
