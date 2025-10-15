@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Workstations extends Model
 {
     use HasFactory, HasUuids;
-    protected $table = 'workstation';
+    protected $table = 'workstations';
     protected $fillable = [
         'workstation_name' => '',
         'location' => '',
@@ -48,5 +48,10 @@ class Workstations extends Model
     public function country()
     {
         return $this->belongsTo(countries::class, 'country_id');
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'employee_id');
     }
 }

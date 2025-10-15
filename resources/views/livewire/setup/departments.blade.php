@@ -1,6 +1,6 @@
 <div>
     <div>
-        <h5 class="mb-5">Shifts</h5>
+        <h5 class="mb-5">Departments</h5>
     </div>
     <div class="d-flex flex-column gap-6">
         <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
@@ -11,58 +11,25 @@
                     </form>
                 </div>
                 <a href="#!" class="text-inherit">
-                    <span>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M6 4v4" />
-                            <path d="M6 12v8" />
-                            <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M12 4v10" />
-                            <path d="M12 18v2" />
-                            <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M18 4v1" />
-                            <path d="M18 9v11" />
-                        </svg>
-                    </span>
+                    <i class="fa-solid fa-filter"></i>
                     <span>Filter</span>
                 </a>
             </div>
             <div>
-                <a href="#!" class="btn btn-primary d-flex flex-row gap-1 align-items-center">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
-                    ADD SHIFT
-                </a>
+                <button class="btn btn-primary d-flex flex-row gap-1 align-items-center" wire:click="$set('showModal', true)">
+                    <i class="fa-solid fa-plus"></i>
+                    ADD DEPARTMENT
+                </button>
             </div>
         </div>
         <div>
-            <div class="card card-lg overflow-hidden" id="taskTable" data-list="task_title,task_type,task_assigned,task_date,task_priority">
+            <div class="card card-lg overflow-hidden" id="taskTable" data-list="name">
                 <div class="card-body p-0">
                     <div class="table-responsive">
+                        @if (session()->has('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
+
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
                                 <tr>
@@ -73,55 +40,27 @@
                                         </div>
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title"> name</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Start Time</th>
-                                    <th class="listjs-sorter" data-sort="task_assigned">End Time</th>
-                                    <th class="listjs-sorter" data-sort="task_assigned">Count late at</th>
-                                    <th class="listjs-sorter" data-sort="task_date">Count late by</th>
-                                    <th class="listjs-sorter" data-sort="task_priority">Satus</th>
+                                    <th class="listjs-sorter" data-sort="task_type">Description</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="list">
-                                @foreach($shifts as $shift)
+                                @php
+                                    $number = 1;
+                                @endphp
+                                @foreach($departments as $dept)
                                     <tr>
-                                        <td class="pe-0">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault65" />
-                                                <label class="form-check-label" for="flexCheckDefault65"></label>
-                                            </div>
+                                        <td>
+                                            {{ $number++ }}
                                         </td>
-                                        <td class="task_title">{{ $shift->name }}</td>
-                                        <td class="task_type">{{ $shift->start_time }}</td>
-                                        <td class="task_assigned">{{ $shift->end_time }}</td>
-                                        <td class="task_date">{{ $shift->count_early }}</td>
-                                        <td class="task_priority">{{ $shift->count_late }}</td>
-                                        <td class="text-center">
-                                            <div class="dropdown">
-                                                <a href="#!" class="btn btn-icon btn-ghost btn-sm rounded-circle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        class="icon icon-tabler icon-tabler-dots-vertical"
-                                                        width="20"
-                                                        height="20"
-                                                        viewBox="0 0 24 24"
-                                                        stroke-width="1.5"
-                                                        stroke="currentColor"
-                                                        fill="none"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                        <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                        <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                        <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                    </svg>
-                                                </a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                                </ul>
-                                            </div>
+                                        <td class="name">{{ $dept->name }}</td>
+                                        <td class="task_type">{{ $dept->description }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $dept->id }}')">Edit</button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $dept->id }}')" 
+                                                onclick="return confirm('Delete this department?')">Delete</button>
                                         </td>
+                                       
                                     </tr>
                                 @endforeach
                                 
@@ -149,6 +88,44 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+     <!-- Modal -->
+    <div class="modal fade @if($showModal) show d-block @endif" tabindex="-1" 
+        @if($showModal) style="background: rgba(0,0,0,0.5);" @endif>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form wire:submit.prevent="save">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ $modalMode === 'edit' ? 'Edit Department' : 'Add Department' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Department Name</label>
+                            <input type="text" class="form-control" wire:model="name" placeholder="Enter Department Name">
+                            @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label>Department Description</label>
+                            <input type="text" class="form-control" wire:model="description" placeholder="Enter Department Description">
+                            @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

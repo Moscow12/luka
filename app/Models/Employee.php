@@ -126,7 +126,7 @@ class Employee extends Model
 
     public function workstation()
     {
-        return $this->belongsTo(workstations::class, 'workstation_id');
+        return $this->belongsTo(Workstations::class, 'workstation_id');
     }
 
     public function denomination()
