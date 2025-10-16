@@ -8,29 +8,73 @@ use Livewire\Component;
 
 class Designations extends Component
 {
+    
     public $designations;
-    public $designation = [
-        'name' => '',
-        'code' => '',
-    ];
+    public $name;
+    public $code;
+    public $designation;
+    public $designation_id;
+    public $modalMode = 'create'; // or 'edit'
+    public $showModal = false;
     public function mount()
+    {
+        $this->listdata();
+    }
+
+    public function openModal($mode = 'create', $id = null)
+    {
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->modalMode = $mode;
+        $this->showModal = true;
+        if ($mode === 'edit' && $id) {
+            $designation = ModelsDesignations::findOrFail($id);
+            $this->designation_id = $id;
+            $this->name = $designation->name;
+            $this->code = $designation->code;
+
+        } else {
+            $this->reset(['name', 'designation_id', 'code']);
+        }
+    }
+
+    public function listdata()
     {
         $this->designations = ModelsDesignations::with('added_by')->get();
     }
 
-    public function storeDesignation()
+    public function save()
     {
-        //validation
         $this->validate([
-            'designation.name' => 'required|string|max:255',
-            'designation.code' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', 'unique:designations,name'],
+            'code' => ['required', 'string', 'max:255'],
         ]);
-        //save
-        
-        $this->designation['added_by'] = Auth::user()->id;
-        ModelsDesignations::create($this->designation);
-        $this->designations = ModelsDesignations::with('added_by')->get();
-        session()->flash('success', 'Added successfully!');
+
+        if ($this->modalMode === 'edit' && $this->designation_id) {
+            $designation = ModelsDesignations::findOrFail($this->designation_id);
+            $designation->update(['name' => $this->name, 'code' => $this->code]);
+            $this->listdata();
+            session()->flash('success', 'Designation updated successfully!');
+        } else {
+            ModelsDesignations::create([
+                'name' => $this->name, 
+                'code' => $this->code, 
+                'added_by' => Auth::user()->id
+            ]);
+            $this->listdata();
+            session()->flash('success', 'Designation added successfully!');
+        }
+
+        $this->showModal = false;
+        $this->reset(['name', 'designation_id', 'code']);
+    }
+
+    public function delete($uuid)
+    {
+        $designation = ModelsDesignations::findOrFail($uuid);
+        $designation->delete();
+        $this->listdata();
+        session()->flash('success', 'Designation deleted successfully!');
     }
 
    

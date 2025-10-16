@@ -39,24 +39,27 @@
                 </a>
             </div>
             <div>
-                <a href="#!" class="btn btn-primary d-flex flex-row gap-1 align-items-center">
-                    <i class="fa fa-plus"></i>
-                    ADD SHIFT
-                </a>
+                <button class="btn btn-primary d-flex flex-row gap-1 align-items-center" wire:click="$set('showModal', true)">
+                    <i class="fa-solid fa-plus"></i>
+                    ADD SHIFT TYPE
+                </button>
             </div>
         </div>
         <div>
             <div class="card card-lg overflow-hidden" id="taskTable" data-list="shift_title,shift_type,shift_assigned,shift_date,shift_priority">
                 <div class="card-body p-0">
                     <div class="table-responsive">
+                        @if (session()->has('success'))
+                            <div class="alert alert-success dismissible fade show" role="alert" data-bs-dismiss="alert" aria-label="Close">
+                                {{ session('success') }}
+                                
+                            </div>
+                        @endif
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
                                 <tr>
                                     <th>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault25" data-check-all="" />
-                                            <label class="form-check-label" for="flexCheckDefault25"></label>
-                                        </div>
+                                       #
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title">Shift name</th>
                                     <th class="listjs-sorter" data-sort="task_type">Start Time</th>
@@ -67,13 +70,13 @@
                                 </tr>
                             </thead>
                             <tbody class="list">
-                                @foreach($shifts as $shift)
+                                @php
+                                    $number = 1;
+                                @endphp
+                                @foreach($shifttypes as $shift)
                                     <tr>
                                         <td class="pe-0">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault65" />
-                                                <label class="form-check-label" for="flexCheckDefault65"></label>
-                                            </div>
+                                            {{ $number++ }}
                                         </td>
                                         <td class="task_title">{{ $shift->name }}</td>
                                         <td class="task_type">{{ $shift->start_time }}</td>
@@ -112,6 +115,81 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade @if($showModal) show d-block @endif" tabindex="-1"
+        @if($showModal) style="background: rgba(0,0,0,0.5);" @endif>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form wire:submit.prevent="save">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ $modalMode === 'edit' ? 'Edit Shift Type' : 'Add Shift Type' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form wire:submit.prevent="save">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label" for="contact-name-field">Name</label>
+                                <input type="text" class="form-control" id="contact-name-field" wire:model="name">
+                                @error('name')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <!-- use shift model -->
+                             <div class="mb-3">
+                                <label class="form-label" for="contact-email-field">Start Time</label>
+                                <input type="time" class="form-control"  wire:model="start_time">
+                                @error('start_time')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="contact-email-field">End Time</label>
+                                <input type="time" class="form-control"  wire:model="end_time">
+                                @error('end_time')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="contact-email-field">Count Early</label>
+                                <input type="text" class="form-control"  wire:model="count_early">
+                                @error('count_early')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="contact-email-field">Count Late</label>
+                                <input type="text" class="form-control"  wire:model="count_late">
+                                @error('count_late')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">close</button>
+                        <button type="submit" class="btn btn-primary">
+                            {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

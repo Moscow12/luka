@@ -39,38 +39,27 @@
                 </a>
             </div>
             <div>
-                <a href="#!" class="btn btn-dark d-md-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#contact-modal" >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
+                <button class="btn btn-primary d-flex flex-row gap-1 align-items-center" wire:click="$set('showModal', true)">
+                    <i class="fa-solid fa-plus"></i>
                     ADD LEAVE TYPE
-                </a>
+                </button>
             </div>
         </div>
         <div>
             <div class="card card-lg overflow-hidden" id="taskTable" data-list="task_title,task_type,task_assigned,task_date,task_priority">
                 <div class="card-body p-0">
                     <div class="table-responsive">
+                        @if (session()->has('success'))
+                            <div class="alert alert-success dismissible fade show" role="alert" data-bs-dismiss="alert" aria-label="Close">
+                                {{ session('success') }}
+                                
+                            </div>
+                        @endif
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
                                 <tr>
                                     <th>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault25" data-check-all="" />
-                                            <label class="form-check-label" for="flexCheckDefault25"></label>
-                                        </div>
+                                        #
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title">Name</th>
                                     <th class="listjs-sorter" data-sort="task_type">Leave Type</th>
@@ -81,47 +70,25 @@
                                 </tr>
                             </thead>
                             <tbody class="list">
+                                @php
+                                $number = 1;
+                                @endphp
                                 @foreach($leavetypes as $leave)
-                                    <tr>
-                                        <td class="pe-0">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault65" />
-                                                <label class="form-check-label" for="flexCheckDefault65"></label>
-                                            </div>
-                                        </td>
-                                        <td class="task_title">{{ $leave->name }}</td>
-                                        <td class="task_type">{{ $leave->description }}</td>
-                                        <td class="task_assigned">{{ $leave->days }}</td>
-                                        <td class="task_date">{{ $leave->gender }}</td>
-                                        <td class="task_priority">{{ $leave->status }}</td>
-                                        <td class="text-center">
-                                            <div class="dropdown">
-                                                <a href="#!" class="btn btn-icon btn-ghost btn-sm rounded-circle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        class="icon icon-tabler icon-tabler-dots-vertical"
-                                                        width="20"
-                                                        height="20"
-                                                        viewBox="0 0 24 24"
-                                                        stroke-width="1.5"
-                                                        stroke="currentColor"
-                                                        fill="none"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                        <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                        <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                        <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                                    </svg>
-                                                </a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td class="pe-0">
+                                        {{ $number++ }}
+                                    </td>
+                                    <td class="task_title">{{ $leave->name }}</td>
+                                    <td class="task_type">{{ $leave->description }}</td>
+                                    <td class="task_assigned">{{ $leave->days }}</td>
+                                    <td class="task_date">{{ $leave->gender }}</td>
+                                    <td class="task_priority">{{ $leave->status }}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $leave->id }}')"><i class="fa fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')"
+                                            onclick="return confirm('Delete this leave?')"><i class="fa fa-trash"></i></button>
+                                    </td>
+                                </tr>
                                 @endforeach
 
                             </tbody>
@@ -151,48 +118,74 @@
         </div>
     </div>
 
-        <!-- Modal -->
-          <!-- Modal -->
-    <div class="modal fade" id="contact-modal" tabindex="-1" aria-labelledby="contact-modal-label" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title" id="contact-modal-label">Add Leave Type</h4>
-            <button type="button" class="btn-close" id="btn-close-modal" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form wire:submit.prevent="storeLeaveType">
-                @csrf
-              <div class="mb-3">
-                <label class="form-label" for="contact-name-field">Name</label>
-                <input type="text" class="form-control" placeholder="Enter Name" wire:model="leavetype.name" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="email-field">Description</label>
-                <input type="text" class="form-control" placeholder="Enter Description" wire:model="leavetype.description" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="phone-number-field">Days</label>
-                <input type="text" class="form-control" placeholder="Enter Phone" wire:model="leavetype.days" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="lead-status-field">Leave Gender</label>
-                <select class="form-control" wire:model="leavetype.gender"  required>
-                  <option value="">Select Lead Status</option>
-                  <option value="Both" selected>Both</option>
-                  <option value="Male" >Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-              
-              <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">+ Add Contact</button>
+    <!-- Modal -->
+    <div class="modal fade @if($showModal) show d-block @endif" tabindex="-1"
+        @if($showModal) style="background: rgba(0,0,0,0.5);" @endif>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form wire:submit.prevent="save">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ $modalMode === 'edit' ? 'Edit Leave Type' : 'Add Leave Type' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
+                    </div>
 
-                <button class="btn btn-secondary ms-2" data-bs-dismiss="modal" aria-label="Close">Close</button>
-              </div>
-            </form>
-          </div>
+                    <div class="modal-body">
+                        <form wire:submit.prevent="save">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label" for="contact-name-field">Name</label>
+                                <input type="text" class="form-control" placeholder="Enter Name" wire:model="name" required />
+                                @error('name')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="email-field">Description</label>
+                                <input type="text" class="form-control" placeholder="Enter Description" wire:model="description" required />
+                                @error('description')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>                                    
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="phone-number-field">Days</label>
+                                <input type="text" class="form-control" placeholder="Enter Phone" wire:model="days" required />
+                                @error('days')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="lead-status-field">Leave Gender</label>
+                                <select class="form-control" wire:model="gender" required>
+                                    <option value="">Select Lead Status</option>
+                                    <option value="Both" selected>Both</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                                @error('gender')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">close</button>
+                                <button type="submit" class="btn btn-primary">
+                                    {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </form>
+            </div>
         </div>
-      </div>
     </div>
 </div>

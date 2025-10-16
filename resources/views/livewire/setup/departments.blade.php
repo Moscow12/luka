@@ -34,10 +34,7 @@
                             <thead>
                                 <tr>
                                     <th>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault25" data-check-all="" />
-                                            <label class="form-check-label" for="flexCheckDefault25"></label>
-                                        </div>
+                                       #
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title"> name</th>
                                     <th class="listjs-sorter" data-sort="task_type">Description</th>
@@ -120,7 +117,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">Cancel</button>
+                        <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">close</button>
                         <button type="submit" class="btn btn-primary">
                             {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
                         </button>

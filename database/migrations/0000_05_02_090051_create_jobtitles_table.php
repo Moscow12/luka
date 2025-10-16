@@ -18,6 +18,15 @@ return new class extends Migration
             // Name of the job title, indexed for efficient lookups
             $table->string('name')->index();
 
+            // Code for the job title, unique
+            $table->string('code')->unique();
+ 
+            // Description of the job title
+            $table->text('description');
+
+            // User who created the job title
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
+
             // Soft delete column for marking records as deleted
             $table->softDeletes();
 

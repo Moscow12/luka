@@ -38,6 +38,9 @@ class Jobtitle extends Model
      */
     protected $fillable = [
         'name',
+        'code',
+        'description',
+        'added_by',
     ];
 
     /**

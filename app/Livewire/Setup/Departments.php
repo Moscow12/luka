@@ -17,7 +17,7 @@ class Departments extends Component
     public $showModal = false;
     public function mount()
     {
-        $this->listdepts();
+        $this->listdata();
     }
 
     public function openModal($mode = 'create', $id = null)
@@ -31,12 +31,13 @@ class Departments extends Component
             $this->department_id = $id;
             $this->name = $department->name;
             $this->description = $department->description;
+
         } else {
             $this->reset(['name', 'department_id', 'description']);
         }
     }
 
-    public function listdepts()
+    public function listdata()
     {
         $this->departments = ModelsDepartments::with('added_by')->get();
     }
@@ -51,7 +52,7 @@ class Departments extends Component
         if ($this->modalMode === 'edit' && $this->department_id) {
             $department = ModelsDepartments::findOrFail($this->department_id);
             $department->update(['name' => $this->name, 'description' => $this->description]);
-            $this->listdepts();
+            $this->listdata();
             session()->flash('success', 'Department updated successfully!');
         } else {
             ModelsDepartments::create([
@@ -59,7 +60,7 @@ class Departments extends Component
                 'description' => $this->description, 
                 'added_by' => Auth::user()->id
             ]);
-            $this->listdepts();
+            $this->listdata();
             session()->flash('success', 'Department added successfully!');
         }
 
@@ -71,6 +72,7 @@ class Departments extends Component
     {
         $department = ModelsDepartments::findOrFail($uuid);
         $department->delete();
+        $this->listdata();
         session()->flash('success', 'Department deleted successfully!');
     }
 
