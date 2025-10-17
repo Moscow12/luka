@@ -45,8 +45,8 @@
                                     <th>
                                         #
                                     </th>
-                                    <th class="listjs-sorter" data-sort="task_title"> name</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Description</th>
+                                    <th class="listjs-sorter" data-sort="task_title"> Name</th>
+                                    <th class="listjs-sorter" data-sort="task_type">District</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -64,7 +64,7 @@
                                     <td>
                                         <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $ward->id }}')">Edit</button>
                                         <button class="btn btn-sm btn-danger" wire:click="delete('{{ $ward->id }}')"
-                                            onclick="return confirm('Delete this department?')">Delete</button>
+                                            onclick="return confirm('Delete this wards?')">Delete</button>
                                     </td>
 
                                 </tr>
@@ -99,14 +99,14 @@
                 <form wire:submit.prevent="save">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            {{ $modalMode === 'edit' ? 'Edit district' : 'Add district' }}
+                            {{ $modalMode === 'edit' ? 'Edit District' : 'Add District' }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
 
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label>Redion</label>
+                            <label>District</label>
                             <select class="form-select" wire:model="district_id" placeholder="district" required>
                                 <option selected disabled value="">Choose...</option>
                                 @foreach($districts as $district)
@@ -119,8 +119,8 @@
                             @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                         <div class="mb-3">
-                            <label>District Name</label>
-                            <input type="text" class="form-control" wire:model="name" placeholder="Enter district Name">
+                            <label>Ward Name</label>
+                            <input type="text" class="form-control" wire:model="name" placeholder="Enter ward Name">
                             @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 

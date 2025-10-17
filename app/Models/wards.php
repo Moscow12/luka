@@ -15,7 +15,7 @@ class wards extends Model
         'district_id',
     ];
 
-    public function district()
+    public function districts()
     {
         return $this->belongsTo(districts::class, 'district_id');
     }

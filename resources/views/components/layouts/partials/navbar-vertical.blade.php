@@ -29,10 +29,10 @@
         <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Leave Management</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-money-bill"></i> Roster Management</a>
+        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Roster Management</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-money-bill"></i> Employee Attendances</a>
+        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clock"></i> Employee Attendances</a>
       </li>
     </ul>
   </li>
