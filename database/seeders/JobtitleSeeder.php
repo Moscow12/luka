@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Jobtitle;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class JobtitleSeeder extends Seeder
@@ -12,6 +13,7 @@ class JobtitleSeeder extends Seeder
      */
     public function run(): void
     {
+
         $jobtitles = [
             'Medical Doctor',
             'Registered Nurse',
@@ -24,9 +26,9 @@ class JobtitleSeeder extends Seeder
             'Medical Assistant',
             'Healthcare Assistant',
         ];
-
+        $firstUser = User::first();
         foreach ($jobtitles as $jobtitle) {
-            Jobtitle::create(['name' => $jobtitle]);
+            Jobtitle::create(['name' => $jobtitle, 'code' => null, 'description' => null, 'added_by' =>$firstUser->id]);
         }
     }
 }

@@ -6,22 +6,19 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class wards extends Model
+class street extends Model
 {
     use HasFactory, HasUuids;
-    protected $table = 'wards';
+    protected $table = 'streets';
     protected $fillable = [
         'name',
-        'district_id',
+        'street_number',
+        'ward_id',
     ];
 
-    public function district()
+    public function ward()
     {
-        return $this->belongsTo(districts::class, 'district_id');
+        return $this->belongsTo(wards::class, 'ward_id');
     }
 
-    public function streets()
-    {
-        return $this->hasMany(street::class, 'ward_id');
-    }
 }

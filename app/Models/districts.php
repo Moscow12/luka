@@ -12,11 +12,16 @@ class districts extends Model
     protected $table = 'districts';
     protected $fillable = [
         'name',
-        'state_id',
+        'region_id',
     ];
 
-    public function state()
+    public function regions()
     {
-        return $this->belongsTo(regions::class, 'state_id');
+        return $this->belongsTo(regions::class, 'region_id');
+    }
+
+    public function wards()
+    {
+        return $this->hasMany(wards::class, 'district_id');
     }
 }

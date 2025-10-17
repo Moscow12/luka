@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('name')->index();
 
             // Code for the job title, unique
-            $table->string('code')->unique();
+            $table->string('code')->nullable();
  
             // Description of the job title
-            $table->text('description');
+            $table->text('description')->nullable();
 
             // User who created the job title
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Setup\Location\Index;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', App\Livewire\LandingPage::class)->name('dashboard')->middleware('auth');
@@ -26,6 +27,7 @@ Route::group([
 });
 
 Route::prefix('setup')->middleware('auth')->group(function () {
-    Route::get('/', App\Livewire\Setup\Settings::class)->name('setup.index');
+    Route::get('/settings', App\Livewire\Setup\Settings::class)->name('setup.index');
     Route::get('/setup/finance', App\Livewire\Setup\Finances::class)->name('setup.finances');
+    Route::get('/', Index::class)->name('setup.location');
 });

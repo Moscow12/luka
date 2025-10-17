@@ -20,4 +20,9 @@ class regions extends Model
     {
         return $this->belongsTo(countries::class, 'country_id');
     }
+
+    public function districts()
+    {
+        return $this->hasMany(districts::class, 'region_id');
+    }
 }

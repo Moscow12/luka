@@ -3,7 +3,7 @@
 namespace App\Livewire\Setup;
 
 use App\Models\countries;
-use App\Models\Workstations;
+use App\Models\workstations;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -25,7 +25,7 @@ class Settings extends Component
     ];
     public function mount()
     {
-        $this->workstations = Workstations::all();
+        $this->workstations = workstations::all();
         $this->countries = countries::all();
     }
 
