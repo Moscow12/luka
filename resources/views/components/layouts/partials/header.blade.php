@@ -24,7 +24,7 @@
     <meta name="msapplication-TileImage" content="{{ asset('images/favicon/ms-icon-144x144.png') }}" />
     <meta name="theme-color" content="#ffffff" />
     <!-- Color modes -->
-    <script src="assets/js/vendors/color-modes.js"></script>
+    <script src="{{ asset('assets/js/vendors/color-modes.js') }}"></script>
     <script>
       if (localStorage.getItem('sidebarExpanded') === 'false') {
         document.documentElement.classList.add('collapsed');

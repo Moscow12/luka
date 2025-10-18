@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Barryvdh\Reflection\DocBlock\Location;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -17,10 +18,8 @@ class DatabaseSeeder extends Seeder
             ReligionsSeeder::class,
             DenominationsSeeder::class,
             CountriesSeeder::class,
-            RegionsSeeder::class,
-            DistrictsSeeder::class,
+            LocationsSeeder::class,
             WardsSeeder::class,
-            VillagesSeeder::class,    
             DesignationsSeeder::class,
             DepartmentsSeeder::class,
             LeavesSeeder::class,
