@@ -71,7 +71,7 @@
                    <livewire:setup.location.ward />
                 </div>
                 <div class="tab-pane fade show" id="streets" role="tabpanel" aria-labelledby="streets-tab">
-                    
+                    <livewire:setup.location.street />
                 </div>
                 
             </div>
