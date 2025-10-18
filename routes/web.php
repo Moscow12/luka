@@ -31,3 +31,9 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/setup/finance', App\Livewire\Setup\Finances::class)->name('setup.finances');
     Route::get('/', Index::class)->name('setup.location');
 });
+
+Route::prefix('hr')->middleware('auth')->group(function () {
+    Route::get('/overview', App\Livewire\Hr\Overview::class)->name('hr.index');
+    Route::get('/staffs/stafflist', App\Livewire\Hr\Staffs\Stafflist::class)->name('hr.stafflist');
+    Route::get('/staffs/addstaff', App\Livewire\Hr\Staffs\Addstaff::class)->name('hr.addstaff');
+});

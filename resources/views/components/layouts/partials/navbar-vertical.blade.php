@@ -15,15 +15,16 @@
   </li>
   <!-- Nav item -->
   <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
         <i class="fa-solid fa-user-group"></i>
       </span>
       <span class="text">Human Resources</span>
     </a>
     <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-sliders"></i> Staff Registration</a>
+        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Staff Registration</a>
       </li>
       <li class="nav-item">
         <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Leave Management</a>
