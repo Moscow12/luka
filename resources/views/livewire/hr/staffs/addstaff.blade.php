@@ -16,10 +16,16 @@
                     <!-- card -->
                     <div class="card card-lg mb-6">
                         <div class="card-header">
-                            <h5 class="mb-0">Employee information</h5>
+                            <h5 class="mb-0"> {{ $modalMode === 'edit' ? 'Update  Staff Information' : 'Add New Staff' }}</h5>
                         </div>
                         <!-- card body -->
                         <div class="card-body px-6 py-5">
+                            <!-- error messages -->
+                            @if (session()->has('success'))
+                                <div class="alert alert-success" role="alert" data-bs-dismiss="alert" aria-label="Close">
+                                    {{ session('success') }}
+                                </div>
+                            @endif
                             <!-- form -->
                             <div class="row g-3">
                                 <!-- form group -->
@@ -29,6 +35,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" placeholder="Enter First Name" wire:model="first_name" required />
+                                    @error('first_name') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <div class="col-md-4 col-12">
@@ -37,6 +44,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" placeholder="Enter Middle Name" wire:model="middle_name" required />
+                                    @error('middle_name') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <div class="col-md-4 col-12">
@@ -45,6 +53,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" placeholder="Enter Last Name" wire:model="last_name" required />
+                                    @error('last_name') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
 
@@ -60,6 +69,7 @@
                                         <span class="input-group-text text-secondary" id="basic-addon2">
                                             <i class="fa-solid fa-calendar"></i>
                                         </span>
+                                        @error('dob') <small class="text-danger">{{ $message }}</small> @enderror
                                     </div>
                                 </div>
                                 <!-- form group -->
@@ -74,6 +84,7 @@
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
                                     </select>
+                                    @error('gender') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
 
@@ -90,24 +101,29 @@
                                         <option value="Never married">Never married</option>
                                         <option value="Not applicable">Not applicable</option>
                                     </select>
+                                    @error('marital_status') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Phone number</label>
                                     <input type="text" class="form-control" placeholder="Enter Phone number" wire:model="phone" required />
+                                    @error('phone') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
 
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Tin number</label>
                                     <input type="text" class="form-control" placeholder="Enter Tin number" wire:model="tin_number" required />
+                                    @error('tin_number') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">National ID</label>
                                     <input type="text" class="form-control" placeholder="Enter National ID" wire:model="national_id" required />
+                                    @error('national_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Email</label>
-                                    <input type="text" class="form-control" placeholder="Enter Email" wire:model="email" required />
+                                    <input type="email" class="form-control" placeholder="Enter Email" wire:model="email" required />
+                                    @error('email') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Employment Type</label>
@@ -117,6 +133,7 @@
                                         <option value="Part-time">Part-time</option>
                                         <option value="Contract">Contract</option>
                                     </select>
+                                    @error('employment_type') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Hire Date</label>
@@ -126,6 +143,7 @@
                                         <span class="input-group-text text-secondary" id="basic-addon2">
                                             <i class="fa-solid fa-calendar"></i>
                                         </span>
+                                        @error('hired_date') <small class="text-danger">{{ $message }}</small> @enderror
                                     </div>
                                 </div>
                                 <!-- form group -->
@@ -140,6 +158,7 @@
                                         <option value="Masters">Masters</option>
                                         <option value="PhD">PhD</option>
                                     </select>
+                                    @error('education_level') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
 
@@ -147,16 +166,18 @@
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Fingerprint ID</label>
                                     <input type="text" class="form-control" placeholder="Enter Fingerprint ID" wire:model="fpid" required />
+                                    @error('fpid') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Denomination</label>
-                                    <select name="denomination_id" id="denomination_id" class="form-select" wire:model="denomination_id">
+                                    <select name="denomination_id" id="denomination_id" class="form-select"  wire:model="denomination_id" wire:change="getDenominations()">
                                         <option value="">Select denomination</option>
                                         @foreach($denominations as $denomination)
                                         <option value="{{ $denomination->id }}">{{ $denomination->name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('denomination_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
 
@@ -178,6 +199,7 @@
                                         <option value="{{ $workstation->id }}">{{ $workstation->workstation_name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('workstation_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <!-- department -->
@@ -189,6 +211,7 @@
                                         <option value="{{ $department->id }}">{{ $department->name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('department_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <!-- title -->
@@ -200,6 +223,7 @@
                                         <option value="{{ $jobtitle->id }}">{{ $jobtitle->name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('title_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <div class="col-md-4 col-12">
@@ -210,12 +234,14 @@
                                         <option value="{{ $designation->id }}">{{ $designation->name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('designation_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                                 <!-- form group -->
                                 <!-- employee_no -->
                                 <div class="col-md-4 col-12">
                                     <div class="mb-2">Employee No</div>
                                     <input type="text" class="form-control" placeholder="Enter Employee No" wire:model="employee_no" required />
+                                    @error('employee_no') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
 
                                 <!-- login as -->
@@ -227,13 +253,14 @@
                                         <option value="{{ $user->id }}">{{ $user->first_name }} {{ $user->last_name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('user_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
 
                             </div>
                         </div>
                     </div>
                     <div class="mt-4 d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary">Create</button>
+                        <button type="submit" class="btn btn-primary">  {{ $modalMode === 'edit' ? 'UPDATE STAFF INFO' : 'SAVE NEW STAFF' }}</button>
                     </div>
                 </div>
                 <div class="col-xxl-3 col-xl-4">
@@ -249,6 +276,7 @@
                                 <option value="{{ $country->id }}">{{ $country->name }}</option>
                                 @endforeach
                             </select>
+                            @error('country_id') <small class="text-danger">{{ $message }}</small> @enderror
                             <div class="mb-2">Region</div>
                             <select class="form-select" wire:model="region_id" wire:change="updateDistricts">
                                 <option value="">Region</option>
@@ -256,6 +284,7 @@
                                 <option value="{{ $region->id }}">{{ $region->name }}</option>
                                 @endforeach
                             </select>
+                            @error('region_id') <small class="text-danger">{{ $message }}</small> @enderror
                             <div class="mb-2">District</div>
                             <select class="form-select" wire:model="district_id" wire:change="updatewards">
                                 <option value="">District</option>
@@ -263,6 +292,7 @@
                                 <option value="{{ $district->id }}">{{ $district->name }}</option>
                                 @endforeach
                             </select>
+                            @error('district_id') <small class="text-danger">{{ $message }}</small> @enderror
                             <div class="mb-2">Ward</div>
                             <select class="form-select" wire:model="ward_id" wire:change="updatestreet">
                                 <option value="">Ward</option>
@@ -270,14 +300,15 @@
                                 <option value="{{ $ward->id }}">{{ $ward->name }}</option>
                                 @endforeach
                             </select>
+                            @error('ward_id') <small class="text-danger">{{ $message }}</small> @enderror
                             <div class="mb-2">Village</div>
-                            <select class="form-select" wire:model="vilstreet_id">
+                            <select class="form-select" wire:model="vilstreet_id" >
                                 <option value="">Village</option>
                                 @foreach($villages as $village)
                                 <option value="{{ $village->id }}">{{ $village->name }}</option>
                                 @endforeach
                             </select>
-
+                            @error('vilstreet_id') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                     </div>
                     <div class="card card-lg">
@@ -287,6 +318,7 @@
                             </div>
                             <label class="form-label">Upload Photo</label>
                             <input type="file" class="form-control" wire:model="photo">
+                            @error('photo') <small class="text-danger">{{ $message }}</small> @enderror
                             {{-- Show loading indicator while uploading --}}
                             <div wire:loading wire:target="photo" class="text-muted mt-2">
                                 Uploading...
@@ -294,10 +326,13 @@
 
                             {{-- Show uploaded photo preview --}}
                             @if ($photo)
-                            <div class="mt-3">
-                                <p class="mb-1">Preview:</p>
-                                <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="img-thumbnail" width="150">
-                            </div>
+                                @if (is_object($photo))
+                                    <!-- New uploaded image -->
+                                    <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="img-thumbnail" width="150">
+                                @else
+                                    <!-- Existing stored image -->
+                                    <img src="{{ asset('storage/' . $photo) }}" alt="Preview" class="img-thumbnail" width="150">
+                                @endif
                             @endif
                         </div>
                     </div>

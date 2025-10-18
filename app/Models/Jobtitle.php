@@ -36,6 +36,7 @@ class Jobtitle extends Model
      *
      * @var string[]
      */
+    protected $table = 'jobtitles';
     protected $fillable = [
         'name',
         'code',
@@ -63,5 +64,10 @@ class Jobtitle extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'title_id');
     }
 }

@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Hr\Staffs;
 
+use App\Models\Employee;
 use Livewire\Component;
 
 class Stafflist extends Component
 {
     public function render()
     {
-        return view('livewire.hr.staffs.stafflist');
+        $employees = Employee::all();
+        return view('livewire.hr.staffs.stafflist', ['employees' => $employees]);
     }
 }

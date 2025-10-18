@@ -1,13 +1,13 @@
  <div class="custom-container">
-     
+
      <x-pages.breadcrumn title="STAFF LIST"
-        :breadcrumbs="[
+         :breadcrumbs="[
         ['label' => 'Home', 'url' => route('dashboard')], 
         ['label' => 'HR Overview', 'url' => route('hr.index')],
         ['label' => 'Staff List', 'url' => route('hr.stafflist')],
         ]">
-        <a class='btn btn-primary d-md-flex align-items-center gap-2' href="{{ route('hr.addstaff') }}">  <i class="fa-solid fa-plus"></i> ADD NEW STAFF</a>
-    </x-pages.breadcrumn>
+         <a class='btn btn-primary d-md-flex align-items-center gap-2' href="{{ route('hr.addstaff') }}"> <i class="fa-solid fa-plus"></i> ADD NEW STAFF</a>
+     </x-pages.breadcrumn>
      <div>
          <!-- row -->
          <div class="row">
@@ -66,70 +66,85 @@
                                      <th class="listjs-sorter" data-sort="product_category">Designation</th>
                                      <th class="listjs-sorter" data-sort="product_date">Phone Number</th>
                                      <th class="listjs-sorter" data-sort="product_price">Contact Type</th>
-                                     <th class="listjs-sorter" data-sort="product_quantity">Contact Time</th>
-                                     <th class="listjs-sorter" data-sort="product_status">Status</th>
                                      <th>Action</th>
                                  </tr>
                              </thead>
                              <tbody class="list">
-                                 
+                                 @foreach ($employees as $employee)
                                  <tr>
-                                     <td class="pe-0">
-                                         <div class="form-check">
-                                             <input class="form-check-input" type="checkbox" value="" id="contactCheckbox11" />
-                                             <label class="form-check-label" for="contactCheckbox11"></label>
-                                         </div>
-                                     </td>
+
                                      <td class="product_name ps-0">
                                          <div class="d-flex align-items-center">
-                                             <img src="../../assets/images/ecommerce/product-1.jpg" alt="" class="rounded-3"
+                                             <!-- photo -->
+                                             <img src="{{ asset('storage/'.$employee->photo) }}" alt="" class="rounded-3"
                                                  width="56" />
-                                             <div class="ms-3 d-flex flex-column">
-                                                 <a href="#!" class="text-inherit fw-semibold">Transparent Sunglasses</a>
-                                             </div>
+
                                          </div>
+
                                      </td>
-                                     <td class="product_category">Women's Fashion</td>
-                                     <td class="product_date">18 July, 2025</td>
-                                     <td class="product_price">$35.99</td>
-                                     <td class="product_quantity">24</td>
-                                     <td class="product_status">
-                                         <span class="badge text-success-emphasis bg-success-subtle rounded-pill">Active</span>
+                                     <td class="pe-0">
+                                         <div class="form-check">{{ $employee->first_name }} {{ $employee->middle_name }} {{ $employee->last_name }}</div>
                                      </td>
+                                     <td class="product_price"> {{ $employee->employee_no }}</td>
+                                     <td class="product_category">{{ $employee->gender }}</td>
+                                     <td class="product_date">{{ $employee->dob }}</td>
+                                     <td class="product_category">{{ $employee->designation->name }}</td>
+                                     <td class="product_date">{{ $employee->hired_date }}</td>
+                                     <td>{{ $employee->employment_type }}</td>
                                      <td>
-                                         <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle texttooltip"
-                                             data-template="eyeThirteen">
-                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye" width="16"
-                                                 height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
-                                                 stroke-linecap="round" stroke-linejoin="round">
+                                         <a href=" {{ route('hr.staffdetails',$employee->id) }}" class="btn btn-ghost btn-icon btn-sm rounded-circle texttooltip" data-template="eyeFour">
+                                             <svg
+                                                 xmlns="http://www.w3.org/2000/svg"
+                                                 class="icon icon-tabler icon-tabler-eye"
+                                                 width="16"
+                                                 height="16"
+                                                 viewBox="0 0 24 24"
+                                                 stroke-width="1.5"
+                                                 stroke="currentColor"
+                                                 fill="none"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
                                                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                  <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                                                 <path
-                                                     d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                                 <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                                              </svg>
-                                             <div id="eyeThirteen" class="d-none">
+                                             <div id="eyeFour" class="d-none">
                                                  <span>View</span>
                                              </div>
                                          </a>
-                                         <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle texttooltip"
-                                             data-template="editTen">
-                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="16"
-                                                 height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
-                                                 stroke-linecap="round" stroke-linejoin="round">
+                                         <a href="{{ route('hr.editstaff',$employee->id) }}" class="btn btn-ghost btn-icon btn-sm rounded-circle texttooltip" data-template="editThree">
+                                             <svg
+                                                 xmlns="http://www.w3.org/2000/svg"
+                                                 class="icon icon-tabler icon-tabler-edit"
+                                                 width="16"
+                                                 height="16"
+                                                 viewBox="0 0 24 24"
+                                                 stroke-width="1.5"
+                                                 stroke="currentColor"
+                                                 fill="none"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
                                                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                  <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
                                                  <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
                                                  <path d="M16 5l3 3" />
                                              </svg>
-                                             <div id="editTen" class="d-none">
+                                             <div id="editThree" class="d-none">
                                                  <span>Edit</span>
                                              </div>
                                          </a>
-                                         <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle texttooltip"
-                                             data-template="trashEleven">
-                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash"
-                                                 width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                 fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                         <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle texttooltip" data-template="trashFour">
+                                             <svg
+                                                 xmlns="http://www.w3.org/2000/svg"
+                                                 class="icon icon-tabler icon-tabler-trash"
+                                                 width="16"
+                                                 height="16"
+                                                 viewBox="0 0 24 24"
+                                                 stroke-width="1.5"
+                                                 stroke="currentColor"
+                                                 fill="none"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
                                                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                  <path d="M4 7l16 0" />
                                                  <path d="M10 11l0 6" />
@@ -137,13 +152,14 @@
                                                  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
                                                  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
                                              </svg>
-                                             <div id="trashEleven" class="d-none">
+                                             <div id="trashFour" class="d-none">
                                                  <span>Delete</span>
                                              </div>
                                          </a>
                                      </td>
-                                 </tr>
-                                
+                                     @endforeach
+
+
                              </tbody>
                          </table>
                      </div>

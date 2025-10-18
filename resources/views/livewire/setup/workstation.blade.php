@@ -27,7 +27,7 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         @if (session()->has('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
+                        <div class="alert alert-success" type="alert" >{{ session('success') }}</div>
                         @endif
 
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
@@ -108,7 +108,7 @@
                                 <div class="mb-3">
                                     <label>Address</label>
                                     <input type="text" class="form-control" wire:model="address" placeholder="Enter Address">
-                                    @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                                    @error('address') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                             </div>
                         </div>
@@ -117,14 +117,14 @@
                                 <div class="mb-3">
                                     <label>Phone Number</label>
                                     <input type="tel" class="form-control" wire:model="phone_number" placeholder="Enter Phone Number">
-                                    @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                                    @error('phone_number') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label>TIN Number</label>
                                     <input type="text" class="form-control" wire:model="tin_number" placeholder="Enter TIN Number">
-                                    @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                                    @error('tin_number') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                             </div>
                         </div>

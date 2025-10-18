@@ -36,4 +36,6 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/overview', App\Livewire\Hr\Overview::class)->name('hr.index');
     Route::get('/staffs/stafflist', App\Livewire\Hr\Staffs\Stafflist::class)->name('hr.stafflist');
     Route::get('/staffs/addstaff', App\Livewire\Hr\Staffs\Addstaff::class)->name('hr.addstaff');
+    Route::get('/staffs/addstaff/edit/{id}', App\Livewire\Hr\Staffs\Addstaff::class)->name('hr.editstaff');
+    Route::get('/staffs/staffdetails/{id}', App\Livewire\Hr\Staffs\Staffdetails::class)->name('hr.staffdetails');
 });

@@ -12,7 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Employee extends Model
 {
-    use LogsActivity, SoftDeletes, HasFactory, HasUuids;
+    use LogsActivity, HasFactory, HasUuids;
     protected $fillable = [
         'user_id',
         'employee_no',
@@ -28,7 +28,7 @@ class Employee extends Model
         'status',
         'department_id',
         'education_level',
-        'job_title_id',
+        'title_id',
         'fpid',
         'photo',
         'marital_status',
@@ -109,7 +109,7 @@ class Employee extends Model
 
     public function vilstreet()
     {
-        return $this->belongsTo(villages::class, 'vilstreet_id');
+        return $this->belongsTo(street::class, 'vilstreet_id');
     }
 
     public function workstation()

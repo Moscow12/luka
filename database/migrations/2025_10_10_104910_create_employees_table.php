@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignUuid('region_id')->constrained('regions')->cascadeOnDelete();
             $table->foreignUuid('district_id')->constrained('districts')->cascadeOnDelete();
             $table->foreignUuid('ward_id')->constrained('wards')->cascadeOnDelete();
-            $table->foreignUuid('vilstreet_id')->nullable()->constrained('villages')->cascadeOnDelete();
+            $table->foreignUuid('vilstreet_id')->nullable()->constrained('streets')->cascadeOnDelete();
             $table->foreignUuid('workstation_id')->constrained('workstations')->cascadeOnDelete();
             $table->foreignUuid('denomination_id')->constrained('denominations')->cascadeOnDelete();
 

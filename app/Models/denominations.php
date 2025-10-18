@@ -19,4 +19,9 @@ class denominations extends Model
     {
         return $this->belongsTo(religions::class, 'religion_id');
     }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'denomination_id');
+    }
 }
