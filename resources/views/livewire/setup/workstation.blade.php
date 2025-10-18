@@ -132,7 +132,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label>Email Address</label>
-                                    <input type="text" class="form-control" wire:model="email_address" placeholder="Enter Email Address">
+                                    <input type="email" class="form-control" wire:model="email_address" placeholder="Enter Email Address">
                                     @error('email_address') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                             </div>
@@ -198,12 +198,13 @@
                                 <!--ward -->
                                 <div class="mb-3">
                                     <label>Ward</label>
-                                    <select class="form-select" wire:model="ward_id" placeholder="Ward" required>
+                                    <select class="form-select" wire:model="ward_id" placeholder="Ward" >
                                         <option selected disabled value="">Choose...</option>
                                         @foreach ($wards as $ward)
                                             <option value="{{ $ward->id }}">{{ $ward->name }}</option>                                            
                                         @endforeach
                                     </select>
+                                    @error('ward_id') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
                             </div>
                         </div>

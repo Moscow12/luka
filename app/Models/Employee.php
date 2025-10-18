@@ -13,11 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Employee extends Model
 {
     use LogsActivity, SoftDeletes, HasFactory, HasUuids;
-    protected $primaryKey = 'uuid';
-    public $incrementing = false;
-    protected $keyType = 'string';
     protected $fillable = [
-        'uuid',
         'user_id',
         'employee_no',
         'first_name',
@@ -49,19 +45,11 @@ class Employee extends Model
         'added_by',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->uuid = (string) Str::uuid();
-        });
-    }
+    
 
     protected $casts = [
         'dob' => 'date',
         'hired_date' => 'date',
-        'salary' => 'decimal:2',
     ];
 
     // Activity Logging Configuration

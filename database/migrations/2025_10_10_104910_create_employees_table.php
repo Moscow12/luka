@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignUuid('region_id')->constrained('regions')->cascadeOnDelete();
             $table->foreignUuid('district_id')->constrained('districts')->cascadeOnDelete();
             $table->foreignUuid('ward_id')->constrained('wards')->cascadeOnDelete();
-            $table->foreignUuid('vilstreet_id')->constrained('villages')->cascadeOnDelete();
+            $table->foreignUuid('vilstreet_id')->nullable()->constrained('villages')->cascadeOnDelete();
             $table->foreignUuid('workstation_id')->constrained('workstations')->cascadeOnDelete();
             $table->foreignUuid('denomination_id')->constrained('denominations')->cascadeOnDelete();
 
@@ -31,9 +31,10 @@ return new class extends Migration
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('employee_no')->unique();
             $table->string('first_name');
+            $table->string('middle_name')->nullable();
             $table->string('last_name');
-            $table->enum('gender', ['Male', 'Female', 'Other'])->nullable();
-            $table->date('dob')->nullable();
+            $table->enum('gender', ['Male', 'Female', 'Other']);
+            $table->date('dob');
             $table->string('national_id', 50)->nullable()->unique();
             $table->string('phone', 50)->nullable();
             $table->string('email')->nullable();

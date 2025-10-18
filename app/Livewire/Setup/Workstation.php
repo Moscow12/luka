@@ -37,28 +37,7 @@ class Workstation extends Component
         $this->listdata();
     }
     // When a region is selected
-    public function updatedRegionId($region_id)
-    {
-        $this->districts = districts::where('region_id', $region_id)->orderBy('name')->get();
-        $this->wards = [];
-        $this->streets = [];
-
-        // Reset selections below this level
-        $this->district_id = null;
-        $this->ward_id = null;
-        $this->street_id = null;
-    }
-     // When a district is selected
-    public function updatedDistrictId($districtId)
-    {
-
-        $this->wards = wards::where('district_id', $districtId)->orderBy('name')->get();
-        $this->streets = [];
-
-        // Reset selections below this level
-        $this->ward_id = null;
-        $this->street_id = null;
-    }
+  
 
     public function updateDistricts()
     {        

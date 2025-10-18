@@ -1,6 +1,6 @@
 <div>
     <div>
-        <h5 class="mb-5">districts</h5>
+        <h5 class="mb-5">List of Wards</h5>
     </div>
     <div class="d-flex flex-column gap-6">
         <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
@@ -10,8 +10,8 @@
                         <input class="form-control" type="search" wire:model.live="search" placeholder="Search">
                     </form>
                 </div>
-               
-                <div >
+
+                <div>
                     <select name="district_id" id="district_id" class="form-select" wire:model.live="district_id">
                         <option value="">Select district</option>
                         @foreach($districts as $district)
@@ -27,7 +27,7 @@
             <div>
                 <button class="btn btn-primary d-flex flex-row gap-1 align-items-center" wire:click="$set('showModal', true)">
                     <i class="fa-solid fa-plus"></i>
-                    ADD district
+                    ADD WARD
                 </button>
             </div>
         </div>
@@ -36,7 +36,9 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         @if (session()->has('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
+                        <div class="alert alert-success" role="alert" data-bs-dismiss="alert" aria-label="Close">
+                            {{ session('success') }}
+                        </div>
                         @endif
 
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
@@ -99,14 +101,14 @@
                 <form wire:submit.prevent="save">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            {{ $modalMode === 'edit' ? 'Edit District' : 'Add District' }}
+                            {{ $modalMode === 'edit' ? 'Edit Ward' : 'Add Ward' }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
 
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label>District</label>
+                            <label>Ward</label>
                             <select class="form-select" wire:model="district_id" placeholder="district" required>
                                 <option selected disabled value="">Choose...</option>
                                 @foreach($districts as $district)

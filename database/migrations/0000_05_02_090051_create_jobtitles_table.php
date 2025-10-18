@@ -25,7 +25,7 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             // User who created the job title
-            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->nullable()->constrained('users')->cascadeOnDelete();
 
             // Soft delete column for marking records as deleted
             $table->softDeletes();
