@@ -38,6 +38,76 @@
     </ul>
   </li>
   <!-- Nav item -->
+    <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="nav-icon">
+        <i class="fa-solid fa-money-bill"></i>
+      </span>
+      <span class="text">Payroll</span>
+    </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Generate Payroll</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Staff Overtime</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Loan Management</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><i class="fa-solid fa-clock"></i> Payments Report</a>
+      </li>
+    </ul>
+  </li>
+  <!-- Nav item -->
+    <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="nav-icon">
+        <i class="fa-solid fa-money-bill"></i>
+      </span>
+      <span class="text">Apprisal Management</span>
+    </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Apprisal Management</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Planning</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Apprisal Report</a>
+      </li>
+    </ul>
+  </li>
+  <li class="nav-item">
+    <div class="nav-heading">Contract management</div>
+    <hr class="mx-5 nav-line mb-1" />
+  </li>
+  <!-- Nav item -->
+    <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="nav-icon">
+        <i class="fa-solid fa-money-bill"></i>
+      </span>
+      <span class="text">Contracts</span>
+    </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Contracts</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Contract Management</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Contract Report</a>
+      </li>
+    </ul>
+  </li>
+  <!-- Nav item -->
   <li class="nav-item">
     <div class="nav-heading">Setup & Configuration</div>
     <hr class="mx-5 nav-line mb-1" />
