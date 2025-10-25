@@ -24,7 +24,7 @@ class Addstaff extends Component
 {
     use WithFileUploads;
     public $countries = [], $regions = [], $districts = [], $wards = [], $villages = [], $workstations = [], $departments = [], $jobtitles = [], $designations = [], $users = [], $denominations = [];
-    public $employee_id;
+    public $employee_id, $title='';
     public $first_name, $middle_name, $last_name, $gender, $dob, $marital_status, $photo, $phone, $tin_number, $national_id, $email, $employment_type, $hired_date, $status = 'Active', $education_level, $title_id, $fpid, $ward_id, $district_id, $region_id, $country_id, $employee_no, $workstation_id, $department_id,  $designation_id, $user_id, $vilstreet_id, $denomination_id;
 
 

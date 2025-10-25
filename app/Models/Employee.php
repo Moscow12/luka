@@ -125,9 +125,9 @@ class Employee extends Model
 
     #================ COMPUTED ATTRIBUTES ================#
     // Computed Attributes
-    public function getFullNameAttribute()
+    public function getFullName()
     {
-        return "{$this->first_name} {$this->last_name}";
+        return "{$this->first_name} {$this->middle_name} {$this->last_name}";
     }
 
     public function getYearsOfServiceAttribute()
@@ -137,7 +137,17 @@ class Employee extends Model
 
     public function getAgeAttribute()
     {
-        return $this->dob->diffInYears(now());
+        $dob = \Carbon\Carbon::parse($this->dob);
+        $now = \Carbon\Carbon::now();
+
+        $diff = $dob->diff($now);
+
+        return sprintf(
+            '%d yrs %d mos %d days',
+            $diff->y,
+            $diff->m,
+            $diff->d
+        );
     }
 
     // Scopes

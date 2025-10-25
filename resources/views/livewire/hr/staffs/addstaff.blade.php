@@ -1,9 +1,9 @@
 <div class="custom-container">
-    <x-pages.breadcrumn title="ADD NEW STAFF"
+    <x-pages.breadcrumn title="Staff Details"
         :breadcrumbs="[
         ['label' => 'Home', 'url' => route('dashboard')], 
         ['label' => 'Staff List', 'url' => route('hr.stafflist')],
-        ['label' => 'Add New Staff']  
+        ['label' =>  $modalMode === 'edit' ? 'Update   info' : 'Add New Staff']  
         ]">
         <a href="{{ route('hr.stafflist') }}" class="btn btn-sm btn-primary">Back to List</a>
     </x-pages.breadcrumn>
