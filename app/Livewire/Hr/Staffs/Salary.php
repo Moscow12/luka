@@ -5,10 +5,10 @@ namespace App\Livewire\Hr\Staffs;
 use App\Models\Employee;
 use Livewire\Component;
 
-class Staffdetails extends Component
+class Salary extends Component
 {
     public $employee_id;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $kiunganishi ;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
     public function mount($id=null)
     {
         $staff = Employee::findOrFail($id);
@@ -22,11 +22,9 @@ class Staffdetails extends Component
         $this->gender = $staff->gender;
         $this->email = $staff->email;
         $this->editUrl = route('hr.editstaff', $id);
-        $this->kiunganishi = $id;
     }
     public function render()
     {
-        $employee = Employee::findOrFail($this->employee_id);
-        return view('livewire.hr.staffs.staffdetails', ['employee' => $employee]);
+        return view('livewire.hr.staffs.salary');
     }
 }

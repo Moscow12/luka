@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
 use App\Livewire\Setup\Location\Index;
 use Illuminate\Support\Facades\Route;
 
@@ -38,4 +39,15 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/addstaff', App\Livewire\Hr\Staffs\Addstaff::class)->name('hr.addstaff');
     Route::get('/staffs/addstaff/edit/{id}', App\Livewire\Hr\Staffs\Addstaff::class)->name('hr.editstaff');
     Route::get('/staffs/staffdetails/{id}', App\Livewire\Hr\Staffs\Staffdetails::class)->name('hr.staffdetails');
+    Route::get('/staffs/contracts/{id}', Contracts::class)->name('hr.contracts');
+    Route::get('/staffs/salary/{id}', Salary::class)->name('hr.salary');
+    Route::get('staffs/qualifications/{id}', Qualifications::class)->name('hr.qualifications');
+    // promotions
+    Route::get('/staffs/promotions/{id}', Promotions::class)->name('hr.promotions');
+    Route::get('/staffs/disciplinary/{id}', Disciplinary::class)->name('hr.disciplinary');
+    Route::get('/staffs/attendance/{id}', Attendance::class)->name('hr.attendance');
+    Route::get('/staffs/leave/{id}', Leave::class)->name('hr.leave');
+    Route::get('/staffs/dependants/{id}', Dependants::class)->name('hr.dependants');
+    Route::get('/staffs/otherdocuments/{id}', Otherdocuments::class)->name('hr.otherdocuments');
+    Route::get('/staffs/digitalsignature/{id}', Digitalsignature::class)->name('hr.digitalsignature');
 });
