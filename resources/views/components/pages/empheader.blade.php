@@ -36,18 +36,19 @@
         </div>
     </div>
 </div>
+@props(['employee_id'])
 @php
 $menuItems = [
-['name' => 'Contract', 'icon' => 'ti ti-briefcase', 'route' => route('hr.contracts', request()->id)],
-['name' => 'Salary', 'icon' => 'fa-solid fa-sack-dollar', 'route' => route('hr.salary', request()->id)],
-['name' => 'Qualifications', 'icon' => 'ti ti-certificate', 'route' => route('hr.qualifications', request()->id)],
-['name' => 'Promotions', 'icon' => 'fa-solid fa-trophy', 'route' => route('hr.promotions', request()->id)],
-['name' => 'Disciplinary', 'icon' => 'fa-solid fa-scale-balanced', 'route' => route('hr.disciplinary', request()->id)],
-['name' => 'Attendance', 'icon' => 'fa-regular fa-calendar-check', 'route' => route('hr.attendance', request()->id)],
-['name' => 'Leave Management', 'icon' => 'ti ti-briefcase', 'route' => route('hr.leave', request()->id)],
-['name' => 'Dependants', 'icon' => 'fa-solid fa-users', 'route' => route('hr.dependants', request()->id)],
-['name' => 'Other Documents', 'icon' => 'ti ti-file', 'route' => route('hr.otherdocuments', request()->id)],
-['name' => 'Digital Signature', 'icon' => 'ti ti-pencil', 'route' => route('hr.digitalsignature', request()->id)],
+['name' => 'Contract', 'icon' => 'ti ti-briefcase', 'route' => route('hr.contracts', $employee_id)],
+['name' => 'Salary', 'icon' => 'fa-solid fa-sack-dollar', 'route' => route('hr.salary', $employee_id)],
+['name' => 'Qualifications', 'icon' => 'ti ti-certificate', 'route' => route('hr.qualifications', $employee_id)],
+['name' => 'Promotions', 'icon' => 'fa-solid fa-trophy', 'route' => route('hr.promotions', $employee_id)],
+['name' => 'Disciplinary', 'icon' => 'fa-solid fa-scale-balanced', 'route' => route('hr.disciplinary', $employee_id)],
+['name' => 'Attendance', 'icon' => 'fa-regular fa-calendar-check', 'route' => route('hr.attendance', $employee_id)],
+['name' => 'Leave Management', 'icon' => 'ti ti-briefcase', 'route' => route('hr.leave', $employee_id)],
+['name' => 'Dependants', 'icon' => 'fa-solid fa-users', 'route' => route('hr.dependants', $employee_id)],
+['name' => 'Other Documents', 'icon' => 'ti ti-file', 'route' => route('hr.otherdocuments', $employee_id)],
+['name' => 'Digital Signature', 'icon' => 'ti ti-pencil', 'route' => route('hr.digitalsignature', $employee_id)],
 ];
 @endphp
 

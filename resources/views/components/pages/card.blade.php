@@ -1,11 +1,7 @@
  <!-- card -->
- <div class="card card-lg mb-6">
-    <div class="card-header border-bottom-0">
-        <h5 class="mb-0">{{ $title }}</h5>
-    </div>
-     <!-- card body -->
-     <div class="card-body">
-         <div class="mb-6 d-flex justify-content-between align-items-center">
+ <div class="card card-lg mb-1">
+    <div class="card-header border-bottom-1">
+        <div class="mb-1 d-flex justify-content-between align-items-center">
              <!-- hneading -->
              <div>
                  <h5 class="mb-1">{{ $title }}</h5>
@@ -31,11 +27,27 @@
                  </div>
              </div>
          </div>
-         <div data-simplebar style="height: 300px;">
+    </div>
+     <!-- card body -->
+     <div class="card-body" data-simplebar style="height: 500px;">         
+         <div >
             {{ $slot }}
          </div>
-
      </div>
-
+     <!-- card footer -->
+     <div class="card-footer border-top border-dashed px-6 py-5">
+        <span class="me-3">
+            <span>
+                <i class="ti ti-list"></i>
+            </span>
+            <span class="ms-1">10 Task</span>
+        </span>
+        <span>
+            <span>
+                <i class="ti ti-user"></i>
+            </span>
+            <span class="ms-1">2k Comments</span>
+        </span>
+    </div>
  </div>
  <!-- card -->
