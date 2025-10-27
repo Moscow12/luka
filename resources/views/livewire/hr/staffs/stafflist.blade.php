@@ -54,11 +54,9 @@
                              <thead class="sticky-top">
                                  <tr>
                                      <th class="pe-0">
-                                         <div class="form-check">
-                                             <input class="form-check-input" type="checkbox" value="" id="checkAll" data-check-all />
-                                             <label class="form-check-label" for="checkAll"></label>
-                                         </div>
+                                         #
                                      </th>
+                                     <th>Photo</th>
                                      <th class="listjs-sorter ps-0" data-sort="product_name">Name</th>
                                      <th class="listjs-sorter" data-sort="product_category">Registration No</th>
                                      <th class="listjs-sorter" data-sort="product_category">Gender</th>
@@ -70,20 +68,21 @@
                                  </tr>
                              </thead>
                              <tbody class="list">
+                                @php
+                                    $num=1;
+                                @endphp
                                  @foreach ($employees as $employee)
                                  <tr>
-
+                                    <td class="pe-0">
+                                        {{ $num++ }}
+                                    </td>
                                      <td class="product_name ps-0">
                                          <div class="d-flex align-items-center">
-                                             <!-- photo -->
-                                             <img src="{{ asset('storage/'.$employee->photo) }}" alt="" class="rounded-3"
-                                                 width="56" />
-
+                                             <img src="{{ asset('storage/'.$employee->photo) }}" alt="" class="rounded-3" width="56" />
                                          </div>
-
                                      </td>
                                      <td class="pe-0">
-                                         <div class="form-check">{{ $employee->first_name }} {{ $employee->middle_name }} {{ $employee->last_name }}</div>
+                                         {{ $employee->first_name }} {{ $employee->middle_name }} {{ $employee->last_name }}
                                      </td>
                                      <td class="product_price"> {{ $employee->employee_no }}</td>
                                      <td class="product_category">{{ $employee->gender }}</td>

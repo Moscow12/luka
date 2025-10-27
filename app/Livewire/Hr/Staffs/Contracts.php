@@ -5,7 +5,7 @@ namespace App\Livewire\Hr\Staffs;
 use App\Models\{workstations, departments, Employee, Employeecontracts, Jobtitle};
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Livewire\Features\SupportFileUploads\WithFileUploads;
+use Livewire\WithFileUploads;
 
 class Contracts extends Component
 {
@@ -44,12 +44,12 @@ class Contracts extends Component
             'expire_date' => 'required',
             'expirenotification' => 'required',
             'description' => 'required',
-            'attachment' => 'nullable|file|max:2048', // max 2MB
+            'attachment' =>'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048', // max 2MB
         ]);
         // store attachment in storage
-        $path = null;
+        $paths = null;
         if ($this->attachment) {
-            $path = $this->attachment->store('contracts', 'public');
+            $paths = $this->attachment->store('contracts', 'public');
         }
 
         // save contract / edit contract if editmode is on / create new contract if editmode is off
@@ -64,7 +64,7 @@ class Contracts extends Component
                 'expire_date' => $this->expire_date,
                 'expirenotification' => $this->expirenotification,
                 'description' => $this->description,
-                'attachment' => $path ?? $contract->attachment,
+                'attachment' => $paths ?? $contract->attachment,
             ]);
             session()->flash('success', 'Contract updated successfully!');
         } else {
@@ -79,7 +79,7 @@ class Contracts extends Component
                 'expire_date' => $this->expire_date,
                 'expirenotification' => $this->expirenotification,
                 'description' => $this->description,
-                'attachment' => $path,
+                'attachment' => $paths,
                 'added_by' => Auth::user()->id
             ]);
             session()->flash('success', 'Contract added successfully!');

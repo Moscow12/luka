@@ -123,4 +123,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'temporary_file_upload' => [
+        'rules' => 'file|mimes:jpg,jpeg,png,gif,pdf|max:12288',
+
+        'preview_mimes' => [
+            'png', 'gif', 'bmp', 'svg', 'wav', 'mp4', 'mov', 'avi', 'wmv',
+            'mp3', 'm4a', 'jpg', 'jpeg', 'mpga', 'webp', 'wma', 'pdf' // ✅ added pdf
+        ],
+    ],
+
+
 ];
