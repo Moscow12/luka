@@ -94,6 +94,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form wire:submit.prevent="save">
+                    @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">
                             {{ $modalMode === 'edit' ? 'Edit allowance' : 'Add allowance' }}

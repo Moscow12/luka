@@ -7,6 +7,10 @@ use Livewire\Component;
 
 class Qualifications extends Component
 {
+    public $search = '';
+    public $modalMode = 'create';
+    public $showModal = false;
+    
     public $employee_id;
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
     public function mount($id=null)
@@ -23,6 +27,7 @@ class Qualifications extends Component
         $this->email = $staff->email;
         $this->editUrl = route('hr.editstaff', $id);
     }
+
     public function render()
     {
         return view('livewire.hr.staffs.qualifications');

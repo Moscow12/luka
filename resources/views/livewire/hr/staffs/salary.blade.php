@@ -33,12 +33,12 @@
             </x-pages.card>
         </div>
         <div class="col-xl-4 col-lg-5 d-flex flex-column gap-6">
-            <x-pages.card title="Salary Information">
+            <x-pages.card title="Deductions">
                 
             </x-pages.card>
         </div>
         <div class="col-xl-4 col-lg-5 d-flex flex-column gap-6">
-            <x-pages.card title="Payroll Information">
+            <x-pages.card title="Allowances">
                 
             </x-pages.card>
         </div>

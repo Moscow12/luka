@@ -15,8 +15,9 @@ class Deductions extends Model
         'name',
         'modepercentage',
         'Deduction_Type',
+        'Mode',
         'Amount',
-        'Descriptions',
+        'Description',
         'added_by',
     ];
 

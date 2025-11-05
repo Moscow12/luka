@@ -47,13 +47,6 @@
                         Wards
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link py-2" id="streets-tab" data-bs-toggle="pill" href="#streets" role="tab" aria-controls="streets" aria-selected="true">
-                        <i class="fa-solid fa-clock"></i>
-                        Streets
-                    </a>
-                </li>
-               
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -62,16 +55,13 @@
                 </div>
 
                 <div class="tab-pane" id="deductions" role="tabpanel" aria-labelledby="deductions-tab">
-                    <livewire:setup.location.region />
+                    <livewire:setup.finance.deductions />
                 </div>
                 <div class="tab-pane" id="districts" role="tabpanel" aria-labelledby="districts-tab">
                     <livewire:setup.location.district />
                 </div>
                 <div class="tab-pane fade show" id="wards" role="tabpanel" aria-labelledby="wards-tab">
                    <livewire:setup.location.ward />
-                </div>
-                <div class="tab-pane fade show" id="streets" role="tabpanel" aria-labelledby="streets-tab">
-                    
                 </div>
                 
             </div>
