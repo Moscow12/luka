@@ -64,7 +64,7 @@ $wireModel = collect($attributes->getAttributes())
             @if($disabled) disabled @endif>
             <option value="">Select {{ strtolower($label ?? ucfirst($name)) }}</option>
             @foreach($options as $key => $option)
-            <option value="{{ $key }}">{{ $option }}</option>
+            <option value="{{ $option }}">{{ $option }}</option>
             @endforeach
         </select>
 
