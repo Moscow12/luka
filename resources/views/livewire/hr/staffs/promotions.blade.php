@@ -18,13 +18,7 @@
                         <form>
                             <input class="form-control" type="search" value="" placeholder="Search" />
                         </form>
-                        <!-- success message if session has flash message -->
-                        @if(session()->has('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
+                        
                          
                     </div>
                     <a href="#!" class="text-inherit">
@@ -32,6 +26,13 @@
                         <span>Filter</span>
                     </a>
                 </div>
+                <!-- success message if session has flash message -->
+                @if(session()->has('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 <div>
                     <x-forms.button-model name="ADD PROMOTION"/>
                 </div>
