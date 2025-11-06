@@ -2,11 +2,42 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Employeeleaves extends Model
 {
     /** @use HasFactory<\Database\Factories\EmployeeleavesFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
+
+    // leave_id, employee_id, start_date, end_date, days, travel_to, othercontact, comments, added_by
+    protected $table = 'employeeleaves';
+    protected $fillable = [
+        'leave_id',
+        'employee_id',
+        'start_date',
+        'end_date',
+        'days',
+        'travel_to',
+        'othercontact',
+        'comments',
+        'status',
+        'added_by',
+    ];
+
+    public function added_by()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function leave()
+    {
+        return $this->belongsTo(Leaves::class, 'leave_id');
+    }
 }

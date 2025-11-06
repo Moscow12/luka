@@ -24,4 +24,8 @@ class Leaves extends Model
     {
         return $this->belongsTo(User::class, 'added_by');
     }
+    public function employee()
+    {
+        return $this->hasMany(Employeeleaves::class, 'leave_id');
+    }
 }

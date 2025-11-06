@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('travel_to');
             $table->string('othercontact');
             $table->text('comments');
+            $table->string('status')->default('Awaiting');
             $table->softDeletes();
             $table->timestamps();
         });
