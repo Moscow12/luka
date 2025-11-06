@@ -78,6 +78,13 @@ class Promotions extends Component
 
         ]);
 
+        //upload attachment
+        if ($this->attachment) {
+            // Store file in "attachments" folder inside /storage/app/public/
+            $path = $this->attachment->store('attachments', 'public');
+            $this->attachment = $path;
+        }
+        
         if ($this->modalMode === 'edit' && $this->promotion_id) {
             // Update promotion data if needed
             $promotion = Employeepromotions::findOrFail($this->promotion_id);

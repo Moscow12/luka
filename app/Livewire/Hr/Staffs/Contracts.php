@@ -11,9 +11,12 @@ class Contracts extends Component
 {
     use WithFileUploads;
 
+    public $search = '';
+    public $modalMode = 'create';
+    public $showModal = false;
     public $employee_id, $workstation_id, $department_id, $position_id, $workstations, $departments, $positions, $editmode = false;
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
-    public $contract_type, $start_date, $expire_date, $expirenotification, $description, $attachment, $contract_id;
+    public $contract_type, $start_date, $expire_date, $expirenotification, $description, $attachment, $contract_id, $contracts=[];
     public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
@@ -27,12 +30,13 @@ class Contracts extends Component
         $this->gender = $staff->gender;
         $this->email = $staff->email;
         $this->editUrl = route('hr.editstaff', $id);
-        $this->workstations = workstations::pluck('workstation_name as name', 'id');
-        $this->departments = departments::pluck('name', 'id');
+        $this->workstations = workstations::all();
+        $this->departments = departments::all();
         $this->positions = Jobtitle::all();
+        $this->listdata();
     }
 
-    public function storecontacts()
+    public function save()
     {
 
         $this->validate([
@@ -51,7 +55,6 @@ class Contracts extends Component
         if ($this->attachment) {
             $paths = $this->attachment->store('contracts', 'public');
         }
-
         // save contract / edit contract if editmode is on / create new contract if editmode is off
         if ($this->editmode) {
             $contract = Employeecontracts::findOrFail($this->contract_id);
@@ -86,6 +89,40 @@ class Contracts extends Component
         }
 
         $this->editmode = false;
+    }
+    public function listdata()
+    {
+        $this->contracts = Employeecontracts::where('employee_id', $this->employee_id)->get();
+    }
+
+    public function delete($uuid)
+    {
+        $contract = Employeecontracts::findOrFail($uuid);
+        $contract->delete();
+        $this->listdata();
+        session()->flash('success', 'Contract deleted successfully!');
+    }
+    public function openModal($mode = 'create', $id = null)
+    {
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->modalMode = $mode;
+        $this->showModal = true;
+        if ($mode === 'edit' && $id) {
+            $contract = Employeecontracts::findOrFail($id);
+            $this->contract_id = $id;
+            $this->workstation_id = $contract->workstation_id;
+            $this->department_id = $contract->department_id;
+            $this->position_id = $contract->position_id;
+            $this->contract_type = $contract->contract_type;
+            $this->start_date = $contract->start_date;
+            $this->expire_date = $contract->expire_date;
+            $this->expirenotification = $contract->expirenotification;
+            $this->description = $contract->description;
+            $this->attachment = $contract->attachment;
+        } else {
+            $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment']);
+        }
     }
     public function render()
     {

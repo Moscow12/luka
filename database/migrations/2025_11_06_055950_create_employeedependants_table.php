@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('employeedependants', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('employee_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('employee_id')->constrained('employees')->onDelete('cascade');
             $table->string('name');
             $table->string('relationship'); // e.g., Spouse, Child, Parent, etc.
             $table->date('date_of_birth')->nullable();

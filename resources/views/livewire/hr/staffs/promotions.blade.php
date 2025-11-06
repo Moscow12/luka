@@ -46,6 +46,7 @@
                             <th>Promotion Title</th>
                             <th>Promotion Date</th>
                             <th>Comments</th>
+                            <th>Preview Attachment</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -55,6 +56,11 @@
                             <td>{{ $promotion->title->name }}</td>
                             <td>{{ $promotion->start_date }}</td>
                             <td>{{ $promotion->comments }}</td>
+                            <td>
+                                <a href="{{ asset('storage/' . $promotion->attachment) }}" target="_blank">
+                                        Preview
+                                    </a>
+                            </td>
                             <td>
                                 <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $promotion->id }})" />
                                 <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $promotion->id }}')">Delete</a>

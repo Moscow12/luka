@@ -74,7 +74,7 @@ class Dependants extends Component
             'address' => 'nullable|string',
             'is_next_of_kin' => 'nullable|boolean',
         ]);
-
+        dd($this->is_next_of_kin);
         if ($this->modalMode === 'edit' && $this->dependant_id) {
             $dependant = Employeedependants::findOrFail($this->dependant_id);
             $dependant->update(['name' => $this->name, 'relationship' => $this->relationship, 'dob' => $this->dob, 'gender' => $this->gender, 'phone' => $this->phone, 'email' => $this->dependantsemail, 'occupation' => $this->occupation, 'address' => $this->address, 'is_next_of_kin' => $this->is_next_of_kin]);

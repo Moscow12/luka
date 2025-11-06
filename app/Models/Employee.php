@@ -42,6 +42,7 @@ class Employee extends Model
         'designation_id',
         'workstation_id',
         'denomination_id',
+        'signature',
         'added_by',
     ];
 

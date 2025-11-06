@@ -70,7 +70,12 @@ class Qualifications extends Component
             'comments' => ['nullable', 'string'],
 
         ]);
-
+        //upload attachment
+        if ($this->attachment) {
+            // Store file in "attachments" folder inside /storage/app/public/
+            $path = $this->attachment->store('attachments', 'public');
+            $this->attachment = $path;
+        }
         if ($this->modalMode === 'edit' && $this->qualification_id) {
             // Update qualification data if needed
             $qualification = Employeequalifications::findOrFail($this->qualification_id);

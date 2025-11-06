@@ -49,6 +49,7 @@
                                 <th>Email</th>
                                 <th>Occupation</th>
                                 <th>Address</th>
+                                <th>Is Next of Kin</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -63,6 +64,7 @@
                                 <td>{{ $dependant->email }}</td>
                                 <td>{{ $dependant->occupation }}</td>
                                 <td>{{ $dependant->address }}</td>
+                                <td>{{ $dependant->is_next_of_kin }}</td>
                                 <td>
                                     <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $dependant->id }})" />
                                     <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $dependant->id }}')">Delete</a>
@@ -83,7 +85,7 @@
             <x-forms.input type="text" name="occupation" label="Occupation" required />
             <x-forms.input type="text" name="address" label="Address" required />            
             <x-forms.input type="select" name="gender" label="Gender" :options="['Male', 'Female', 'Other']" :value="['Male', 'Female', 'Other']" required />
-            <x-forms.checkbox type="checkbox" name="is_next_of_kin" label="Is Next of Kin" required />
+            <x-forms.checkbox type="checkbox" name="is_next_of_kin" label="Is Next of Kin"   />
         </x-pages.model>
     </div>
 </div>

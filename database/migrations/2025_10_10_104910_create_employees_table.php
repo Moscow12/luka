@@ -50,6 +50,7 @@ return new class extends Migration
             $table->string('photo')->nullable(); // Path to photo in storage
             $table->string('marital_status', ['Single', 'Married', 'Divorced', 'Widowed', 'Separated', 'Never married', 'Not applicable'])->nullable();
             $table->string('tin_number', 50)->nullable();
+            $table->string('signature')->nullable(); // Path to digital signature in storage
             $table->timestamps();
         });
     }

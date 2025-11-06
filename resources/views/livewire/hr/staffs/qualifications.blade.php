@@ -26,7 +26,7 @@
                 </a>
             </div>
             <div>
-                <x-forms.button-model name="ADD QUALIFICATION"/>
+                <x-forms.button-model :classbtn="'fa-solid fa-plus'" name="ADD QUALIFICATION"/>
             </div>
         </div>
     </div>
@@ -53,10 +53,14 @@
                                 <td>{{ $qualification->institution }}</td>
                                 <td>{{ $qualification->start_date }}</td>
                                 <td>{{ $qualification->end_date }}</td>
-                                <td>{{ $qualification->attachment }}</td>
+                                <td>
+                                    <a href="{{ asset('storage/' . $qualification->attachment) }}" target="_blank">
+                                        Preview
+                                    </a>
+                                </td>
                                 <td>{{ $qualification->comments }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $qualification->id }})" />
+                                    <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ $qualification->id }})" />
                                     <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ $qualification->id }})">Delete</a>
                                 </td>
                             </tr>

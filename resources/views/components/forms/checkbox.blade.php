@@ -17,8 +17,7 @@
         name="{{ $name }}"
         id="{{ $name }}"
         value="{{ $value }}"
-        class="form-check-input @error($name) is-invalid @enderror" {{ $checked ? "checked" : "" }}
-        @if($checked) checked @endif
+        class="form-check-input @error($name) is-invalid @enderror" {{ old($name, $checked) ? 'checked' : '' }}
         @if($disabled) disabled @endif
         @if($required) required @endif
         {{ $attributes }}
