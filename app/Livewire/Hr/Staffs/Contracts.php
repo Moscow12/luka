@@ -17,6 +17,8 @@ class Contracts extends Component
     public $employee_id, $workstation_id, $department_id, $position_id, $workstations, $departments, $positions, $editmode = false;
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
     public $contract_type, $start_date, $expire_date, $expirenotification, $description, $attachment, $contract_id, $contracts=[];
+    public $canAddNewContract = true;
+    public $activeContractMessage = '';
     public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
@@ -92,7 +94,42 @@ class Contracts extends Component
     }
     public function listdata()
     {
-        $this->contracts = Employeecontracts::where('employee_id', $this->employee_id)->get();
+        $this->contracts = Employeecontracts::where('employee_id', $this->employee_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $this->checkCanAddNewContract();
+    }
+
+    /**
+     * Check if user can add a new contract
+     */
+    public function checkCanAddNewContract()
+    {
+        $activeContract = Employeecontracts::where('employee_id', $this->employee_id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$activeContract) {
+            $this->canAddNewContract = true;
+            $this->activeContractMessage = '';
+            return;
+        }
+
+        // Allow new contract if current is expired, suspended, or about to expire
+        if ($activeContract->isExpired()) {
+            $this->canAddNewContract = true;
+            $this->activeContractMessage = 'Previous contract has expired. You can add a new contract.';
+        } elseif ($activeContract->isSuspended()) {
+            $this->canAddNewContract = true;
+            $this->activeContractMessage = 'Current contract is suspended. You can add a new contract.';
+        } elseif ($activeContract->isAboutToExpire()) {
+            $this->canAddNewContract = true;
+            $this->activeContractMessage = 'Current contract is expiring soon. You can add a new contract.';
+        } else {
+            $this->canAddNewContract = false;
+            $this->activeContractMessage = 'Employee has an active contract. New contracts can only be added when the current contract is expired, suspended, or about to expire.';
+        }
     }
 
     public function delete($uuid)
@@ -104,6 +141,12 @@ class Contracts extends Component
     }
     public function openModal($mode = 'create', $id = null)
     {
+        // Check if user can add new contract
+        if ($mode === 'create' && !$this->canAddNewContract) {
+            session()->flash('error', $this->activeContractMessage);
+            return;
+        }
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = $mode;
@@ -123,6 +166,33 @@ class Contracts extends Component
         } else {
             $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment']);
         }
+    }
+
+    /**
+     * Suspend a contract
+     */
+    public function suspendContract($id)
+    {
+        $contract = Employeecontracts::findOrFail($id);
+        $contract->update(['status' => 'suspended']);
+        $this->listdata();
+        session()->flash('success', 'Contract suspended successfully!');
+    }
+
+    /**
+     * Activate a contract
+     */
+    public function activateContract($id)
+    {
+        // First, set all other active contracts to suspended
+        Employeecontracts::where('employee_id', $this->employee_id)
+            ->where('status', 'active')
+            ->update(['status' => 'suspended']);
+
+        $contract = Employeecontracts::findOrFail($id);
+        $contract->update(['status' => 'active']);
+        $this->listdata();
+        session()->flash('success', 'Contract activated successfully!');
     }
     public function render()
     {

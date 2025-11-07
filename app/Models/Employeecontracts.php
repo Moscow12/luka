@@ -15,6 +15,7 @@ class Employeecontracts extends Model
         'workstation_id',
         'position_id',
         'contract_type',
+        'status',
         'start_date',
         'expire_date',
         'expirenotification',
@@ -22,6 +23,11 @@ class Employeecontracts extends Model
         'attachment',
         'description',
         'added_by',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'expire_date' => 'date',
     ];
 
     public function added_by()
@@ -42,5 +48,73 @@ class Employeecontracts extends Model
     public function position()
     {
         return $this->belongsTo(Jobtitle::class, 'position_id');
+    }
+
+    /**
+     * Check if contract is expired
+     */
+    public function isExpired(): bool
+    {
+        return $this->status === 'expired' || now()->greaterThan($this->expire_date);
+    }
+
+    /**
+     * Check if contract is suspended
+     */
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
+    /**
+     * Check if contract is active
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active' && !$this->isExpired();
+    }
+
+    /**
+     * Check if contract is about to expire (based on expirenotification days)
+     */
+    public function isAboutToExpire(): bool
+    {
+        if ($this->isExpired() || $this->isSuspended()) {
+            return false;
+        }
+
+        $notificationDays = (int) $this->expirenotification;
+        $notificationDate = now()->addDays($notificationDays);
+
+        return $notificationDate->greaterThanOrEqualTo($this->expire_date);
+    }
+
+    /**
+     * Get contract status badge class
+     */
+    public function getStatusBadgeClass(): string
+    {
+        return match($this->status) {
+            'active' => $this->isAboutToExpire() ? 'bg-warning' : 'bg-success',
+            'expired' => 'bg-danger',
+            'suspended' => 'bg-secondary',
+            default => 'bg-primary'
+        };
+    }
+
+    /**
+     * Get human-readable status
+     */
+    public function getStatusLabel(): string
+    {
+        if ($this->isExpired() && $this->status !== 'expired') {
+            return 'Expired';
+        }
+
+        if ($this->isActive() && $this->isAboutToExpire()) {
+            return 'Expiring Soon';
+        }
+
+        return ucfirst($this->status);
     }
 }

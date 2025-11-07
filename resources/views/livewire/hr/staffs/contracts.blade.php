@@ -26,9 +26,26 @@
                 </a>
             </div>
             <div>
-                <x-forms.button-model name="ADD CONTRACT"/>
+                @if($canAddNewContract)
+                    <x-forms.button-model name="ADD CONTRACT"/>
+                @else
+                    <button type="button" class="btn btn-secondary btn-sm" disabled title="{{ $activeContractMessage }}">
+                        ADD CONTRACT (Disabled)
+                    </button>
+                @endif
             </div>
         </div>
+        @if(!$canAddNewContract)
+            <div class="alert alert-warning" role="alert">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                {{ $activeContractMessage }}
+            </div>
+        @elseif($activeContractMessage)
+            <div class="alert alert-info" role="alert">
+                <i class="fa-solid fa-info-circle"></i>
+                {{ $activeContractMessage }}
+            </div>
+        @endif
         <div>
             <x-pages.card title="Contract List">
                 <div class="table-responsive">
@@ -36,10 +53,11 @@
                         <thead>
                             <tr>
                                 <th>Contract Type</th>
+                                <th>Status</th>
                                 <th>Start Date</th>
                                 <th>Expire Date</th>
                                 <th>Expire Notification</th>
-                                <th>Description</th>
+                                <th>Attachment</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -47,19 +65,48 @@
                             @foreach($contracts as $contract)
                             <tr>
                                 <td>{{ $contract->contract_type }}</td>
-                                <td>{{ $contract->start_date }}</td>
-                                <td>{{ $contract->expire_date }}</td>
-                                <td>{{ $contract->expirenotification }}</td>
                                 <td>
-                                    <a href="{{ asset('storage/' . $contract->attachment) }}" target="_blank">
-                                        Preview
-                                    </a>
+                                    <span class="badge {{ $contract->getStatusBadgeClass() }}">
+                                        {{ $contract->getStatusLabel() }}
+                                    </span>
                                 </td>
-                                <td class="d-flex flex-row gap-2 justify-content-center">
-                                    <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ $contract->id }})" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ $contract->id }})"> <i class="fa-solid fa-trash"></i></a>
+                                <td>{{ $contract->start_date->format('d M Y') }}</td>
+                                <td>{{ $contract->expire_date->format('d M Y') }}</td>
+                                <td>{{ $contract->expirenotification }} days</td>
+                                <td>
+                                    @if($contract->attachment)
+                                        <a href="{{ asset('storage/' . $contract->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa-solid fa-paperclip"></i> View
+                                        </a>
+                                    @else
+                                        <span class="text-muted">No attachment</span>
+                                    @endif
                                 </td>
-                                
+                                <td>
+                                    <div class="d-flex flex-row gap-2 justify-content-start">
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $contract->id }}')" />
+
+                                        @if($contract->status === 'active' && !$contract->isExpired())
+                                            <button wire:click="suspendContract('{{ $contract->id }}')"
+                                                    class="btn btn-sm btn-warning"
+                                                    title="Suspend Contract">
+                                                <i class="fa-solid fa-pause"></i>
+                                            </button>
+                                        @elseif($contract->status === 'suspended')
+                                            <button wire:click="activateContract('{{ $contract->id }}')"
+                                                    class="btn btn-sm btn-success"
+                                                    title="Activate Contract">
+                                                <i class="fa-solid fa-play"></i>
+                                            </button>
+                                        @endif
+
+                                        <button wire:click="delete('{{ $contract->id }}')"
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Are you sure you want to delete this contract?')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>                        
