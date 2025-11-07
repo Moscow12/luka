@@ -91,6 +91,9 @@ class Contracts extends Component
         }
 
         $this->editmode = false;
+        $this->showModal = false;
+        $this->listdata();
+        $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment', 'contract_id']);
     }
     public function listdata()
     {
@@ -146,25 +149,30 @@ class Contracts extends Component
             session()->flash('error', $this->activeContractMessage);
             return;
         }
-
+        dd($mode);
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = $mode;
         $this->showModal = true;
+
         if ($mode === 'edit' && $id) {
+            $this->editmode = true;
             $contract = Employeecontracts::findOrFail($id);
             $this->contract_id = $id;
-            $this->workstation_id = $contract->workstation_id;
+            $this->workstation_id = $contract->workstation->workstation_name;
             $this->department_id = $contract->department_id;
             $this->position_id = $contract->position_id;
             $this->contract_type = $contract->contract_type;
-            $this->start_date = $contract->start_date;
-            $this->expire_date = $contract->expire_date;
+            // Format dates for input fields (dates are Carbon instances due to casting)
+            $this->start_date = $contract->start_date->format('Y-m-d');
+            $this->expire_date = $contract->expire_date->format('Y-m-d');
             $this->expirenotification = $contract->expirenotification;
             $this->description = $contract->description;
-            $this->attachment = $contract->attachment;
+            // Don't set attachment file object, keep the path for reference
+            $this->attachment = null;
         } else {
-            $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment']);
+            $this->editmode = false;
+            $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment', 'contract_id']);
         }
     }
 

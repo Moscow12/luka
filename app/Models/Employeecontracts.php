@@ -13,6 +13,7 @@ class Employeecontracts extends Model
     protected $fillable = [
         'employee_id',
         'workstation_id',
+        'department_id',
         'position_id',
         'contract_type',
         'status',
@@ -43,6 +44,11 @@ class Employeecontracts extends Model
     public function workstation()
     {
         return $this->belongsTo(Workstations::class, 'workstation_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Departments::class, 'department_id');
     }
 
     public function position()

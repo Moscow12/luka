@@ -36,13 +36,15 @@
             </div>
         </div>
         @if(!$canAddNewContract)
-            <div class="alert alert-warning" role="alert">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="fa-solid fa-exclamation-triangle"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 {{ $activeContractMessage }}
             </div>
         @elseif($activeContractMessage)
-            <div class="alert alert-info" role="alert">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
                 <i class="fa-solid fa-info-circle"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 {{ $activeContractMessage }}
             </div>
         @endif
