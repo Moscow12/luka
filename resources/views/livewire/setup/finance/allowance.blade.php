@@ -26,8 +26,11 @@
             <div class="card card-lg overflow-hidden" id="taskTable" data-list="name">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        @if (session()->has('success'))
-                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @if(session()->has('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                         @endif
 
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
@@ -53,11 +56,11 @@
                                     <td>
                                         {{ $number++ }}
                                     </td>
-                                    <td class="name">{{ $allowance->pay_grade }}</td>
-                                    <td class="task_type">{{ $allowance->job_title }}</td>
-                                    <td class="task_type">{{ $allowance->min_salary }}</td>
-                                    <td class="task_type">{{ $allowance->mid_point_salary }}</td>
-                                    <td class="task_type">{{ $allowance->max_salary }}</td>
+                                    <td class="name">{{ $allowance->Pay_Grade }}</td>
+                                    <td class="task_type">{{ $allowance->Job_Title }}</td>
+                                    <td class="task_type">{{ $allowance->Minimum_Salary }}</td>
+                                    <td class="task_type">{{ $allowance->Mid_Point_Salary }}</td>
+                                    <td class="task_type">{{ $allowance->Maximum_Salary }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $allowance->id }}')">Edit</button>
                                         <button class="btn btn-sm btn-danger" wire:click="delete('{{ $allowance->id }}')"

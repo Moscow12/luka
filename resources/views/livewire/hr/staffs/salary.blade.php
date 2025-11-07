@@ -18,7 +18,10 @@
                         <div class="col-sm-12">
                             <div class="form-floating mb-3">
                                <x-forms.input type="text" name="salary" label="Salary" placeholder="Salary" required />
-                               <x-forms.checkbox name="is_hourly" label="Is Hourly?" value="1" />
+                               @foreach ($deductions as $deduction)
+                                   <x-forms.checkbox name="{{ $deduction->id }}" label="{{ $deduction->name }}" value="{{ $deduction->name }}" />
+                               @endforeach
+                               
                             </div>
                         </div>
                     </div>

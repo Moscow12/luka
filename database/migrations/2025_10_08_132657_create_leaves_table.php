@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->enum('gender', ['Male', 'Female', 'Both'])->default('Both');
             //status: active, inactive
-            $table->boolean('status')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });

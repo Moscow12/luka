@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('Deduction_Type');
             $table->string('Amount');
             $table->string('Description');
+            
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });

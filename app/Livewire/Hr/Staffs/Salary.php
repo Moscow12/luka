@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Hr\Staffs;
 
+use App\Models\deductions;
 use App\Models\Employee;
+use App\Models\salary_scales;
 use Livewire\Component;
 
 class Salary extends Component
 {
+    public  $deductions, $is_hourly, $is_next_of_kin;
     public $employee_id;
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
     public function mount($id=null)
@@ -22,6 +25,9 @@ class Salary extends Component
         $this->gender = $staff->gender;
         $this->email = $staff->email;
         $this->editUrl = route('hr.editstaff', $id);
+
+        $this->deductions = deductions::all();
+
     }
     public function render()
     {

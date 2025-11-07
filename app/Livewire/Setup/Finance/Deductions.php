@@ -11,7 +11,7 @@ class Deductions extends Component
     public $search = '';
     public $modalMode = 'create';
     public $showModal = false;
-    public $deduction_id, $name, $modepercentage,$Mode='yes', $Deduction_Type, $Amount, $Description;
+    public $deduction_id, $name, $modepercentage="false",$Mode='yes', $Deduction_Type, $Amount, $Description, $is_next_of_kin;
 
     public function openModal($mode = 'create', $id = null)
     {
@@ -35,8 +35,7 @@ class Deductions extends Component
     public function save()
     {
         $this->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:deductions,name'],
-            'modepercentage' => 'boolean',
+            'name' => ['required', 'string', 'max:255'],
             'Deduction_Type' => ['required', 'string', 'max:255'],
             'Mode' => ['required', 'string', 'max:255'],
             'Amount' => ['required', 'string', 'max:255'],
@@ -50,9 +49,12 @@ class Deductions extends Component
             $this->listdata();
             session()->flash('success', 'Deduction updated successfully!');
         } else {
+             $this->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:deductions,name'],
+             ]);
             ModelsDeductions::create([
                 'name' => $this->name,
-                'modepercentage' => $this->modepercentage,
+                'modepercentage' => $this->modepercentage ? 'true' : 'false',
                 'Deduction_Type' => $this->Deduction_Type,
                 'Mode' => $this->Mode,
                 'Amount' => $this->Amount,

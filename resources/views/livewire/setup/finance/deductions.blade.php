@@ -26,10 +26,12 @@
             <div class="card card-lg overflow-hidden" id="taskTable" data-list="name">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        @if (session()->has('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
+                        @if(session()->has('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                         @endif
-
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
                                 <tr>
@@ -37,7 +39,7 @@
                                         #
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title">Name</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Mode Percentage</th>
+                                    <th class="listjs-sorter" data-sort="task_type">Mode Percentage %</th>
                                     <th class="listjs-sorter" data-sort="task_type">Deduction Type</th>
                                     <th class="listjs-sorter" data-sort="task_type">Amount</th>
                                     <th>Actions</th>
@@ -53,8 +55,17 @@
                                         {{ $number++ }}
                                     </td>
                                     <td class="name">{{ $deduction->name }}</td>
-                                    <td class="task_type">{{ $deduction->modepercentage }}</td>
-                                    <td class="task_type">{{ $deduction->Deduction_Type }}</td>
+                                    <td class="task_type">
+                                       @if ($deduction->modepercentage == 'true')
+                                            <span class="badge bg-success d-flex align-items-center gap-1">
+                                                <i class="fa-solid fa-check-circle"></i> Yes
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger d-flex align-items-center gap-1">
+                                                <i class="fa-solid fa-xmark-circle"></i> No
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td class="task_type">{{ $deduction->Deduction_Type }}</td>
                                     <td class="task_type">{{ $deduction->Amount }}</td>
                                     <td>
@@ -88,12 +99,15 @@
     <!-- modal -->
     <x-pages.model :showModal="$showModal" :formaction="$modalMode === 'edit' ? 'update' : 'save'" :modalMode="$modalMode" :title="$modalMode === 'edit' ? 'Edit Deduction' : 'Add Deduction'">
         @csrf
-       <x-forms.input type="text" label="Name" name="name" wireModel="name" placeholder="Enter Deduction Name" :error="$errors->first('name')" />
+       <x-forms.input type="text" label="Name" name="name" placeholder="Enter Deduction Name" :error="$errors->first('name')" />
        
-       <x-forms.input type="text" label="Mode" name="Mode" wireModel="Mode" placeholder="Enter Mode" :error="$errors->first('Mode')" required />
-       <x-forms.input type="text" label="Deduction Type" name="Deduction_Type" wireModel="Deduction_Type" placeholder="Enter Deduction Type" :error="$errors->first('Deduction_Type')" />
-       <x-forms.input type="text" label="Amount" name="Amount" wireModel="Amount" placeholder="Enter Amount" :error="$errors->first('Amount')" />
-       <x-forms.input type="text" label="Description" name="Description" wireModel="Description" placeholder="Enter Description" :error="$errors->first('Description')" />
-       <x-forms.checkbox name="modepercentage" label="Mode Percentage" value="true" wireModel="modepercentage" placeholder="Enter Mode Percentage" :error="$errors->first('modepercentage')" />
+       <x-forms.input type="text" label="Mode" name="Mode"  placeholder="Enter Mode" :error="$errors->first('Mode')" required />
+       <x-forms.input type="select" label="Deduction Type" name="Deduction_Type" :options="['Mafao', 'Non', 'others']"  placeholder="Enter Deduction Type" :error="$errors->first('Deduction_Type')" />
+       <x-forms.input type="text" label="Amount" name="Amount"  placeholder="Enter Amount" :error="$errors->first('Amount')" />
+       <x-forms.input type="text" label="Description" name="Description"  placeholder="Enter Description" :error="$errors->first('Description')" />
+       <label  class="form-check-label">
+            <input type="checkbox" class="form-check-input" wire:model.defer="modepercentage">
+            Mode Percentage
+        </label>
     </x-pages.model>
 </div>
