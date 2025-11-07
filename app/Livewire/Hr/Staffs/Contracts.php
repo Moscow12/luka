@@ -95,6 +95,11 @@ class Contracts extends Component
         $this->listdata();
         $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment', 'contract_id']);
     }
+
+    public function update()
+    {
+        $this->save();
+    }
     public function listdata()
     {
         $this->contracts = Employeecontracts::where('employee_id', $this->employee_id)
@@ -149,7 +154,7 @@ class Contracts extends Component
             session()->flash('error', $this->activeContractMessage);
             return;
         }
-        dd($mode);
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = $mode;
@@ -159,7 +164,7 @@ class Contracts extends Component
             $this->editmode = true;
             $contract = Employeecontracts::findOrFail($id);
             $this->contract_id = $id;
-            $this->workstation_id = $contract->workstation->workstation_name;
+            $this->workstation_id = $contract->workstation_id;
             $this->department_id = $contract->department_id;
             $this->position_id = $contract->position_id;
             $this->contract_type = $contract->contract_type;

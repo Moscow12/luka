@@ -27,7 +27,7 @@
             </div>
             <div>
                 @if($canAddNewContract)
-                    <x-forms.button-model name="ADD CONTRACT"/>
+                    <x-forms.button-model name="ADD CONTRACT" />
                 @else
                     <button type="button" class="btn btn-secondary btn-sm" disabled title="{{ $activeContractMessage }}">
                         ADD CONTRACT (Disabled)
