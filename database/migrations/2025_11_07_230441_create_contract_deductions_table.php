@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('allowances', function (Blueprint $table) {
+        Schema::create('contract_deductions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('Pay_Grade');
-            $table->string('Job_Title');
-            $table->decimal('Minimum_Salary', 12, 2);
-            $table->decimal('Mid_Point_Salary', 12, 2)->nullable();
-            $table->decimal('Maximum_Salary', 12, 2);
-            $table->text('Description')->nullable();
+            $table->foreignUuid('contract_id')->constrained('contracts')->onDelete('cascade');
+            $table->foreignUuid('deduction_id')->constrained('deductions')->onDelete('cascade');
+            $table->decimal('amount_override', 12, 2)->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->text('description')->nullable();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('allowances');
+        Schema::dropIfExists('contract_deductions');
     }
 };

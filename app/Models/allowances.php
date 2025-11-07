@@ -11,17 +11,13 @@ class allowances extends Model
     Use HasFactory, HasUuids;
     protected $table = 'allowances';
     protected $fillable = [
-        'Pay_Grade',
-        'Job_Title',
-        'Minimum_Salary',
-        'Mid_Point_Salary',
-        'Maximum_Salary',
-        'Description',
-        'added_by',
+        'name', 'type', 'allowance_value', 'taxable', 'is_active', 'description',  'added_by',
     ];
 
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
     }
+
+    
 }

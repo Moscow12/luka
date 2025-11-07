@@ -17,11 +17,15 @@ return new class extends Migration
             $table->foreignUuid('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->foreignUuid('workstation_id')->constrained('workstations')->cascadeOnDelete();
             $table->foreignUuid('position_id')->constrained('jobtitles')->cascadeOnDelete();
-            $table->string('contract_type');
+             $table->foreignUuid('department_id')->nullable()->after('workstation_id')->constrained('departments')->cascadeOnDelete();
+            $table->enum('status', ['active', 'expired', 'suspended', 'terminated'])->default('active')->after('contract_type');
+            $table->enum('contract_type', ['permanent', 'temporary', 'part_time'])->default('permanent');
             $table->date('start_date');
             $table->date('expire_date');
             $table->boolean('expirenotification')->default(false);
             $table->string('notify_time')->nullable();
+            $table->string('payment_frequency')->default('monthly'); //monthly, weekly, bi-weekly, daily, hourly
+            $table->decimal('base_salary', 12, 2)->default(0);
             $table->string('attachment');
             $table->text('description')->nullable();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();

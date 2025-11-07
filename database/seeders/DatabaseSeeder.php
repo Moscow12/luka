@@ -23,9 +23,13 @@ class DatabaseSeeder extends Seeder
             DesignationsSeeder::class,
             DepartmentsSeeder::class,
             LeavesSeeder::class,
-            AllowancesSeeder::class,
+            AllowanceSeeder::class,
             ShiftsSeeder::class,
             FinancialYearsSeeder::class,
+            DeductionSeeder::class,
+            JobtitleSeeder::class,
+            AllowanceSeeder::class,
+            
         ]);
     }
 }

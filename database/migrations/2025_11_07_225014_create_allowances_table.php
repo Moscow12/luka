@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('deductions', function (Blueprint $table) {
+        Schema::create('allowances', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->enum('modepercentage', ['true', 'false'])->default('false');// true or false
-            $table->string('Mode');
-            $table->string('Deduction_Type');
-            $table->string('Amount');
-            $table->string('Description');
-            
+            $table->enum('type', ['fixed', 'percentage'])->default('fixed');
+            $table->decimal('allowance_value', 12, 2);
+            $table->boolean('taxable')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->text('description')->nullable();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('deductions');
+        Schema::dropIfExists('allowances');
     }
 };

@@ -21,6 +21,8 @@ class Employeecontracts extends Model
         'expire_date',
         'expirenotification',
         'notify_time',
+        'payment_frequency',
+        'base_salary',
         'attachment',
         'description',
         'added_by',

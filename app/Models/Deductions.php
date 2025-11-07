@@ -8,17 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Deductions extends Model
 {
-    /** @use HasFactory<\Database\Factories\DeductionsFactory> */
     use HasFactory, HasUuids;
     protected $table = 'deductions';
-    protected $fillable = [
-        'name',
-        'modepercentage',
-        'Deduction_Type',
-        'Mode',
-        'Amount',
-        'Description',
-        'added_by',
+    protected $fillable = ['name', 'type', 'deduction_value', 'applies_to', 'is_active', 'description',  'added_by',
     ];
 
     public function added_by()
