@@ -13,7 +13,7 @@ class Dependants extends Component
     public $modalMode = 'create';
     public $showModal = false;
     public $dependant_id, $name, $relationship,$dob, $phone, $dependantsemail, $occupation, $address;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
     public $employee_id, $dependants=[];
     public bool $is_next_of_kin = false;
 
@@ -29,6 +29,7 @@ class Dependants extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->listdata();
     }

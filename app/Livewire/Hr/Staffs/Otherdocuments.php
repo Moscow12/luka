@@ -13,7 +13,7 @@ class Otherdocuments extends Component
     public $modalMode = 'create';
     public $showModal = false;
     public $otherdocument_id,  $type, $description, $attachment, $added_by;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
     public $employee_id, $otherdocuments=[];
 
     use WithFileUploads;
@@ -29,6 +29,7 @@ class Otherdocuments extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->listdata();
     }

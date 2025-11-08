@@ -17,7 +17,7 @@ class Qualifications extends Component
     public $qualification_id;
     
     public $employee_id, $qualifications;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
 
     use WithFileUploads;
     public function mount($id=null)
@@ -32,6 +32,7 @@ class Qualifications extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->listdata();
     }

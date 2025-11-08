@@ -9,7 +9,7 @@ class Digitalsignature extends Component
 {
     public $seach = '';
 
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
     public $employee_id;
     public function mount($id=null)
     {
@@ -23,6 +23,7 @@ class Digitalsignature extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
     }
     public function render()

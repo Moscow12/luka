@@ -18,7 +18,7 @@ class Promotions extends Component
     public $showModal = false;
     
     public $employee_id, $promotions=[], $workstations=[], $departments=[],$titles=[], $promotion_id, $title_id, $workstation_id, $start_date, $department_id, $attachment, $comments;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
 
     use WithFileUploads;
     public function mount($id=null)
@@ -33,6 +33,7 @@ class Promotions extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->workstations = workstations::all();
         $this->departments = departments::all();

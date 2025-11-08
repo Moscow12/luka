@@ -16,7 +16,7 @@ class Disciplinary extends Component
     public $showModal = false;
     
     public $employee_id, $displineissues=[], $violations=[],  $displine_id, $violation_id, $violation_date, $department_id, $attachment, $notes;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
 
     use WithFileUploads;
     public function mount($id=null)
@@ -31,6 +31,7 @@ class Disciplinary extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->violations = violations::all();
         $this->listdata();

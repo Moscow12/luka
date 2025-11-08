@@ -13,7 +13,7 @@ class Attendance extends Component
     public $modalMode = 'create';
     public $showModal = false;
     public $attendance_id, $date, $attendance, $employee_id, $attendances=[];
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
     public function mount($id=null)
     {
         $staff = Employee::findOrFail($id);
@@ -26,6 +26,7 @@ class Attendance extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->listdata();
     }

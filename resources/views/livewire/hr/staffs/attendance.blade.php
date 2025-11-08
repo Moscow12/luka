@@ -9,7 +9,7 @@
         <a href="{{ route('hr.stafflist') }}" class="btn btn-sm btn-primary">Back to List</a>
     </x-pages.breadcrumn>
     <!-- row -->
-    <x-pages.empheader :age="$age" :gender="$gender" :email="$email" :getFullName="$getfullname" :editUrl="$editUrl" :employee_id="$employee_id" />
+    <x-pages.empheader :age="$age" :gender="$gender" :email="$email" :getFullName="$getfullname" :editUrl="$editUrl" :employee_id="$employee_id" :photo="$photo" />
     <div>
         <h5 class="mb-5">Attendance</h5>
     </div>
