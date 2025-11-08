@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('contract_allowances', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('contract_id')->constrained('contracts')->onDelete('cascade');
+            $table->foreignUuid('contract_id')->constrained('employeecontracts')->onDelete('cascade');
             $table->foreignUuid('allowance_id')->constrained('allowances')->onDelete('cascade');
             $table->decimal('amount_override', 12, 2)->nullable();
             $table->boolean('is_active')->default(true);

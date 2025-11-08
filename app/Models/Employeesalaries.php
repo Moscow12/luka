@@ -33,4 +33,14 @@ class Employeesalaries extends Model
         return $this->belongsTo(Employeecontracts::class, 'contract_id');
     }
 
+    public function allowances()
+    {
+        return $this->hasMany(Employeeallowances::class, 'salary_id');
+    }
+
+    public function deductions()
+    {
+        return $this->hasMany(Employeedeductions::class, 'salary_id');
+    }
+
 }

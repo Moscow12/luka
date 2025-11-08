@@ -29,6 +29,6 @@ class ContractDeduction extends Model
 
     public function deduction()
     {
-        return $this->belongsTo(Deductions::class, 'deduction_id');
+        return $this->belongsTo(Deduction::class, 'deduction_id');
     }
 }

@@ -15,7 +15,7 @@ class Contracts extends Component
     public $modalMode = 'create';
     public $showModal = false;
     public $employee_id, $workstation_id, $department_id, $position_id, $workstations, $departments, $positions, $editmode = false;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
     public $contract_type = 'permanent', $start_date, $expire_date, $expirenotification = false, $notify_time, $payment_frequency = 'monthly', $base_salary = 0, $description, $attachment, $contract_id, $contracts=[];
     public $canAddNewContract = true;
     public $activeContractMessage = '';
@@ -31,6 +31,7 @@ class Contracts extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->workstations = workstations::all();
         $this->departments = departments::all();

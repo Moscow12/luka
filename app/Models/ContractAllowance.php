@@ -30,6 +30,6 @@ class ContractAllowance extends Model
 
     public function allowance()
     {
-        return $this->belongsTo(Allowances::class, 'allowance_id');
+        return $this->belongsTo(allowances::class, 'allowance_id');
     }
 }

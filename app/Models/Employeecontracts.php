@@ -58,6 +58,16 @@ class Employeecontracts extends Model
         return $this->belongsTo(Jobtitle::class, 'position_id');
     }
 
+    public function contractAllowances()
+    {
+        return $this->hasMany(ContractAllowance::class, 'contract_id');
+    }
+
+    public function contractDeductions()
+    {
+        return $this->hasMany(ContractDeduction::class, 'contract_id');
+    }
+
     /**
      * Check if contract is expired
      */

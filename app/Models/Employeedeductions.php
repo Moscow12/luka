@@ -24,9 +24,9 @@ class Employeedeductions extends Model
         return $this->belongsTo(Employee::class, 'employee_id');
     }
 
-    public function deductions()
+    public function deduction()
     {
-        return $this->belongsTo(Deductions::class, 'deductions_id');
+        return $this->belongsTo(Deduction::class, 'deductions_id');
     }
 
     public function salary()
