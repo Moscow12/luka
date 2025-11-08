@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Hr\Leave\Leavebalance;
+use App\Livewire\Hr\Leave\Requestleave;
 use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
 use App\Livewire\Setup\Location\Index;
 use Illuminate\Support\Facades\Route;
@@ -50,4 +52,8 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/dependants/{id}', Dependants::class)->name('hr.dependants');
     Route::get('/staffs/otherdocuments/{id}', Otherdocuments::class)->name('hr.otherdocuments');
     Route::get('/staffs/digitalsignature/{id}', Digitalsignature::class)->name('hr.digitalsignature');
+
+    //leave routes
+    Route::get('leave/leaverequest', Requestleave::class)->name('leave.leaverequest');
+    Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
 });
