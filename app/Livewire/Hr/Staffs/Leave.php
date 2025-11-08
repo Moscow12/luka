@@ -32,7 +32,18 @@ class Leave extends Component
         $this->email = $staff->email;
         $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
-        $this->leaveslist = Leaves::all();
+
+        // Get leaves filtered by gender and active status
+        $employeeGender = $staff->gender;
+        $this->leaveslist = Leaves::where('status', 'active')
+            ->where(function ($query) use ($employeeGender) {
+                $query->whereNull('gender')
+                    ->orWhere('gender', '')
+                    ->orWhere('gender', 'Both')
+                    ->orWhere('gender', $employeeGender);
+            })
+            ->get();
+
         $this->listdata();
     }
 
@@ -116,7 +127,6 @@ class Leave extends Component
     {
         if (!$this->leave_id) return;
 
-        $employeeId = Auth::id(); // or pass employee_id if admin applies for staff
         $leave = Leaves::find($this->leave_id);
 
         if (!$leave) {

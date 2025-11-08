@@ -31,8 +31,21 @@ class Leavebalance extends Component
     {
         if (!$this->hasEmployeeRecord) return;
 
-        // Get all active leaves
-        $activeLeaves = Leaves::where('status', 'active')->get();
+        $employeeGender = $this->employee->gender;
+
+        // Get active leaves filtered by gender
+        // Show leaves that are either:
+        // 1. Not gender-specific (gender is null or empty)
+        // 2. Gender is 'Both'
+        // 3. Match the employee's gender
+        $activeLeaves = Leaves::where('status', 'active')
+            ->where(function ($query) use ($employeeGender) {
+                $query->whereNull('gender')
+                    ->orWhere('gender', '')
+                    ->orWhere('gender', 'Both')
+                    ->orWhere('gender', $employeeGender);
+            })
+            ->get();
 
         $this->leaveBalances = $activeLeaves->map(function ($leave) {
             // Calculate days used for this leave type

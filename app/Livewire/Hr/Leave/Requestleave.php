@@ -27,7 +27,18 @@ class Requestleave extends Component
         if ($this->employee) {
             $this->hasEmployeeRecord = true;
             $this->employee_id = $this->employee->id;
-            $this->leaveslist = Leaves::all();
+
+            // Get leaves filtered by gender and active status
+            $employeeGender = $this->employee->gender;
+            $this->leaveslist = Leaves::where('status', 'active')
+                ->where(function ($query) use ($employeeGender) {
+                    $query->whereNull('gender')
+                        ->orWhere('gender', '')
+                        ->orWhere('gender', 'Both')
+                        ->orWhere('gender', $employeeGender);
+                })
+                ->get();
+
             $this->listdata();
         }
     }
