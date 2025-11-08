@@ -24,11 +24,19 @@ class Employeeleaves extends Model
         'comments',
         'status',
         'added_by',
+        'approved_by',
+        'approved_at',
+        'approval_note',
     ];
 
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function approved_by_user()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function employee()

@@ -25,6 +25,9 @@
       <li class="nav-item">
         <a class='nav-link' href="{{ route('leave.requestleave') }}"><i class="fa-solid fa-bed"></i> Request Leave</a>
       </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('leave.leaveapproval') }}"><i class="fa-solid fa-check-double"></i> Leave Approval </a>
+      </li>
     </ul>
   </li>
   <!-- Nav item -->
@@ -154,12 +157,15 @@
       <li class="nav-item">
         <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-money-bill"></i> Finance Setup</a>
       </li>
-
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('setup.approvalconfig') }}"><i class="fa-solid fa-clipboard-user"></i> Approval Configuration</a>
+      </li>
     </ul>
   </li>
   <!-- Nav item -->
   <li class="nav-item">
     <div class="nav-heading">Users & Permissions</div>
+
     <hr class="mx-5 nav-line mb-1" />
   </li>
 

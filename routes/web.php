@@ -1,8 +1,10 @@
 <?php
 
+use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Requestleave;
 use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
+use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +35,7 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/settings', App\Livewire\Setup\Settings::class)->name('setup.index');
     Route::get('/setup/finance', App\Livewire\Setup\Finances::class)->name('setup.finances');
     Route::get('/', Index::class)->name('setup.location');
+    Route::get('/setup/approvalconfigurations', Approvalconfigurations::class)->name('setup.approvalconfig');
 });
 
 Route::prefix('hr')->middleware('auth')->group(function () {
@@ -56,4 +59,5 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     //leave routes
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');
     Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
+    Route::get('leave/leaveapproval', Leaveapproval::class)->name('leave.leaveapproval');
 });
