@@ -7,7 +7,7 @@
             <div class="d-flex flex-row gap-3 align-items-center">
                 <div>
                     <form>
-                        <input class="form-control" type="search" value="" placeholder="Search" />
+                        <input class="form-control" type="search" wire:model.live="search" placeholder="Search" />
                     </form>
                 </div>
                 <a href="#!" class="text-inherit">
@@ -16,10 +16,7 @@
                 </a>
             </div>
             <div>
-                <button class="btn btn-primary d-flex flex-row gap-1 align-items-center" wire:click="$set('showModal', true)">
-                    <i class="fa-solid fa-plus"></i>
-                    ADD ALLOWANCE
-                </button>
+                <x-forms.button-model name="ADD ALLOWANCE" />
             </div>
         </div>
         <div>
@@ -36,14 +33,13 @@
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
                                 <tr>
-                                    <th>
-                                       #
-                                    </th>
-                                    <th class="listjs-sorter" data-sort="task_title"> Pay Grade</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Job Title</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Minimum Salary</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Mid Point Salary</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Maximum Salary</th>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Taxable</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -53,30 +49,43 @@
                                 @endphp
                                 @foreach($allowances as $allowance)
                                 <tr>
+                                    <td>{{ $number++ }}</td>
+                                    <td class="name">{{ $allowance->name }}</td>
                                     <td>
-                                        {{ $number++ }}
+                                        <span class="badge {{ $allowance->type === 'fixed' ? 'bg-primary' : 'bg-info' }}">
+                                            {{ ucfirst($allowance->type) }}
+                                        </span>
                                     </td>
-                                    <td class="name">{{ $allowance->Pay_Grade }}</td>
-                                    <td class="task_type">{{ $allowance->Job_Title }}</td>
-                                    <td class="task_type">{{ $allowance->Minimum_Salary }}</td>
-                                    <td class="task_type">{{ $allowance->Mid_Point_Salary }}</td>
-                                    <td class="task_type">{{ $allowance->Maximum_Salary }}</td>
+                                    <td>{{ number_format($allowance->allowance_value, 2) }}{{ $allowance->type === 'percentage' ? '%' : '' }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $allowance->id }}')">Edit</button>
+                                        @if($allowance->taxable)
+                                            <span class="badge bg-warning">Yes</span>
+                                        @else
+                                            <span class="badge bg-secondary">No</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($allowance->is_active)
+                                            <span class="badge bg-success">Active</span>
+                                        @else
+                                            <span class="badge bg-danger">Inactive</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ Str::limit($allowance->description, 30) }}</td>
+                                    <td>
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $allowance->id }}')" />
                                         <button class="btn btn-sm btn-danger" wire:click="delete('{{ $allowance->id }}')"
-                                            onclick="return confirm('Delete this department?')">Delete</button>
+                                            onclick="return confirm('Delete this allowance?')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </td>
-
                                 </tr>
                                 @endforeach
-
-
                             </tbody>
                         </table>
                     </div>
 
                     <div class="btn-toolbar card-footer border-top border-dashed d-flex flex-md-row flex-column justify-content-md-between align-items-md-center">
-
                         <div class="d-flex gap-4">
                             <div>
                                 <div class="pagination-buttons d-flex">
@@ -90,57 +99,27 @@
         </div>
     </div>
 
-    <!-- Modal -->
-     <!-- Modal -->
-    <div class="modal fade @if($showModal) show d-block @endif" tabindex="-1" 
-        @if($showModal) style="background: rgba(0,0,0,0.5);" @endif>
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form wire:submit.prevent="save">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            {{ $modalMode === 'edit' ? 'Edit allowance' : 'Add allowance' }}
-                        </h5>
-                        <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
-                    </div>
+    <x-pages.model :title="$modalMode === 'edit' ? 'Edit Allowance' : 'Add Allowance'"
+                   :formaction="$modalMode === 'edit' ? 'update' : 'save'"
+                   :modalMode="$modalMode"
+                   :showModal="$showModal">
+        <x-forms.input type="text" name="name" label="Name" placeholder="Enter Allowance Name" required />
+        <x-forms.input type="select" name="type" label="Type" :options="['fixed' => 'Fixed', 'percentage' => 'Percentage']" required />
+        <x-forms.input type="number" name="allowance_value" label="Value" placeholder="Enter Value" step="0.01" required />
+        <x-forms.input type="textarea" name="description" label="Description" placeholder="Enter Description" rows="2" />
 
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label>Pay Grade</label>
-                            <input type="text" class="form-control" wire:model="Pay_Grade" placeholder="Enter Pay Grade">
-                            @error('Pay_Grade') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label>Job Title</label>
-                            <input type="text" class="form-control" wire:model="Job_Title" placeholder="Enter Job Title">
-                            @error('Job_Title') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label>Minimum Salary</label>
-                            <input type="text" class="form-control" wire:model="Minimum_Salary" placeholder="Enter Minimum Salary">
-                            @error('Minimum_Salary') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label>Mid Point Salary</label>
-                            <input type="text" class="form-control" wire:model="Mid_Point_Salary" placeholder="Enter Mid Point Salary">
-                            @error('Mid_Point_Salary') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label>Maximum Salary</label>
-                            <input type="text" class="form-control" wire:model="Maximum_Salary" placeholder="Enter Maximum Salary">
-                            @error('Maximum_Salary') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">close</button>
-                        <button type="submit" class="btn btn-primary">
-                            {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
-                        </button>
-                    </div>
-                </form>
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" wire:model="taxable" id="taxable">
+                <label class="form-check-label" for="taxable">Taxable</label>
             </div>
         </div>
-    </div>
+
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" wire:model="is_active" id="is_active">
+                <label class="form-check-label" for="is_active">Active</label>
+            </div>
+        </div>
+    </x-pages.model>
 </div>

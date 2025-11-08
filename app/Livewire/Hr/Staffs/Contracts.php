@@ -16,7 +16,7 @@ class Contracts extends Component
     public $showModal = false;
     public $employee_id, $workstation_id, $department_id, $position_id, $workstations, $departments, $positions, $editmode = false;
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl;
-    public $contract_type, $start_date, $expire_date, $expirenotification, $description, $attachment, $contract_id, $contracts=[];
+    public $contract_type = 'permanent', $start_date, $expire_date, $expirenotification = false, $notify_time, $payment_frequency = 'monthly', $base_salary = 0, $description, $attachment, $contract_id, $contracts=[];
     public $canAddNewContract = true;
     public $activeContractMessage = '';
     public function mount($id = null)
@@ -40,18 +40,28 @@ class Contracts extends Component
 
     public function save()
     {
+        $rules = [
+            'workstation_id' => 'required|uuid|exists:workstations,id',
+            'department_id' => 'nullable|uuid|exists:departments,id',
+            'position_id' => 'required|uuid|exists:jobtitles,id',
+            'contract_type' => 'required|in:permanent,temporary,part_time',
+            'start_date' => 'required|date',
+            'expire_date' => 'required|date|after:start_date',
+            'expirenotification' => 'boolean',
+            'notify_time' => 'nullable|string|max:255',
+            'payment_frequency' => 'required|in:monthly,weekly,bi-weekly,daily,hourly',
+            'base_salary' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+        ];
 
-        $this->validate([
-            'workstation_id' => 'required',
-            'department_id' => 'required',
-            'position_id' => 'required',
-            'contract_type' => 'required',
-            'start_date' => 'required',
-            'expire_date' => 'required',
-            'expirenotification' => 'required',
-            'description' => 'required',
-            'attachment' =>'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048', // max 2MB
-        ]);
+        // Require attachment only when creating
+        if ($this->editmode) {
+            $rules['attachment'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+        } else {
+            $rules['attachment'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+        }
+
+        $this->validate($rules);
         // store attachment in storage
         $paths = null;
         if ($this->attachment) {
@@ -68,6 +78,9 @@ class Contracts extends Component
                 'start_date' => $this->start_date,
                 'expire_date' => $this->expire_date,
                 'expirenotification' => $this->expirenotification,
+                'notify_time' => $this->notify_time,
+                'payment_frequency' => $this->payment_frequency,
+                'base_salary' => $this->base_salary,
                 'description' => $this->description,
                 'attachment' => $paths ?? $contract->attachment,
             ]);
@@ -83,6 +96,9 @@ class Contracts extends Component
                 'start_date' => $this->start_date,
                 'expire_date' => $this->expire_date,
                 'expirenotification' => $this->expirenotification,
+                'notify_time' => $this->notify_time,
+                'payment_frequency' => $this->payment_frequency,
+                'base_salary' => $this->base_salary,
                 'description' => $this->description,
                 'attachment' => $paths,
                 'added_by' => Auth::user()->id
@@ -93,7 +109,7 @@ class Contracts extends Component
         $this->editmode = false;
         $this->showModal = false;
         $this->listdata();
-        $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment', 'contract_id']);
+        $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'notify_time', 'payment_frequency', 'base_salary', 'description', 'attachment', 'contract_id']);
     }
 
     public function update()
@@ -172,12 +188,19 @@ class Contracts extends Component
             $this->start_date = $contract->start_date->format('Y-m-d');
             $this->expire_date = $contract->expire_date->format('Y-m-d');
             $this->expirenotification = $contract->expirenotification;
+            $this->notify_time = $contract->notify_time;
+            $this->payment_frequency = $contract->payment_frequency;
+            $this->base_salary = $contract->base_salary;
             $this->description = $contract->description;
             // Don't set attachment file object, keep the path for reference
             $this->attachment = null;
         } else {
             $this->editmode = false;
-            $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'description', 'attachment', 'contract_id']);
+            $this->reset(['workstation_id', 'department_id', 'position_id', 'contract_type', 'start_date', 'expire_date', 'expirenotification', 'notify_time', 'payment_frequency', 'base_salary', 'description', 'attachment', 'contract_id']);
+            $this->contract_type = 'permanent';
+            $this->expirenotification = false;
+            $this->payment_frequency = 'monthly';
+            $this->base_salary = 0;
         }
     }
 

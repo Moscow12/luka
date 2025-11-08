@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Hr\Staffs;
 
-use App\Models\deductions;
+use App\Models\Deduction;
 use App\Models\Employee;
-use App\Models\salary_scales;
 use Livewire\Component;
 
 class Salary extends Component
@@ -26,7 +25,7 @@ class Salary extends Component
         $this->email = $staff->email;
         $this->editUrl = route('hr.editstaff', $id);
 
-        $this->deductions = deductions::all();
+        $this->deductions = Deduction::where('is_active', true)->get();
 
     }
     public function render()

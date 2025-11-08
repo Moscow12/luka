@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Deduction;
 use Illuminate\Database\Seeder;
-use App\Models\Deductions;
 
 class DeductionSeeder extends Seeder
 {
@@ -41,7 +41,7 @@ class DeductionSeeder extends Seeder
         ];
 
         foreach ($deductions as $data) {
-            Deductions::updateOrCreate(
+            Deduction::updateOrCreate(
                 ['name' => $data['name']],
                 $data
                 // select user id for added_by

@@ -56,9 +56,11 @@
                             <tr>
                                 <th>Contract Type</th>
                                 <th>Status</th>
+                                <th>Base Salary</th>
+                                <th>Payment Frequency</th>
                                 <th>Start Date</th>
                                 <th>Expire Date</th>
-                                <th>Expire Notification</th>
+                                <th>Notification</th>
                                 <th>Attachment</th>
                                 <th>Actions</th>
                             </tr>
@@ -66,15 +68,29 @@
                         <tbody>
                             @foreach($contracts as $contract)
                             <tr>
-                                <td>{{ $contract->contract_type }}</td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ ucfirst(str_replace('_', ' ', $contract->contract_type)) }}
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="badge {{ $contract->getStatusBadgeClass() }}">
                                         {{ $contract->getStatusLabel() }}
                                     </span>
                                 </td>
+                                <td>{{ number_format($contract->base_salary, 2) }}</td>
+                                <td>{{ ucfirst(str_replace('-', ' ', $contract->payment_frequency)) }}</td>
                                 <td>{{ $contract->start_date->format('d M Y') }}</td>
                                 <td>{{ $contract->expire_date->format('d M Y') }}</td>
-                                <td>{{ $contract->expirenotification }} days</td>
+                                <td>
+                                    @if($contract->expirenotification)
+                                        <span class="badge bg-success">
+                                            <i class="fa-solid fa-bell"></i> {{ $contract->notify_time ?? 'Enabled' }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">Disabled</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($contract->attachment)
                                         <a href="{{ asset('storage/' . $contract->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -116,21 +132,55 @@
                 </div>
             </x-pages.card>
         </div>
-        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Contract' : 'Add Contract' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal">
-            <x-forms.input type="select" name="workstation_id" label="Workstation" :options="$workstations->pluck('workstation_name', 'id')" required />
-            <x-forms.input type="select" name="department_id" label="Department" :options="$departments->pluck('name', 'id')" required />
-            <x-forms.input type="select" name="position_id" label="Position" :options="$positions->pluck('name', 'id')" required />
-            <x-forms.input type="select" name="contract_type" label="Contract Type" :options="['Permanent'=>'Permanent', 'Temporary'=>'Temporary', 'Part time'=>'Part time']" required />
-            <x-forms.input type="date" name="start_date" label="Start Date" required />
-            <x-forms.input type="date" name="expire_date" label="Expire Date" required />
-            <x-forms.input type="select" name="expirenotification" label="Expire Notification days" :options="['30'=>'30', '60'=>'60', '90'=>'90', '120'=>'120']" required />
-            <x-forms.input type="textarea" name="description" label="Descriptions" rows="2" required />
-            <label class="form-label">Upload attachment</label>
-            <input type="file" class="form-control" wire:model="attachment">
-            @error('attachment') <small class="text-danger">{{ $message }}</small> @enderror
-            {{-- Show loading indicator while uploading --}}
-            <div wire:loading wire:target="attachment" class="text-muted mt-2">
-                Uploading...
+        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Contract' : 'Add Contract' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal" :size="'lg'">
+            <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="select" name="workstation_id" label="Workstation" :options="$workstations->pluck('workstation_name', 'id')" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="select" name="department_id" label="Department" :options="$departments->pluck('name', 'id')" />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="select" name="position_id" label="Position" :options="$positions->pluck('name', 'id')" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="select" name="contract_type" label="Contract Type" :options="['permanent'=>'Permanent', 'temporary'=>'Temporary', 'part_time'=>'Part Time']" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="date" name="start_date" label="Start Date" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="date" name="expire_date" label="Expire Date" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="select" name="payment_frequency" label="Payment Frequency" :options="['monthly'=>'Monthly', 'weekly'=>'Weekly', 'bi-weekly'=>'Bi-Weekly', 'daily'=>'Daily', 'hourly'=>'Hourly']" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="number" name="base_salary" label="Base Salary" placeholder="Enter Base Salary" step="0.01" required />
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" wire:model="expirenotification" id="expirenotification">
+                            <label class="form-check-label" for="expirenotification">Enable Expiration Notification</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <x-forms.input type="text" name="notify_time" label="Notification Time" placeholder="e.g., 30 days before, 1 week before" />
+                </div>
+                <div class="col-12">
+                    <x-forms.input type="textarea" name="description" label="Descriptions" rows="2" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Upload attachment</label>
+                    <input type="file" class="form-control" wire:model="attachment">
+                    @error('attachment') <small class="text-danger">{{ $message }}</small> @enderror
+                    {{-- Show loading indicator while uploading --}}
+                    <div wire:loading wire:target="attachment" class="text-muted mt-2">
+                        Uploading...
+                    </div>
+                </div>
             </div>
         </x-pages.model>
     </div>
