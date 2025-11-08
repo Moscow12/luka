@@ -108,7 +108,11 @@ class Addstaff extends Component
             'user_id' => ['nullable', 'unique:employees,user_id,' . $this->employee_id],
             'employee_no' => ['nullable', 'unique:employees,employee_no,' . $this->employee_id],
         ]);
-
+        // add photo upload
+        if ($this->photo) {
+            $photoPath = $this->photo->store('photos', 'public');
+            $this->photo = $photoPath;
+        }
         if ($this->modalMode === 'edit' && $this->employee_id) {
             $staff = \App\Models\Employee::findOrFail($this->employee_id);
             $staff->update([

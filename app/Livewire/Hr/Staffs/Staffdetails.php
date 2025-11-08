@@ -8,7 +8,7 @@ use Livewire\Component;
 class Staffdetails extends Component
 {
     public $employee_id;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $kiunganishi ;
+    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $kiunganishi, $photo;
     public function mount($id=null)
     {
         $staff = Employee::findOrFail($id);
@@ -21,6 +21,7 @@ class Staffdetails extends Component
         $this->age = $staff->getAgeAttribute();
         $this->gender = $staff->gender;
         $this->email = $staff->email;
+        $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
         $this->kiunganishi = $id;
     }

@@ -10,7 +10,12 @@
     <div class="card-body">
         <div class="d-flex flex-column flex-lg-row gap-4">
             <div>
-                <img src="{{ asset('../../assets/images/avatar/avatar-1.jpg') }}" alt="" class="rounded-circle avatar avatar-xl" />
+
+                @if($photo)
+                <img src="{{ asset('storage/'.$photo) }}" alt="" class="rounded-circle avatar avatar-xl" />
+                @else
+                <img src="{{ asset('../../assets/images/avatar/avatar-blank.png') }}" alt="" class="rounded-circle avatar avatar-xl" />
+                @endif
             </div>
             <div class="d-flex flex-column flex-lg-row justify-content-between w-100 gap-2">
                 <div class="d-lg-flex flex-lg-column">
