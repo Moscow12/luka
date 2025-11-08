@@ -5,9 +5,7 @@
         ['label' => 'Leave Overview', 'url' => route('leave.leavebalance')],
         ['label' => 'Leave Request']
         ]">
-        @if($hasEmployeeRecord)
-            <x-forms.button-model name="REQUEST LEAVE"/>
-        @endif
+        
     </x-pages.breadcrumn>
 
     <div class="d-flex flex-column gap-6">

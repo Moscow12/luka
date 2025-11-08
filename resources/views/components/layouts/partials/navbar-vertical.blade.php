@@ -23,7 +23,7 @@
     <ul class="dropdown-menu flex-column">
       <li class="nav-item"><a class='nav-link' href="{{ route('leave.leavebalance') }}"><i class="fa-solid fa-calendar-days"></i> Overview</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('leave.leaverequest') }}"><i class="fa-solid fa-bed"></i> Request Leave</a>
+        <a class='nav-link' href="{{ route('leave.requestleave') }}"><i class="fa-solid fa-bed"></i> Request Leave</a>
       </li>
     </ul>
   </li>

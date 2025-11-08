@@ -54,6 +54,6 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/digitalsignature/{id}', Digitalsignature::class)->name('hr.digitalsignature');
 
     //leave routes
-    Route::get('leave/leaverequest', Requestleave::class)->name('leave.leaverequest');
+    Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');
     Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
 });
