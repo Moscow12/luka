@@ -21,6 +21,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::group(['prefix' => 'users', 'middleware' => 'auth'], function () {
     Route::get('profile', App\Livewire\Users\Profile\ProfileIndex::class)->name('user.profile');
+    Route::get('management', App\Livewire\Users\UserManagement::class)->name('user.management');
 });
 
 Route::group([
