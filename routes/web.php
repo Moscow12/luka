@@ -5,6 +5,8 @@ use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Leavemanagement;
 use App\Livewire\Hr\Leave\Requestleave;
+use App\Livewire\Hr\Roster\Viewroster;
+use App\Livewire\Hr\Roster\Generateroster;
 use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
@@ -69,6 +71,10 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/payroll/payrollgeneration', Payrollgeneration::class)->name('payrollgeneration');
     Route::get('/payroll/allowancepayment', Allowancepayment::class)->name('allowancepayment');
     Route::get('/payroll/paymentreports', Paymentreports::class)->name('paymentreports');
+
+    //employee roster routes
+    Route::get('/roster/viewroster', Viewroster::class)->name('viewroster.index');
+    Route::get('/roster/generateroster', Generateroster::class)->name('roster.create');
 });
 
 

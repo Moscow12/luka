@@ -9,10 +9,21 @@
         </svg> <span class="text">Project</span></a>
   </li>
   <!-- Nav item -->
-  <li class="nav-item">
-    <div class="nav-heading">Leave</div>
-    <hr class="mx-5 nav-line mb-1" />
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="{{ route('viewroster.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="nav-icon">
+        <i class="fa-solid fa-calendar-days"></i>
+      </span>
+      <span class="text">Roster</span>
+    </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="{{ route('viewroster.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('roster.create') }}"><i class="fa-solid fa-calendar-days"></i> Generate Roster</a>
+      </li>
+    </ul>
   </li>
+  <!-- Nav item -->
   <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
