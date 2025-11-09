@@ -11,8 +11,8 @@ use App\Models\payroll_items;
 use App\Models\payrolls;
 use Devrabiul\ToastMagic\Facades\ToastMagic;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -182,7 +182,7 @@ class Payrollgeneration extends Component
                     $this->generatePayroll($employee, $employee->activeContract);
                     $generated++;
                 } catch (\Exception $e) {
-                    
+
                     $employeeName = isset($employee) ? "{$employee->first_name} {$employee->last_name}" : "Employee ID {$employeeId}";
                     $errors[] = "Error generating payroll for {$employeeName}: {$e->getMessage()}";
                     Log::error("Payroll generation error for employee {$employeeId}", [
@@ -231,9 +231,9 @@ class Payrollgeneration extends Component
             ->with('deduction')
             ->get();
 
-        // Calculate total allowances
-        $totalAllowances = $contractAllowances->sum(function ($item) {
-            return $item->amount_override ?? $item->allowance->amount ?? 0;
+        // Calculate total allowances using the new method that handles percentage vs fixed
+        $totalAllowances = $contractAllowances->sum(function ($item) use ($basicSalary) {
+            return $item->calculateAmount($basicSalary);
         });
 
         // Calculate gross salary (basic + allowances)
@@ -243,9 +243,9 @@ class Payrollgeneration extends Component
         $payeCalculation = calculate_paye($grossSalary);
         $paye = $payeCalculation['tax_amount'];
 
-        // Calculate total deductions (including PAYE)
-        $otherDeductions = $contractDeductions->sum(function ($item) {
-            return $item->amount_override ?? $item->deduction->amount ?? 0;
+        // Calculate total deductions (excluding PAYE) using the new method that handles percentage vs fixed
+        $otherDeductions = $contractDeductions->sum(function ($item) use ($basicSalary, $grossSalary) {
+            return $item->calculateAmount($basicSalary, $grossSalary);
         });
         $totalDeductions = $paye + $otherDeductions;
 
@@ -265,14 +265,15 @@ class Payrollgeneration extends Component
             'status' => 'pending',
         ]);
 
-        // Create payroll items for allowances
+        // Create payroll items for allowances with calculated amounts
         foreach ($contractAllowances as $allowance) {
+            $calculatedAmount = $allowance->calculateAmount($basicSalary);
             payroll_items::create([
                 'payroll_id' => $payroll->id,
                 'contract_allowance_id' => $allowance->id,
                 'name' => $allowance->allowance->name ?? 'Allowance',
                 'type' => 'allowance',
-                'amount' => $allowance->amount_override ?? $allowance->allowance->amount ?? 0,
+                'amount' => $calculatedAmount,
                 'added_by' => Auth::user()->id,
             ]);
         }
@@ -286,14 +287,15 @@ class Payrollgeneration extends Component
             'added_by' => Auth::user()->id,
         ]);
 
-        // Create payroll items for deductions
+        // Create payroll items for deductions with calculated amounts
         foreach ($contractDeductions as $deduction) {
+            $calculatedAmount = $deduction->calculateAmount($basicSalary, $grossSalary);
             payroll_items::create([
                 'payroll_id' => $payroll->id,
                 'contract_deduction_id' => $deduction->id,
                 'name' => $deduction->deduction->name ?? 'Deduction',
                 'type' => 'deduction',
-                'amount' => $deduction->amount_override ?? $deduction->deduction->amount ?? 0,
+                'amount' => $calculatedAmount,
                 'added_by' => Auth::user()->id,
             ]);
         }

@@ -156,7 +156,22 @@
                                                             <div class="d-flex flex-column">
                                                                 <span>{{ $item->name }}</span>
                                                                 @if($item->contractAllowance && $item->contractAllowance->allowance)
-                                                                    <small class="text-muted">{{ $item->contractAllowance->allowance->description ?? '' }}</small>
+                                                                    @php
+                                                                        $calcInfo = $item->contractAllowance->getCalculationInfo();
+                                                                    @endphp
+                                                                    <small class="text-muted">
+                                                                        @if($calcInfo['type'] === 'percentage')
+                                                                            <i class="fa-solid fa-percent"></i> {{ number_format($calcInfo['value'], 2) }}% of basic salary
+                                                                        @else
+                                                                            <i class="fa-solid fa-coins"></i> Fixed amount
+                                                                        @endif
+                                                                        @if($calcInfo['is_override'])
+                                                                            (Override)
+                                                                        @endif
+                                                                    </small>
+                                                                    @if($item->contractAllowance->allowance->description)
+                                                                        <small class="text-muted">{{ $item->contractAllowance->allowance->description }}</small>
+                                                                    @endif
                                                                 @endif
                                                             </div>
                                                         </td>
@@ -222,7 +237,31 @@
                                                             <div class="d-flex flex-column">
                                                                 <span>{{ $item->name }}</span>
                                                                 @if($item->contractDeduction && $item->contractDeduction->deduction)
-                                                                    <small class="text-muted">{{ $item->contractDeduction->deduction->description ?? '' }}</small>
+                                                                    @php
+                                                                        $calcInfo = $item->contractDeduction->getCalculationInfo();
+                                                                    @endphp
+                                                                    <small class="text-muted">
+                                                                        @if($calcInfo['type'] === 'percentage')
+                                                                            <i class="fa-solid fa-percent"></i> {{ number_format($calcInfo['value'], 2) }}%
+                                                                            @if($calcInfo['applies_to'] === 'gross_salary')
+                                                                                of gross salary
+                                                                            @else
+                                                                                of basic salary
+                                                                            @endif
+                                                                        @else
+                                                                            <i class="fa-solid fa-coins"></i> Fixed amount
+                                                                        @endif
+                                                                        @if($calcInfo['is_override'])
+                                                                            (Override)
+                                                                        @endif
+                                                                    </small>
+                                                                    @if($item->contractDeduction->deduction->description)
+                                                                        <small class="text-muted">{{ $item->contractDeduction->deduction->description }}</small>
+                                                                    @endif
+                                                                @elseif($item->name === 'PAYE Tax')
+                                                                    <small class="text-muted">
+                                                                        <i class="fa-solid fa-scale-balanced"></i> Calculated by PAYE tax bands
+                                                                    </small>
                                                                 @endif
                                                             </div>
                                                         </td>
