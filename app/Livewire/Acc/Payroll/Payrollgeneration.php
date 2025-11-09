@@ -10,7 +10,9 @@ use App\Models\Employeecontracts;
 use App\Models\payroll_items;
 use App\Models\payrolls;
 use Devrabiul\ToastMagic\Facades\ToastMagic;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -140,53 +142,76 @@ class Payrollgeneration extends Component
 
     public function generatePayrollForSelected()
     {
-        if (empty($this->selectedEmployees)) {
-            ToastMagic::error('Please select at least one employee');
+        try {
+            if (empty($this->selectedEmployees)) {
+                ToastMagic::error('Please select at least one employee');
 
-            return;
-        }
-
-        $generated = 0;
-        $errors = [];
-
-        foreach ($this->selectedEmployees as $employeeId) {
-            try {
-                $employee = Employee::with('activeContract')->find($employeeId);
-
-                if (! $employee || ! $employee->activeContract) {
-                    $errors[] = "{$employee->first_name} {$employee->last_name} has no active contract";
-
-                    continue;
-                }
-
-                // Check if payroll already exists for this period
-                $existingPayroll = payrolls::where('employee_id', $employeeId)
-                    ->where('period', $this->period)
-                    ->first();
-
-                if ($existingPayroll) {
-                    $errors[] = "{$employee->first_name} {$employee->last_name} already has payroll for {$this->period}";
-
-                    continue;
-                }
-
-                $this->generatePayroll($employee, $employee->activeContract);
-                $generated++;
-            } catch (\Exception $e) {
-                $errors[] = "Error generating payroll for employee ID {$employeeId}: {$e->getMessage()}";
+                return;
             }
-        }
 
-        if ($generated > 0) {
-            ToastMagic::success("{$generated} payroll(s) generated successfully");
-            $this->selectedEmployees = [];
-            $this->selectAll = false;
-        }
+            $generated = 0;
+            $errors = [];
 
-        if (! empty($errors)) {
-            foreach ($errors as $error) {
-                ToastMagic::warning($error);
+            foreach ($this->selectedEmployees as $employeeId) {
+                try {
+                    $employee = Employee::with('activeContract')->find($employeeId);
+
+                    if (! $employee) {
+                        $errors[] = "Employee ID {$employeeId} not found";
+
+                        continue;
+                    }
+
+                    if (! $employee->activeContract) {
+                        $errors[] = "{$employee->first_name} {$employee->last_name} has no active contract";
+
+                        continue;
+                    }
+
+                    // Check if payroll already exists for this period
+                    $existingPayroll = payrolls::where('employee_id', $employeeId)
+                        ->where('period', $this->period)
+                        ->first();
+
+                    if ($existingPayroll) {
+                        $errors[] = "{$employee->first_name} {$employee->last_name} already has payroll for {$this->period}";
+
+                        continue;
+                    }
+
+                    $this->generatePayroll($employee, $employee->activeContract);
+                    $generated++;
+                } catch (\Exception $e) {
+                    
+                    $employeeName = isset($employee) ? "{$employee->first_name} {$employee->last_name}" : "Employee ID {$employeeId}";
+                    $errors[] = "Error generating payroll for {$employeeName}: {$e->getMessage()}";
+                    Log::error("Payroll generation error for employee {$employeeId}", [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                }
             }
+
+            // Display results
+            if ($generated > 0) {
+                ToastMagic::success("Successfully generated {$generated} payroll record(s) for period {$this->period}");
+                $this->selectedEmployees = [];
+                $this->selectAll = false;
+            } elseif (empty($errors)) {
+                ToastMagic::warning('No payroll records were generated');
+            }
+
+            if (! empty($errors)) {
+                foreach ($errors as $error) {
+                    ToastMagic::warning($error);
+                }
+            }
+        } catch (\Exception $e) {
+            ToastMagic::error('Failed to generate payroll: '.$e->getMessage());
+            Log::error('Payroll generation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 
@@ -244,9 +269,11 @@ class Payrollgeneration extends Component
         foreach ($contractAllowances as $allowance) {
             payroll_items::create([
                 'payroll_id' => $payroll->id,
+                'contract_allowance_id' => $allowance->id,
                 'name' => $allowance->allowance->name ?? 'Allowance',
                 'type' => 'allowance',
                 'amount' => $allowance->amount_override ?? $allowance->allowance->amount ?? 0,
+                'added_by' => Auth::user()->id,
             ]);
         }
 
@@ -256,15 +283,18 @@ class Payrollgeneration extends Component
             'name' => 'PAYE Tax',
             'type' => 'deduction',
             'amount' => $paye,
+            'added_by' => Auth::user()->id,
         ]);
 
         // Create payroll items for deductions
         foreach ($contractDeductions as $deduction) {
             payroll_items::create([
                 'payroll_id' => $payroll->id,
+                'contract_deduction_id' => $deduction->id,
                 'name' => $deduction->deduction->name ?? 'Deduction',
                 'type' => 'deduction',
                 'amount' => $deduction->amount_override ?? $deduction->deduction->amount ?? 0,
+                'added_by' => Auth::user()->id,
             ]);
         }
 

@@ -6,8 +6,18 @@
         ['label' => 'Payroll Generation', 'url' => '#'],
     ]">
         @if(count($selectedEmployees) > 0)
-            <button wire:click="generatePayrollForSelected" class="btn btn-success d-md-flex align-items-center gap-2">
-                <i class="fa-solid fa-cash-register"></i> GENERATE PAYROLL ({{ count($selectedEmployees) }})
+            <button
+                wire:click="generatePayrollForSelected"
+                wire:loading.attr="disabled"
+                wire:target="generatePayrollForSelected"
+                class="btn btn-success d-md-flex align-items-center gap-2">
+                <span wire:loading.remove wire:target="generatePayrollForSelected">
+                    <i class="fa-solid fa-cash-register"></i> GENERATE PAYROLL ({{ count($selectedEmployees) }})
+                </span>
+                <span wire:loading wire:target="generatePayrollForSelected">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Generating...
+                </span>
             </button>
         @endif
     </x-pages.breadcrumn>
@@ -422,9 +432,13 @@
     @endif
 
     <!-- Loading Indicator -->
-    <div wire:loading class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <div wire:loading wire:target="generatePayrollForSelected" class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
+        <div class="card shadow-lg p-4 text-center">
+            <div class="spinner-border text-success mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5 class="text-muted">Generating Payroll...</h5>
+            <p class="text-muted small mb-0">Please wait while we process the payroll records</p>
         </div>
     </div>
 

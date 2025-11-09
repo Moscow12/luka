@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('payroll_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('payroll_id')->constrained()->onDelete('cascade');
-
+            $table->foreignUuid('payroll_id')->constrained('payrolls')->onDelete('cascade');
+            $table->foreignUuid('contract_allowance_id')->nullable()->constrained('contract_allowances')->onDelete('set null');
+            $table->foreignUuid('contract_deduction_id')->nullable()->constrained('contract_deductions')->onDelete('set null');
             $table->string('name'); // e.g. "PAYE", "NSSF", "Loan", "Bonus"
             $table->enum('type', ['allowance', 'deduction']);
             $table->decimal('amount', 12, 2)->default(0);
+            $table->foreignUuid('added_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

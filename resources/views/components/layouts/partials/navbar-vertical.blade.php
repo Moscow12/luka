@@ -80,7 +80,7 @@
         <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Loan Management</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><i class="fa-solid fa-clock"></i> Payments Report</a>
+        <a class='nav-link' href="{{ route('paymentreports') }}"><i class="fa-solid fa-clock"></i> Payments Report</a>
       </li>
     </ul>
   </li>

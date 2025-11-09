@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('payrolls', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('employee_id')->constrained()->onDelete('cascade');
-            $table->foreignUuid('contract_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignUuid('employee_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignUuid('contract_id')->nullable()->constrained('employeecontracts')->onDelete('set null');
 
             $table->string('period'); // e.g. "2025-11"
             $table->decimal('basic_salary', 12, 2)->default(0);

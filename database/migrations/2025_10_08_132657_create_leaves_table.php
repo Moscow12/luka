@@ -19,6 +19,8 @@ return new class extends Migration
             $table->enum('gender', ['Male', 'Female', 'Both'])->default('Both');
             //status: active, inactive
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('paid')->default(false);
+            $table->boolean('require_document')->default(false);
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
