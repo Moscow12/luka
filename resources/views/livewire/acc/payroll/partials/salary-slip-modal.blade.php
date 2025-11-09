@@ -1,7 +1,7 @@
-<div class="modal fade show d-block no-print" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+<div class="modal fade show d-block modal-backdrop-custom" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="z-index: 1055;">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white no-print">
+            <div class="modal-header bg-primary text-white modal-header-print-hide">
                 <h5 class="modal-title">
                     <i class="fa-solid fa-file-invoice"></i> Salary Slip - {{ \Carbon\Carbon::createFromFormat('Y-m', $payrollDetails->period)->format('F Y') }}
                 </h5>
@@ -343,14 +343,37 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-top no-print">
+            <div class="modal-footer border-top modal-footer-print-hide">
                 <button type="button" class="btn btn-secondary" wire:click="closeSalarySlip">
                     <i class="fa-solid fa-times"></i> Close
                 </button>
-                <button type="button" class="btn btn-primary" onclick="window.print()">
+                <button type="button" class="btn btn-primary" onclick="printSalarySlip()">
                     <i class="fa-solid fa-print"></i> Print Salary Slip
                 </button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function printSalarySlip() {
+        // Ensure the modal content is fully loaded before printing
+        const printContent = document.getElementById('salary-slip-print');
+
+        if (!printContent) {
+            console.error('Salary slip content not found');
+            alert('Unable to print. Please try again.');
+            return;
+        }
+
+        // Small delay to ensure all rendering is complete
+        setTimeout(() => {
+            window.print();
+        }, 200);
+    }
+
+    // Also ensure Livewire is ready
+    document.addEventListener('livewire:load', function() {
+        console.log('Livewire loaded - print functionality ready');
+    });
+</script>

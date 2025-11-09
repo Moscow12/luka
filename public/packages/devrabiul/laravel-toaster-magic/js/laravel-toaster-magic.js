@@ -1,4 +1,4 @@
-(function () {
+sh(function () {
     // ===============================
     // Utility: Close toast function
     // ===============================

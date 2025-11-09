@@ -16,6 +16,7 @@ class Employee extends Model
         'user_id',
         'employee_no',
         'first_name',
+        'middle_name',
         'last_name',
         'gender',
         'dob',

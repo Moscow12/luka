@@ -347,7 +347,9 @@
 
     {{-- Salary Slip Modal --}}
     @if($viewingPayrollId && $payrollDetails)
-        @include('livewire.acc.payroll.partials.salary-slip-modal')
+        <div wire:key="salary-slip-{{ $viewingPayrollId }}">
+            @include('livewire.acc.payroll.partials.salary-slip-modal')
+        </div>
     @endif
 
     <!-- Loading Indicator -->
@@ -371,20 +373,98 @@
         }
 
         @media print {
-            body * {
-                visibility: hidden;
+            /* Hide everything except the salary slip */
+            body > *:not(.modal-backdrop-custom) {
+                display: none !important;
             }
-            #salary-slip-print, #salary-slip-print * {
-                visibility: visible;
+
+            /* Hide specific modal elements */
+            .modal-backdrop-custom {
+                background: white !important;
+                position: static !important;
+                z-index: auto !important;
             }
-            #salary-slip-print {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
+
+            .modal-header-print-hide,
+            .modal-footer-print-hide,
+            .btn,
+            button,
             .no-print {
                 display: none !important;
+            }
+
+            /* Reset modal structure for print */
+            .modal-dialog {
+                max-width: 100% !important;
+                margin: 0 !important;
+                position: static !important;
+            }
+
+            .modal-content {
+                border: none !important;
+                box-shadow: none !important;
+                position: static !important;
+            }
+
+            .modal-body {
+                padding: 0 !important;
+            }
+
+            /* Ensure salary slip content is visible and properly positioned */
+            #salary-slip-print {
+                display: block !important;
+                visibility: visible !important;
+                position: static !important;
+                width: 100% !important;
+                padding: 20px !important;
+                background: white !important;
+                margin: 0 !important;
+            }
+
+            /* Make sure all content inside salary slip is visible */
+            #salary-slip-print * {
+                display: revert !important;
+                visibility: visible !important;
+            }
+
+            /* Ensure proper print layout */
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            /* Print-specific styling */
+            table {
+                page-break-inside: avoid;
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+
+            .card {
+                page-break-inside: avoid;
+                border: 1px solid #dee2e6 !important;
+            }
+
+            /* Ensure text is visible */
+            h1, h2, h3, h4, h5, h6, p, span, td, th, div, small {
+                color: black !important;
+                opacity: 1 !important;
+            }
+
+            /* Ensure colors print correctly */
+            .bg-primary,
+            .text-primary,
+            .border-primary {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Ensure Bootstrap colors render */
+            .bg-success, .bg-danger, .bg-info, .bg-light,
+            .text-success, .text-danger, .text-info, .text-muted,
+            .border-success, .border-danger, .border-primary {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
