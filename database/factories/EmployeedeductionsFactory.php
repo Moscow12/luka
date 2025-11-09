@@ -17,11 +17,10 @@ class EmployeedeductionsFactory extends Factory
     public function definition(): array
     {
         return [
-            'employee_id' => \App\Models\Employee::factory(),
-            'deductions_id' => \App\Models\Deductions::factory(),
-            'deductions_amount' => $this->faker->randomFloat(1000, 0, 10000000),
-            'salary_id' => \App\Models\Employeesalaries::factory(),
-            'added_by' => \App\Models\User::factory(),
+            'employee_id' => \App\Models\Employee::inRandomOrder()->first()?->id ?? \App\Models\Employee::factory(),
+            'deductions_id' => \App\Models\Deduction::inRandomOrder()->first()?->id ?? \App\Models\Deduction::factory(),
+            'deductions_amount' => $this->faker->randomFloat(2, 10000, 200000),
+            'salary_id' => \App\Models\Employeesalaries::inRandomOrder()->first()?->id ?? \App\Models\Employeesalaries::factory(),
         ];
     }
 }

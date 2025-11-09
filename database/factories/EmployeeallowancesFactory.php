@@ -17,11 +17,11 @@ class EmployeeallowancesFactory extends Factory
     public function definition(): array
     {
         return [
-            'employee_id' => \App\Models\Employee::factory(),
-            'allowance_id' => \App\Models\allowances::factory(),
-            'allowance_amount' => $this->faker->randomFloat(1000, 0, 10000000),
-            'salary_id' => \App\Models\Employeesalaries::factory(),
-            'added_by' => \App\Models\User::factory(),
+            'employee_id' => \App\Models\Employee::inRandomOrder()->first()?->id ?? \App\Models\Employee::factory(),
+            'allowance_id' => \App\Models\allowances::inRandomOrder()->first()?->id ?? \App\Models\allowances::factory(),
+            'allowance_amount' => $this->faker->randomFloat(2, 50000, 500000),
+            'salary_id' => \App\Models\Employeesalaries::inRandomOrder()->first()?->id ?? \App\Models\Employeesalaries::factory(),
+            'added_by' => \App\Models\User::inRandomOrder()->first()?->id ?? \App\Models\User::factory(),
         ];
     }
 }
