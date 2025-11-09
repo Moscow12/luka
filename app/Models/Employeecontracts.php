@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 class Employeecontracts extends Model
 {
     use HasFactory, HasUuids;
+
     protected $table = 'employeecontracts';
+
     protected $fillable = [
         'employee_id',
         'workstation_id',
@@ -45,12 +47,12 @@ class Employeecontracts extends Model
 
     public function workstation()
     {
-        return $this->belongsTo(Workstations::class, 'workstation_id');
+        return $this->belongsTo(workstations::class, 'workstation_id');
     }
 
     public function department()
     {
-        return $this->belongsTo(Departments::class, 'department_id');
+        return $this->belongsTo(departments::class, 'department_id');
     }
 
     public function position()
@@ -89,7 +91,7 @@ class Employeecontracts extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === 'active' && !$this->isExpired();
+        return $this->status === 'active' && ! $this->isExpired();
     }
 
     /**
@@ -112,7 +114,7 @@ class Employeecontracts extends Model
      */
     public function getStatusBadgeClass(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'active' => $this->isAboutToExpire() ? 'bg-warning' : 'bg-success',
             'expired' => 'bg-danger',
             'suspended' => 'bg-secondary',

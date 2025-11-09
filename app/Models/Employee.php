@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Employee extends Model
 {
-    use LogsActivity, HasFactory, HasUuids;
+    use HasFactory, HasUuids, LogsActivity;
+
     protected $fillable = [
         'user_id',
         'employee_no',
@@ -46,8 +45,6 @@ class Employee extends Model
         'added_by',
     ];
 
-    
-
     protected $casts = [
         'dob' => 'date',
         'hired_date' => 'date',
@@ -59,7 +56,7 @@ class Employee extends Model
         return LogOptions::defaults()
             ->logOnly(['first_name', 'last_name', 'employment_status', 'department_id'])
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Employee {$eventName}")
+            ->setDescriptionForEvent(fn (string $eventName) => "Employee {$eventName}")
             ->useLogName('employee')
             ->dontLogIfAttributesChangedOnly(['updated_at']);
     }
@@ -115,16 +112,16 @@ class Employee extends Model
 
     public function workstation()
     {
-        return $this->belongsTo(Workstations::class, 'workstation_id');
+        return $this->belongsTo(workstations::class, 'workstation_id');
     }
 
     public function denomination()
     {
         return $this->belongsTo(denominations::class, 'denomination_id');
     }
-    #================ end relationships ================#
+    // ================ end relationships ================#
 
-    #================ COMPUTED ATTRIBUTES ================#
+    // ================ COMPUTED ATTRIBUTES ================#
     // Computed Attributes
     public function getFullName()
     {
@@ -156,5 +153,5 @@ class Employee extends Model
     {
         return $query->where('employment_status', 'active');
     }
-    #================ END computed attributes ================#
+    // ================ END computed attributes ================#
 }

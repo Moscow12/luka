@@ -12,9 +12,10 @@ class Employeepromotions extends Model
     /** @use HasFactory<\Database\Factories\EmployeepromotionsFactory> */
     use HasFactory, HasUuids, SoftDeletes;
 
-     // title_id, workstation_id, department_id, start_date, attachment, comments, employee_id, added_by
-     protected $table = 'employeepromotions';
-     protected $fillable = [
+    // title_id, workstation_id, department_id, start_date, attachment, comments, employee_id, added_by
+    protected $table = 'employeepromotions';
+
+    protected $fillable = [
         'title_id',
         'workstation_id',
         'department_id',
@@ -42,7 +43,7 @@ class Employeepromotions extends Model
 
     public function workstation()
     {
-        return $this->belongsTo(Workstations::class, 'workstation_id');
+        return $this->belongsTo(workstations::class, 'workstation_id');
     }
 
     public function department()
