@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\Employeecontracts;
 use App\Models\payroll_items;
 use App\Models\payrolls;
+use Devrabiul\ToastMagic\Facades\ToastMagic;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -140,7 +141,7 @@ class Payrollgeneration extends Component
     public function generatePayrollForSelected()
     {
         if (empty($this->selectedEmployees)) {
-            toaster()->error('Please select at least one employee');
+            ToastMagic::error('Please select at least one employee');
 
             return;
         }
@@ -177,14 +178,14 @@ class Payrollgeneration extends Component
         }
 
         if ($generated > 0) {
-            toaster()->success("{$generated} payroll(s) generated successfully");
+            ToastMagic::success("{$generated} payroll(s) generated successfully");
             $this->selectedEmployees = [];
             $this->selectAll = false;
         }
 
         if (! empty($errors)) {
             foreach ($errors as $error) {
-                toaster()->warning($error);
+                ToastMagic::warning($error);
             }
         }
     }

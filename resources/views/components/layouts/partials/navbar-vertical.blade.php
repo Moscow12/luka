@@ -65,13 +65,14 @@
       <span class="nav-icon">
         <i class="fa-solid fa-money-bill"></i>
       </span>
-      <span class="text">Payroll</span>
+      <span class="text">Staff Payments</span>
     </a>
     <ul class="dropdown-menu flex-column">
       <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('payrollgeneration') }}"><i class="fa-solid fa-sliders"></i> Generate Payroll</a>
+        <a class='nav-link' href="{{ route('payrollgeneration') }}"><i class="fa-solid fa-money-bill-wave"></i> Generate Payroll</a>
       </li>
+      <li class="nav-item"><a class='nav-link' href="{{ route('allowancepayment') }}"><i class="fa-solid fa-gift"></i> Allowance Payment</a></li>
       <li class="nav-item">
         <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Staff Overtime</a>
       </li>

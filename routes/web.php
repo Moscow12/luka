@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Payrollgeneration;
 use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
@@ -66,8 +67,9 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('leave/leaveapproval', Leaveapproval::class)->name('leave.leaveapproval');
     Route::get('/leave/leavemanagement', Leavemanagement::class)->name('leave.leavemanagement');
 
-    //payroll route
+    //payroll routes
     Route::get('/payroll/payrollgeneration', Payrollgeneration::class)->name('payrollgeneration');
+    Route::get('/payroll/allowancepayment', Allowancepayment::class)->name('allowancepayment');
 });
 
 
