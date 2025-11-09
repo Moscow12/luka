@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ContractAllowance extends Model
 {
-    use HasUuids;
+    use HasFactory, HasUuids;
     protected $table = 'contract_allowances';
     protected $fillable = [
         'contract_id',
