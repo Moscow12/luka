@@ -104,7 +104,7 @@
                                 <span class="input-group-text bg-white">
                                     <i class="fa-solid fa-calendar"></i>
                                 </span>
-                                <input type="date" wire:model.live="rosterDate" class="form-control" />
+                                <input type="text" wire:model.live="rosterDate" class="form-control flatpickr" placeholder="Select Date" />
                                 @if($rosterDate)
                                     <button wire:click="$set('rosterDate', '')" class="btn btn-outline-secondary" type="button">
                                         <i class="fa-solid fa-times"></i>
@@ -169,12 +169,12 @@
                         <div class="row g-3 mt-2 pt-3 border-top">
                             <div class="col-12 col-md-4">
                                 <label class="form-label small text-muted mb-1">Date From</label>
-                                <input type="date" wire:model.live="dateFrom" class="form-control">
+                                <input type="text" wire:model.live="dateFrom" class="form-control flatpickr" placeholder="Select Date">
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label class="form-label small text-muted mb-1">Date To</label>
-                                <input type="date" wire:model.live="dateTo" class="form-control">
+                                <input type="text" wire:model.live="dateTo" class="form-control flatpickr" placeholder="Select Date">
                             </div>
 
                             <div class="col-12 col-md-4">

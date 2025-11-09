@@ -340,7 +340,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Date of Birth</label>
-                                    <input type="date" wire:model="dob" class="form-control @error('dob') is-invalid @enderror">
+                                    <input type="text" wire:model="dob" class="form-control flatpickr @error('dob') is-invalid @enderror" placeholder="Select Date">
                                     @error('dob') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">

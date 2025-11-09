@@ -63,8 +63,8 @@
                                         Date of Birth
                                         <span class="text-danger">*</span>
                                     </label>
-                                    <div class="input-group me-3 flatpickr rounded">
-                                        <input class="form-control" type="date" placeholder="Select Date" aria-describedby="basic-addon2" wire:model="dob" />
+                                    <div class="input-group me-3 rounded">
+                                        <input class="form-control flatpickr" type="text" placeholder="Select Date" aria-describedby="basic-addon2" wire:model="dob" />
 
                                         <span class="input-group-text text-secondary" id="basic-addon2">
                                             <i class="fa-solid fa-calendar"></i>
@@ -137,8 +137,8 @@
                                 </div>
                                 <div class="col-md-4 col-12">
                                     <label class="form-label">Hire Date</label>
-                                    <div class="input-group me-3 flatpickr rounded">
-                                        <input class="form-control" type="date" placeholder="Select Date" aria-describedby="basic-addon2" wire:model="hired_date" />
+                                    <div class="input-group me-3 rounded">
+                                        <input class="form-control flatpickr" type="text" placeholder="Select Date" aria-describedby="basic-addon2" wire:model="hired_date" />
 
                                         <span class="input-group-text text-secondary" id="basic-addon2">
                                             <i class="fa-solid fa-calendar"></i>

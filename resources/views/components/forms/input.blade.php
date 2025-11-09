@@ -71,12 +71,12 @@ $wireModel = collect($attributes->getAttributes())
         {{-- DEFAULT INPUT --}}
         @else
         <input
-            type="{{ $type }}"
+            type="{{ $type === 'date' || $type === 'time' || $type === 'datetime' ? 'text' : $type }}"
             name="{{ $name }}"
             id="{{ $name }}"
             value="{{ old($name, $value) }}"
             placeholder="{{ $placeholder ?: ($label ?? ucfirst($name)) }}"
-            class="form-control @error($name) is-invalid @enderror"
+            class="form-control @if($type === 'date') flatpickr @elseif($type === 'time') timepickr @elseif($type === 'datetime') datetimepickr @endif @error($name) is-invalid @enderror"
             {{ $attributes->except(['class']) }}
             @if(!$wireModel)
             @if($type==='file' )
@@ -89,8 +89,8 @@ $wireModel = collect($attributes->getAttributes())
             @if($autofocus) autofocus @endif
             @if($disabled) disabled @endif
             @if($readonly) readonly @endif
-            @if($min !==null) min="{{ $min }}" @endif
-            @if($max !==null) max="{{ $max }}" @endif
+            @if($min !==null && $type !== 'date' && $type !== 'time' && $type !== 'datetime') min="{{ $min }}" @endif
+            @if($max !==null && $type !== 'date' && $type !== 'time' && $type !== 'datetime') max="{{ $max }}" @endif
             @if($step !==null) step="{{ $step }}" @endif />
 
         @endif

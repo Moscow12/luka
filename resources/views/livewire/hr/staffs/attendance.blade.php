@@ -19,7 +19,7 @@
                 <div>
                     <form>
                         <input class="form-control" type="search" value="" placeholder="Search" />
-                        <input class="form-control" type="date" name="clockdate"  />
+                        <input class="form-control flatpickr" type="text" name="clockdate" placeholder="Select Date" />
                     </form>
                 </div>
                 <a href="#!" class="text-inherit">

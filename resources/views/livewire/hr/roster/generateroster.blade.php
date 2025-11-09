@@ -60,7 +60,7 @@
                                 <i class="fa-solid fa-calendar text-primary"></i> Roster Date
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="date" wire:model="rosterDate" class="form-control @error('rosterDate') is-invalid @enderror">
+                            <input type="text" wire:model="rosterDate" class="form-control flatpickr @error('rosterDate') is-invalid @enderror" placeholder="Select Date">
                             @error('rosterDate')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
