@@ -22,11 +22,16 @@ class departments extends Model
     protected $fillable = [
         'name',
         'description',
+        'supervisor_title_id',
         'added_by',
     ];
 
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
+    }
+    public function supervisor_title()
+    {
+        return $this->belongsTo(Jobtitle::class, 'supervisor_title_id');
     }
 }

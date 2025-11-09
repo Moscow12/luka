@@ -15,6 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->foreignUuid('supervisor_title_id')->constrained('jobtitles')->onDelete('cascade')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignUuid('added_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

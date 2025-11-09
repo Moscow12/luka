@@ -2,6 +2,7 @@
 
 use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
+use App\Livewire\Hr\Leave\Leavemanagement;
 use App\Livewire\Hr\Leave\Requestleave;
 use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
 use App\Livewire\Setup\Approvalconfigurations;
@@ -60,4 +61,5 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');
     Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
     Route::get('leave/leaveapproval', Leaveapproval::class)->name('leave.leaveapproval');
+    Route::get('/leave/leavemanagement', Leavemanagement::class)->name('leave.leavemanagement');
 });

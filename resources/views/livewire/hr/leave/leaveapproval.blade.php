@@ -22,7 +22,13 @@
                 <li class="nav-item">
                     <button wire:click="$set('statusFilter', 'Awaiting')"
                             class="nav-link {{ $statusFilter === 'Awaiting' ? 'active' : '' }}">
-                        Pending Requests
+                        Pending Approvals
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button wire:click="$set('statusFilter', 'Active')"
+                            class="nav-link {{ $statusFilter === 'Active' ? 'active' : '' }}">
+                        In Progress
                     </button>
                 </li>
                 <li class="nav-item">
@@ -59,15 +65,11 @@
                                 <tr>
                                     <th>Employee</th>
                                     <th>Leave Type</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
+                                    <th>Period</th>
                                     <th>Days</th>
-                                    <th>Reason</th>
-                                    <th>Requested On</th>
                                     <th>Status</th>
-                                    @if($statusFilter === 'Awaiting')
+                                    <th>Approval Progress</th>
                                     <th>Actions</th>
-                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -89,27 +91,43 @@
                                             {{ $leave->leave->name ?? 'N/A' }}
                                         </span>
                                     </td>
-                                    <td>{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
+                                    <td>
+                                        <div>{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</div>
+                                        <small class="text-muted">to {{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</small>
+                                    </td>
                                     <td>{{ $leave->number_of_days }} {{ Str::plural('day', $leave->number_of_days) }}</td>
                                     <td>
-                                        <span class="text-truncate d-inline-block" style="max-width: 200px;"
-                                              data-bs-toggle="tooltip" title="{{ $leave->reason }}">
-                                            {{ $leave->reason ?? '-' }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $leave->created_at->format('d M Y') }}</td>
-                                    <td>
                                         @if($leave->status === 'Awaiting')
-                                        <span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis">Awaiting</span>
+                                        @elseif($leave->status === 'Active')
+                                        <span class="badge bg-info-subtle text-info-emphasis">In Progress</span>
                                         @elseif($leave->status === 'Approved')
                                         <span class="badge bg-success-subtle text-success-emphasis">Approved</span>
                                         @else
                                         <span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>
                                         @endif
                                     </td>
-                                    @if($statusFilter === 'Awaiting')
                                     <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            @if($leave->approvalnote->count() > 0)
+                                                @foreach($leave->approvalnote as $approval)
+                                                <small>
+                                                    <i class="fa-solid fa-{{ $approval->status === 'approved' ? 'check text-success' : 'times text-danger' }}"></i>
+                                                    {{ $approval->approval_level->name ?? 'N/A' }}
+                                                    <span class="text-muted">({{ $approval->approver->name ?? 'Unknown' }})</span>
+                                                </small>
+                                                @endforeach
+                                            @endif
+                                            @if($leave->nextApprovalLevel)
+                                                <small class="text-primary">
+                                                    <i class="fa-solid fa-clock"></i>
+                                                    Next: {{ $leave->nextApprovalLevel->name }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($leave->canUserApprove && in_array($leave->status, ['Awaiting', 'Active']))
                                         <div class="d-flex gap-2">
                                             <button wire:click="openApprovalModal('{{ $leave->id }}', 'approve')"
                                                     class="btn btn-sm btn-success"
@@ -124,12 +142,14 @@
                                                 <i class="fa-solid fa-times"></i>
                                             </button>
                                         </div>
+                                        @else
+                                        <span class="text-muted small">-</span>
+                                        @endif
                                     </td>
-                                    @endif
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="{{ $statusFilter === 'Awaiting' ? 9 : 8 }}" class="text-center py-5">
+                                    <td colspan="7" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="fa-solid fa-inbox fa-3x mb-3"></i>
                                             <p>No {{ strtolower($statusFilter) }} leave requests found.</p>
@@ -162,6 +182,14 @@
         :centered="true">
 
         <form wire:submit.prevent="processApproval">
+            <!-- Approval Level Info -->
+            @if($currentApprovalLevel)
+            <div class="alert alert-info mb-3">
+                <strong>Approval Level:</strong> {{ $currentApprovalLevel->name }}
+                <span class="badge bg-primary ms-2">Level {{ $currentApprovalLevel->level_order }}</span>
+            </div>
+            @endif
+
             <div class="mb-4">
                 <div class="card bg-light">
                     <div class="card-body">
@@ -200,22 +228,53 @@
                 </div>
             </div>
 
+            <!-- Previous Approvals -->
+            @if($selectedLeave->approvalnote->count() > 0)
+            <div class="mb-4">
+                <h6 class="mb-3">Approval History</h6>
+                <div class="list-group">
+                    @foreach($selectedLeave->approvalnote as $approval)
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    {{ $approval->approval_level->name ?? 'N/A' }}
+                                    <span class="badge bg-{{ $approval->status === 'approved' ? 'success' : 'danger' }}-subtle text-{{ $approval->status === 'approved' ? 'success' : 'danger' }}-emphasis">
+                                        {{ ucfirst($approval->status) }}
+                                    </span>
+                                </h6>
+                                <small class="text-muted">
+                                    By: {{ $approval->approver->name ?? 'Unknown' }} •
+                                    {{ $approval->approved_at->format('d M Y H:i') }}
+                                </small>
+                                @if($approval->comments)
+                                <p class="mb-0 mt-2"><small>{{ $approval->comments }}</small></p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <div class="mb-3">
-                <label for="approvalNote" class="form-label">
-                    {{ $actionType === 'approve' ? 'Approval' : 'Rejection' }} Note
+                <label for="comments" class="form-label">
+                    {{ $actionType === 'approve' ? 'Approval' : 'Rejection' }} Comments
                     <span class="text-muted">(Optional)</span>
                 </label>
                 <textarea
-                    wire:model="approvalNote"
+                    wire:model="comments"
                     class="form-control"
-                    id="approvalNote"
+                    id="comments"
                     rows="3"
                     placeholder="Add any comments or notes..."></textarea>
             </div>
 
             <div class="alert alert-{{ $actionType === 'approve' ? 'success' : 'warning' }}" role="alert">
                 <i class="fa-solid fa-{{ $actionType === 'approve' ? 'check-circle' : 'exclamation-triangle' }} me-2"></i>
-                Are you sure you want to {{ $actionType }} this leave request?
+                Are you sure you want to {{ $actionType }} this leave request at
+                <strong>{{ $currentApprovalLevel->name ?? 'this level' }}</strong>?
             </div>
 
             <x-slot name="footer">

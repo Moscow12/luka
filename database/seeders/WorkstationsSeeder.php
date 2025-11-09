@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Workstations;
+use App\Models\workstations;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -231,7 +231,7 @@ class WorkstationsSeeder extends Seeder
             $workstation['created_at'] = now();
             $workstation['updated_at'] = now();
 
-            Workstations::create($workstation);
+            workstations::create($workstation);
             $this->command->info("✅ Created: {$workstation['workstation_name']}");
         }
 

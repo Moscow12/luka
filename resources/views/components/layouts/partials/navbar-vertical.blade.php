@@ -49,7 +49,7 @@
         <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Staff Registration</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Leave Management</a>
+        <a class='nav-link' href="{{ route('leave.leavemanagement') }}"><i class="fa-solid fa-location-dot"></i> Leave Management</a>
       </li>
       <li class="nav-item">
         <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Roster Management</a>

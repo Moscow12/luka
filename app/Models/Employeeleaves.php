@@ -48,4 +48,9 @@ class Employeeleaves extends Model
     {
         return $this->belongsTo(Leaves::class, 'leave_id');
     }
+
+    public function approvalnote()
+    {
+        return $this->hasMany(leaverequestapproval::class, 'leave_request_id');
+    }
 }
