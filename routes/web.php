@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Acc\Payroll\Payrollgeneration;
 use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Leavemanagement;
@@ -7,6 +8,7 @@ use App\Livewire\Hr\Leave\Requestleave;
 use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
+use App\Models\payrolls;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', App\Livewire\LandingPage::class)->name('dashboard')->middleware('auth');
@@ -63,4 +65,9 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
     Route::get('leave/leaveapproval', Leaveapproval::class)->name('leave.leaveapproval');
     Route::get('/leave/leavemanagement', Leavemanagement::class)->name('leave.leavemanagement');
+
+    //payroll route
+    Route::get('/payroll/payrollgeneration', Payrollgeneration::class)->name('payrollgeneration');
 });
+
+

@@ -70,7 +70,7 @@
     <ul class="dropdown-menu flex-column">
       <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Generate Payroll</a>
+        <a class='nav-link' href="{{ route('payrollgeneration') }}"><i class="fa-solid fa-sliders"></i> Generate Payroll</a>
       </li>
       <li class="nav-item">
         <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Staff Overtime</a>

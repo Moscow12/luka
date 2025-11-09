@@ -119,6 +119,17 @@ class Employee extends Model
     {
         return $this->belongsTo(denominations::class, 'denomination_id');
     }
+
+    public function contracts()
+    {
+        return $this->hasMany(Employeecontracts::class, 'employee_id');
+    }
+
+    public function activeContract()
+    {
+        return $this->hasOne(Employeecontracts::class, 'employee_id')->where('status', 'active');
+    }
+
     // ================ end relationships ================#
 
     // ================ COMPUTED ATTRIBUTES ================#
