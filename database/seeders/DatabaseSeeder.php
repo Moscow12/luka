@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
             DeductionSeeder::class,
             JobtitleSeeder::class,
             AllowanceSeeder::class,
+            WorkstationsSeeder::class,
+            EmployeeSeeder::class,
             
         ]);
     }

@@ -19,7 +19,9 @@ class departmentsFactory extends Factory
         return [
             'name' => $this->faker->company(),
             'description' => $this->faker->sentence(),
-            'added_by' => \App\Models\User::factory(),
+            'supervisor_title_id' => \App\Models\Jobtitle::inRandomOrder()->first()?->id ?? \App\Models\Jobtitle::factory(),
+            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'added_by' => \App\Models\User::inRandomOrder()->first()?->id ?? \App\Models\User::factory(),
         ];
     }
 }

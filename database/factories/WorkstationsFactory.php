@@ -2,13 +2,21 @@
 
 namespace Database\Factories;
 
+use App\Models\countries;
+use App\Models\districts;
+use App\Models\regions;
+use App\Models\User;
+use App\Models\wards;
+use App\Models\workstations;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\workstations>
  */
 class WorkstationsFactory extends Factory
 {
+    protected $model = workstations::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,19 +25,18 @@ class WorkstationsFactory extends Factory
     public function definition(): array
     {
         return [
-            'workstation_name' => $this->faker->company(),
-            'location' => $this->faker->randomElement(['Main Office', 'Branch Office', 'Remote', 'Satellite']),
-            'address' => $this->faker->streetAddress(),
+            'workstation_name' => $this->faker->company().' '.$this->faker->randomElement(['Branch', 'Office', 'Center', 'HQ']),
+            'location' => $this->faker->randomElement(['Main Office', 'Downtown', 'Uptown', 'West Side', 'East Side', 'North Branch', 'South Branch']),
             'phone_number' => $this->faker->phoneNumber(),
             'tin_number' => $this->faker->numerify('##-#######'),
-            'email_address' => $this->faker->companyEmail(),
-            'physical_address' => $this->faker->streetAddress(),
-            'region_id' => \App\Models\regions::factory(),
-            'district_id' => \App\Models\districts::factory(),
-            'ward_id' => \App\Models\wards::factory(),
-            'country_id' => \App\Models\countries::factory(),
+            'email_address' => $this->faker->unique()->companyEmail(),
             'postal_code' => $this->faker->postcode(),
-            'added_by'  => \App\Models\User::factory(),
+            'physical_address' => $this->faker->streetAddress(),
+            'country_id' => countries::inRandomOrder()->first()?->id ?? countries::factory(),
+            'region_id' => regions::inRandomOrder()->first()?->id ?? regions::factory(),
+            'district_id' => districts::inRandomOrder()->first()?->id ?? districts::factory(),
+            'ward_id' => wards::inRandomOrder()->first()?->id ?? wards::factory(),
+            'added_by' => User::inRandomOrder()->first()?->id ?? User::factory(),
         ];
     }
 }

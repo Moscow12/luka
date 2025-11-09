@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\countries;
+use App\Models\districts;
+use App\Models\regions;
 use App\Models\User;
+use App\Models\wards;
 use App\Models\workstations;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class WorkstationsSeeder extends Seeder
 {
@@ -20,18 +23,31 @@ class WorkstationsSeeder extends Seeder
             $this->command->error('No users found in database!');
             if ($this->command->confirm('Create a default user first?')) {
                 User::factory()->create([
-                    'workstation_name' => 'System Admin',
-                    'email_address' => 'admin@example.com',
+                    'name' => 'System Admin',
+                    'email' => 'admin@example.com',
                 ]);
                 $this->command->info('✅ Default user created.');
+            } else {
+                $this->command->error('Cannot proceed without users. Exiting.');
+
+                return;
             }
+        }
+
+        // Check for required location data
+        if (countries::count() === 0 || regions::count() === 0 ||
+            districts::count() === 0 || wards::count() === 0) {
+            $this->command->error('Missing required location data (countries, regions, districts, or wards)!');
+            $this->command->info('Please seed location data first.');
+
+            return;
         }
 
         $seedingOption = $this->command->choice('How would you like to seed workstations?', [
             'quick_bulk',
             'interactive_custom',
             'sample_data',
-            'skip_seeding'
+            'skip_seeding',
         ], 'quick_bulk');
 
         switch ($seedingOption) {
@@ -46,6 +62,7 @@ class WorkstationsSeeder extends Seeder
                 break;
             case 'skip_seeding':
                 $this->command->info('Skipping workstation seeding.');
+
                 return;
         }
 
@@ -55,9 +72,9 @@ class WorkstationsSeeder extends Seeder
     protected function quickBulkSeeding()
     {
         $count = (int) $this->command->ask('How many workstations do you want to create?', 5);
-        
+
         $location = $this->command->choice('Primary location for these workstations?', [
-            'New York', 'London', 'Tokyo', 'Sydney', 'Berlin', 'Toronto', 'Singapore', 'Paris'
+            'New York', 'London', 'Tokyo', 'Sydney', 'Berlin', 'Toronto', 'Singapore', 'Paris',
         ], 'New York');
 
         $this->command->info("Creating {$count} workstations in {$location}...");
@@ -66,7 +83,7 @@ class WorkstationsSeeder extends Seeder
 
         $bar = $this->command->getOutput()->createProgressBar($count);
 
-        Workstations::factory()->count($count)->create([ 
+        workstations::factory()->count($count)->create([
             'location' => $location,
             'added_by' => $adminUser->id,
         ])->each(function () use ($bar) {
@@ -80,8 +97,6 @@ class WorkstationsSeeder extends Seeder
 
     protected function interactiveCustomSeeding()
     {
-        $workstations = [];
-
         while (true) {
             $this->command->info("\n--- Add New Workstation ---");
 
@@ -89,18 +104,39 @@ class WorkstationsSeeder extends Seeder
             $location = $this->command->ask('Location', 'Main Office');
             $phone_number = $this->command->ask('Phone number', '+1-555-0100');
             $tin_number = $this->command->ask('TIN number', '12-3456789');
-            $email_address = $this->command->ask('Email address', "contact@{$workstation_name}.com");
+            $email_address = $this->command->ask('Email address', 'contact@company.com');
             $physical_address = $this->command->ask('Street address', '123 Main Street');
-            $region_id = $this->command->ask('City', 'New York');
-            $district_id = $this->command->ask('District', 'NY');
-            $country_id = $this->command->ask('Country', 'USA');
             $postal_code = $this->command->ask('Postal code', '10001');
-            $ward_id = $this->command->ask('Ward', '1');
+
+            // Get available countries
+            $availableCountries = countries::limit(10)->pluck('name', 'id');
+            if ($availableCountries->isEmpty()) {
+                $this->command->error('No countries found!');
+
+                return;
+            }
+
+            $country_id = $this->command->choice('Select country', $availableCountries->toArray());
+            $country_id = $availableCountries->search($country_id);
+
+            // Get available regions
+            $availableRegions = regions::limit(10)->pluck('name', 'id');
+            $region_id = $this->command->choice('Select region', $availableRegions->toArray());
+            $region_id = $availableRegions->search($region_id);
+
+            // Get available districts
+            $availableDistricts = districts::limit(10)->pluck('name', 'id');
+            $district_id = $this->command->choice('Select district', $availableDistricts->toArray());
+            $district_id = $availableDistricts->search($district_id);
+
+            // Get available wards
+            $availableWards = wards::limit(10)->pluck('name', 'id');
+            $ward_id = $this->command->choice('Select ward', $availableWards->toArray());
+            $ward_id = $availableWards->search($ward_id);
 
             $adminUser = User::first();
-            $addedBy = $adminUser ? $adminUser->id : 1;
 
-            $workstations[] = [
+            workstations::create([
                 'workstation_name' => $workstation_name,
                 'location' => $location,
                 'phone_number' => $phone_number,
@@ -112,25 +148,31 @@ class WorkstationsSeeder extends Seeder
                 'country_id' => $country_id,
                 'ward_id' => $ward_id,
                 'postal_code' => $postal_code,
-                'added_by' => $addedBy,
-                'created_at' => now(),
-            ];
+                'added_by' => $adminUser->id,
+            ]);
 
-            $this->command->info("✅ Workstation '{$workstation_name}' added!");
+            $this->command->info("✅ Workstation '{$workstation_name}' created!");
 
-            if (!$this->command->confirm('Add another workstation?')) {
+            if (! $this->command->confirm('Add another workstation?')) {
                 break;
             }
-        }
-
-        if (!empty($workstations)) {
-            DB::table('workstations')->insert($workstations);
-            $this->command->info("🎉 Successfully created " . count($workstations) . " workstations!");
         }
     }
 
     protected function sampleDataSeeding()
     {
+        // Get random location IDs for sample data
+        $country = countries::inRandomOrder()->first();
+        $region = regions::inRandomOrder()->first();
+        $district = districts::inRandomOrder()->first();
+        $ward = wards::inRandomOrder()->first();
+
+        if (! $country || ! $region || ! $district || ! $ward) {
+            $this->command->error('Missing location data. Cannot create sample workstations.');
+
+            return;
+        }
+
         $sampleWorkstations = [
             [
                 'workstation_name' => 'Headquarters',
@@ -139,9 +181,6 @@ class WorkstationsSeeder extends Seeder
                 'tin_number' => '11-2233445',
                 'email_address' => 'hq@company.com',
                 'physical_address' => '123 Corporate Avenue',
-                'region_id' => 'New York',
-                'district_id' => 'NY',
-                'country_id' => 'USA',
                 'postal_code' => '10001',
             ],
             [
@@ -151,9 +190,6 @@ class WorkstationsSeeder extends Seeder
                 'tin_number' => '11-2233446',
                 'email_address' => 'downtown@company.com',
                 'physical_address' => '456 Business Street',
-                'region_id' => 'New York',
-                'district_id' => 'NY',
-                'country_id' => 'USA',
                 'postal_code' => '10002',
             ],
             [
@@ -163,9 +199,6 @@ class WorkstationsSeeder extends Seeder
                 'tin_number' => '11-2233447',
                 'email_address' => 'west@company.com',
                 'physical_address' => '789 Innovation Road',
-                'region_id' => 'Los Angeles',
-                'district_id' => 'CA',
-                'country_id' => 'USA',
                 'postal_code' => '90210',
             ],
             [
@@ -175,16 +208,13 @@ class WorkstationsSeeder extends Seeder
                 'tin_number' => 'GB-123456789',
                 'email_address' => 'london@company.com',
                 'physical_address' => '1 Business Square',
-                'region_id' => 'London',
-                'district_id' => 'Greater London',
-                'country_id' => 'United Kingdom',
                 'postal_code' => 'SW1A 1AA',
-            ]
+            ],
         ];
 
-        $this->command->info('Available sample workstationWorkstations:');
+        $this->command->info('Available sample workstations:');
         foreach ($sampleWorkstations as $index => $workstation) {
-            $this->command->line("{$index}. {$workstation['workstation_name']} - {$workstation['region_id']}, {$workstation['country_id']}");
+            $this->command->line("{$index}. {$workstation['workstation_name']} - {$workstation['location']}");
         }
 
         $choice = $this->command->choice(
@@ -224,17 +254,18 @@ class WorkstationsSeeder extends Seeder
         }
 
         $adminUser = User::first();
-        $addedBy = $adminUser ? $adminUser->id : 1;
 
         foreach ($workstationsToCreate as $workstation) {
-            $workstation['added_by'] = $addedBy;
-            $workstation['created_at'] = now();
-            $workstation['updated_at'] = now();
+            $workstation['country_id'] = $country->id;
+            $workstation['region_id'] = $region->id;
+            $workstation['district_id'] = $district->id;
+            $workstation['ward_id'] = $ward->id;
+            $workstation['added_by'] = $adminUser->id;
 
             workstations::create($workstation);
             $this->command->info("✅ Created: {$workstation['workstation_name']}");
         }
 
-        $this->command->info("🎉 Created " . count($workstationsToCreate) . " sample workstations!");
+        $this->command->info('🎉 Created '.count($workstationsToCreate).' sample workstations!');
     }
 }

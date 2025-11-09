@@ -19,7 +19,8 @@ class designationsFactory extends Factory
         return [
             'name' => $this->faker->jobTitle(),
             'code' => $this->faker->unique()->bothify('DT-###??'),
-            'added_by' => \App\Models\User::factory(),
+            'status' => $this->faker->randomElement(['Active', 'Inactive']),
+            'added_by' => \App\Models\User::inRandomOrder()->first()?->id ?? \App\Models\User::factory(),
         ];
     }
 }
