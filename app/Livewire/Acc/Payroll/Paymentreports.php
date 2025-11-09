@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Acc\Payroll;
 
+use App\Exports\PaymentReportsExport;
 use App\Models\allowances;
 use App\Models\departments;
 use App\Models\payrolls;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Paymentreports extends Component
 {
@@ -88,13 +90,15 @@ class Paymentreports extends Component
 
     public function resetFilters()
     {
-        $this->search = '';
+        $this->reset([
+            'search',
+            'department',
+            'status',
+            'salaryMin',
+            'salaryMax',
+            'allowance',
+        ]);
         $this->period = now()->format('Y-m');
-        $this->department = '';
-        $this->status = '';
-        $this->salaryMin = '';
-        $this->salaryMax = '';
-        $this->allowance = '';
         $this->resetPage();
     }
 
@@ -108,6 +112,7 @@ class Paymentreports extends Component
         $this->viewingPayrollId = $payrollId;
         $this->payrollDetails = payrolls::with([
             'employee.department',
+            'employee.designation',
             'employee.activeContract',
             'contract',
             'items.contractAllowance.allowance',
@@ -124,6 +129,59 @@ class Paymentreports extends Component
     public function printSalarySlip()
     {
         $this->dispatch('print-salary-slip');
+    }
+
+    public function exportExcel()
+    {
+        $query = $this->getPayrollsQuery();
+        $summary = $this->getSummary();
+
+        $filename = 'payment-reports-'.$this->period.'-'.now()->format('YmdHis').'.xlsx';
+
+        return Excel::download(
+            new PaymentReportsExport($query, $this->period, $summary),
+            $filename
+        );
+    }
+
+    public function exportCSV()
+    {
+        $query = $this->getPayrollsQuery();
+        $summary = $this->getSummary();
+
+        $filename = 'payment-reports-'.$this->period.'-'.now()->format('YmdHis').'.csv';
+
+        return Excel::download(
+            new PaymentReportsExport($query, $this->period, $summary),
+            $filename,
+            \Maatwebsite\Excel\Excel::CSV
+        );
+    }
+
+    public function exportPDF()
+    {
+        $query = $this->getPayrollsQuery();
+        $summary = $this->getSummary();
+
+        $filename = 'payment-reports-'.$this->period.'-'.now()->format('YmdHis').'.pdf';
+
+        return Excel::download(
+            new PaymentReportsExport($query, $this->period, $summary),
+            $filename,
+            \Maatwebsite\Excel\Excel::DOMPDF
+        );
+    }
+
+    private function getSummary()
+    {
+        $summaryQuery = $this->getPayrollsQuery();
+
+        return [
+            'total_payrolls' => $summaryQuery->count(),
+            'total_gross' => $summaryQuery->sum('gross_salary'),
+            'total_deductions' => $summaryQuery->sum('total_deductions'),
+            'total_net' => $summaryQuery->sum('net_salary'),
+        ];
     }
 
     private function getPayrollsQuery()
@@ -164,14 +222,7 @@ class Paymentreports extends Component
         $departments = departments::orderBy('name')->get();
         $allowances = allowances::where('is_active', true)->orderBy('name')->get();
 
-        // Calculate summary statistics
-        $summaryQuery = $this->getPayrollsQuery();
-        $summary = [
-            'total_payrolls' => $summaryQuery->count(),
-            'total_gross' => $summaryQuery->sum('gross_salary'),
-            'total_deductions' => $summaryQuery->sum('total_deductions'),
-            'total_net' => $summaryQuery->sum('net_salary'),
-        ];
+        $summary = $this->getSummary();
 
         return view('livewire.acc.payroll.paymentreports', [
             'payrolls' => $payrolls,

@@ -139,6 +139,11 @@ class Employee extends Model
         return "{$this->first_name} {$this->middle_name} {$this->last_name}";
     }
 
+    public function getEmployeeNumberAttribute()
+    {
+        return $this->employee_no;
+    }
+
     public function getYearsOfServiceAttribute()
     {
         return $this->hired_date->diffInYears(now());

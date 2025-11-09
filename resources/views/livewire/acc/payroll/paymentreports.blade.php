@@ -117,6 +117,30 @@
                         <!-- Actions -->
                         <div class="col-12 col-md-4">
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                <!-- Export Dropdown -->
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-download me-1"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="#" wire:click.prevent="exportExcel">
+                                                <i class="fa-solid fa-file-excel text-success me-2"></i> Excel (.xlsx)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" wire:click.prevent="exportCSV">
+                                                <i class="fa-solid fa-file-csv text-info me-2"></i> CSV (.csv)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" wire:click.prevent="exportPDF">
+                                                <i class="fa-solid fa-file-pdf text-danger me-2"></i> PDF (.pdf)
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
                                 <!-- Filter Toggle Button -->
                                 <button wire:click="toggleFilters" type="button"
                                     class="btn {{ $showFilters ? 'btn-primary' : 'btn-white' }}">
