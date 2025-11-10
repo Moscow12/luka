@@ -120,27 +120,30 @@
     </ul>
   </li>
   <li class="nav-item">
-    <div class="nav-heading">Contract management</div>
+    <div class="nav-heading">Contract Management</div>
     <hr class="mx-5 nav-line mb-1" />
   </li>
   <!-- Nav item -->
     <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" href="{{ route('contracts.list') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
-        <i class="fa-solid fa-money-bill"></i>
+        <i class="fa-solid fa-file-contract"></i>
       </span>
-      <span class="text">Contracts</span>
+      <span class="text">Institutional Contracts</span>
     </a>
     <ul class="dropdown-menu flex-column">
-      <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item"><a class='nav-link' href="{{ route('contracts.list') }}"><i class="fa-solid fa-list"></i> All Contracts</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Contracts</a>
+        <a class='nav-link' href="{{ route('contracts.create') }}"><i class="fa-solid fa-plus-circle"></i> New Contract</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Contract Management</a>
+        <a class='nav-link' href="{{ route('contracts.list') }}"><i class="fa-solid fa-clock"></i> Expiring Soon</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Contract Report</a>
+        <a class='nav-link' href="{{ route('contracts.list') }}"><i class="fa-solid fa-check-double"></i> Pending Approvals</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('contracts.list') }}"><i class="fa-solid fa-chart-bar"></i> Contract Reports</a>
       </li>
     </ul>
   </li>

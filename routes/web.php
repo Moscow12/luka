@@ -1,15 +1,28 @@
 <?php
 
-use App\Livewire\Acc\Payroll\{Paymentreports, Payrollgeneration, Allowancepayment};
+use App\Livewire\Acc\Payroll\Allowancepayment;
+use App\Livewire\Acc\Payroll\Paymentreports;
+use App\Livewire\Acc\Payroll\Payrollgeneration;
+use App\Livewire\Contracts\ContractDetails;
+use App\Livewire\Contracts\ManageContracts;
 use App\Livewire\Hr\Attendance\Managefpattendance;
 use App\Livewire\Hr\Attendance\Managefpusers;
 use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Leavemanagement;
 use App\Livewire\Hr\Leave\Requestleave;
-use App\Livewire\Hr\Roster\Viewroster;
 use App\Livewire\Hr\Roster\Generateroster;
-use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Leave, Otherdocuments, Promotions, Qualifications, Salary};
+use App\Livewire\Hr\Roster\Viewroster;
+use App\Livewire\Hr\Staffs\Attendance;
+use App\Livewire\Hr\Staffs\Contracts;
+use App\Livewire\Hr\Staffs\Dependants;
+use App\Livewire\Hr\Staffs\Digitalsignature;
+use App\Livewire\Hr\Staffs\Disciplinary;
+use App\Livewire\Hr\Staffs\Leave;
+use App\Livewire\Hr\Staffs\Otherdocuments;
+use App\Livewire\Hr\Staffs\Promotions;
+use App\Livewire\Hr\Staffs\Qualifications;
+use App\Livewire\Hr\Staffs\Salary;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
 use Illuminate\Support\Facades\Route;
@@ -63,24 +76,30 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/otherdocuments/{id}', Otherdocuments::class)->name('hr.otherdocuments');
     Route::get('/staffs/digitalsignature/{id}', Digitalsignature::class)->name('hr.digitalsignature');
 
-    //attendance routes
+    // attendance routes
     Route::get('/attendance/managefpattendance', Managefpattendance::class)->name('fp.attendance');
     Route::get('/attendance/managefpusers', Managefpusers::class)->name('managefpusers');
 
-    //leave routes
+    // leave routes
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');
     Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
     Route::get('leave/leaveapproval', Leaveapproval::class)->name('leave.leaveapproval');
     Route::get('/leave/leavemanagement', Leavemanagement::class)->name('leave.leavemanagement');
 
-    //payroll routes
+    // payroll routes
     Route::get('/payroll/payrollgeneration', Payrollgeneration::class)->name('payrollgeneration');
     Route::get('/payroll/allowancepayment', Allowancepayment::class)->name('allowancepayment');
     Route::get('/payroll/paymentreports', Paymentreports::class)->name('paymentreports');
 
-    //employee roster routes
+    // employee roster routes
     Route::get('/roster/viewroster', Viewroster::class)->name('viewroster.index');
     Route::get('/roster/generateroster', Generateroster::class)->name('roster.create');
 });
 
-
+Route::prefix('contracts')->middleware('auth')->group(function () {
+    // Institutional Contract Management
+    Route::get('/', ManageContracts::class)->name('contracts.list');
+    Route::get('/view/{contractId}', ContractDetails::class)->name('contracts.view');
+    Route::get('/create', ManageContracts::class)->name('contracts.create');
+    Route::get('/edit/{contractId}', ManageContracts::class)->name('contracts.edit');
+});
