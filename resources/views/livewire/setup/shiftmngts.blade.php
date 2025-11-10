@@ -1,116 +1,311 @@
-<div>
-    <div>
-        <h5 class="mb-5">Shifts</h5>
-    </div>
-    <div class="d-flex flex-column gap-6">
-        <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
-            <div class="d-flex flex-row gap-3 align-items-center">
-                <div>
-                    <form>
-                        <input class="form-control" type="search" value="" placeholder="Search" />
-                    </form>
+<div class="custom-container">
+
+    <x-pages.breadcrumn title="SHIFT MANAGEMENT" :breadcrumbs="[
+        ['label' => 'Home', 'url' => route('dashboard')],
+        ['label' => 'Setup', 'url' => '#'],
+        ['label' => 'Shift Management', 'url' => '#'],
+    ]">
+    </x-pages.breadcrumn>
+
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    {{-- Summary Cards --}}
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-lg bg-primary-subtle text-primary rounded">
+                                <i class="fa-solid fa-clock fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted mb-1 small">Total Shifts</p>
+                            <h4 class="mb-0 fw-bold">{{ number_format($summary['total']) }}</h4>
+                        </div>
+                    </div>
                 </div>
-                <a href="#!" class="text-inherit">
-                    <span>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M6 4v4" />
-                            <path d="M6 12v8" />
-                            <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M12 4v10" />
-                            <path d="M12 18v2" />
-                            <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M18 4v1" />
-                            <path d="M18 9v11" />
-                        </svg>
-                    </span>
-                    <span>Filter</span>
-                </a>
-            </div>
-            <div>
-                <button class="btn btn-primary d-flex flex-row gap-1 align-items-center" wire:click="$set('showModal', true)">
-                    <i class="fa-solid fa-plus"></i>
-                    ADD SHIFT TYPE
-                </button>
             </div>
         </div>
-        <div>
-            <div class="card card-lg overflow-hidden" id="taskTable" data-list="shift_title,shift_type,shift_assigned,shift_date,shift_priority">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        @if (session()->has('success'))
-                            <div class="alert alert-success dismissible fade show" role="alert" data-bs-dismiss="alert" aria-label="Close">
-                                {{ session('success') }}
-                                
-                            </div>
-                        @endif
-                        <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
-                            <thead>
-                                <tr>
-                                    <th>
-                                       #
-                                    </th>
-                                    <th class="listjs-sorter" data-sort="task_title">Shift name</th>
-                                    <th class="listjs-sorter" data-sort="task_type">Start Time</th>
-                                    <th class="listjs-sorter" data-sort="task_assigned">End Time</th>
-                                    <th class="listjs-sorter" data-sort="task_assigned">Count late at</th>
-                                    <th class="listjs-sorter" data-sort="task_date">Count late by</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="list">
-                                @php
-                                    $number = 1;
-                                @endphp
-                                @foreach($shifttypes as $shift)
-                                    <tr>
-                                        <td class="pe-0">
-                                            {{ $number++ }}
-                                        </td>
-                                        <td class="task_title">{{ $shift->name }}</td>
-                                        <td class="task_type">{{ $shift->start_time }}</td>
-                                        <td class="task_assigned">{{ $shift->end_time }}</td>
-                                        <td class="task_date">{{ $shift->count_early }}</td>
-                                        <td class="task_priority">{{ $shift->count_late }}</td>
-                                        <td class="text-center">
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $shift->id }}')"><i class="fa fa-edit"></i></button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $shift->id }}')" 
-                                                onclick="return confirm('Delete this shift?')"><i class="fa fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                
-                                
-                            </tbody>
-                        </table>
-                    </div>
 
-                    <div class="btn-toolbar card-footer border-top border-dashed d-flex flex-md-row flex-column justify-content-md-between align-items-md-center">
-                        <p class="mb-0 listjs-showing-items-label"></p>
-                        <div class="d-flex gap-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-lg bg-success-subtle text-success rounded">
+                                <i class="fa-solid fa-circle-check fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted mb-1 small">Active Shifts</p>
+                            <h4 class="mb-0 fw-bold text-success">{{ number_format($summary['active']) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-lg bg-danger-subtle text-danger rounded">
+                                <i class="fa-solid fa-circle-xmark fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted mb-1 small">Inactive Shifts</p>
+                            <h4 class="mb-0 fw-bold text-danger">{{ number_format($summary['inactive']) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Main Card --}}
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-lg border-0 shadow-sm">
+                {{-- Card Header with Filters --}}
+                <div class="card-header border-bottom bg-white">
+                    <div class="row g-3 align-items-center">
+                        {{-- Search --}}
+                        <div class="col-12 col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </span>
+                                <input type="search" wire:model.live.debounce.300ms="search" class="form-control"
+                                    placeholder="Search shifts..." />
+                                @if($search)
+                                    <button wire:click="$set('search', '')" class="btn btn-outline-secondary" type="button">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Status Filter --}}
+                        <div class="col-12 col-md-3">
+                            <select wire:model.live="statusFilter" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        {{-- Actions --}}
+                        <div class="col-12 col-md-5">
+                            <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                {{-- Reset Filters --}}
+                                @if($search || $statusFilter)
+                                    <button wire:click="resetFilters" type="button" class="btn btn-outline-secondary">
+                                        <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                                    </button>
+                                @endif
+
+                                {{-- Add Shift Button --}}
+                                <button wire:click="openModal('create')" class="btn btn-primary">
+                                    <i class="fa-solid fa-plus me-1"></i> Add Shift
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Table Section --}}
+                <div class="table-responsive" style="min-height: 400px;">
+                    <table class="table table-hover table-centered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 50px;">#</th>
+                                <th wire:click="sortBy('name')" style="cursor: pointer;">
+                                    Shift Name
+                                    @if($sortField === 'name')
+                                        <i class="fa-solid fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                    @endif
+                                </th>
+                                <th>Description</th>
+                                <th wire:click="sortBy('start_time')" style="cursor: pointer;">
+                                    Time Range
+                                    @if($sortField === 'start_time')
+                                        <i class="fa-solid fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                    @endif
+                                </th>
+                                <th class="text-center">Early Count</th>
+                                <th class="text-center">Late Count</th>
+                                <th wire:click="sortBy('status')" style="cursor: pointer;">
+                                    Status
+                                    @if($sortField === 'status')
+                                        <i class="fa-solid fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                    @endif
+                                </th>
+                                <th class="text-center" style="width: 150px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($shifttypes as $index => $shift)
+                                <tr wire:key="shift-{{ $shift->id }}">
+                                    <td class="text-center text-muted">
+                                        {{ $shifttypes->firstItem() + $index }}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm bg-primary-subtle text-primary rounded-circle me-2">
+                                                <i class="fa-solid fa-clock"></i>
+                                            </div>
+                                            <span class="fw-semibold text-dark">{{ $shift->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($shift->description)
+                                            <span class="text-muted small">{{ Str::limit($shift->description, 50) }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-info-subtle text-info">
+                                                <i class="fa-solid fa-sun"></i>
+                                                {{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }}
+                                            </span>
+                                            <i class="fa-solid fa-arrow-right text-muted"></i>
+                                            <span class="badge bg-warning-subtle text-warning">
+                                                <i class="fa-solid fa-moon"></i>
+                                                {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted">
+                                            @php
+                                                $start = \Carbon\Carbon::parse($shift->start_time);
+                                                $end = \Carbon\Carbon::parse($shift->end_time);
+                                                $duration = $start->diff($end);
+                                            @endphp
+                                            ({{ $duration->h }}h {{ $duration->i }}m)
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success-subtle text-success">
+                                            <i class="fa-solid fa-hourglass-start"></i>
+                                            {{ $shift->count_early }} min
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            <i class="fa-solid fa-hourglass-end"></i>
+                                            {{ $shift->count_late }} min
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($shift->status === 'active')
+                                            <span class="badge bg-success">
+                                                <i class="fa-solid fa-circle-check"></i> Active
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger">
+                                                <i class="fa-solid fa-circle-xmark"></i> Inactive
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            {{-- Edit Button --}}
+                                            <button
+                                                wire:click="openModal('edit', '{{ $shift->id }}')"
+                                                class="btn btn-sm btn-primary"
+                                                title="Edit">
+                                                <i class="fa-solid fa-edit"></i>
+                                            </button>
+
+                                            {{-- Toggle Status Button --}}
+                                            <button
+                                                wire:click="toggleStatus('{{ $shift->id }}')"
+                                                class="btn btn-sm btn-{{ $shift->status === 'active' ? 'warning' : 'success' }}"
+                                                title="{{ $shift->status === 'active' ? 'Deactivate' : 'Activate' }}">
+                                                <i class="fa-solid fa-{{ $shift->status === 'active' ? 'ban' : 'check' }}"></i>
+                                            </button>
+
+                                            {{-- Delete Button --}}
+                                            <button
+                                                wire:click="delete('{{ $shift->id }}')"
+                                                wire:confirm="Are you sure you want to delete this shift?"
+                                                class="btn btn-sm btn-danger"
+                                                title="Delete">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                            <i class="fa-solid fa-clock text-muted mb-3" style="font-size: 48px;"></i>
+                                            <h5 class="text-muted">No Shifts Found</h5>
+                                            <p class="text-muted">
+                                                @if($search || $statusFilter)
+                                                    Try adjusting your filters or search query
+                                                @else
+                                                    Click "Add Shift" to create your first shift
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Card Footer with Pagination --}}
+                <div class="card-footer border-top bg-white">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                        <!-- Results Info -->
+                        <div class="text-muted">
+                            @if($shifttypes->total() > 0)
+                                Showing {{ $shifttypes->firstItem() }} to {{ $shifttypes->lastItem() }} of
+                                {{ $shifttypes->total() }} shifts
+                            @else
+                                No shifts found
+                            @endif
+                        </div>
+
+                        <!-- Pagination and Per Page -->
+                        <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
+                            <!-- Per Page Selector -->
                             <div class="d-flex align-items-center gap-2">
-                                <label class="form-label text-nowrap mb-0">Rows per page:</label>
-                                <select class="form-select listjs-items-per-page" data-choices="">
-                                    <option value="5" selected>5</option>
+                                <label class="form-label mb-0 text-nowrap small">Rows per page:</label>
+                                <select wire:model.live="perPage" class="form-select form-select-sm" style="width: auto;">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
                                 </select>
                             </div>
+
+                            <!-- Pagination Links -->
                             <div>
-                                <div class="pagination-buttons d-flex">
-                                    <button class="btn btn-white prev">Previous</button>
-                                    <ul class="pagination mb-0 ms-1"></ul>
-                                    <button class="btn btn-white next">Next</button>
-                                </div>
+                                {{ $shifttypes->links() }}
                             </div>
                         </div>
                     </div>
@@ -118,79 +313,195 @@
             </div>
         </div>
     </div>
-    <!-- Modal -->
-    <div class="modal fade @if($showModal) show d-block @endif" tabindex="-1"
-        @if($showModal) style="background: rgba(0,0,0,0.5);" @endif>
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form wire:submit.prevent="save">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            {{ $modalMode === 'edit' ? 'Edit Shift Type' : 'Add Shift Type' }}
-                        </h5>
-                        <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
-                    </div>
 
-                    <div class="modal-body">
-                        <form wire:submit.prevent="save">
-                            @csrf
-                            <div class="mb-3">
-                                <label class="form-label" for="contact-name-field">Name</label>
-                                <input type="text" class="form-control" id="contact-name-field" wire:model="name">
-                                @error('name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+    {{-- Add/Edit Modal --}}
+    @if($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form wire:submit.prevent="save">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-{{ $modalMode === 'edit' ? 'edit' : 'plus' }} me-2"></i>
+                                {{ $modalMode === 'edit' ? 'Edit Shift' : 'Add New Shift' }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" wire:click="closeModal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                {{-- Shift Name --}}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Shift Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" wire:model="name"
+                                        class="form-control @error('name') is-invalid @enderror"
+                                        placeholder="e.g., Morning Shift">
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Status --}}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Status <span class="text-danger">*</span>
+                                    </label>
+                                    <select wire:model="status" class="form-select @error('status') is-invalid @enderror">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Description --}}
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    <textarea wire:model="description"
+                                        class="form-control @error('description') is-invalid @enderror"
+                                        rows="2"
+                                        placeholder="Brief description of this shift"></textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Start Time --}}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Start Time <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="time" wire:model="start_time"
+                                        class="form-control @error('start_time') is-invalid @enderror">
+                                    @error('start_time')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- End Time --}}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        End Time <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="time" wire:model="end_time"
+                                        class="form-control @error('end_time') is-invalid @enderror">
+                                    @error('end_time')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Count Early (Minutes) --}}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Count Early (Minutes) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" wire:model="count_early"
+                                            class="form-control @error('count_early') is-invalid @enderror"
+                                            placeholder="15"
+                                            min="0"
+                                            max="999">
+                                        <span class="input-group-text">min</span>
+                                    </div>
+                                    <small class="text-muted">Employees arriving this many minutes early will be marked as early</small>
+                                    @error('count_early')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Count Late (Minutes) --}}
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Count Late (Minutes) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" wire:model="count_late"
+                                            class="form-control @error('count_late') is-invalid @enderror"
+                                            placeholder="15"
+                                            min="0"
+                                            max="999">
+                                        <span class="input-group-text">min</span>
+                                    </div>
+                                    <small class="text-muted">Employees arriving this many minutes late will be marked as late</small>
+                                    @error('count_late')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
-                            <!-- use shift model -->
-                             <div class="mb-3">
-                                <label class="form-label" for="contact-email-field">Start Time</label>
-                                <input type="time" class="form-control"  wire:model="start_time">
-                                @error('start_time')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label" for="contact-email-field">End Time</label>
-                                <input type="time" class="form-control"  wire:model="end_time">
-                                @error('end_time')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label" for="contact-email-field">Count Early</label>
-                                <input type="text" class="form-control"  wire:model="count_early">
-                                @error('count_early')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label" for="contact-email-field">Count Late</label>
-                                <input type="text" class="form-control"  wire:model="count_late">
-                                @error('count_late')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">close</button>
-                        <button type="submit" class="btn btn-primary">
-                            {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
-                        </button>
-                    </div>
-                </form>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                                <i class="fa-solid fa-times"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-save"></i>
+                                {{ $modalMode === 'edit' ? 'Update Shift' : 'Create Shift' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+    @endif
+
+    <!-- Loading Indicator -->
+    <div wire:loading class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
+
+    <style>
+        .avatar {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-sm {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .avatar-lg {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        /* Smooth transitions */
+        tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+        /* Sortable column hover */
+        th[wire\:click] {
+            user-select: none;
+        }
+
+        th[wire\:click]:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </div>

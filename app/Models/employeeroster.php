@@ -30,4 +30,14 @@ class employeeroster extends Model
     {
         return $this->belongsTo(shifts::class, 'shift_id');
     }
+
+    public function department()
+    {
+        return $this->belongsTo(departments::class, 'department_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
 }

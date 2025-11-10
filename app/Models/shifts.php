@@ -12,6 +12,7 @@ class shifts extends Model
     protected $table = 'shifts';
     protected $fillable = [
         'name',
+        'description',
         'start_time',
         'end_time',
         'status',
@@ -23,5 +24,10 @@ class shifts extends Model
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function rosters()
+    {
+        return $this->hasMany(employeeroster::class, 'shift_id');
     }
 }
