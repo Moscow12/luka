@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Acc\Payroll\{Paymentreports, Payrollgeneration, Allowancepayment};
+use App\Livewire\Hr\Attendance\Managefpattendance;
+use App\Livewire\Hr\Attendance\Managefpusers;
 use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Leavemanagement;
@@ -60,6 +62,10 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/dependants/{id}', Dependants::class)->name('hr.dependants');
     Route::get('/staffs/otherdocuments/{id}', Otherdocuments::class)->name('hr.otherdocuments');
     Route::get('/staffs/digitalsignature/{id}', Digitalsignature::class)->name('hr.digitalsignature');
+
+    //attendance routes
+    Route::get('/attendance/managefpattendance', Managefpattendance::class)->name('fp.attendance');
+    Route::get('/attendance/managefpusers', Managefpusers::class)->name('managefpusers');
 
     //leave routes
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');

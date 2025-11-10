@@ -11,18 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shifts', function (Blueprint $table) {
+        Schema::create('fpusers', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->string('count_early')->nullable(); // e.g., "00:15" for 15 minutes early
-            $table->string('count_late')->nullable(); // e.g., "00:15" for 15 minutes late
-            $table->text('description')->nullable();
-            $table->string('color')->nullable();
+            $table->string('fpdevice_id')->unique();
+            $table->string('fpdevice_address')->nullable();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
-
             $table->timestamps();
         });
     }
@@ -32,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shifts');
+        Schema::dropIfExists('fpusers');
     }
 };

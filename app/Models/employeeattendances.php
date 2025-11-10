@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class employeeattendances extends Model
 {
+    use HasUuids;
+
     protected $table = 'employeeattendances';
+
     protected $fillable = [
-        'employee_id',
+        'fpuser_id',
         'clockdate',
         'device_id',
         'clocktimestamp',
@@ -19,8 +23,8 @@ class employeeattendances extends Model
         'clock_out',
     ];
 
-    public function employee()
+    public function fpuser()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->belongsTo(fpusers::class, 'fpuser_id', 'fpdevice_id');
     }
 }

@@ -66,7 +66,10 @@
         <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Roster Management</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clock"></i> Employee Attendances</a>
+        <a class='nav-link' href="{{ route('fp.attendance') }}"><i class="fa-solid fa-clock"></i> Staff Check In/Out</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('managefpusers') }}"><i class="fa-solid fa-id-card"></i> Manage FP Users</a>
       </li>
     </ul>
   </li>
@@ -96,7 +99,7 @@
     </ul>
   </li>
   <!-- Nav item -->
-    <li class="nav-item dropdown">
+  <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
         <i class="fa-solid fa-money-bill"></i>

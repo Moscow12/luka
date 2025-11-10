@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('employeeattendances', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('employee_id')->constrained()->onDelete('cascade');
+            $table->integer('fpuser_id');
             $table->date('clockdate')->nullable();
             $table->string('device_id')->nullable();
             $table->string('clocktimestamp');
