@@ -176,6 +176,9 @@
         <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-money-bill"></i> Finance Setup</a>
       </li>
       <li class="nav-item">
+        <a class='nav-link' href="{{ route('setup.vendors') }}"><i class="fa-solid fa-building"></i> Manage Vendors</a>
+      </li>
+      <li class="nav-item">
         <a class='nav-link' href="{{ route('setup.approvalconfig') }}"><i class="fa-solid fa-clipboard-user"></i> Approval Configuration</a>
       </li>
     </ul>

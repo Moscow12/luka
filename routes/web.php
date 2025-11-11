@@ -4,6 +4,7 @@ use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Paymentreports;
 use App\Livewire\Acc\Payroll\Payrollgeneration;
 use App\Livewire\Contracts\ContractDetails;
+use App\Livewire\Contracts\ContractForm;
 use App\Livewire\Contracts\ManageContracts;
 use App\Livewire\Hr\Attendance\Managefpattendance;
 use App\Livewire\Hr\Attendance\Managefpusers;
@@ -56,6 +57,7 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/setup/finance', App\Livewire\Setup\Finances::class)->name('setup.finances');
     Route::get('/', Index::class)->name('setup.location');
     Route::get('/setup/approvalconfigurations', Approvalconfigurations::class)->name('setup.approvalconfig');
+    Route::get('/vendors', App\Livewire\Setup\VendorManagement::class)->name('setup.vendors');
 });
 
 Route::prefix('hr')->middleware('auth')->group(function () {
@@ -100,6 +102,6 @@ Route::prefix('contracts')->middleware('auth')->group(function () {
     // Institutional Contract Management
     Route::get('/', ManageContracts::class)->name('contracts.list');
     Route::get('/view/{contractId}', ContractDetails::class)->name('contracts.view');
-    Route::get('/create', ManageContracts::class)->name('contracts.create');
-    Route::get('/edit/{contractId}', ManageContracts::class)->name('contracts.edit');
+    Route::get('/create', ContractForm::class)->name('contracts.create');
+    Route::get('/edit/{contractId}', ContractForm::class)->name('contracts.edit');
 });
