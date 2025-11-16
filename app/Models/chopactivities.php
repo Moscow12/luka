@@ -100,4 +100,9 @@ class chopactivities extends Model
     {
         return $this->hasMany(activitypersonel::class, 'activity_id');
     }
+
+    public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ActivityReport::class, 'activity_id');
+    }
 }

@@ -174,6 +174,12 @@
         <a class='nav-link' href="{{ route('chop.cost.analysis') }}"><i class="fa-solid fa-chart-line"></i> Cost Analysis</a>
       </li>
       <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.monitoring') }}"><i class="fa-solid fa-calendar-check"></i> Monitoring & Evaluation</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.reporting') }}"><i class="fa-solid fa-file-alt"></i> My Activity Reports</a>
+      </li>
+      <li class="nav-item">
         <a class='nav-link' href="#"><i class="fa-solid fa-check-double"></i> Pending Approvals</a>
       </li>
       <li class="nav-item">

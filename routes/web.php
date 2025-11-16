@@ -119,5 +119,11 @@ Route::prefix('chop')->middleware('auth')->group(function () {
 
     // Cost Analysis
     Route::get('cost-analysis', App\Livewire\Chop\CostAnalysis::class)->name('chop.cost.analysis');
+
+    // Monitoring & Evaluation
+    Route::get('monitoring-evaluation', App\Livewire\Chop\MonitoringEvaluation::class)->name('chop.monitoring');
+
+    // Activity Reporting
+    Route::get('activity-reporting', App\Livewire\Chop\ActivityReporting::class)->name('chop.reporting');
 });
 
