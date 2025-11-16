@@ -206,13 +206,19 @@
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
-                                    <div class="col-md-8">
+                                    <div class="col-md-6">
                                         <label class="form-label fw-semibold">Planned Activity <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('planned_activity') is-invalid @enderror"
                                                wire:model="planned_activity" placeholder="Enter activity name" required>
                                         @error('planned_activity') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Planned Amount <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" min="0" class="form-control @error('planned_amount') is-invalid @enderror"
+                                               wire:model="planned_amount" placeholder="0.00" required>
+                                        @error('planned_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
                                         <select class="form-select @error('status') is-invalid @enderror" wire:model="status" required>
                                             <option value="pending">⏱️ Pending</option>
@@ -355,9 +361,26 @@
                                             </tbody>
                                             <tfoot class="table-success">
                                                 <tr>
-                                                    <td colspan="3" class="text-end fw-bold">TOTAL PLANNED AMOUNT:</td>
-                                                    <td colspan="2" class="fw-bold text-success fs-5">
-                                                        {{ number_format($planned_amount, 2) }}
+                                                    <td colspan="3" class="text-end fw-bold">TOTAL ACTUAL COST:</td>
+                                                    <td colspan="2" class="fw-bold text-info fs-5">
+                                                        {{ number_format($actual_amount ?? 0, 2) }} TZS
+                                                    </td>
+                                                </tr>
+                                                <tr class="table-light">
+                                                    <td colspan="3" class="text-end">Planned Amount:</td>
+                                                    <td colspan="2" class="text-success">
+                                                        {{ number_format($planned_amount ?? 0, 2) }} TZS
+                                                    </td>
+                                                </tr>
+                                                <tr class="table-light">
+                                                    <td colspan="3" class="text-end">Variance:</td>
+                                                    <td colspan="2" class="fw-bold @if(($planned_amount ?? 0) - ($actual_amount ?? 0) >= 0) text-success @else text-danger @endif">
+                                                        {{ number_format(($planned_amount ?? 0) - ($actual_amount ?? 0), 2) }} TZS
+                                                        @if(($planned_amount ?? 0) - ($actual_amount ?? 0) >= 0)
+                                                            <small>(Under budget)</small>
+                                                        @else
+                                                            <small>(Over budget)</small>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             </tfoot>

@@ -171,6 +171,9 @@
         <a class='nav-link' href="{{ route('chop.activities') }}"><i class="fa-solid fa-plus-circle"></i> Plan CHOP Activities</a>
       </li>
       <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.cost.analysis') }}"><i class="fa-solid fa-chart-line"></i> Cost Analysis</a>
+      </li>
+      <li class="nav-item">
         <a class='nav-link' href="#"><i class="fa-solid fa-check-double"></i> Pending Approvals</a>
       </li>
       <li class="nav-item">

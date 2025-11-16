@@ -112,5 +112,12 @@ Route::prefix('chop')->middleware('auth')->group(function () {
     // Chop Management
     Route::get('chopsettings', Chopsetting::class)->name('chop.settings');
     Route::get('activitiesmanagement', ActivitiesManagement::class)->name('chop.activities');
+
+    // Budget Requests
+    Route::get('budget-requests', App\Livewire\Chop\DepartmentBudgetRequest::class)->name('chop.budget.requests');
+    Route::get('director-review', App\Livewire\Chop\DirectorReviewDashboard::class)->name('chop.director.review');
+
+    // Cost Analysis
+    Route::get('cost-analysis', App\Livewire\Chop\CostAnalysis::class)->name('chop.cost.analysis');
 });
 

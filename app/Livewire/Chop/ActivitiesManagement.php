@@ -146,24 +146,24 @@ class ActivitiesManagement extends Component
         }
         $this->showItemSelector = false;
         $this->itemSearch = '';
-        $this->calculatePlannedAmount();
+        $this->calculateActualAmount();
     }
 
     public function removeItem($index)
     {
         unset($this->selectedItems[$index]);
         $this->selectedItems = array_values($this->selectedItems);
-        $this->calculatePlannedAmount();
+        $this->calculateActualAmount();
     }
 
     public function updatedSelectedItems()
     {
-        $this->calculatePlannedAmount();
+        $this->calculateActualAmount();
     }
 
-    public function calculatePlannedAmount()
+    public function calculateActualAmount()
     {
-        $this->planned_amount = collect($this->selectedItems)->sum(function ($item) {
+        $this->actual_amount = collect($this->selectedItems)->sum(function ($item) {
             return ($item['quantity'] ?? 0) * ($item['price'] ?? 0);
         });
     }
