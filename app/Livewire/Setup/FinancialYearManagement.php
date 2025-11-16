@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Livewire\Setup\Finance;
+namespace App\Livewire\Setup;
 
 use App\Models\FinancialYear;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class FinancialYears extends Component
+class FinancialYearManagement extends Component
 {
     use WithPagination;
 
@@ -15,7 +15,14 @@ class FinancialYears extends Component
     public $financial_year_id;
     public $modalMode = 'create';
     public $showModal = false;
-    public $name, $start_date, $end_date, $is_current = false, $status = 'active', $description;
+
+    // Form fields
+    public $name;
+    public $start_date;
+    public $end_date;
+    public $is_current = false;
+    public $status = 'active';
+    public $description;
 
     public function openModal($mode = 'create', $id = null)
     {
@@ -122,7 +129,7 @@ class FinancialYears extends Component
             ->orderBy('start_date', 'desc')
             ->paginate(10);
 
-        return view('livewire.setup.finance.financial-years', [
+        return view('livewire.setup.financial-year-management', [
             'financialYears' => $financialYears,
             'currentYear' => FinancialYear::current()
         ]);

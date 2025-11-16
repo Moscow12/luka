@@ -71,6 +71,12 @@
                         Religions
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link py-2" id="financial-years-tab" data-bs-toggle="pill" href="#financial-years" role="tab" aria-controls="financial-years" aria-selected="false">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        Financial Years
+                    </a>
+                </li>
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -98,6 +104,9 @@
                 </div>
                 <div class="tab-pane fade show" id="religions" role="tabpanel" aria-labelledby="religions-tab">
                     <livewire:setup.religion-management />
+                </div>
+                <div class="tab-pane fade" id="financial-years" role="tabpanel" aria-labelledby="financial-years-tab">
+                    <livewire:setup.financial-year-management />
                 </div>
             </div>
         </div>

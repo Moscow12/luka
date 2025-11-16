@@ -8,13 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class chopcategoryarea extends Model
 {
     use HasUuids;
+
     protected $table = 'chopcategoryareas';
-
-    protected $primaryKey = 'id';
-
-    protected $keyType = 'string';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'name',
@@ -25,6 +20,11 @@ class chopcategoryarea extends Model
 
     public function addedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function chopItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(chopitems::class, 'category_id');
     }
 }

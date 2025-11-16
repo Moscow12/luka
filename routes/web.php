@@ -3,6 +3,8 @@
 use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Paymentreports;
 use App\Livewire\Acc\Payroll\Payrollgeneration;
+use App\Livewire\Chop\Chopsetting;
+use App\Livewire\Chop\Planchopactivities;
 use App\Livewire\Contracts\ContractDetails;
 use App\Livewire\Contracts\ContractForm;
 use App\Livewire\Contracts\ManageContracts;
@@ -105,3 +107,10 @@ Route::prefix('contracts')->middleware('auth')->group(function () {
     Route::get('/create', ContractForm::class)->name('contracts.create');
     Route::get('/edit/{contractId}', ContractForm::class)->name('contracts.edit');
 });
+
+Route::prefix('chop')->middleware('auth')->group(function () {
+    // Chop Management
+    Route::get('chopsettings', Chopsetting::class)->name('chop.settings');
+    Route::get('chop.planactivities', Planchopactivities::class)->name('chop.planactivities');
+});
+

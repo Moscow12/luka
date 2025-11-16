@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class FinancialYear extends Model
 {
+    use HasUuids;
     protected $fillable = [
         'name',
         'start_date',
@@ -15,6 +17,7 @@ class FinancialYear extends Model
         'is_current',
         'status',
         'description',
+        'added_by',
     ];
 
     protected $casts = [

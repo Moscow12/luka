@@ -147,6 +147,34 @@
       </li>
     </ul>
   </li>
+  <li class="nav-item">
+    <div class="nav-heading">CHOP</div>
+    <hr class="mx-5 nav-line mb-1" />
+  </li>
+  <!-- Nav item -->
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="nav-icon">
+        <i class="fa-solid fa-file-invoice"></i>
+      </span>
+      <span class="text">CHOP Management</span>
+    </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="#"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.planactivities') }}"><i class="fa-solid fa-plus-circle"></i> Plan CHOP Activities</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="#"><i class="fa-solid fa-check-double"></i> Pending Approvals</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="#"><i class="fa-solid fa-chart-bar"></i> CHOP Reports</a>
+      </li>
+       <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.settings') }}"><i class="fa-solid fa-clock"></i> CHOP Setup</a>
+      </li>
+    </ul>
+  </li>
   <!-- Nav item -->
   <li class="nav-item">
     <div class="nav-heading">Setup & Configuration</div>

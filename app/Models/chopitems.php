@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class chopitems extends Model
 {
+    use HasUuids;
+
     protected $table = 'chopitems';
-
-    protected $primaryKey = 'id';
-
-    protected $keyType = 'string';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'name',
@@ -27,13 +24,19 @@ class chopitems extends Model
         'category_id',
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'price' => 'decimal:2',
+        'quantity' => 'integer',
+    ];
+
     public function addedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'added_by');
     }
 
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(chopcategoryarea::class);
-    }   
+        return $this->belongsTo(chopcategoryarea::class, 'category_id');
+    }
 }

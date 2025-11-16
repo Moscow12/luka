@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('price', 8, 2)->nullable();            
             $table->text('description')->nullable();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
-            $table->foreignUuid('category_id')->constrained('chopcategoryarea')->cascadeOnDelete()->nullable();
+            $table->foreignUuid('category_id')->constrained('chopcategoryareas')->cascadeOnDelete()->nullable();
             $table->timestamps();
         });
     }
