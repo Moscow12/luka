@@ -162,6 +162,12 @@
     <ul class="dropdown-menu flex-column">
       <li class="nav-item"><a class='nav-link' href="#"><i class="fa-solid fa-sliders"></i> Overview</a></li>
       <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.budget.requests') }}"><i class="fa-solid fa-file-invoice-dollar"></i> My Budget Requests</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('chop.director.review') }}"><i class="fa-solid fa-clipboard-check"></i> Review Requests (Director)</a>
+      </li>
+      <li class="nav-item">
         <a class='nav-link' href="{{ route('chop.activities') }}"><i class="fa-solid fa-plus-circle"></i> Plan CHOP Activities</a>
       </li>
       <li class="nav-item">
