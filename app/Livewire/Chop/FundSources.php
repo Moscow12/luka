@@ -17,6 +17,7 @@ class FundSources extends Component
     public $source_id;
     public $modalMode = 'create';
     public $showModal = false;
+    public $filterFinancialYear = ''; // Filter for financial year
 
     // Required fields
     public $name;
@@ -137,20 +138,43 @@ class FundSources extends Component
 
     public function render()
     {
-        $sources = sourceoffunds::query()
+        $query = sourceoffunds::query()
             ->with(['financialYear'])
-            ->where(function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
+            ->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('slug', 'like', '%' . $this->search . '%');
+            });
+
+        // Apply financial year filter
+        if ($this->filterFinancialYear) {
+            $query->where('financial_year_id', $this->filterFinancialYear);
+        }
+
+        $sources = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // Calculate total estimated cost for filtered results
+        $totalEstimatedCost = sourceoffunds::query()
+            ->when($this->filterFinancialYear, function ($q) {
+                $q->where('financial_year_id', $this->filterFinancialYear);
             })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('slug', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->get()
+            ->sum(function ($source) {
+                // Extract numeric value from estimated_cost string
+                return (float) preg_replace('/[^0-9.]/', '', $source->estimated_cost ?? '0');
+            });
 
         $financialYears = FinancialYear::active()->orderBy('start_date', 'desc')->get();
 
         return view('livewire.chop.fund-sources', [
             'sources' => $sources,
-            'financialYears' => $financialYears
+            'financialYears' => $financialYears,
+            'totalEstimatedCost' => $totalEstimatedCost,
         ]);
     }
 }

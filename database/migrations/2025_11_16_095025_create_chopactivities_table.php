@@ -29,7 +29,7 @@ return new class extends Migration
             $table->enum('activity_type', ['expenditure', 'revenue'])->default('expenditure');
             $table->enum('frequence_monitoring', ['weekly',    'monthly',    'bimonthly',    'quarterly',    'quadrimonthly',    'biannual',    'annual'])->default('active');
             $table->foreignUuid('source_id')->constrained('sourceoffunds')->cascadeOnDelete();
-            $table->foreignUuid('category_id')->constrained('chopcategoryarea')->cascadeOnDelete();
+            $table->foreignUuid('category_id')->constrained('chopcategoryareas')->cascadeOnDelete();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->foreignUuid('financial_year_id')->constrained('financial_years')->cascadeOnDelete();
             $table->timestamps();

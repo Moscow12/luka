@@ -37,6 +37,40 @@ class chopactivities extends Model
         'financial_year_id',
     ];
 
+    // Activity Type Options
+    public const ACTIVITY_TYPE_EXPENDITURE = 'expenditure';
+    public const ACTIVITY_TYPE_REVENUE = 'revenue';
+
+    // Frequency Monitoring Options
+    public const FREQUENCY_WEEKLY = 'weekly';
+    public const FREQUENCY_MONTHLY = 'monthly';
+    public const FREQUENCY_BIMONTHLY = 'bimonthly';
+    public const FREQUENCY_QUARTERLY = 'quarterly';
+    public const FREQUENCY_QUADRIMONTHLY = 'quadrimonthly';
+    public const FREQUENCY_BIANNUAL = 'biannual';
+    public const FREQUENCY_ANNUAL = 'annual';
+
+    public static function getActivityTypes(): array
+    {
+        return [
+            self::ACTIVITY_TYPE_EXPENDITURE => 'Expenditure',
+            self::ACTIVITY_TYPE_REVENUE => 'Revenue',
+        ];
+    }
+
+    public static function getFrequencyOptions(): array
+    {
+        return [
+            self::FREQUENCY_WEEKLY => 'Weekly',
+            self::FREQUENCY_MONTHLY => 'Monthly',
+            self::FREQUENCY_BIMONTHLY => 'Bi-Monthly',
+            self::FREQUENCY_QUARTERLY => 'Quarterly',
+            self::FREQUENCY_QUADRIMONTHLY => 'Quadri-Monthly',
+            self::FREQUENCY_BIANNUAL => 'Bi-Annual',
+            self::FREQUENCY_ANNUAL => 'Annual',
+        ];
+    }
+
     public function addedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -59,11 +93,11 @@ class chopactivities extends Model
 
     public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(activityitems::class);
+        return $this->hasMany(activityitems::class, 'activity_id');
     }
 
     public function personels(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(activitypersonel::class);
+        return $this->hasMany(activitypersonel::class, 'activity_id');
     }
 }

@@ -162,7 +162,7 @@
     <ul class="dropdown-menu flex-column">
       <li class="nav-item"><a class='nav-link' href="#"><i class="fa-solid fa-sliders"></i> Overview</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('chop.planactivities') }}"><i class="fa-solid fa-plus-circle"></i> Plan CHOP Activities</a>
+        <a class='nav-link' href="{{ route('chop.activities') }}"><i class="fa-solid fa-plus-circle"></i> Plan CHOP Activities</a>
       </li>
       <li class="nav-item">
         <a class='nav-link' href="#"><i class="fa-solid fa-check-double"></i> Pending Approvals</a>

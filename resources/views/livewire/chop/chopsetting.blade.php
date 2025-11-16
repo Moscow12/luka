@@ -41,6 +41,13 @@
                         Chop Items
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link py-2" id="activities-tab" data-bs-toggle="pill" href="#activities" role="tab" aria-controls="activities" aria-selected="false">
+                        <i class="fa-solid fa-list-check"></i>
+                        Activities
+                    </a>
+                </li>
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -54,6 +61,10 @@
 
                 <div class="tab-pane fade" id="chop-items" role="tabpanel" aria-labelledby="chop-items-tab">
                     <livewire:chop.items-management />
+                </div>
+
+                <div class="tab-pane fade" id="activities" role="tabpanel" aria-labelledby="activities-tab">
+                    <livewire:chop.activities-management />
                 </div>
             </div>
         </div>

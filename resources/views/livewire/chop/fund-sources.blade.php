@@ -3,16 +3,79 @@
         <h5 class="mb-5">Source of Funds</h5>
     </div>
     <div class="d-flex flex-column gap-6">
-        <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
-            <div class="d-flex flex-row gap-3 align-items-center">
-                <div>
-                    <form>
-                        <input class="form-control" type="search" wire:model.live="search" placeholder="Search sources" />
-                    </form>
+        {{-- Filters and Add Button --}}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">Search</label>
+                <input class="form-control" type="search" wire:model.live="search"
+                       placeholder="Search by name or slug..." />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted">Filter by Financial Year</label>
+                <select class="form-select" wire:model.live="filterFinancialYear">
+                    <option value="">All Financial Years</option>
+                    @foreach($financialYears as $fy)
+                        <option value="{{ $fy->id }}">
+                            {{ $fy->name }}
+                            @if($fy->is_current) ⭐ @endif
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <x-forms.button-model name="ADD SOURCE OF FUNDS" />
+            </div>
+        </div>
+
+        {{-- Summary Card --}}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm bg-gradient bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">
+                                    <i class="fa-solid fa-calculator"></i> Total Estimated Cost
+                                </h6>
+                                <h2 class="mb-0 fw-bold">
+                                    {{ number_format($totalEstimatedCost, 2) }} TZS
+                                </h2>
+                                <small class="text-white-50">
+                                    @if($filterFinancialYear)
+                                        For {{ $financialYears->firstWhere('id', $filterFinancialYear)?->name ?? 'Selected FY' }}
+                                    @else
+                                        Across all financial years
+                                    @endif
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <i class="fa-solid fa-money-bill-wave fa-3x opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div>
-                <x-forms.button-model name="ADD SOURCE OF FUNDS" />
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">
+                            <i class="fa-solid fa-list"></i> Total Sources
+                        </h6>
+                        <h3 class="mb-0">{{ $sources->total() }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">
+                            <i class="fa-solid fa-check-circle"></i> Active Sources
+                        </h6>
+                        <h3 class="mb-0 text-success">
+                            {{ $sources->filter(fn($s) => $s->is_active)->count() }}
+                        </h3>
+                    </div>
+                </div>
             </div>
         </div>
         <div>
