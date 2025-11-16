@@ -36,6 +36,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link py-2" id="financial-years-tab" data-bs-toggle="pill" href="#financial-years" role="tab" aria-controls="financial-years" aria-selected="true">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        Financial Years
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link py-2" id="districts-tab" data-bs-toggle="pill" href="#districts" role="tab" aria-controls="districts" aria-selected="true">
                         <i class="fa-solid fa-person"></i>
                         Districts
@@ -56,6 +62,9 @@
 
                 <div class="tab-pane" id="deductions" role="tabpanel" aria-labelledby="deductions-tab">
                     <livewire:setup.finance.deductions />
+                </div>
+                <div class="tab-pane" id="financial-years" role="tabpanel" aria-labelledby="financial-years-tab">
+                    <livewire:setup.finance.financial-years />
                 </div>
                 <div class="tab-pane" id="districts" role="tabpanel" aria-labelledby="districts-tab">
                     <livewire:setup.location.district />
