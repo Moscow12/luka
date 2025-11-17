@@ -128,3 +128,20 @@ Route::prefix('chop')->middleware('auth')->group(function () {
     Route::get('activity-reporting', App\Livewire\Chop\ActivityReporting::class)->name('chop.reporting');
 });
 
+Route::prefix('performance')->middleware('auth')->group(function () {
+    // Organizational Plans
+    Route::get('organizational-plans', App\Livewire\Performance\OrganizationalPlans\ManagePlans::class)->name('performance.org.plans');
+
+    // Department Plans
+    Route::get('department-plans', App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans::class)->name('performance.dept.plans');
+
+    // Employee Plans
+    Route::get('employee-plans', App\Livewire\Performance\EmployeePlans\ManageEmployeePlans::class)->name('performance.employee.plans');
+
+    // Assigned Duties (Direct KPI Assignment)
+    Route::get('assigned-duties', App\Livewire\Performance\AssignedDuties\ManageAssignedDuties::class)->name('performance.assigned.duties');
+
+    // Job Title KPIs
+    Route::get('title-kpis', App\Livewire\Performance\TitleKpis\ManageTitleKpis::class)->name('performance.title.kpis');
+});
+

@@ -100,22 +100,25 @@
   </li>
   <!-- Nav item -->
   <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="{{ route('hr.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" href="{{ route('performance.org.plans') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
-        <i class="fa-solid fa-money-bill"></i>
+        <i class="fa-solid fa-chart-line"></i>
       </span>
-      <span class="text">Apprisal Management</span>
+      <span class="text">Staff Performance</span>
     </a>
     <ul class="dropdown-menu flex-column">
-      <li class="nav-item"><a class='nav-link' href="{{ route('hr.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a></li>
+      <li class="nav-item"><a class='nav-link' href="{{ route('performance.org.plans') }}"><i class="fa-solid fa-building"></i> Organizational Plans</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('hr.stafflist') }}"><i class="fa-solid fa-sliders"></i> Apprisal Management</a>
+        <a class='nav-link' href="{{ route('performance.dept.plans') }}"><i class="fa-solid fa-sitemap"></i> Department Plans</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Planning</a>
+        <a class='nav-link' href="{{ route('performance.employee.plans') }}"><i class="fa-solid fa-user-check"></i> Employee Plans</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Apprisal Report</a>
+        <a class='nav-link' href="{{ route('performance.assigned.duties') }}"><i class="fa-solid fa-tasks"></i> Assigned Duties</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('performance.title.kpis') }}"><i class="fa-solid fa-id-badge"></i> Job Title KPIs</a>
       </li>
     </ul>
   </li>
