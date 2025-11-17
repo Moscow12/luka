@@ -30,8 +30,14 @@ class departments extends Model
     {
         return $this->belongsTo(User::class, 'added_by');
     }
+
     public function supervisor_title()
     {
         return $this->belongsTo(Jobtitle::class, 'supervisor_title_id');
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'department_id');
     }
 }
