@@ -194,9 +194,10 @@
                                     <td>
                                         @if($employee->activeContract)
                                             @php
+                                                $baseSalary = $employee->activeContract->base_salary ?? 0;
                                                 $totalAllowances = $employee->activeContract->contractAllowances
                                                     ->where('is_active', true)
-                                                    ->sum(fn($a) => $a->amount_override ?? $a->allowance->amount ?? 0);
+                                                    ->sum(fn($a) => $a->calculateAmount($baseSalary));
                                             @endphp
                                             <strong class="text-primary">
                                                 {{ format_tzs($totalAllowances) }}
@@ -376,9 +377,16 @@
                                                             </small>
                                                         </td>
                                                         <td class="text-end fw-bold text-success">
-                                                            {{ format_tzs($allowance->amount_override ?? $allowance->allowance->amount ?? 0) }}
-                                                            @if($allowance->amount_override)
+                                                            @php
+                                                                $baseSalary = $viewingEmployee->activeContract->base_salary ?? 0;
+                                                                $calculatedAmount = $allowance->calculateAmount($baseSalary);
+                                                                $calcInfo = $allowance->getCalculationInfo();
+                                                            @endphp
+                                                            {{ format_tzs($calculatedAmount) }}
+                                                            @if($calcInfo['is_override'])
                                                                 <br><small class="text-muted">(Override)</small>
+                                                            @elseif($calcInfo['type'] === 'percentage')
+                                                                <br><small class="text-muted">({{ $calcInfo['value'] }}% of salary)</small>
                                                             @endif
                                                         </td>
                                                         <td class="text-center">
@@ -391,7 +399,11 @@
                                                 <tr>
                                                     <th colspan="3" class="text-end">Total Allowances:</th>
                                                     <th class="text-end text-success">
-                                                        {{ format_tzs($employeeAllowances->sum(fn($a) => $a->amount_override ?? $a->allowance->amount ?? 0)) }}
+                                                        @php
+                                                            $modalBaseSalary = $viewingEmployee->activeContract->base_salary ?? 0;
+                                                            $modalTotalAllowances = $employeeAllowances->sum(fn($a) => $a->calculateAmount($modalBaseSalary));
+                                                        @endphp
+                                                        {{ format_tzs($modalTotalAllowances) }}
                                                     </th>
                                                     <th></th>
                                                 </tr>

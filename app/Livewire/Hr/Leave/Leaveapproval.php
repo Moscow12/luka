@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Hr\Leave;
 
-use App\Models\approvallevel;
 use App\Models\approvalleveltoemployee;
 use App\Models\approvalleveltodocument;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\leaverequestapproval;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,9 +20,9 @@ class Leaveapproval extends Component
     public $selectedLeave = null;
     public $showModal = false;
     public $comments = '';
-    public $actionType = '';
-    public $currentApprovalLevel = null;
     public $userApprovalLevels = [];
+
+    protected $paginationTheme = 'bootstrap';
 
     public function mount()
     {
@@ -39,30 +39,103 @@ class Leaveapproval extends Component
                 ->with('approval_level')
                 ->get()
                 ->pluck('approval_level.id')
+                ->filter()
                 ->toArray();
         }
     }
 
-    public function openApprovalModal($leaveId, $action)
+    public function approveLeave($leaveId)
     {
-        $this->selectedLeave = Employeeleaves::with(['employee', 'leave', 'approvalnote.approval_level'])->findOrFail($leaveId);
-        $this->actionType = $action;
-        $this->comments = '';
+        $leave = Employeeleaves::with(['employee', 'leave'])->findOrFail($leaveId);
+        $currentLevel = $this->getCurrentApprovalLevel($leave);
 
-        // Get current approval level needed for this leave
-        $this->currentApprovalLevel = $this->getCurrentApprovalLevel($this->selectedLeave);
+        if (!$currentLevel) {
+            session()->flash('error', 'No approval level found or leave already processed.');
+            return;
+        }
 
-        $this->showModal = true;
-        $this->dispatch('open-modal');
+        if (!in_array($currentLevel->id, $this->userApprovalLevels)) {
+            session()->flash('error', 'You do not have permission to approve at this level.');
+            return;
+        }
+
+        // Create approval record
+        leaverequestapproval::create([
+            'leave_request_id' => $leave->id,
+            'approval_level_id' => $currentLevel->id,
+            'approver_id' => Auth::id(),
+            'status' => 'approved',
+            'comments' => 'Approved',
+            'approved_at' => now(),
+        ]);
+
+        // Update leave status
+        $newStatus = $this->determineLeaveStatus($leave, 'approved');
+        $leave->update(['status' => $newStatus]);
+
+        session()->flash('success', 'Leave request has been approved successfully!');
+        $this->dispatch('refreshNotifications');
     }
 
+    public function openRejectModal($leaveId)
+    {
+        $this->selectedLeave = Employeeleaves::with(['employee', 'leave'])->findOrFail($leaveId);
+        $this->comments = '';
+        $this->showModal = true;
+    }
+
+    public function rejectLeave()
+    {
+        $this->validate([
+            'comments' => 'required|string|min:5|max:500',
+        ], [
+            'comments.required' => 'Please provide a reason for rejection.',
+            'comments.min' => 'Rejection reason must be at least 5 characters.',
+        ]);
+
+        if (!$this->selectedLeave) {
+            session()->flash('error', 'No leave request selected.');
+            return;
+        }
+
+        $currentLevel = $this->getCurrentApprovalLevel($this->selectedLeave);
+
+        if (!$currentLevel) {
+            session()->flash('error', 'No approval level found or leave already processed.');
+            $this->closeModal();
+            return;
+        }
+
+        if (!in_array($currentLevel->id, $this->userApprovalLevels)) {
+            session()->flash('error', 'You do not have permission to reject at this level.');
+            $this->closeModal();
+            return;
+        }
+
+        // Create rejection record
+        leaverequestapproval::create([
+            'leave_request_id' => $this->selectedLeave->id,
+            'approval_level_id' => $currentLevel->id,
+            'approver_id' => Auth::id(),
+            'status' => 'rejected',
+            'comments' => $this->comments,
+            'approved_at' => now(),
+        ]);
+
+        // Update leave status to rejected
+        $this->selectedLeave->update(['status' => 'Rejected']);
+
+        session()->flash('success', 'Leave request has been rejected.');
+        $this->closeModal();
+        $this->dispatch('refreshNotifications');
+    }
+
+    #[On('closeModal')]
     public function closeModal()
     {
         $this->showModal = false;
         $this->selectedLeave = null;
         $this->comments = '';
-        $this->actionType = '';
-        $this->currentApprovalLevel = null;
     }
 
     public function getCurrentApprovalLevel($leave)
@@ -82,7 +155,9 @@ class Leaveapproval extends Component
         }
 
         // Get existing approvals for this leave
-        $existingApprovals = $leave->approvalnote()->with('approval_level')->get();
+        $existingApprovals = leaverequestapproval::where('leave_request_id', $leave->id)
+            ->with('approval_level')
+            ->get();
 
         // If any approval was rejected, return null (already rejected)
         if ($existingApprovals->where('status', 'rejected')->isNotEmpty()) {
@@ -103,44 +178,6 @@ class Leaveapproval extends Component
         return null; // All levels approved
     }
 
-    public function processApproval()
-    {
-        if (!$this->selectedLeave || !$this->currentApprovalLevel) {
-            return;
-        }
-
-        // Check if user has permission for this approval level
-        if (!in_array($this->currentApprovalLevel->id, $this->userApprovalLevels)) {
-            session()->flash('error', 'You do not have permission to approve at this level!');
-            return;
-        }
-
-        $approvalStatus = $this->actionType === 'approve' ? 'approved' : 'rejected';
-
-        // Create approval record
-        leaverequestapproval::create([
-            'leave_request_id' => $this->selectedLeave->id,
-            'approval_level_id' => $this->currentApprovalLevel->id,
-            'approver_id' => Auth::id(),
-            'status' => $approvalStatus,
-            'comments' => $this->comments,
-            'approved_at' => now(),
-        ]);
-
-        // Update leave status based on approval flow
-        $newStatus = $this->determineLeaveStatus($this->selectedLeave, $approvalStatus);
-
-        $this->selectedLeave->update([
-            'status' => $newStatus,
-        ]);
-
-        $statusMessage = $approvalStatus === 'approved' ? 'approved' : 'rejected';
-        session()->flash('success', "Leave request has been {$statusMessage}!");
-        $this->closeModal();
-        $this->dispatch('close-modal');
-        $this->dispatch('refreshNotifications');
-    }
-
     public function determineLeaveStatus($leave, $approvalStatus)
     {
         if ($approvalStatus === 'rejected') {
@@ -158,7 +195,7 @@ class Leaveapproval extends Component
             ->values();
 
         if ($approvalLevels->isEmpty()) {
-            return 'Approved';
+            return 'approved';
         }
 
         // Get current approvals count (including the one just created)
@@ -170,38 +207,39 @@ class Leaveapproval extends Component
 
         // Determine status based on level
         if ($approvedCount >= $totalLevels) {
-            return 'Approved'; // All levels approved
+            return 'approved';
         } elseif ($approvedCount === 1) {
-            return 'Active'; // First level approved
+            return 'Active';
         } else {
-            return 'Awaiting'; // Still waiting for more approvals
+            return 'Awaiting';
         }
     }
 
     public function render()
     {
-        // Get logged-in user's employee record
-        $employee = Employee::where('user_id', Auth::id())->first();
-
         $canApprove = !empty($this->userApprovalLevels);
         $pendingLeaves = collect();
 
         if ($canApprove) {
-            // Get leave requests with approval notes
             $leavesQuery = Employeeleaves::with(['employee', 'leave', 'approvalnote.approval_level', 'approvalnote.approver'])
                 ->orderBy('created_at', 'desc');
 
             // Filter by status
-            if ($this->statusFilter === 'Awaiting' || $this->statusFilter === 'Active') {
-                // Show leaves that are awaiting or active
-                $leavesQuery->whereIn('status', ['Awaiting', 'Active']);
-            } else {
-                $leavesQuery->where('status', $this->statusFilter);
+            if ($this->statusFilter === 'Awaiting') {
+                $leavesQuery->where(function ($q) {
+                    $q->whereRaw('LOWER(status) IN (?, ?, ?)', ['awaiting', 'pending', 'active']);
+                });
+            } elseif ($this->statusFilter === 'Active') {
+                $leavesQuery->whereRaw('LOWER(status) = ?', ['active']);
+            } elseif ($this->statusFilter === 'Approved') {
+                $leavesQuery->whereRaw('LOWER(status) = ?', ['approved']);
+            } elseif ($this->statusFilter === 'Rejected') {
+                $leavesQuery->whereRaw('LOWER(status) = ?', ['rejected']);
             }
 
             $pendingLeaves = $leavesQuery->paginate(10);
 
-            // For each leave, determine if current user can approve at current level
+            // For each leave, determine if current user can approve
             $pendingLeaves->getCollection()->transform(function ($leave) {
                 $leave->canUserApprove = false;
                 $leave->nextApprovalLevel = $this->getCurrentApprovalLevel($leave);
