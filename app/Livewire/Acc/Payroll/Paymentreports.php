@@ -6,6 +6,7 @@ use App\Exports\PaymentReportsExport;
 use App\Models\allowances;
 use App\Models\departments;
 use App\Models\payrolls;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -129,6 +130,36 @@ class Paymentreports extends Component
     public function printSalarySlip()
     {
         $this->dispatch('print-salary-slip');
+    }
+
+    public function downloadSalarySlipPdf($payrollId = null)
+    {
+        $id = $payrollId ?? $this->viewingPayrollId;
+
+        if (!$id) {
+            return;
+        }
+
+        $payroll = payrolls::with([
+            'employee.department',
+            'employee.designation',
+            'employee.activeContract',
+            'contract',
+            'items.contractAllowance.allowance',
+            'items.contractDeduction.deduction',
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('exports.salary-slip-pdf', [
+            'payroll' => $payroll,
+        ])->setPaper('a4', 'portrait');
+
+        $filename = 'salary-slip-' . ($payroll->employee->employee_number ?? $payroll->employee->id) . '-' . $payroll->period . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 
     public function exportExcel()

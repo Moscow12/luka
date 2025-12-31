@@ -282,7 +282,16 @@
                                                 wire:click="viewSalarySlip('{{ $payroll->id }}')"
                                                 class="btn btn-sm btn-primary"
                                                 title="View Salary Slip">
-                                                <i class="fa-solid fa-file-invoice"></i> View Slip
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            <button
+                                                wire:click="downloadSalarySlipPdf('{{ $payroll->id }}')"
+                                                wire:loading.attr="disabled"
+                                                wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"
+                                                class="btn btn-sm btn-danger"
+                                                title="Download PDF">
+                                                <i class="fa-solid fa-file-pdf" wire:loading.remove wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"></i>
+                                                <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"></i>
                                             </button>
                                         </div>
                                     </td>

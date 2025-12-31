@@ -347,8 +347,16 @@
                 <button type="button" class="btn btn-secondary" wire:click="closeSalarySlip">
                     <i class="fa-solid fa-times"></i> Close
                 </button>
+                <button type="button" class="btn btn-danger" wire:click="downloadSalarySlipPdf" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="downloadSalarySlipPdf">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF
+                    </span>
+                    <span wire:loading wire:target="downloadSalarySlipPdf">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Generating...
+                    </span>
+                </button>
                 <button type="button" class="btn btn-primary" onclick="printSalarySlip()">
-                    <i class="fa-solid fa-print"></i> Print Salary Slip
+                    <i class="fa-solid fa-print"></i> Print
                 </button>
             </div>
         </div>

@@ -88,10 +88,10 @@
       </li>
       <li class="nav-item"><a class='nav-link' href="{{ route('allowancepayment') }}"><i class="fa-solid fa-gift"></i> Allowance Payment</a></li>
       <li class="nav-item">
-        <a class='nav-link' href='apps/e-commerce/ecommerce-products-details.html'><i class="fa-solid fa-location-dot"></i> Staff Overtime</a>
+        <a class='nav-link' href='#'><i class="fa-solid fa-location-dot"></i> Staff Overtime</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('setup.finances') }}"><i class="fa-solid fa-clipboard-user"></i> Loan Management</a>
+        <a class='nav-link' href="#"><i class="fa-solid fa-clipboard-user"></i> Loan Management</a>
       </li>
       <li class="nav-item">
         <a class='nav-link' href="{{ route('paymentreports') }}"><i class="fa-solid fa-clock"></i> Payments Report</a>
