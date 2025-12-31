@@ -311,7 +311,13 @@
     </div>
 
     {{-- Contract Details Modal --}}
-    @if($viewingContractId)
+    @if($viewingContractId && $viewingContract)
+        @php
+            $baseSalary = $viewingContract->base_salary ?? 0;
+            $totalAllowances = $contractAllowances->sum(fn($a) => $a->calculateAmount($baseSalary));
+            $grossSalary = $baseSalary + $totalAllowances;
+            $totalDeductions = $contractDeductions->sum(fn($d) => $d->calculateAmount($baseSalary, $grossSalary));
+        @endphp
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
@@ -322,6 +328,14 @@
                         <button type="button" class="btn-close btn-close-white" wire:click="closeContractDetails"></button>
                     </div>
                     <div class="modal-body">
+                        {{-- Base Salary Info --}}
+                        <div class="alert alert-primary mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-money-bill"></i> <strong>Base Salary:</strong></span>
+                                <span class="fw-bold fs-5">{{ format_tzs($baseSalary) }}</span>
+                            </div>
+                        </div>
+
                         {{-- Contract Allowances --}}
                         <div class="mb-4">
                             <h6 class="fw-bold text-success d-flex align-items-center gap-2">
@@ -333,30 +347,37 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Allowance Name</th>
+                                                <th>Type</th>
                                                 <th class="text-end">Amount</th>
-                                                <th class="text-center">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($contractAllowances as $allowance)
+                                                @php
+                                                    $calcInfo = $allowance->getCalculationInfo();
+                                                    $calculatedAmount = $allowance->calculateAmount($baseSalary);
+                                                @endphp
                                                 <tr>
                                                     <td>{{ $allowance->allowance->name ?? 'N/A' }}</td>
-                                                    <td class="text-end fw-bold text-success">
-                                                        {{ format_tzs($allowance->amount_override ?? $allowance->allowance->amount ?? 0) }}
+                                                    <td>
+                                                        @if($calcInfo['is_override'])
+                                                            <span class="badge bg-warning text-dark">Override</span>
+                                                        @elseif($calcInfo['type'] === 'percentage')
+                                                            <span class="badge bg-info">{{ number_format($calcInfo['value'], 1) }}% of salary</span>
+                                                        @else
+                                                            <span class="badge bg-secondary">Fixed</span>
+                                                        @endif
                                                     </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-success">Active</span>
+                                                    <td class="text-end fw-bold text-success">
+                                                        {{ format_tzs($calculatedAmount) }}
                                                     </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
-                                        <tfoot class="table-light">
+                                        <tfoot class="table-success">
                                             <tr>
-                                                <th>Total Allowances</th>
-                                                <th class="text-end text-success">
-                                                    {{ format_tzs($contractAllowances->sum(fn($a) => $a->amount_override ?? $a->allowance->amount ?? 0)) }}
-                                                </th>
-                                                <th></th>
+                                                <th colspan="2">Total Allowances</th>
+                                                <th class="text-end">{{ format_tzs($totalAllowances) }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -367,6 +388,14 @@
                                     No allowances assigned to this contract
                                 </div>
                             @endif
+                        </div>
+
+                        {{-- Gross Salary --}}
+                        <div class="alert alert-success mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-calculator"></i> <strong>Gross Salary:</strong> (Base + Allowances)</span>
+                                <span class="fw-bold fs-5">{{ format_tzs($grossSalary) }}</span>
+                            </div>
                         </div>
 
                         {{-- Contract Deductions --}}
@@ -380,30 +409,44 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Deduction Name</th>
+                                                <th>Type</th>
                                                 <th class="text-end">Amount</th>
-                                                <th class="text-center">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($contractDeductions as $deduction)
+                                                @php
+                                                    $calcInfo = $deduction->getCalculationInfo();
+                                                    $calculatedAmount = $deduction->calculateAmount($baseSalary, $grossSalary);
+                                                @endphp
                                                 <tr>
                                                     <td>{{ $deduction->deduction->name ?? 'N/A' }}</td>
-                                                    <td class="text-end fw-bold text-danger">
-                                                        {{ format_tzs($deduction->amount_override ?? $deduction->deduction->amount ?? 0) }}
+                                                    <td>
+                                                        @if($calcInfo['is_override'])
+                                                            <span class="badge bg-warning text-dark">Override</span>
+                                                        @elseif($calcInfo['type'] === 'percentage')
+                                                            <span class="badge bg-info">
+                                                                {{ number_format($calcInfo['value'], 1) }}%
+                                                                @if($calcInfo['applies_to'] === 'gross_salary')
+                                                                    of gross
+                                                                @else
+                                                                    of basic
+                                                                @endif
+                                                            </span>
+                                                        @else
+                                                            <span class="badge bg-secondary">Fixed</span>
+                                                        @endif
                                                     </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-success">Active</span>
+                                                    <td class="text-end fw-bold text-danger">
+                                                        {{ format_tzs($calculatedAmount) }}
                                                     </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
-                                        <tfoot class="table-light">
+                                        <tfoot class="table-danger">
                                             <tr>
-                                                <th>Total Deductions</th>
-                                                <th class="text-end text-danger">
-                                                    {{ format_tzs($contractDeductions->sum(fn($d) => $d->amount_override ?? $d->deduction->amount ?? 0)) }}
-                                                </th>
-                                                <th></th>
+                                                <th colspan="2">Total Deductions (excl. PAYE)</th>
+                                                <th class="text-end">{{ format_tzs($totalDeductions) }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -419,6 +462,30 @@
                         <div class="alert alert-info mt-3">
                             <i class="fa-solid fa-info-circle"></i>
                             <strong>Note:</strong> PAYE tax will be automatically calculated and added to deductions during payroll generation based on Tanzania tax brackets.
+                        </div>
+
+                        {{-- Estimated Net Salary --}}
+                        @php
+                            $payeEstimate = calculate_paye($grossSalary)['tax_amount'] ?? 0;
+                            $estimatedNet = $grossSalary - $totalDeductions - $payeEstimate;
+                        @endphp
+                        <div class="card bg-primary text-white mt-3">
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <small>Gross Salary</small>
+                                        <div class="fw-bold">{{ format_tzs($grossSalary) }}</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <small>Est. Deductions + PAYE</small>
+                                        <div class="fw-bold">{{ format_tzs($totalDeductions + $payeEstimate) }}</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <small>Est. Net Salary</small>
+                                        <div class="fw-bold fs-5">{{ format_tzs($estimatedNet) }}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">

@@ -49,6 +49,8 @@ class Payrollgeneration extends Component
     // For viewing contract details
     public $viewingContractId = null;
 
+    public $viewingContract = null;
+
     public $contractAllowances = [];
 
     public $contractDeductions = [];
@@ -120,6 +122,9 @@ class Payrollgeneration extends Component
     {
         $this->viewingContractId = $contractId;
 
+        // Load the contract with base salary
+        $this->viewingContract = Employeecontracts::find($contractId);
+
         // Load contract allowances
         $this->contractAllowances = ContractAllowance::where('contract_id', $contractId)
             ->where('is_active', true)
@@ -136,6 +141,7 @@ class Payrollgeneration extends Component
     public function closeContractDetails()
     {
         $this->viewingContractId = null;
+        $this->viewingContract = null;
         $this->contractAllowances = [];
         $this->contractDeductions = [];
     }
