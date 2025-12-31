@@ -21,6 +21,7 @@ use App\Livewire\Hr\Staffs\Contracts;
 use App\Livewire\Hr\Staffs\Dependants;
 use App\Livewire\Hr\Staffs\Digitalsignature;
 use App\Livewire\Hr\Staffs\Disciplinary;
+use App\Livewire\Hr\Staffs\Importstaffs;
 use App\Livewire\Hr\Staffs\Leave;
 use App\Livewire\Hr\Staffs\Otherdocuments;
 use App\Livewire\Hr\Staffs\Promotions;
@@ -72,6 +73,8 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/contracts/{id}', Contracts::class)->name('hr.contracts');
     Route::get('/staffs/salary/{id}', Salary::class)->name('hr.salary');
     Route::get('staffs/qualifications/{id}', Qualifications::class)->name('hr.qualifications');
+    Route::get('/staffs/import', Importstaffs::class)->name('hr.importstaffs');
+
     // promotions
     Route::get('/staffs/promotions/{id}', Promotions::class)->name('hr.promotions');
     Route::get('/staffs/disciplinary/{id}', Disciplinary::class)->name('hr.disciplinary');

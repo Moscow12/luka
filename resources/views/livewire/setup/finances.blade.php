@@ -41,18 +41,6 @@
                         Financial Years
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link py-2" id="districts-tab" data-bs-toggle="pill" href="#districts" role="tab" aria-controls="districts" aria-selected="true">
-                        <i class="fa-solid fa-person"></i>
-                        Districts
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link py-2" id="wards-tab" data-bs-toggle="pill" href="#wards" role="tab" aria-controls="wards" aria-selected="true">
-                        <i class="fa-solid fa-user-doctor"></i>
-                        Wards
-                    </a>
-                </li>
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -65,12 +53,6 @@
                 </div>
                 <div class="tab-pane" id="financial-years" role="tabpanel" aria-labelledby="financial-years-tab">
                     <livewire:setup.finance.financial-years />
-                </div>
-                <div class="tab-pane" id="districts" role="tabpanel" aria-labelledby="districts-tab">
-                    <livewire:setup.location.district />
-                </div>
-                <div class="tab-pane fade show" id="wards" role="tabpanel" aria-labelledby="wards-tab">
-                   <livewire:setup.location.ward />
                 </div>
                 
             </div>

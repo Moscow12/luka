@@ -2,13 +2,16 @@
 
 namespace App\Livewire\Hr\Roster;
 
+use App\Exports\RosterExport;
 use App\Models\departments;
 use App\Models\Employee;
 use App\Models\employeeroster;
 use App\Models\shifts;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Viewroster extends Component
 {
@@ -66,7 +69,7 @@ class Viewroster extends Component
         // Get all rosters from previous month
         $previousRosters = employeeroster::whereYear('roster_date', $previousDate->year)
             ->whereMonth('roster_date', $previousDate->month)
-            ->when($this->department, fn($q) => $q->where('department_id', $this->department))
+            ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
             ->get();
 
         if ($previousRosters->isEmpty()) {
@@ -174,14 +177,72 @@ class Viewroster extends Component
 
     public function exportPDF()
     {
-        // Placeholder for PDF export functionality
-        session()->flash('info', 'PDF export functionality coming soon.');
+        $dates = $this->getDatesInMonth();
+        $employees = $this->getEmployees();
+        $rosterData = $this->getRosterData();
+        $shiftsData = shifts::where('status', 'active')->orderBy('name')->get();
+
+        $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
+        $summary = [
+            'total_employees' => $employees->count(),
+            'total_rosters' => employeeroster::whereBetween('roster_date', [
+                $startDate->copy()->startOfMonth(),
+                $startDate->copy()->endOfMonth(),
+            ])->when($this->department, fn ($q) => $q->where('department_id', $this->department))->count(),
+            'month_name' => $startDate->format('F Y'),
+        ];
+
+        $employeeSummaries = [];
+        foreach ($employees as $employee) {
+            $employeeSummaries[$employee->id] = $this->getEmployeeSummary($employee->id);
+        }
+
+        $pdf = Pdf::loadView('exports.roster-pdf', [
+            'employees' => $employees,
+            'dates' => $dates,
+            'rosterData' => $rosterData,
+            'shifts' => $shiftsData,
+            'summary' => $summary,
+            'employeeSummaries' => $employeeSummaries,
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'roster_'.$startDate->format('Y_m').'.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 
     public function exportExcel()
     {
-        // Placeholder for Excel export functionality
-        session()->flash('info', 'Excel export functionality coming soon.');
+        $dates = $this->getDatesInMonth();
+        $employees = $this->getEmployees();
+        $rosterData = $this->getRosterData();
+        $shiftsData = shifts::where('status', 'active')->orderBy('name')->get();
+
+        $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
+        $summary = [
+            'total_employees' => $employees->count(),
+            'total_rosters' => employeeroster::whereBetween('roster_date', [
+                $startDate->copy()->startOfMonth(),
+                $startDate->copy()->endOfMonth(),
+            ])->when($this->department, fn ($q) => $q->where('department_id', $this->department))->count(),
+            'month_name' => $startDate->format('F Y'),
+        ];
+
+        $employeeSummaries = [];
+        foreach ($employees as $employee) {
+            $employeeSummaries[$employee->id] = $this->getEmployeeSummary($employee->id);
+        }
+
+        $filename = 'roster_'.$startDate->format('Y_m').'.xlsx';
+
+        return Excel::download(
+            new RosterExport($employees, $dates, $rosterData, $shiftsData, $summary, $employeeSummaries),
+            $filename
+        );
     }
 
     private function getDatesInMonth()
@@ -201,7 +262,7 @@ class Viewroster extends Component
     {
         return Employee::query()
             ->with(['department', 'designation'])
-            ->when($this->department, fn($q) => $q->where('department_id', $this->department))
+            ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('first_name', 'like', '%'.$this->search.'%')
@@ -223,7 +284,7 @@ class Viewroster extends Component
 
         return employeeroster::with(['shift', 'employee'])
             ->whereBetween('roster_date', [$startDate, $endDate])
-            ->when($this->department, fn($q) => $q->where('department_id', $this->department))
+            ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
             ->get()
             ->groupBy(function ($roster) {
                 return $roster->employee_id.'_'.Carbon::parse($roster->roster_date)->format('Y-m-d');
@@ -240,7 +301,6 @@ class Viewroster extends Component
             ->whereBetween('roster_date', [$startDate, $endDate])
             ->get();
 
-        $summary = [];
         $shiftCounts = [];
 
         foreach ($rosters as $roster) {
@@ -280,7 +340,7 @@ class Viewroster extends Component
             'total_rosters' => employeeroster::whereBetween('roster_date', [
                 $startDate->copy()->startOfMonth(),
                 $startDate->copy()->endOfMonth(),
-            ])->when($this->department, fn($q) => $q->where('department_id', $this->department))->count(),
+            ])->when($this->department, fn ($q) => $q->where('department_id', $this->department))->count(),
             'month_name' => $startDate->format('F Y'),
         ];
 

@@ -5,6 +5,7 @@
         ['label' => 'HR Overview', 'url' => route('hr.index')],
         ['label' => 'Staff List', 'url' => route('hr.stafflist')],
     ]">
+        
         <a class='btn btn-primary d-md-flex align-items-center gap-2' href="{{ route('hr.addstaff') }}">
             <i class="fa-solid fa-plus"></i> ADD NEW STAFF
         </a>
@@ -36,6 +37,9 @@
                         <!-- Actions -->
                         <div class="col-12 col-md-8">
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                <a href="{{ route('hr.importstaffs') }}" class="btn btn-primary">
+                                    <i class="fa-solid fa-file-import me-1"></i> Import Staffs
+                                </a>
                                 <!-- Filter Toggle Button -->
                                 <button wire:click="toggleFilters" type="button"
                                     class="btn {{ $showFilters ? 'btn-primary' : 'btn-white' }}">
