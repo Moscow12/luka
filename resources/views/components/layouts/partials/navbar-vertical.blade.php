@@ -70,7 +70,7 @@
     <!-- Human Resources Section Header -->
     @if($isSuperAdmin || $user?->canAny(['view-staff', 'manage-staff', 'view-attendance', 'manage-leave', 'view-payroll', 'manage-payroll', 'view-performance']))
     <li class="nav-item">
-        <div class="nav-heading">Human Resources</div>
+        <div class="nav-heading">Human Resource</div>
         <hr class="mx-5 nav-line mb-1" />
     </li>
     @endif
