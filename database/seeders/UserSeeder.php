@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        // Create super admin user
         User::create([
             'first_name' => 'System',
             'surname' => 'Administrator',
@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('admin@hospital.test'),
             'gender' => 'Male',
             'country' => 'Tanzania',
+            'is_super_admin' => true,
         ]);
 
         // Create test users
