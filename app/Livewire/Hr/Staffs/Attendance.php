@@ -14,10 +14,13 @@ class Attendance extends Component
     public $showModal = false;
     public $attendance_id, $date, $attendance, $employee_id, $attendances=[];
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
+    public $fpid;
+
     public function mount($id=null)
     {
         $staff = Employee::findOrFail($id);
         $this->employee_id = $id;
+        $this->fpid = $staff->fpid;
 
         $this->first_name = $staff->first_name;
         $this->middle_name = $staff->middle_name;
@@ -40,8 +43,8 @@ class Attendance extends Component
         if ($mode === 'edit' && $id) {
             $attendance = employeeattendances::findOrFail($id);
             $this->attendance_id = $id;
-            $this->date = $attendance->date;
-            $this->attendance = $attendance->attendance;
+            $this->date = $attendance->clockdate;
+            $this->attendance = $attendance->clock_status;
         } else {
             $this->reset(['date', 'attendance']);
         }
@@ -52,21 +55,26 @@ class Attendance extends Component
         $this->validate([
             'date' => ['required', 'date'],
             'attendance' => ['required', 'string', 'max:255'],
-
         ]);
+
+        if (!$this->fpid) {
+            session()->flash('error', 'Employee does not have a fingerprint ID assigned.');
+            return;
+        }
 
         if ($this->modalMode === 'edit' && $this->attendance_id) {
             $attendance = employeeattendances::findOrFail($this->attendance_id);
-            $attendance->update(['date' => $this->date, 'attendance' => $this->attendance]);
+            $attendance->update([
+                'clockdate' => $this->date,
+                'clock_status' => $this->attendance,
+            ]);
             $this->listdata();
             session()->flash('success', 'Attendance updated successfully!');
         } else {
             employeeattendances::create([
-                'date' => $this->date,
-                'attendance' => $this->attendance,
-                'added_by' => Auth::user()->id,
-                'employee_id' => $this->employee_id,
-
+                'fpuser_id' => $this->fpid,
+                'clockdate' => $this->date,
+                'clock_status' => $this->attendance,
             ]);
             $this->listdata();
             session()->flash('success', 'Attendance added successfully!');
@@ -84,9 +92,13 @@ class Attendance extends Component
 
     public function listdata()
     {
-        $this->attendances = employeeattendances::query()
-            ->where('employee_id', $this->employee_id)
-            ->get();
+        $this->attendances = [];
+        if ($this->fpid) {
+            $this->attendances = employeeattendances::query()
+                ->where('fpuser_id', $this->fpid)
+                ->orderBy('clockdate', 'desc')
+                ->get();
+        }
     }
     public function render()
     {

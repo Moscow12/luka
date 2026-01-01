@@ -54,14 +54,13 @@
                         <tbody>
                             @foreach($attendances as $attendance)
                             <tr>
-                                <td>{{ $attendance->date }}</td>
-                                <td>{{ $attendance->clocktime }}</td>
-                                <td>{{ $attendance->clock_out }}</td>
-                                <td>{{ $attendance->clock_status }}</td>
-                                <td>{{ $attendance->attendance }}</td>
+                                <td>{{ $attendance->clockdate }}</td>
+                                <td>{{ $attendance->clock_in ?? $attendance->clocktime }}</td>
+                                <td>{{ $attendance->clock_out ?? '-' }}</td>
+                                <td>{{ $attendance->clock_status ?? '-' }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $attendance->id }})" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ $attendance->id }})">Delete</a>
+                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $attendance->id }}')" />
+                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $attendance->id }}')">Delete</a>
                                 </td>
                             </tr>
                             @endforeach
