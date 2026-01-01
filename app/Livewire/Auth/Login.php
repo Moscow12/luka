@@ -5,6 +5,7 @@ namespace App\Livewire\Auth;
 use App\Models\LoginActivity;
 use App\Models\TrustedDevice;
 use App\Models\User;
+use App\Models\workstations;
 use App\Services\DeviceFingerprinter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -114,7 +115,13 @@ class Login extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.login')
-            ->layout('components.layouts.guest');
+        $workstation = workstations::first();
+        $twoFactorEnabled = config('auth.two_factor_enabled', true);
+
+        return view('livewire.auth.login', [
+            'workstation' => $workstation,
+            'twoFactorEnabled' => $twoFactorEnabled,
+            'appName' => config('app.name', 'Dasher'),
+        ])->layout('components.layouts.guest');
     }
 }
