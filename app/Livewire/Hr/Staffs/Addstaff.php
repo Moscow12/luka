@@ -10,6 +10,7 @@ use App\Models\districts;
 use App\Models\Employee;
 use App\Models\Jobtitle;
 use App\Models\regions;
+use App\Models\Role;
 use App\Models\street;
 use App\Models\User;
 use App\Models\villages;
@@ -20,7 +21,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Spatie\Permission\Models\Role;
 
 class Addstaff extends Component
 {

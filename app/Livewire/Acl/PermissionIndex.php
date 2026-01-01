@@ -7,6 +7,7 @@ use App\Models\PermissionCategory;
 use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Exceptions\PermissionAlreadyExists;
 
 class PermissionIndex extends Component
 {
@@ -146,25 +147,29 @@ class PermissionIndex extends Component
             'permission_category_id' => 'required|exists:permission_categories,id',
         ]);
 
-        if ($this->permissionModalMode === 'edit' && $this->permission_id) {
-            $permission = Permission::findOrFail($this->permission_id);
-            $permission->update([
-                'name' => $this->permission_name,
-                'description' => $this->permission_description,
-                'category_id' => $this->permission_category_id,
-            ]);
-            session()->flash('success', 'Permission updated successfully!');
-        } else {
-            Permission::create([
-                'name' => $this->permission_name,
-                'guard_name' => 'web',
-                'description' => $this->permission_description,
-                'category_id' => $this->permission_category_id,
-            ]);
-            session()->flash('success', 'Permission created successfully!');
-        }
+        try {
+            if ($this->permissionModalMode === 'edit' && $this->permission_id) {
+                $permission = Permission::findOrFail($this->permission_id);
+                $permission->update([
+                    'name' => $this->permission_name,
+                    'description' => $this->permission_description,
+                    'category_id' => $this->permission_category_id,
+                ]);
+                session()->flash('success', 'Permission updated successfully!');
+            } else {
+                Permission::create([
+                    'name' => $this->permission_name,
+                    'guard_name' => 'web',
+                    'description' => $this->permission_description,
+                    'category_id' => $this->permission_category_id,
+                ]);
+                session()->flash('success', 'Permission created successfully!');
+            }
 
-        $this->closePermissionModal();
+            $this->closePermissionModal();
+        } catch (PermissionAlreadyExists $e) {
+            $this->addError('permission_name', "The permission '{$this->permission_name}' already exists. Please choose a different name.");
+        }
     }
 
     // Delete Methods
