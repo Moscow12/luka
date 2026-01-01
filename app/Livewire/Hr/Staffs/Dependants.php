@@ -10,14 +10,52 @@ use Livewire\Component;
 class Dependants extends Component
 {
     public $search = '';
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    public $dependant_id, $name, $relationship,$dob, $phone, $dependantsemail, $occupation, $address;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
-    public $employee_id, $dependants=[];
+
+    public $dependant_id;
+
+    public $name;
+
+    public $relationship;
+
+    public $dob;
+
+    public $phone;
+
+    public $dependantsemail;
+
+    public $occupation;
+
+    public $address;
+
+    public $first_name;
+
+    public $middle_name;
+
+    public $last_name;
+
+    public $gender;
+
+    public $getfullname;
+
+    public $age;
+
+    public $email;
+
+    public $editUrl;
+
+    public $photo;
+
+    public $employee_id;
+
+    public $dependants = [];
+
     public bool $is_next_of_kin = false;
 
-    public function mount($id=null)
+    public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
         $this->employee_id = $id;
@@ -50,10 +88,10 @@ class Dependants extends Component
             $this->dependant_id = $id;
             $this->name = $dependant->name;
             $this->relationship = $dependant->relationship;
-            $this->dob = $dependant->dob;
+            $this->dob = $dependant->date_of_birth;
             $this->gender = $dependant->gender;
             $this->phone = $dependant->phone;
-            $this->dependantsemail = $dependant->dependantsemail;
+            $this->dependantsemail = $dependant->email;
             $this->occupation = $dependant->occupation;
             $this->address = $dependant->address;
             $this->is_next_of_kin = $dependant->is_next_of_kin;
@@ -61,7 +99,7 @@ class Dependants extends Component
             $this->reset(['name', 'relationship', 'age', 'gender', 'dob', 'phone', 'dependantsemail', 'occupation', 'address', 'is_next_of_kin']);
         }
     }
-    
+
     public function save()
     {
         $this->validate([
@@ -70,15 +108,25 @@ class Dependants extends Component
             'gender' => 'required|string|max:255',
             'dob' => 'required|date',
             'phone' => 'nullable|string',
-            'dependantsemail' => 'nullable|string',
+            'dependantsemail' => 'nullable|email',
             'occupation' => 'nullable|string',
             'address' => 'nullable|string',
             'is_next_of_kin' => 'nullable|boolean',
         ]);
-        dd($this->is_next_of_kin);
+
         if ($this->modalMode === 'edit' && $this->dependant_id) {
             $dependant = Employeedependants::findOrFail($this->dependant_id);
-            $dependant->update(['name' => $this->name, 'relationship' => $this->relationship, 'dob' => $this->dob, 'gender' => $this->gender, 'phone' => $this->phone, 'email' => $this->dependantsemail, 'occupation' => $this->occupation, 'address' => $this->address, 'is_next_of_kin' => $this->is_next_of_kin]);
+            $dependant->update([
+                'name' => $this->name,
+                'relationship' => $this->relationship,
+                'date_of_birth' => $this->dob,
+                'gender' => $this->gender,
+                'phone' => $this->phone,
+                'email' => $this->dependantsemail,
+                'occupation' => $this->occupation,
+                'address' => $this->address,
+                'is_next_of_kin' => $this->is_next_of_kin,
+            ]);
             $this->listdata();
             session()->flash('success', 'Dependant updated successfully!');
         } else {
@@ -86,14 +134,14 @@ class Dependants extends Component
                 'employee_id' => $this->employee_id,
                 'name' => $this->name,
                 'relationship' => $this->relationship,
-                'dob' => $this->dob,
+                'date_of_birth' => $this->dob,
                 'gender' => $this->gender,
                 'phone' => $this->phone,
                 'email' => $this->dependantsemail,
                 'occupation' => $this->occupation,
                 'address' => $this->address,
-                'is_next_of_kin' => $this->is_next_of_kin
-
+                'is_next_of_kin' => $this->is_next_of_kin,
+                'added_by' => Auth::id(),
             ]);
             $this->listdata();
             session()->flash('success', 'Dependant added successfully!');
@@ -101,6 +149,7 @@ class Dependants extends Component
         $this->showModal = false;
         $this->reset(['name', 'relationship', 'age', 'gender', 'dob', 'phone', 'dependantsemail', 'occupation', 'address', 'is_next_of_kin']);
     }
+
     public function delete($uuid)
     {
         $dependant = Employeedependants::findOrFail($uuid);
@@ -108,6 +157,7 @@ class Dependants extends Component
         $this->listdata();
         session()->flash('success', 'Dependant deleted successfully!');
     }
+
     public function render()
     {
         return view('livewire.hr.staffs.dependants');

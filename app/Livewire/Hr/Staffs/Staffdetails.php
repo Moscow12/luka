@@ -5,9 +5,9 @@ namespace App\Livewire\Hr\Staffs;
 use App\Models\Employee;
 use App\Models\employeeattendances;
 use App\Models\Employeecontracts;
-use App\Models\Employeedependant;
+use App\Models\Employeedependants;
 use App\Models\Employeeleaves;
-use App\Models\employeequalification;
+use App\Models\Employeequalifications;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -24,7 +24,17 @@ class Staffdetails extends Component
 
     public $attendanceRate = 0;
 
-    public $yearsOfService = 0;
+    public $serviceYears = 0;
+
+    public $serviceMonths = 0;
+
+    public $serviceDays = 0;
+
+    public $ageYears = 0;
+
+    public $ageMonths = 0;
+
+    public $ageDays = 0;
 
     public function mount($id)
     {
@@ -50,9 +60,26 @@ class Staffdetails extends Component
 
     public function loadStats()
     {
-        // Years of service
+        // Years, months, days of service
         if ($this->employee->hired_date) {
-            $this->yearsOfService = Carbon::parse($this->employee->hired_date)->diffInYears(now());
+            $hiredDate = Carbon::parse($this->employee->hired_date);
+            $now = Carbon::now();
+            $diff = $hiredDate->diff($now);
+
+            $this->serviceYears = $diff->y;
+            $this->serviceMonths = $diff->m;
+            $this->serviceDays = $diff->d;
+        }
+
+        // Employee age in years, months, days
+        if ($this->employee->dob) {
+            $dob = Carbon::parse($this->employee->dob);
+            $now = Carbon::now();
+            $ageDiff = $dob->diff($now);
+
+            $this->ageYears = $ageDiff->y;
+            $this->ageMonths = $ageDiff->m;
+            $this->ageDays = $ageDiff->d;
         }
 
         // Leave stats
@@ -98,13 +125,13 @@ class Staffdetails extends Component
         $contracts = [];
 
         if ($this->activeTab === 'qualifications') {
-            $qualifications = employeequalification::where('employee_id', $this->employee->id)
-                ->orderBy('year_obtained', 'desc')
+            $qualifications = Employeequalifications::where('employee_id', $this->employee->id)
+                ->orderBy('end_date', 'desc')
                 ->get();
         }
 
         if ($this->activeTab === 'dependants') {
-            $dependants = Employeedependant::where('employee_id', $this->employee->id)
+            $dependants = Employeedependants::where('employee_id', $this->employee->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
         }

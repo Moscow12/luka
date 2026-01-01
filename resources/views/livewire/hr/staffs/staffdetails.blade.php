@@ -75,8 +75,10 @@
                     <div class="row g-0 text-center">
                         <div class="col-4 border-end">
                             <div class="py-2">
-                                <div class="fw-bold text-primary fs-5">{{ $yearsOfService }}</div>
-                                <small class="text-muted">Years</small>
+                                <div class="fw-bold text-primary fs-6">
+                                    {{ $serviceYears }}y {{ $serviceMonths }}m {{ $serviceDays }}d
+                                </div>
+                                <small class="text-muted">Service</small>
                             </div>
                         </div>
                         <div class="col-4 border-end">
@@ -252,7 +254,7 @@
                                     </div>
                                     <div class="col-6">
                                         <label class="form-label text-muted small mb-1">Age</label>
-                                        <p class="mb-0 fw-medium">{{ $employee->getAgeAttribute() }}</p>
+                                        <p class="mb-0 fw-medium">{{ $ageYears }} years, {{ $ageMonths }} months, {{ $ageDays }} days</p>
                                     </div>
                                     <div class="col-6">
                                         <label class="form-label text-muted small mb-1">Marital Status</label>
@@ -391,8 +393,8 @@
                                 <span class="badge bg-{{ $statusColor }}">{{ $employee->status }}</span>
                             </div>
                             <div class="col-md-6 col-lg-4">
-                                <label class="form-label text-muted small mb-1">Years of Service</label>
-                                <p class="mb-0 fw-medium">{{ $yearsOfService }} years</p>
+                                <label class="form-label text-muted small mb-1">Length of Service</label>
+                                <p class="mb-0 fw-medium">{{ $serviceYears }} years, {{ $serviceMonths }} months, {{ $serviceDays }} days</p>
                             </div>
                         </div>
                     </div>
@@ -469,19 +471,19 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Qualification</th>
+                                        <th>Education Level</th>
                                         <th>Institution</th>
-                                        <th>Year</th>
-                                        <th>Grade</th>
+                                        <th>Period</th>
+                                        <th>Comments</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($qualifications as $qual)
                                     <tr>
-                                        <td>{{ $qual->qualification_name ?? '-' }}</td>
+                                        <td>{{ $qual->education_level ?? '-' }}</td>
                                         <td>{{ $qual->institution ?? '-' }}</td>
-                                        <td>{{ $qual->year_obtained ?? '-' }}</td>
-                                        <td>{{ $qual->grade ?? '-' }}</td>
+                                        <td>{{ $qual->start_date ? \Carbon\Carbon::parse($qual->start_date)->format('Y') : '-' }} - {{ $qual->end_date ? \Carbon\Carbon::parse($qual->end_date)->format('Y') : '-' }}</td>
+                                        <td>{{ $qual->comments ?? '-' }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
