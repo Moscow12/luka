@@ -249,19 +249,19 @@
   <!-- Nav item -->
     <!-- Nav item -->
   <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="{{ route('viewroster.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" href="{{ route('user.management') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
-        <i class="fa-solid fa-calendar-days"></i>
+        <i class="fa-solid fa-users-cog"></i>
       </span>
-      <span class="text">Users</span>
+      <span class="text">Users & Access</span>
     </a>
     <ul class="dropdown-menu flex-column">
-      <li class="nav-item"><a class='nav-link' href="{{ route('user.management') }}"><i class="fa-solid fa-sliders"></i> Users</a></li>
+      <li class="nav-item"><a class='nav-link' href="{{ route('user.management') }}"><i class="fa-solid fa-users"></i> Users</a></li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('acl.index') }}"><i class="fa-solid fa-lock"></i> Permissions</a>
+        <a class='nav-link' href="{{ route('acl.index') }}"><i class="fa-solid fa-user-shield"></i> Roles</a>
       </li>
       <li class="nav-item">
-        <a class='nav-link' href="{{ route('roster.create') }}"><i class="fa-solid fa-log"></i> Roles</a>
+        <a class='nav-link' href="{{ route('acl.permissions') }}"><i class="fa-solid fa-key"></i> Permissions</a>
       </li>
     </ul>
   </li>

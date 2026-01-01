@@ -15,17 +15,17 @@ class UserSeeder extends Seeder
     {
         // Create admin user
         User::create([
-            'first_name' => 'Admin',
-            'surname' => 'User',
+            'first_name' => 'System',
+            'surname' => 'Administrator',
             'email' => 'admin@hospital.test',
             'username' => 'admin',
-            'phone_number' => '0717599994',
+            'phone_number' => '0756077558',
             'password' => Hash::make('admin@hospital.test'),
             'gender' => 'Male',
-            'country' => 'Ghana',
+            'country' => 'Tanzania',
         ]);
 
         // Create test users
-        User::factory(10)->create();
+        User::factory(1)->create();
     }
 }

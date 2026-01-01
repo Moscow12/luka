@@ -54,6 +54,7 @@ Route::group([
     Route::get('/', \App\Livewire\Acl\RoleIndex::class)->name('acl.index');
     Route::get('/create', \App\Livewire\Acl\RoleCreate::class)->name('acl.create');
     Route::get('/show/{role}', \App\Livewire\Acl\RoleShow::class)->name('acl.show');
+    Route::get('/permissions', \App\Livewire\Acl\PermissionIndex::class)->name('acl.permissions');
 });
 
 Route::prefix('setup')->middleware('auth')->group(function () {
