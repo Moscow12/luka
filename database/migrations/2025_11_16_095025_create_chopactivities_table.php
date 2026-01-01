@@ -27,7 +27,7 @@ return new class extends Migration
             $table->text('expected_outcome')->nullable();
             $table->string('expected_outcome_date')->nullable();
             $table->enum('activity_type', ['expenditure', 'revenue'])->default('expenditure');
-            $table->enum('frequence_monitoring', ['weekly',    'monthly',    'bimonthly',    'quarterly',    'quadrimonthly',    'biannual',    'annual'])->default('active');
+            $table->enum('frequence_monitoring', ['weekly',    'monthly',    'bimonthly',    'quarterly',    'quadrimonthly',    'biannual',    'annual'])->default('monthly');
             $table->foreignUuid('source_id')->constrained('sourceoffunds')->cascadeOnDelete();
             $table->foreignUuid('category_id')->constrained('chopcategoryareas')->cascadeOnDelete();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();

@@ -13,20 +13,26 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create super admin user
-        User::create([
-            'first_name' => 'System',
-            'surname' => 'Administrator',
-            'email' => 'admin@hospital.test',
-            'username' => 'admin',
-            'phone_number' => '0756077558',
-            'password' => Hash::make('admin@hospital.test'),
-            'gender' => 'Male',
-            'country' => 'Tanzania',
-            'is_super_admin' => true,
-        ]);
+        // Create or update super admin user
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@hospital.test'],
+            [
+                'first_name' => 'System',
+                'surname' => 'Administrator',
+                'username' => 'admin',
+                'phone_number' => '0756077558',
+                'password' => Hash::make('admin@hospital.test'),
+                'gender' => 'Male',
+                'country' => 'Tanzania',
+                'is_super_admin' => true,
+            ]
+        );
 
-        // Create test users
-        User::factory(1)->create();
+        // Ensure super admin flag is set
+        if (! $admin->is_super_admin) {
+            $admin->update(['is_super_admin' => true]);
+        }
+
+        $this->command->info("Super admin user: {$admin->email}");
     }
 }

@@ -12,11 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // For SQLite, we need to recreate the table with the correct foreign key
-        // Since SQLite doesn't support dropping foreign keys
+        $driver = Schema::getConnection()->getDriverName();
 
-        // Enable foreign key constraints
-        DB::statement('PRAGMA foreign_keys = OFF');
+        // Disable foreign key checks based on database driver
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        } elseif ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+        }
 
         // Create temporary table with correct structure
         Schema::create('chopitems_temp', function (Blueprint $table) {
@@ -43,8 +46,12 @@ return new class extends Migration
         // Rename temp table to original name
         Schema::rename('chopitems_temp', 'chopitems');
 
-        // Re-enable foreign key constraints
-        DB::statement('PRAGMA foreign_keys = ON');
+        // Re-enable foreign key checks based on database driver
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        } elseif ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+        }
     }
 
     /**

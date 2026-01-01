@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('occupation')->nullable();
             $table->string('address')->nullable();
             $table->boolean('is_next_of_kin')->default(false);
-            $table->foreignUuid('added_by')->constrained('users')->onDelete('set null');
+            $table->foreignUuid('added_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

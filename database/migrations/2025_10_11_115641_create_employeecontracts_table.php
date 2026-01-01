@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignUuid('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->foreignUuid('workstation_id')->constrained('workstations')->cascadeOnDelete();
             $table->foreignUuid('position_id')->constrained('jobtitles')->cascadeOnDelete();
-             $table->foreignUuid('department_id')->nullable()->after('workstation_id')->constrained('departments')->cascadeOnDelete();
-            $table->enum('status', ['active', 'expired', 'suspended', 'terminated'])->default('active')->after('contract_type');
+             $table->foreignUuid('department_id')->nullable()->constrained('departments')->cascadeOnDelete();
+            $table->enum('status', ['active', 'expired', 'suspended', 'terminated'])->default('active');
             $table->enum('contract_type', ['permanent', 'temporary', 'part_time'])->default('permanent');
             $table->date('start_date');
             $table->date('expire_date');

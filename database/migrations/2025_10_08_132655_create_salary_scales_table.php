@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('salary_scales', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('Pay_Grade');
-            $table->string('Job_Title');
-            $table->decimal('Minimum_Salary', 12, 2);
-            $table->decimal('Mid_Point_Salary', 12, 2)->nullable();
-            $table->decimal('Maximum_Salary', 12, 2);
-            $table->text('Description')->nullable();
+            $table->string('pay_grade');
+            $table->string('job_title');
+            $table->decimal('minimum_salary', 12, 2);
+            $table->decimal('mid_point_salary', 12, 2)->nullable();
+            $table->decimal('maximum_salary', 12, 2);
+            $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();   
             $table->timestamps();
 

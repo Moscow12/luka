@@ -74,8 +74,8 @@ class WorkstationsSeeder extends Seeder
         $count = (int) $this->command->ask('How many workstations do you want to create?', 5);
 
         $location = $this->command->choice('Primary location for these workstations?', [
-            'New York', 'London', 'Tokyo', 'Sydney', 'Berlin', 'Toronto', 'Singapore', 'Paris',
-        ], 'New York');
+            'Kilimanjaro', 'Dar es Salaam', 'Dodoma', 'Arusha', 'Zanzibar', 'Tanga', 'Morogoro', 'Arusha', 'Mtwara',
+        ], 'Kilimanjaro');
 
         $this->command->info("Creating {$count} workstations in {$location}...");
 
@@ -102,9 +102,9 @@ class WorkstationsSeeder extends Seeder
 
             $workstation_name = $this->command->ask('Workstation name');
             $location = $this->command->ask('Location', 'Main Office');
-            $phone_number = $this->command->ask('Phone number', '+1-555-0100');
+            $phone_number = $this->command->ask('Phone number', '+255 750 000000');
             $tin_number = $this->command->ask('TIN number', '12-3456789');
-            $email_address = $this->command->ask('Email address', 'contact@company.com');
+            $email_address = $this->command->ask('Email address', 'info@company.com');
             $physical_address = $this->command->ask('Street address', '123 Main Street');
             $postal_code = $this->command->ask('Postal code', '10001');
 
@@ -184,11 +184,11 @@ class WorkstationsSeeder extends Seeder
                 'postal_code' => '10001',
             ],
             [
-                'workstation_name' => 'Downtown Branch',
+                'workstation_name' => 'Dodoma Branch',
                 'location' => 'City Center',
                 'phone_number' => '+1-555-1001',
                 'tin_number' => '11-2233446',
-                'email_address' => 'downtown@company.com',
+                'email_address' => 'dodoma@company.com',
                 'physical_address' => '456 Business Street',
                 'postal_code' => '10002',
             ],
@@ -202,11 +202,11 @@ class WorkstationsSeeder extends Seeder
                 'postal_code' => '90210',
             ],
             [
-                'workstation_name' => 'London UK Office',
+                'workstation_name' => 'Dar es Salaam HQ',
                 'location' => 'Europe HQ',
-                'phone_number' => '+44-20-7946-0958',
+                'phone_number' => '+255 794 609 580',
                 'tin_number' => 'GB-123456789',
-                'email_address' => 'london@company.com',
+                'email_address' => 'daressalaam@company.com',
                 'physical_address' => '1 Business Square',
                 'postal_code' => 'SW1A 1AA',
             ],

@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('region')->nullable()->index();
             $table->string('country')->default('Tanzania');
             $table->string('postal_code')->nullable();
+            $table->boolean('is_super_admin')->default(false);
 
             // Jobtitle
             $table->foreignUuid('jobtitle_id')->nullable();

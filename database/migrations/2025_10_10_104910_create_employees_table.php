@@ -48,7 +48,8 @@ return new class extends Migration
             // Other info
             $table->string('fpid')->nullable(); // Fingerprint ID or biometric ID
             $table->string('photo')->nullable(); // Path to photo in storage
-            $table->string('marital_status', ['Single', 'Married', 'Divorced', 'Widowed', 'Separated', 'Never married', 'Not applicable'])->nullable();
+            $table->enum('marital_status', ['Single', 'Married', 'Divorced', 'Widowed', 'Separated', 'Never married', 'Not applicable'])->nullable();
+            
             $table->string('tin_number', 50)->nullable();
             $table->string('signature')->nullable(); // Path to digital signature in storage
             $table->timestamps();
