@@ -37,6 +37,13 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         @endif
+                        @if (session()->has('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fa-solid fa-exclamation-circle me-2"></i>
+                                {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
 
                         <!-- Name Fields -->
                         <div class="row g-3 mb-4">
@@ -302,16 +309,19 @@
                                 </div>
                                 @error('employee_no') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
+                            @if (!$createUserAccount)
                             <div class="col-md-4">
-                                <label class="form-label fw-medium">Login As</label>
+                                <label class="form-label fw-medium">Link to Existing User</label>
                                 <select class="form-select @error('user_id') is-invalid @enderror" wire:model="user_id">
                                     <option value="">Select User</option>
                                     @foreach ($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->first_name }} {{ $user->last_name }}</option>
+                                        <option value="{{ $user->id }}">{{ $user->first_name }} {{ $user->surname }}</option>
                                     @endforeach
                                 </select>
                                 @error('user_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <small class="text-muted">Or create a new account in the sidebar</small>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -464,6 +474,125 @@
                         </small>
                     </div>
                 </div>
+
+                <!-- User Account Card -->
+                @if ($modalMode === 'create' || ($modalMode === 'edit' && !$hasExistingUser))
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary bg-opacity-10 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-secondary rounded-circle p-2 me-3">
+                                <i class="fa-solid fa-user-shield text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-semibold">User Account</h5>
+                                <small class="text-muted">System login credentials</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @if ($modalMode === 'edit' && !$hasExistingUser)
+                            <div class="alert alert-info small mb-3">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                This staff member does not have a user account. You can create one below.
+                            </div>
+                        @endif
+
+                        <!-- Create User Account Toggle -->
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="createUserAccount"
+                                wire:model.live="createUserAccount">
+                            <label class="form-check-label fw-medium" for="createUserAccount">
+                                {{ $modalMode === 'edit' ? 'Create user account for this staff' : 'Create user account' }}
+                            </label>
+                        </div>
+
+                        @if ($createUserAccount)
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <label class="form-label fw-medium small text-muted mb-1">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fa-solid fa-at text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control form-control-sm @error('username') is-invalid @enderror"
+                                        placeholder="Enter username" wire:model="username" />
+                                </div>
+                                @error('username') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-medium small text-muted mb-1">
+                                    Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fa-solid fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control form-control-sm @error('user_password') is-invalid @enderror"
+                                        placeholder="Enter password" wire:model="user_password" />
+                                </div>
+                                @error('user_password') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-medium small text-muted mb-1">
+                                    Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fa-solid fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control form-control-sm @error('user_password_confirmation') is-invalid @enderror"
+                                        placeholder="Confirm password" wire:model="user_password_confirmation" />
+                                </div>
+                                @error('user_password_confirmation') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-medium small text-muted mb-1">
+                                    User Role <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-sm @error('selected_role') is-invalid @enderror"
+                                    wire:model="selected_role">
+                                    <option value="">Select Role</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
+                                    @endforeach
+                                </select>
+                                @error('selected_role') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <small class="text-muted">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                Password must be at least 8 characters
+                            </small>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @elseif ($modalMode === 'edit' && $hasExistingUser)
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success bg-opacity-10 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success rounded-circle p-2 me-3">
+                                <i class="fa-solid fa-user-check text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-semibold">User Account</h5>
+                                <small class="text-muted">System login credentials</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-success small mb-0">
+                            <i class="fa-solid fa-check-circle me-1"></i>
+                            This staff member already has a user account linked.
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <!-- Submit Button (Desktop) -->
                 <div class="d-none d-xl-block">

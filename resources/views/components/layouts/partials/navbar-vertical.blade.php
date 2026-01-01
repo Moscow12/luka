@@ -123,7 +123,7 @@
     </ul>
   </li>
   <li class="nav-item">
-    <div class="nav-heading">Contract Management</div>
+    <div class="nav-heading">Management</div>
     <hr class="mx-5 nav-line mb-1" />
   </li>
   <!-- Nav item -->
@@ -150,9 +150,26 @@
       </li>
     </ul>
   </li>
-  <li class="nav-item">
-    <div class="nav-heading">CHOP</div>
-    <hr class="mx-5 nav-line mb-1" />
+  <!-- Nav item -->
+   <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="nav-icon">
+        <i class="fa-solid fa-calendar-days"></i>
+      </span>
+      <span class="text">Approval Requests</span>
+    </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="#"><i class="fa-solid fa-sliders"></i> Leave Approval</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="#"><i class="fa-solid fa-calendar-days"></i> Roster Approval</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="#"><i class="fa-solid fa-money-bill"></i> Payroll Approval</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="#"><i class="fa-solid fa-monastery"></i> Allowance Approval</a>
+      </li>
+    </ul>
   </li>
   <!-- Nav item -->
   <li class="nav-item dropdown">
@@ -230,42 +247,24 @@
     </ul>
   </li>
   <!-- Nav item -->
-  <li class="nav-item">
-    <div class="nav-heading">Users & Permissions</div>
-
-    <hr class="mx-5 nav-line mb-1" />
-  </li>
-
-  <!-- Nav item -->
-  <li class="nav-item">
-    <a class='nav-link' href="{{ route('user.management') }}">
+    <!-- Nav item -->
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="{{ route('viewroster.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-users-group">
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-          <path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
-          <path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1"></path>
-          <path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
-          <path d="M17 10h2a2 2 0 0 1 2 2v1"></path>
-          <path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
-          <path d="M3 13v-1a2 2 0 0 1 2 -2h2"></path>
-        </svg>
+        <i class="fa-solid fa-calendar-days"></i>
       </span>
       <span class="text">Users</span>
     </a>
+    <ul class="dropdown-menu flex-column">
+      <li class="nav-item"><a class='nav-link' href="{{ route('user.management') }}"><i class="fa-solid fa-sliders"></i> Users</a></li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('acl.index') }}"><i class="fa-solid fa-lock"></i> Permissions</a>
+      </li>
+      <li class="nav-item">
+        <a class='nav-link' href="{{ route('roster.create') }}"><i class="fa-solid fa-log"></i> Roles</a>
+      </li>
+    </ul>
   </li>
-  <!-- Nav item -->
-  <li class="nav-item">
-    <a class='nav-link' href="{{ route('acl.index') }}">
-      <span class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-lock">
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-          <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"></path>
-          <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path>
-          <path d="M8 11v-4a4 4 0 1 1 8 0v4"></path>
-        </svg>
-      </span>
-      <span class="text">Permissions</span>
-    </a>
-  </li>
+  
   <!-- Nav item -->
 </ul>
