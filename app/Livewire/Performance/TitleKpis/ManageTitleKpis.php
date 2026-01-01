@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Performance\TitleKpis;
 
-use App\Models\TitleKpi;
 use App\Models\Jobtitle;
+use App\Models\TitleKpi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -15,11 +15,14 @@ class ManageTitleKpis extends Component
 
     // Search and Filters
     public $search = '';
+
     public $jobTitleFilter = '';
+
     public $typeFilter = '';
 
     // Modal States
     public $showModal = false;
+
     public $modalMode = 'create';
 
     // Selected Records
@@ -27,16 +30,27 @@ class ManageTitleKpis extends Component
 
     // KPI Form Fields
     public $kpi_id;
+
     public $job_title_id;
+
     public $kpi_name;
+
     public $description;
+
     public $kpi_type = 'quantitative';
+
     public $measurement_type = 'numeric';
+
     public $weight;
+
     public $target_value;
+
     public $target_unit;
+
     public $is_mandatory = false;
+
     public $scoring_criteria;
+
     public $display_order;
 
     // Pagination reset on search/filter changes
@@ -142,7 +156,7 @@ class ManageTitleKpis extends Component
             $this->resetKpiForm();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
@@ -158,7 +172,7 @@ class ManageTitleKpis extends Component
             session()->flash('success', 'Title KPI deleted successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
@@ -169,7 +183,7 @@ class ManageTitleKpis extends Component
 
             DB::beginTransaction();
             $kpi->update([
-                'is_active' => !$kpi->is_active,
+                'is_active' => ! $kpi->is_active,
             ]);
             DB::commit();
 
@@ -177,7 +191,7 @@ class ManageTitleKpis extends Component
             session()->flash('success', "Title KPI {$status} successfully!");
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
@@ -218,7 +232,7 @@ class ManageTitleKpis extends Component
             'target_unit',
             'is_mandatory',
             'scoring_criteria',
-            'display_order'
+            'display_order',
         ]);
     }
 
@@ -237,10 +251,10 @@ class ManageTitleKpis extends Component
         // Apply search filter
         if ($this->search) {
             $kpisQuery->where(function ($query) {
-                $query->where('kpi_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('description', 'like', '%' . $this->search . '%')
+                $query->where('kpi_name', 'like', '%'.$this->search.'%')
+                    ->orWhere('description', 'like', '%'.$this->search.'%')
                     ->orWhereHas('jobtitle', function ($q) {
-                        $q->where('jobtitle_name', 'like', '%' . $this->search . '%');
+                        $q->where('name', 'like', '%'.$this->search.'%');
                     });
             });
         }
@@ -269,7 +283,7 @@ class ManageTitleKpis extends Component
         $jobTitlesCovered = TitleKpi::distinct('job_title_id')->count('job_title_id');
 
         // Get job titles for filters
-        $jobTitles = Jobtitle::orderBy('jobtitle_name')->get();
+        $jobTitles = Jobtitle::orderBy('name')->get();
 
         return view('livewire.performance.title-kpis.manage-title-kpis', [
             'kpis' => $kpis,

@@ -13,9 +13,10 @@ class ShiftsSeeder extends Seeder
     public function run(): void
     {
         $shifts = [
-            ['name' => 'Morning', 'start_time' => '08:00', 'end_time' => '12:00', 'status' => 'active', 'count_early' => '00:30', 'count_late' => '00:30', 'added_by' => \App\Models\User::factory()->create()->id],
+            ['name' => 'Morning', 'start_time' => '07:30', 'end_time' => '15:30', 'status' => 'active', 'count_early' => '00:30', 'count_late' => '00:30', 'added_by' => \App\Models\User::factory()->create()->id],
             ['name' => 'Afternoon', 'start_time' => '13:00', 'end_time' => '17:00', 'status' => 'active', 'count_early' => '00:30', 'count_late' => '00:30', 'added_by' => \App\Models\User::factory()->create()->id],
             ['name' => 'Evening', 'start_time' => '18:00', 'end_time' => '23:00', 'status' => 'active', 'count_early' => '00:30', 'count_late' => '00:30', 'added_by' => \App\Models\User::factory()->create()->id],
+            ['name' => 'Night', 'start_time' => '19:30', 'end_time' => '08:00', 'status' => 'active', 'count_early' => '00:30', 'count_late' => '00:30', 'added_by' => \App\Models\User::factory()->create()->id],
         ];
 
         foreach ($shifts as $shift) {

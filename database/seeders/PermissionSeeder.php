@@ -45,7 +45,12 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-contracts', 'description' => 'Create, edit, and manage contracts'],
             ],
             'Approvals' => [
-                ['name' => 'approve-requests', 'description' => 'Approve leave, roster, payroll, and allowance requests'],
+                ['name' => 'approve-requests', 'description' => 'General approval access'],
+                ['name' => 'approve-payroll', 'description' => 'Approve or reject payroll requests'],
+                ['name' => 'approve-roster', 'description' => 'Approve or reject roster schedules'],
+                ['name' => 'approve-allowances', 'description' => 'Approve or reject allowance requests'],
+                ['name' => 'approve-chop', 'description' => 'Approve or reject CHOP activities'],
+                ['name' => 'approve-loan', 'description' => 'Approve or reject loan requests'],
             ],
             'CHOP Management' => [
                 ['name' => 'view-chop', 'description' => 'View CHOP budget requests and activity reports'],
@@ -53,6 +58,17 @@ class PermissionSeeder extends Seeder
             ],
             'System Settings' => [
                 ['name' => 'manage-settings', 'description' => 'Manage system settings, locations, and configurations'],
+                ['name' => 'manage-audit-logs', 'description' => 'View and manage audit logs'],
+                ['name' => 'manage-activity-logs', 'description' => 'View and manage activity logs'],
+                ['name' => 'manage-error-logs', 'description' => 'View and manage error logs'],
+                ['name' => 'manage-maintenance-logs', 'description' => 'View and manage maintenance logs'],
+                ['name' => 'manage-notifications', 'description' => 'View and manage notifications'],
+                ['name' => 'manage-health-checks', 'description' => 'View and manage health checks'],
+                ['name' => 'manage-backups', 'description' => 'View and manage backups'],
+                ['name' => 'manage-maintenance-tasks', 'description' => 'View and manage maintenance tasks'],
+                ['name' => 'manage-system-info', 'description' => 'View and manage system information'],
+                ['name' => 'Use-api', 'description' => 'Use the API to manage the system and load data'],
+                
             ],
             'User Management' => [
                 ['name' => 'manage-users', 'description' => 'Create, edit, and manage user accounts'],

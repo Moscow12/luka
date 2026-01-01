@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Common;
 
-use App\Models\Employee;
+use App\Models\chopactivities;
 use App\Models\Employeeleaves;
-use App\Models\approvalleveltoemployee;
+use App\Models\payrolls;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Notifications extends Component
@@ -18,54 +19,79 @@ class Notifications extends Component
         $this->loadPendingApprovals();
     }
 
+    #[On('refreshNotifications')]
     public function loadPendingApprovals()
     {
-        // Get logged-in user's employee record
-        $employee = Employee::where('user_id', Auth::id())->first();
+        $user = Auth::user();
 
-        if (!$employee) {
+        if (! $user) {
             $this->pendingApprovals = [];
             $this->notificationCount = 0;
+
             return;
         }
 
-        // Get all approval levels assigned to this employee
-        $approvalLevels = approvalleveltoemployee::where('employee_id', $employee->id)
-            ->where('is_active', true)
-            ->with('approval_level.approvalleveltodocuments')
-            ->get();
-
-        $documentTypes = [];
-        foreach ($approvalLevels as $mapping) {
-            if ($mapping->approval_level) {
-                foreach ($mapping->approval_level->approvalleveltodocuments as $doc) {
-                    if ($doc->is_active) {
-                        $documentTypes[] = $doc->document_type;
-                    }
-                }
-            }
-        }
-
-        $documentTypes = array_unique($documentTypes);
-
-        // Get pending leave requests if "Leave" is in document types
         $this->pendingApprovals = [];
-        
-        if (in_array('Leave', $documentTypes)) {
+        $isSuperAdmin = $user->isSuperAdmin();
+
+        // Leave approvals
+        if ($isSuperAdmin || $user->can('approve-leave')) {
             $pendingLeaves = Employeeleaves::with(['employee', 'leave'])
-                ->where('status', 'Awaiting')
+                ->whereIn('status', ['Awaiting', 'pending', 'Active'])
                 ->orderBy('created_at', 'desc')
-                ->take(10)
+                ->take(5)
                 ->get();
 
             foreach ($pendingLeaves as $leave) {
                 $this->pendingApprovals[] = [
                     'type' => 'Leave',
-                    'title' => ($leave->employee->getFullName() ?? 'Unknown') . ' requested ' . ($leave->leave->name ?? 'leave'),
+                    'title' => ($leave->employee->first_name ?? '').' '.($leave->employee->last_name ?? '').' requested '.($leave->leave->name ?? 'leave'),
                     'time' => $leave->created_at->diffForHumans(),
                     'icon' => 'calendar',
                     'color' => 'info',
-                    'url' => route('hr.staffdetails', ['id' => $leave->employee_id]),
+                    'url' => route('leave.leaveapproval'),
+                ];
+            }
+        }
+
+        // Payroll approvals
+        if ($isSuperAdmin || $user->can('approve-payroll')) {
+            $pendingPayrolls = payrolls::with(['employee'])
+                ->where('status', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+
+            foreach ($pendingPayrolls as $payroll) {
+                $this->pendingApprovals[] = [
+                    'type' => 'Payroll',
+                    'title' => 'Payroll for '.($payroll->employee->first_name ?? '').' '.($payroll->employee->last_name ?? '').' - '.$payroll->period,
+                    'time' => $payroll->created_at->diffForHumans(),
+                    'icon' => 'currency-dollar',
+                    'color' => 'success',
+                    'url' => route('payrollgeneration'),
+                ];
+            }
+        }
+
+        // Note: Roster and Allowance tables don't have approval workflow status columns
+        // They are managed differently and don't need notification approvals
+
+        // CHOP approvals
+        if ($isSuperAdmin || $user->can('approve-chop')) {
+            $pendingChop = chopactivities::where('is_approved', false)
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+
+            foreach ($pendingChop as $chop) {
+                $this->pendingApprovals[] = [
+                    'type' => 'CHOP',
+                    'title' => 'CHOP Activity: '.($chop->planned_activity ?? 'Pending review'),
+                    'time' => $chop->created_at->diffForHumans(),
+                    'icon' => 'file-invoice',
+                    'color' => 'danger',
+                    'url' => route('chop.director.review'),
                 ];
             }
         }

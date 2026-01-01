@@ -8,12 +8,37 @@ use App\Models\departments;
 use App\Models\Employeesalaries;
 use App\Models\Employeeallowances;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Overview extends Component
 {
     public function getEmployeeAgeDistribution()
     {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            // MySQL age calculation using TIMESTAMPDIFF
+            return Employee::selectRaw("
+                CASE
+                    WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) < 25 THEN 'Under 25'
+                    WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 25 AND 34 THEN '25-34'
+                    WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 35 AND 44 THEN '35-44'
+                    WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 45 AND 54 THEN '45-54'
+                    ELSE '55+'
+                END as age_group,
+                COUNT(*) as count
+            ")
+            ->whereNotNull('dob')
+            ->groupBy('age_group')
+            ->get()
+            ->sortBy(function($item) {
+                $order = ['Under 25' => 1, '25-34' => 2, '35-44' => 3, '45-54' => 4, '55+' => 5];
+                return $order[$item->age_group] ?? 999;
+            })
+            ->values();
+        }
+
         // SQLite-compatible age calculation
         return Employee::selectRaw("
             CASE
@@ -55,11 +80,11 @@ class Overview extends Component
     {
         $threeMonthsFromNow = Carbon::now()->addMonths(3);
 
-        return Employeecontracts::with(['employee.user', 'contracttype'])
-            ->where('end_date', '<=', $threeMonthsFromNow)
-            ->where('end_date', '>=', Carbon::now())
+        return Employeecontracts::with(['employee.user', 'position'])
+            ->where('expire_date', '<=', $threeMonthsFromNow)
+            ->where('expire_date', '>=', Carbon::now())
             ->where('status', 'active')
-            ->orderBy('end_date', 'asc')
+            ->orderBy('expire_date', 'asc')
             ->limit(10)
             ->get();
     }
@@ -73,7 +98,22 @@ class Overview extends Component
 
     public function getHiringRate()
     {
-        // Get employees hired in last 12 months, grouped by month (SQLite-compatible)
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            // MySQL date format
+            return Employee::selectRaw("
+                DATE_FORMAT(hired_date, '%Y-%m') as month,
+                COUNT(*) as count
+            ")
+            ->where('hired_date', '>=', Carbon::now()->subMonths(12))
+            ->whereNotNull('hired_date')
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
+        }
+
+        // SQLite-compatible date format
         return Employee::selectRaw("
             strftime('%Y-%m', hired_date) as month,
             COUNT(*) as count
@@ -89,16 +129,16 @@ class Overview extends Component
     {
         $currentMonth = Carbon::now()->format('Y-m');
 
-        // Get total salaries for current month
+        // Get total salaries for active employees
         $totalSalaries = Employeesalaries::whereHas('employee', function($query) {
                 $query->where('status', 'Active');
             })
-            ->sum('basic_salary');
+            ->sum('amount');
 
         // Get total allowances for current month
         $totalAllowances = Employeeallowances::whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
-            ->sum('amount');
+            ->sum('allowance_amount');
 
         return [
             'total_salaries' => $totalSalaries,

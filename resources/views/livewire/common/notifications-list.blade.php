@@ -1,35 +1,50 @@
 <div>
     @forelse($pendingApprovals as $notification)
-    <a href="{{ $notification['url'] ?? '#' }}" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-        <div class="d-flex justify-content-between">
-            <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-{{ $notification['color'] ?? 'info' }}-subtle text-{{ $notification['color'] ?? 'info' }}-emphasis rounded-circle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-{{ $notification['icon'] ?? 'bell' }}">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        @if($notification['icon'] === 'calendar')
-                        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                        <path d="M16 3v4" />
-                        <path d="M8 3v4" />
-                        <path d="M4 11h16" />
-                        @endif
-                    </svg>
+    <a href="{{ $notification['url'] ?? '#' }}" class="list-group-item list-group-item-action p-4 border-bottom">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex gap-3 align-items-center">
+                <div class="icon-shape icon-md bg-{{ $notification['color'] ?? 'info' }}-subtle text-{{ $notification['color'] ?? 'info' }}-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                    @switch($notification['icon'] ?? 'bell')
+                        @case('calendar')
+                            <i class="fa-solid fa-calendar-days"></i>
+                            @break
+                        @case('calendar-event')
+                            <i class="fa-solid fa-calendar-check"></i>
+                            @break
+                        @case('currency-dollar')
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                            @break
+                        @case('gift')
+                            <i class="fa-solid fa-gift"></i>
+                            @break
+                        @case('file-invoice')
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            @break
+                        @case('loan')
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                            @break
+                        @default
+                            <i class="fa-solid fa-bell"></i>
+                    @endswitch
                 </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>{{ $notification['title'] }}</div>
-                    <small class="text-secondary">{{ $notification['time'] }}</small>
+                <div class="d-flex flex-column">
+                    <span class="badge bg-{{ $notification['color'] ?? 'info' }}-subtle text-{{ $notification['color'] ?? 'info' }}-emphasis mb-1" style="width: fit-content; font-size: 0.7rem;">
+                        {{ $notification['type'] ?? 'Notification' }}
+                    </span>
+                    <div class="fw-medium">{{ $notification['title'] }}</div>
+                    <small class="text-muted">{{ $notification['time'] }}</small>
                 </div>
             </div>
             <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
+                <span class="badge rounded-pill bg-{{ $notification['color'] ?? 'info' }}" style="width: 8px; height: 8px; padding: 0;"></span>
             </div>
         </div>
     </a>
     @empty
     <div class="p-5 text-center text-muted">
-        <p>No pending approvals</p>
+        <i class="fa-solid fa-inbox fa-3x mb-3 opacity-25"></i>
+        <p class="mb-0">No pending approvals</p>
+        <small>You're all caught up!</small>
     </div>
     @endforelse
 </div>
