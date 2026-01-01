@@ -265,6 +265,35 @@ class Importstaffs extends Component
             $errors[] = "Invalid education_level '{$row['education_level']}'. Must be Primary, Diploma, Certificate, Degree, Masters, or PhD";
         }
 
+        // Validate field lengths
+        if (! empty($row['employee_no']) && strlen($row['employee_no']) > 50) {
+            $errors[] = 'Employee number cannot exceed 50 characters';
+        }
+
+        if (! empty($row['national_id']) && strlen($row['national_id']) > 50) {
+            $errors[] = 'National ID cannot exceed 50 characters';
+        }
+
+        if (! empty($row['tin_number']) && strlen($row['tin_number']) > 50) {
+            $errors[] = 'TIN number cannot exceed 50 characters';
+        }
+
+        if (! empty($row['fpid']) && strlen($row['fpid']) > 50) {
+            $errors[] = 'Fingerprint ID cannot exceed 50 characters';
+        }
+
+        if (! empty($row['phone']) && strlen($row['phone']) > 20) {
+            $errors[] = 'Phone number cannot exceed 20 characters';
+        }
+
+        if (! empty($row['first_name']) && strlen($row['first_name']) > 100) {
+            $errors[] = 'First name cannot exceed 100 characters';
+        }
+
+        if (! empty($row['last_name']) && strlen($row['last_name']) > 100) {
+            $errors[] = 'Last name cannot exceed 100 characters';
+        }
+
         // Check for duplicate employee_no in database
         if (! empty($row['employee_no']) && Employee::where('employee_no', $row['employee_no'])->exists()) {
             $errors[] = "Employee number '{$row['employee_no']}' already exists in database";

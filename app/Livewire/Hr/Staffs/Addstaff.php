@@ -193,21 +193,51 @@ class Addstaff extends Component
     public function save()
     {
         $rules = [
-            'first_name' => 'required',
-            'middle_name' => 'required',
-            'last_name' => 'required',
-            'gender' => 'required',
-            'dob' => 'required|date',
-            'phone' => 'required',
-            'marital_status' => 'required',
-            'email' => ['required', 'email', 'unique:employees,email,'.$this->employee_id],
-            'employment_type' => 'required',
-            'hired_date' => 'required|date',
-            'status' => 'required',
-            'education_level' => 'required',
-            'national_id' => ['nullable', 'unique:employees,national_id,'.$this->employee_id],
+            'first_name' => ['required', 'string', 'max:100'],
+            'middle_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'gender' => ['required', 'in:Male,Female'],
+            'dob' => ['required', 'date', 'before:today'],
+            'phone' => ['required', 'string', 'max:20'],
+            'marital_status' => ['required', 'string'],
+            'email' => ['required', 'email', 'max:255', 'unique:employees,email,'.$this->employee_id],
+            'employment_type' => ['required', 'in:Full-time,Part-time,Contract,Temporary'],
+            'hired_date' => ['required', 'date'],
+            'status' => ['required', 'in:Active,Inactive,Suspended,Terminated'],
+            'education_level' => ['required', 'string'],
+            'national_id' => ['nullable', 'string', 'max:50', 'unique:employees,national_id,'.$this->employee_id],
             'user_id' => ['nullable', 'unique:employees,user_id,'.$this->employee_id],
-            'employee_no' => ['nullable', 'unique:employees,employee_no,'.$this->employee_id],
+            'employee_no' => ['nullable', 'string', 'max:50', 'unique:employees,employee_no,'.$this->employee_id],
+            'tin_number' => ['nullable', 'string', 'max:50'],
+            'fpid' => ['nullable', 'string', 'max:50'],
+        ];
+
+        $messages = [
+            'first_name.required' => 'First name is required.',
+            'first_name.max' => 'First name cannot exceed 100 characters.',
+            'last_name.required' => 'Last name is required.',
+            'last_name.max' => 'Last name cannot exceed 100 characters.',
+            'gender.required' => 'Please select a gender.',
+            'gender.in' => 'Please select a valid gender (Male or Female).',
+            'dob.required' => 'Date of birth is required.',
+            'dob.date' => 'Please enter a valid date of birth.',
+            'dob.before' => 'Date of birth must be in the past.',
+            'phone.required' => 'Phone number is required.',
+            'phone.max' => 'Phone number cannot exceed 20 characters.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already registered to another employee.',
+            'employment_type.required' => 'Please select an employment type.',
+            'employment_type.in' => 'Please select a valid employment type.',
+            'hired_date.required' => 'Hire date is required.',
+            'hired_date.date' => 'Please enter a valid hire date.',
+            'status.required' => 'Please select an employment status.',
+            'national_id.max' => 'National ID cannot exceed 50 characters.',
+            'national_id.unique' => 'This National ID is already registered to another employee.',
+            'employee_no.max' => 'Employee number cannot exceed 50 characters.',
+            'employee_no.unique' => 'This employee number is already in use.',
+            'tin_number.max' => 'TIN number cannot exceed 50 characters.',
+            'fpid.max' => 'Fingerprint ID cannot exceed 50 characters.',
         ];
 
         // Add validation rules for user creation if enabled
@@ -215,9 +245,18 @@ class Addstaff extends Component
             $rules['username'] = ['required', 'string', 'min:3', 'max:50', 'unique:users,username'];
             $rules['user_password'] = ['required', 'string', 'min:8', 'confirmed'];
             $rules['selected_role'] = ['required', 'exists:roles,id'];
+
+            $messages['username.required'] = 'Username is required for user account.';
+            $messages['username.min'] = 'Username must be at least 3 characters.';
+            $messages['username.max'] = 'Username cannot exceed 50 characters.';
+            $messages['username.unique'] = 'This username is already taken.';
+            $messages['user_password.required'] = 'Password is required for user account.';
+            $messages['user_password.min'] = 'Password must be at least 8 characters.';
+            $messages['user_password.confirmed'] = 'Password confirmation does not match.';
+            $messages['selected_role.required'] = 'Please select a role for the user.';
         }
 
-        $this->validate($rules);
+        $this->validate($rules, $messages);
 
         // add photo upload
         if ($this->photo && is_object($this->photo)) {
@@ -338,9 +377,25 @@ class Addstaff extends Component
                 $this->listdata();
                 session()->flash('success', $this->createUserAccount ? 'Staff added with user account successfully!' : 'Staff added successfully!');
             }
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+
+            // Handle specific database errors with user-friendly messages
+            $errorCode = $e->errorInfo[1] ?? null;
+            $errorMessage = match ($errorCode) {
+                1406 => 'One or more fields contain data that is too long. Please check your input and try again.',
+                1062 => 'A record with this information already exists. Please check for duplicates.',
+                1364 => 'A required field is missing. Please fill in all required fields.',
+                1452 => 'Invalid reference selected. Please ensure all selections are valid.',
+                default => 'A database error occurred. Please try again or contact support.',
+            };
+
+            session()->flash('error', $errorMessage);
+
+            return;
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: '.$e->getMessage());
+            session()->flash('error', 'An unexpected error occurred. Please try again or contact support.');
 
             return;
         }

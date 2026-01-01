@@ -3,23 +3,27 @@
 namespace App\Livewire\Hr\Staffs;
 
 use App\Models\Employee;
-use App\Models\Employeecontracts;
 use App\Models\employeeattendances;
+use App\Models\Employeecontracts;
+use App\Models\Employeedependant;
 use App\Models\Employeeleaves;
 use App\Models\employeequalification;
-use App\Models\Employeedependant;
 use Carbon\Carbon;
 use Livewire\Component;
 
 class Staffdetails extends Component
 {
     public $employee;
+
     public $activeTab = 'overview';
 
     // Stats
     public $totalLeaves = 0;
+
     public $pendingLeaves = 0;
+
     public $attendanceRate = 0;
+
     public $yearsOfService = 0;
 
     public function mount($id)
@@ -63,11 +67,16 @@ class Staffdetails extends Component
             ->count();
 
         // Attendance rate (last 30 days)
+        // Attendance is linked through fpid -> fpusers.fpdevice_id -> employeeattendances.fpuser_id
         $last30Days = now()->subDays(30);
-        $attendanceCount = employeeattendances::where('employee_id', $this->employee->id)
-            ->whereDate('clockdate', '>=', $last30Days)
-            ->distinct('clockdate')
-            ->count('clockdate');
+        $attendanceCount = 0;
+
+        if ($this->employee->fpid) {
+            $attendanceCount = employeeattendances::where('fpuser_id', $this->employee->fpid)
+                ->whereDate('clockdate', '>=', $last30Days)
+                ->distinct('clockdate')
+                ->count('clockdate');
+        }
 
         // Assuming 22 working days in a month
         $workingDays = 22;
