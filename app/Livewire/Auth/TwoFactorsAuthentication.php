@@ -7,6 +7,7 @@ namespace App\Livewire\Auth;
 use App\Models\TrustedDevice;
 use App\Models\TwoFactorToken;
 use App\Models\User;
+use App\Models\workstations;
 use App\Notifications\TwoFactorCode;
 use App\Services\DeviceFingerprinter;
 use Illuminate\Support\Facades\Auth;
@@ -48,8 +49,12 @@ class TwoFactorsAuthentication extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.two-factors-authentication')
-            ->layout('components.layouts.guest');
+        $workstation = workstations::first();
+
+        return view('livewire.auth.two-factors-authentication', [
+            'workstation' => $workstation,
+            'appName' => config('app.name', 'Dasher'),
+        ])->layout('components.layouts.guest');
     }
 
     public function verifyTwoFactor(): mixed
