@@ -5,7 +5,7 @@ namespace App\Livewire\Hr\Leave;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\Leaves;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,6 +17,9 @@ class Leavemanagement extends Component
     public $statusFilter = 'all';
     public $selectedLeave = null;
     public $showModal = false;
+    public $rejectionReason = '';
+    public $showRejectModal = false;
+    public $leaveToReject = null;
 
     public function updatingSearch()
     {
@@ -37,6 +40,12 @@ class Leavemanagement extends Component
             'approvalnote.approver'
         ])->findOrFail($leaveId);
 
+        // Add leave balance to selected leave
+        $this->selectedLeave->leaveBalance = $this->getLeaveBalance(
+            $this->selectedLeave->employee_id,
+            $this->selectedLeave->leave_id
+        );
+
         $this->showModal = true;
         $this->dispatch('open-leave-modal');
     }
@@ -45,6 +54,64 @@ class Leavemanagement extends Component
     {
         $this->showModal = false;
         $this->selectedLeave = null;
+    }
+
+    public function approveLeave($leaveId)
+    {
+        $user = Auth::user();
+
+        if (! $user->can('approve-leave') && ! $user->isSuperAdmin()) {
+            session()->flash('error', 'You do not have permission to approve leave requests.');
+
+            return;
+        }
+
+        $leave = Employeeleaves::findOrFail($leaveId);
+        $leave->update([
+            'status' => 'Approved',
+        ]);
+
+        session()->flash('success', 'Leave request approved successfully.');
+        $this->closeModal();
+    }
+
+    public function openRejectModal($leaveId)
+    {
+        $this->leaveToReject = $leaveId;
+        $this->rejectionReason = '';
+        $this->showRejectModal = true;
+    }
+
+    public function closeRejectModal()
+    {
+        $this->showRejectModal = false;
+        $this->leaveToReject = null;
+        $this->rejectionReason = '';
+    }
+
+    public function rejectLeave()
+    {
+        $user = Auth::user();
+
+        if (! $user->can('approve-leave') && ! $user->isSuperAdmin()) {
+            session()->flash('error', 'You do not have permission to reject leave requests.');
+
+            return;
+        }
+
+        $this->validate([
+            'rejectionReason' => 'required|string|min:5|max:500',
+        ]);
+
+        $leave = Employeeleaves::findOrFail($this->leaveToReject);
+        $leave->update([
+            'status' => 'Rejected',
+            'comments' => $this->rejectionReason,
+        ]);
+
+        session()->flash('success', 'Leave request rejected.');
+        $this->closeRejectModal();
+        $this->closeModal();
     }
 
     public function getLeaveBalance($employeeId, $leaveId)
@@ -64,7 +131,7 @@ class Leavemanagement extends Component
         $usedDays = Employeeleaves::where('employee_id', $employeeId)
             ->where('leave_id', $leaveId)
             ->where('status', 'Approved')
-            ->sum('number_of_days');
+            ->sum('days');
 
         $entitled = $leave->days ?? 0;
         $balance = $entitled - $usedDays;
@@ -108,8 +175,12 @@ class Leavemanagement extends Component
             return $leave;
         });
 
+        $user = Auth::user();
+        $canApprove = $user && ($user->can('approve-leave') || $user->isSuperAdmin());
+
         return view('livewire.hr.leave.leavemanagement', [
             'leaves' => $leaves,
+            'canApprove' => $canApprove,
         ]);
     }
 }

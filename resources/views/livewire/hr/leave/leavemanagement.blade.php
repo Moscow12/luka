@@ -117,7 +117,7 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary-subtle text-secondary-emphasis">
-                                            {{ $leave->number_of_days }} {{ Str::plural('day', $leave->number_of_days) }}
+                                            {{ $leave->days }} {{ Str::plural('day', $leave->days) }}
                                         </span>
                                     </td>
                                     <td>
@@ -175,11 +175,23 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button wire:click="viewLeaveDetails('{{ $leave->id }}')"
-                                                class="btn btn-sm btn-primary">
-                                            <i class="fa-solid fa-eye me-1"></i>
-                                            View Details
-                                        </button>
+                                        <div class="d-flex gap-1">
+                                            <button wire:click="viewLeaveDetails('{{ $leave->id }}')"
+                                                    class="btn btn-sm btn-primary">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            @if($canApprove && in_array($leave->status, ['Awaiting', 'pending']))
+                                            <button wire:click="approveLeave('{{ $leave->id }}')"
+                                                    wire:confirm="Are you sure you want to approve this leave request?"
+                                                    class="btn btn-sm btn-success">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                            <button wire:click="openRejectModal('{{ $leave->id }}')"
+                                                    class="btn btn-sm btn-danger">
+                                                <i class="fa-solid fa-times"></i>
+                                            </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -257,7 +269,7 @@
                                 <div class="col-6">
                                     <label class="form-label fw-semibold text-muted small">DURATION</label>
                                     <div class="badge bg-secondary-subtle text-secondary-emphasis px-3 py-2">
-                                        {{ $selectedLeave->number_of_days }} {{ Str::plural('day', $selectedLeave->number_of_days) }}
+                                        {{ $selectedLeave->days }} {{ Str::plural('day', $selectedLeave->days) }}
                                     </div>
                                 </div>
                                 <div class="col-6">
@@ -398,21 +410,71 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="closeModal">
                 Close
             </button>
+            @if($canApprove && in_array($selectedLeave->status, ['Awaiting', 'pending']))
+            <button type="button" class="btn btn-danger" wire:click="openRejectModal('{{ $selectedLeave->id }}')">
+                <i class="fa-solid fa-times me-1"></i> Reject
+            </button>
+            <button type="button" class="btn btn-success"
+                    wire:click="approveLeave('{{ $selectedLeave->id }}')"
+                    wire:confirm="Are you sure you want to approve this leave request?">
+                <i class="fa-solid fa-check me-1"></i> Approve
+            </button>
+            @endif
         </x-slot>
     </x-forms.modal>
+    @endif
 
-    @push('scripts')
+    <!-- Rejection Reason Modal -->
+    @if($showRejectModal)
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-times-circle me-2"></i>Reject Leave Request
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" wire:click="closeRejectModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Reason for Rejection <span class="text-danger">*</span></label>
+                        <textarea wire:model="rejectionReason"
+                                  class="form-control @error('rejectionReason') is-invalid @enderror"
+                                  rows="4"
+                                  placeholder="Please provide a reason for rejecting this leave request..."></textarea>
+                        @error('rejectionReason')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="alert alert-warning mb-0">
+                        <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                        <small>This action cannot be undone. The employee will be notified of the rejection.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="closeRejectModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" wire:click="rejectLeave">
+                        <i class="fa-solid fa-times me-1"></i> Confirm Rejection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @script
     <script>
-        document.addEventListener('livewire:init', () => {
-            let modalInstance = null;
+        let modalInstance = null;
 
-            Livewire.on('open-leave-modal', () => {
+        $wire.on('open-leave-modal', () => {
+            setTimeout(() => {
                 const modalElement = document.getElementById('leaveDetailsModal');
-                modalInstance = new bootstrap.Modal(modalElement);
-                modalInstance.show();
-            });
+                if (modalElement) {
+                    modalInstance = new bootstrap.Modal(modalElement);
+                    modalInstance.show();
+                }
+            }, 100);
         });
     </script>
-    @endpush
-    @endif
+    @endscript
 </div>

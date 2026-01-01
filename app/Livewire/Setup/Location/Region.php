@@ -32,7 +32,7 @@ class Region extends Component
             $this->region_id = $id;
             $this->name = $region->name;
         } else {
-            $this->reset(['name', 'region_id', 'code']);
+            $this->reset(['name', 'region_id']);
         }
     }
     public function save()
@@ -71,7 +71,7 @@ class Region extends Component
     }
     public function render()
     {
-        $regions = regions::where('code', '!=', 'TZ')->where('name', 'like', '%' . $this->search . '%')->paginate(10);
+        $regions = regions::where('name', 'like', '%' . $this->search . '%')->paginate(10);
         return view('livewire.setup.location.region', ['regions' => $regions]);
     }
 }

@@ -32,7 +32,7 @@ class Workstation extends Component
     public function mount()
     {
         $this->countries = countries::all();
-        $this->regions = regions::where('code', '!=', 'TZ')->get();
+        $this->regions = regions::all();
 
         $this->listdata();
     }
