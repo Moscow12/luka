@@ -63,6 +63,9 @@ class Login extends Component
         //     'login_at' => now(),
         // ]);
 
+        // Check if 2FA is enabled in config
+        $twoFactorEnabled = config('auth.two_factor_enabled', true);
+
         if ($trustedDevice) {
             // Device is trusted - skip 2FA and log in directly
             $trustedDevice->updateLastUsed();
@@ -77,7 +80,20 @@ class Login extends Component
             return redirect()->route('dashboard');
         }
 
-        // Device is not trusted - enforce 2FA
+        // If 2FA is disabled, log in directly without verification
+        if (! $twoFactorEnabled) {
+            Auth::login($user);
+
+            $this->dispatch('toastMagic',
+                status: 'success',
+                title: 'Welcome Back',
+                message: 'Login successful'
+            );
+
+            return redirect()->route('dashboard');
+        }
+
+        // Device is not trusted and 2FA is enabled - enforce 2FA
         // Store device details in session for potential saving after 2FA
         session([
             '2fa_user_email' => $user->email,
