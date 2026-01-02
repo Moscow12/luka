@@ -35,10 +35,9 @@
       }
     </script>
     <!-- Libs CSS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com/" />
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"  rel="stylesheet" />
+    <!-- Local fonts (offline-ready) -->
+    <link rel="stylesheet" href="{{ asset('assets/libs/fonts/public-sans/public-sans.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/libs/fontawesome/css/all.min.css') }}" />
     
     <link rel="stylesheet" href="{{ asset('assets/libs/simplebar/dist/simplebar.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/libs/%40tabler/icons-webfont/tabler-icons.min.css') }}" />
