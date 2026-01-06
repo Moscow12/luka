@@ -107,7 +107,7 @@ class Managefpusers extends Component
                     ->orWhere('fpdevice_id', 'like', '%'.$this->search.'%')
                     ->orWhere('fpdevice_address', 'like', '%'.$this->search.'%');
             })
-            ->with('added_by')
+            ->with('addedBy')
             ->latest()
             ->paginate(10);
 

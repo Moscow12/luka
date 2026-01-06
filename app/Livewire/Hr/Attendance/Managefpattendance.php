@@ -3,116 +3,154 @@
 namespace App\Livewire\Hr\Attendance;
 
 use App\Models\employeeattendances;
+use App\Models\fpusers;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 class Managefpattendance extends Component
 {
-    use WithPagination;
-
     public $search = '';
 
     public $dateFrom = '';
 
     public $dateTo = '';
 
-    public $deviceFilter = '';
+    public $perPage = 20;
 
-    public $statusFilter = '';
-
-    protected $paginationTheme = 'bootstrap';
+    public $page = 1;
 
     public function mount()
     {
-        $this->dateFrom = now()->startOfMonth()->format('Y-m-d');
+        // Default to last 7 days
+        $this->dateFrom = now()->subDays(6)->format('Y-m-d');
         $this->dateTo = now()->format('Y-m-d');
     }
 
     public function updatingSearch()
     {
-        $this->resetPage();
+        $this->page = 1;
     }
 
     public function updatingDateFrom()
     {
-        $this->resetPage();
+        $this->page = 1;
     }
 
     public function updatingDateTo()
     {
-        $this->resetPage();
+        $this->page = 1;
     }
 
-    public function updatingDeviceFilter()
+    public function previousPage()
     {
-        $this->resetPage();
+        if ($this->page > 1) {
+            $this->page--;
+        }
     }
 
-    public function updatingStatusFilter()
+    public function nextPage()
     {
-        $this->resetPage();
+        $this->page++;
     }
 
     public function clearFilters()
     {
-        $this->reset(['search', 'deviceFilter', 'statusFilter']);
-        $this->dateFrom = now()->startOfMonth()->format('Y-m-d');
+        $this->reset(['search']);
+        $this->dateFrom = now()->subDays(6)->format('Y-m-d');
         $this->dateTo = now()->format('Y-m-d');
-    }
-
-    public function deleteAttendance($id)
-    {
-        try {
-            employeeattendances::findOrFail($id)->delete();
-            $this->dispatch('toaster', [
-                'type' => 'success',
-                'message' => 'Attendance record deleted successfully',
-            ]);
-        } catch (\Exception) {
-            $this->dispatch('toaster', [
-                'type' => 'error',
-                'message' => 'Error deleting attendance record',
-            ]);
-        }
+        $this->page = 1;
     }
 
     public function render()
     {
-        $attendances = employeeattendances::query()
-            ->with('fpuser')
-            ->when($this->dateFrom, function ($query) {
-                $query->whereDate('clockdate', '>=', $this->dateFrom);
-            })
-            ->when($this->dateTo, function ($query) {
-                $query->whereDate('clockdate', '<=', $this->dateTo);
-            })
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('fpuser_id', 'like', '%'.$this->search.'%')
-                        ->orWhere('device_id', 'like', '%'.$this->search.'%')
-                        ->orWhere('clocktimestamp', 'like', '%'.$this->search.'%')
-                        ->orWhereHas('fpuser', function ($q) {
-                            $q->where('name', 'like', '%'.$this->search.'%');
-                        });
-                });
-            })
-            ->when($this->deviceFilter, function ($query) {
-                $query->where('device_id', $this->deviceFilter);
-            })
-            ->when($this->statusFilter, function ($query) {
-                $query->where('clock_status', $this->statusFilter);
-            })
-            ->latest('clockdate')
-            ->latest('clocktime')
-            ->paginate(15);
+        // Get date range for columns
+        $startDate = Carbon::parse($this->dateFrom);
+        $endDate = Carbon::parse($this->dateTo);
+        $dates = collect(CarbonPeriod::create($startDate, $endDate))->map(fn ($date) => $date->format('Y-m-d'));
 
-        $devices = employeeattendances::distinct()->pluck('device_id');
-        $statuses = employeeattendances::distinct()->whereNotNull('clock_status')->pluck('clock_status');
+        // Get all fpusers with search filter
+        $usersQuery = fpusers::query()
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('fpdevice_id', 'like', '%'.$this->search.'%');
+            })
+            ->orderBy('name');
+
+        $totalUsers = $usersQuery->count();
+        $totalPages = ceil($totalUsers / $this->perPage);
+
+        // Paginate users
+        $users = $usersQuery
+            ->skip(($this->page - 1) * $this->perPage)
+            ->take($this->perPage)
+            ->get();
+
+        // Get attendance records for these users in date range
+        $userIds = $users->pluck('fpdevice_id')->toArray();
+
+        $attendances = employeeattendances::query()
+            ->whereIn('fpuser_id', $userIds)
+            ->whereBetween('clockdate', [$this->dateFrom, $this->dateTo])
+            ->orderBy('clocktime')
+            ->get()
+            ->groupBy(['fpuser_id', 'clockdate']);
+
+        // Build attendance matrix
+        $attendanceMatrix = [];
+        foreach ($users as $index => $user) {
+            $row = [
+                'index' => ($this->page - 1) * $this->perPage + $index + 1,
+                'user' => $user,
+                'dates' => [],
+            ];
+
+            foreach ($dates as $date) {
+                $dayAttendance = $attendances[$user->fpdevice_id][$date] ?? collect();
+
+                if ($dayAttendance->isEmpty()) {
+                    $row['dates'][$date] = [
+                        'status' => 'no_show',
+                        'clock_in' => null,
+                        'clock_out' => null,
+                    ];
+                } else {
+                    // Get first check-in (earliest time)
+                    $checkIn = $dayAttendance->sortBy('clocktime')->first();
+
+                    // Get last check-out (latest time, different from check-in)
+                    $checkOut = $dayAttendance->count() > 1
+                        ? $dayAttendance->sortByDesc('clocktime')->first()
+                        : null;
+
+                    // If only one record, determine if it's IN or OUT based on time
+                    if ($dayAttendance->count() === 1) {
+                        $hour = (int) Carbon::parse($checkIn->clocktime)->format('H');
+                        if ($hour >= 12) {
+                            // Afternoon - likely checkout only
+                            $checkOut = $checkIn;
+                            $checkIn = null;
+                        }
+                    }
+
+                    $row['dates'][$date] = [
+                        'status' => 'present',
+                        'clock_in' => $checkIn?->clocktime,
+                        'clock_out' => $checkOut?->clocktime,
+                        'has_checkout' => $checkOut !== null && $checkIn !== null && $checkOut->id !== $checkIn?->id,
+                    ];
+                }
+            }
+
+            $attendanceMatrix[] = $row;
+        }
 
         return view('livewire.hr.attendance.managefpattendance', [
-            'attendances' => $attendances,
-            'devices' => $devices,
-            'statuses' => $statuses,
+            'attendanceMatrix' => $attendanceMatrix,
+            'dates' => $dates,
+            'totalUsers' => $totalUsers,
+            'totalPages' => $totalPages,
+            'currentPage' => $this->page,
         ]);
     }
 }

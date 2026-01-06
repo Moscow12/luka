@@ -25,15 +25,10 @@
         :designation="$designation"
         :employeeNumber="$employeeNumber" />
 
-    <!-- Page Title & Actions -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-        <div>
-            <h5 class="mb-1">Attendance Records</h5>
-            <p class="text-muted mb-0 small">Track and manage employee attendance</p>
-        </div>
-        <button class="btn btn-primary" wire:click="openModal('create')" @if(!$fpid) disabled @endif>
-            <i class="fa-solid fa-plus me-1"></i>Add Attendance
-        </button>
+    <!-- Page Title -->
+    <div class="mb-4">
+        <h5 class="mb-1">Attendance Records</h5>
+        <p class="text-muted mb-0 small">Track and manage employee attendance</p>
     </div>
 
     <!-- Alert Messages -->
@@ -156,7 +151,6 @@
                         <th>Clock Out</th>
                         <th>Duration</th>
                         <th>Status</th>
-                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -212,42 +206,23 @@
                                 @endphp
                                 <span class="badge {{ $statusClass }}">{{ $record->clock_status ?? 'N/A' }}</span>
                             </td>
-                            <td class="text-end pe-4">
-                                <div class="d-flex justify-content-end gap-1">
-                                    <button class="btn btn-sm btn-outline-primary"
-                                        wire:click="openModal('edit', '{{ $record->id }}')"
-                                        title="Edit">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                        wire:click="confirmDelete('{{ $record->id }}')"
-                                        title="Delete">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <div class="d-flex flex-column align-items-center">
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3"
                                         style="width: 80px; height: 80px;">
                                         <i class="fa-solid fa-calendar-xmark fa-2x text-muted"></i>
                                     </div>
                                     <h6 class="mb-1">No attendance records found</h6>
-                                    <p class="text-muted mb-3 small">
+                                    <p class="text-muted mb-0 small">
                                         @if($filterMonth || $filterStatus)
                                             No records match your filter criteria
                                         @else
-                                            Start tracking attendance by adding a record
+                                            No attendance records available for this employee
                                         @endif
                                     </p>
-                                    @if($fpid && !$filterStatus)
-                                        <button class="btn btn-primary btn-sm" wire:click="openModal('create')">
-                                            <i class="fa-solid fa-plus me-1"></i>Add Attendance
-                                        </button>
-                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -262,105 +237,4 @@
             </div>
         @endif
     </div>
-
-    <!-- Add/Edit Modal -->
-    @if($showModal)
-        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <form wire:submit="save">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fa-solid fa-calendar-check me-2"></i>
-                                {{ $modalMode === 'edit' ? 'Edit Attendance' : 'Add Attendance' }}
-                            </h5>
-                            <button type="button" class="btn-close" wire:click="closeModal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control @error('date') is-invalid @enderror"
-                                    wire:model="date">
-                                @error('date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">Clock In</label>
-                                    <input type="time" class="form-control @error('clock_in') is-invalid @enderror"
-                                        wire:model="clock_in">
-                                    @error('clock_in')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label">Clock Out</label>
-                                    <input type="time" class="form-control @error('clock_out') is-invalid @enderror"
-                                        wire:model="clock_out">
-                                    @error('clock_out')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select @error('clock_status') is-invalid @enderror"
-                                    wire:model="clock_status">
-                                    <option value="">Select Status</option>
-                                    <option value="Present">Present</option>
-                                    <option value="Absent">Absent</option>
-                                    <option value="Late">Late</option>
-                                    <option value="Half Day">Half Day</option>
-                                    <option value="On Leave">On Leave</option>
-                                </select>
-                                @error('clock_status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-light" wire:click="closeModal">Cancel</button>
-                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="save">
-                                    <i class="fa-solid fa-check me-1"></i>
-                                    {{ $modalMode === 'edit' ? 'Update' : 'Save' }}
-                                </span>
-                                <span wire:loading wire:target="save">
-                                    <span class="spinner-border spinner-border-sm me-1"></span>
-                                    Saving...
-                                </span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <!-- Delete Confirmation Modal -->
-    @if($confirmingDelete)
-        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body text-center py-4">
-                        <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                            style="width: 60px; height: 60px;">
-                            <i class="fa-solid fa-trash fa-lg text-danger"></i>
-                        </div>
-                        <h5 class="mb-2">Delete Record?</h5>
-                        <p class="text-muted mb-0 small">This attendance record will be permanently deleted.</p>
-                    </div>
-                    <div class="modal-footer border-top justify-content-center gap-2">
-                        <button type="button" class="btn btn-light" wire:click="cancelDelete">Cancel</button>
-                        <button type="button" class="btn btn-danger" wire:click="delete">
-                            <i class="fa-solid fa-trash me-1"></i>Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
 </div>
