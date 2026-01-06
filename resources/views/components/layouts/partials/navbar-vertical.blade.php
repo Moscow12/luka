@@ -5,7 +5,7 @@
     // Define route groups for active state detection
     $rosterRoutes = ['viewroster.index', 'roster.create', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
-    $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers'];
+    $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis', 'performance.*'];
     $contractRoutes = ['contracts.list', 'contracts.create', 'contracts.*'];
@@ -117,6 +117,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('managefpusers') ? 'active' : '' }}" href="{{ route('managefpusers') }}"><i class="fa-solid fa-id-card"></i> Manage FP Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('fp.devices') ? 'active' : '' }}" href="{{ route('fp.devices') }}"><i class="fa-solid fa-desktop"></i> Manage FP Devices</a>
             </li>
             @endif
         </ul>
