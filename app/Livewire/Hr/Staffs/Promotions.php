@@ -14,14 +14,56 @@ use Livewire\Features\SupportFileUploads\WithFileUploads;
 class Promotions extends Component
 {
     public $search = '';
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    
-    public $employee_id, $promotions=[], $workstations=[], $departments=[],$titles=[], $promotion_id, $title_id, $workstation_id, $start_date, $department_id, $attachment, $comments;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
+
+    public $employee_id;
+
+    public $promotions = [];
+
+    public $workstations = [];
+
+    public $departments = [];
+
+    public $titles = [];
+
+    public $promotion_id;
+
+    public $title_id;
+
+    public $workstation_id;
+
+    public $start_date;
+
+    public $department_id;
+
+    public $attachment;
+
+    public $comments;
+
+    public $first_name;
+
+    public $middle_name;
+
+    public $last_name;
+
+    public $gender;
+
+    public $getfullname;
+
+    public $age;
+
+    public $email;
+
+    public $editUrl;
+
+    public $photo;
 
     use WithFileUploads;
-    public function mount($id=null)
+
+    public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
         $this->employee_id = $id;
@@ -40,10 +82,12 @@ class Promotions extends Component
         $this->titles = Jobtitle::all();
         $this->listdata();
     }
+
     public function listdata()
     {
         $this->promotions = Employeepromotions::where('employee_id', $this->employee_id)->get();
     }
+
     public function openModal($mode = 'create', $id = null)
     {
         $this->resetErrorBag();
@@ -60,32 +104,47 @@ class Promotions extends Component
             $this->department_id = $promotion->department_id;
             $this->attachment = $promotion->attachment;
             $this->comments = $promotion->comments;
-                
+
         } else {
             // Reset promotion fields for creation if needed
             $this->reset(['title_id', 'workstation_id', 'start_date', 'department_id', 'attachment', 'comments']);
         }
     }
 
-     public function save()
+    public function save()
     {
-        $this->validate([
+        $rules = [
             'title_id' => ['required', 'string', 'max:255'],
             'workstation_id' => ['required', 'string', 'max:255'],
             'department_id' => ['required', 'string', 'max:255'],
             'start_date' => ['required', 'date'],
-            'comments' => ['nullable', 'string'],
-            'attachment' => ['nullable', 'file', 'max:10240'], // Max 10MB
+            'comments' => ['required', 'string'],
+        ];
 
+        // Attachment is required only for new promotions, optional when editing
+        if ($this->modalMode === 'create') {
+            $rules['attachment'] = ['required', 'file', 'max:10240'];
+        } else {
+            $rules['attachment'] = ['nullable', 'file', 'max:10240'];
+        }
+
+        $this->validate($rules, [
+            'title_id.required' => 'Please select a job title.',
+            'workstation_id.required' => 'Please select a workstation.',
+            'department_id.required' => 'Please select a department.',
+            'start_date.required' => 'Please enter the promotion date.',
+            'comments.required' => 'Please add comments about this promotion.',
+            'attachment.required' => 'Please upload the promotion letter or supporting document.',
+            'attachment.file' => 'The attachment must be a valid file.',
+            'attachment.max' => 'The attachment file size must not exceed 10MB.',
         ]);
 
-        //upload attachment
-        if ($this->attachment) {
-            // Store file in "attachments" folder inside /storage/app/public/
+        // Upload attachment (only if a new file was uploaded)
+        if ($this->attachment && is_object($this->attachment) && method_exists($this->attachment, 'store')) {
             $path = $this->attachment->store('attachments', 'public');
             $this->attachment = $path;
         }
-        
+
         if ($this->modalMode === 'edit' && $this->promotion_id) {
             // Update promotion data if needed
             $promotion = Employeepromotions::findOrFail($this->promotion_id);
@@ -102,7 +161,7 @@ class Promotions extends Component
                 'attachment' => $this->attachment,
                 'comments' => $this->comments,
                 'employee_id' => $this->employee_id,
-                'added_by' => Auth::user()->id
+                'added_by' => Auth::user()->id,
 
             ]);
             $this->listdata();
@@ -111,6 +170,7 @@ class Promotions extends Component
         $this->showModal = false;
         $this->reset(['title_id', 'workstation_id', 'start_date', 'department_id', 'attachment', 'comments']);
     }
+
     public function delete($uuid)
     {
         $promotion = Employeepromotions::findOrFail($uuid);

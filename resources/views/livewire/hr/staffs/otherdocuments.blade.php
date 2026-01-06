@@ -60,7 +60,7 @@
 
                                 </td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $otherdocument->id }})" />
+                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $otherdocument->id }}')" />
                                     <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $otherdocument->id }}')">Delete</a>
                                 </td>
                             </tr>
@@ -70,8 +70,14 @@
                 </div>
             </x-pages.card>
         </div>
-        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Other Document' : 'Add Other Document' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal">           
-            <x-forms.input type="select" name="type" label="Type" :options="['Passport', 'Driving License', 'ID Card', 'Visa', 'Others']" required />
+        <x-pages.model :title="$modalMode === 'edit' ? 'Edit Other Document' : 'Add Other Document'" formaction="save" :modalMode="$modalMode" :showModal="$showModal">           
+            <x-forms.input type="select" name="type" label="Type" :options="[
+    'Passport' => 'Passport',
+    'Driving License' => 'Driving License',
+    'ID Card' => 'ID Card',
+    'Visa' => 'Visa',
+    'Others' => 'Others'
+]" required />
             <x-forms.input type="textarea" name="description" label="description" rows="2" required />
             <label class="form-label">Upload attachment</label>
             <input type="file" class="form-control" wire:model="attachment">

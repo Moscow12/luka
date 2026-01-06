@@ -60,8 +60,8 @@
                                 </td>
                                 <td>{{ $qualification->comments }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ $qualification->id }})" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ $qualification->id }})">Delete</a>
+                                    <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $qualification->id }}')" />
+                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $qualification->id }}')">Delete</a>
                                 </td>
                             </tr>
                             @endforeach
@@ -71,10 +71,17 @@
             </div>
         </div>
     </div>
-    <x-pages.model :showModal="$showModal" :formaction="$modalMode === 'edit' ? 'update' : 'save'" :modalMode="$modalMode" :title="$modalMode === 'edit' ? 'Edit Qualification' : 'Add Qualification'">
+    <x-pages.model :showModal="$showModal" formaction="save" :modalMode="$modalMode" :title="$modalMode === 'edit' ? 'Edit Qualification' : 'Add Qualification'">
        
         <div class="row">
-            <x-forms.input type="select" name="education_level" label="Education Level" :options="['Certificate', 'Diploma', 'Degree', 'Masters', 'PhD', 'Others']"  :value="$education_level" required />
+            <x-forms.input type="select" name="education_level" label="Education Level" :options="[
+    'Certificate' => 'Certificate',
+    'Diploma' => 'Diploma',
+    'Degree' => 'Degree',
+    'Masters' => 'Masters',
+    'PhD' => 'PhD',
+    'Others' => 'Others'
+]" :value="$education_level" required />
             <x-forms.input type="text" name="institution" label="Institution" required />
             <x-forms.input type="date" name="start_date" label="Start Date" required />
             <x-forms.input type="date" name="end_date" label="End Date" required />

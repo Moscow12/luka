@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class UserManagement extends Component
 {
@@ -75,7 +75,7 @@ class UserManagement extends Component
 
     public $qualification = '';
 
-    public $selectedRoles = [];
+    public $selectedRole = '';
 
     // Reset pagination when searching/filtering
     public function updatingSearch()
@@ -144,7 +144,7 @@ class UserManagement extends Component
         $this->postal_code = $user->postal_code ?? '';
         $this->reg_number = $user->reg_number ?? '';
         $this->qualification = $user->qualification ?? '';
-        $this->selectedRoles = $user->roles->pluck('id')->toArray();
+        $this->selectedRole = $user->roles->first()?->id ?? '';
 
         $this->showModal = true;
     }
@@ -170,7 +170,7 @@ class UserManagement extends Component
             'phone_number' => 'nullable|string|max:20',
             'dob' => 'nullable|date',
             'address' => 'nullable|string|max:500',
-            'selectedRoles' => 'array',
+            'selectedRole' => 'required|exists:roles,id',
         ];
 
         if (! $this->editMode) {
@@ -179,7 +179,21 @@ class UserManagement extends Component
             $rules['password'] = 'nullable|string|min:8|confirmed';
         }
 
-        $this->validate($rules);
+        $this->validate($rules, [
+            'first_name.required' => 'Please enter the first name.',
+            'surname.required' => 'Please enter the surname.',
+            'email.required' => 'Please enter an email address.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email address is already in use.',
+            'username.required' => 'Please enter a username.',
+            'username.unique' => 'This username is already taken.',
+            'gender_input.required' => 'Please select a gender.',
+            'selectedRole.required' => 'Please select a role for this user.',
+            'selectedRole.exists' => 'The selected role is invalid.',
+            'password.required' => 'Please enter a password.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
+        ]);
 
         $userData = [
             'salutation' => $this->salutation,
@@ -213,13 +227,10 @@ class UserManagement extends Component
             session()->flash('message', 'User created successfully.');
         }
 
-        // Sync roles - Convert role IDs to Role instances
-        if (! empty($this->selectedRoles)) {
-            $roles = Role::whereIn('id', $this->selectedRoles)->get();
-            $user->syncRoles($roles);
-        } else {
-            // Remove all roles if none selected
-            $user->syncRoles([]);
+        // Assign the selected role
+        $role = Role::find($this->selectedRole);
+        if ($role) {
+            $user->syncRoles([$role]);
         }
 
         $this->closeModal();
@@ -281,7 +292,7 @@ class UserManagement extends Component
             'postal_code',
             'reg_number',
             'qualification',
-            'selectedRoles',
+            'selectedRole',
         ]);
     }
 

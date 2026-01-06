@@ -168,7 +168,7 @@
 
 <!-- Modal of pages -->
 <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
         <div class="modal-header">
         <input type="search" class="form-control border-0 rounded-0 ps-0 form-focus-none" id="globalSearchInput" placeholder="Search any word..." aria-label="Search" aria-describedby="search-addon" />

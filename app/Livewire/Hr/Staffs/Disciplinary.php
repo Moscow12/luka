@@ -12,14 +12,50 @@ use Livewire\Features\SupportFileUploads\WithFileUploads;
 class Disciplinary extends Component
 {
     public $search = '';
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    
-    public $employee_id, $displineissues=[], $violations=[],  $displine_id, $violation_id, $violation_date, $department_id, $attachment, $notes;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
+
+    public $employee_id;
+
+    public $displineissues = [];
+
+    public $violations = [];
+
+    public $displine_id;
+
+    public $violation_id;
+
+    public $violation_date;
+
+    public $department_id;
+
+    public $attachment;
+
+    public $notes;
+
+    public $first_name;
+
+    public $middle_name;
+
+    public $last_name;
+
+    public $gender;
+
+    public $getfullname;
+
+    public $age;
+
+    public $email;
+
+    public $editUrl;
+
+    public $photo;
 
     use WithFileUploads;
-    public function mount($id=null)
+
+    public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
         $this->employee_id = $id;
@@ -36,6 +72,7 @@ class Disciplinary extends Component
         $this->violations = violations::all();
         $this->listdata();
     }
+
     public function openModal($mode = 'create', $id = null)
     {
         $this->resetErrorBag();
@@ -50,28 +87,49 @@ class Disciplinary extends Component
             $this->violation_date = $displine->violation_date;
             $this->attachment = $displine->attachment;
             $this->notes = $displine->notes;
-                
+
         } else {
             // Reset displine fields for creation if needed
-            $this->reset(['violation_id','violation_date',  'attachment', 'notes']);
+            $this->reset(['violation_id', 'violation_date',  'attachment', 'notes']);
         }
     }
+
     public function save()
     {
-        $this->validate([
+        $rules = [
             'violation_id' => ['required', 'string', 'max:255'],
             'violation_date' => ['required', 'date'],
-            'notes' => ['nullable', 'string'],
-            'attachment' => ['nullable', 'file', 'max:10240'], // Max 10MB
+            'notes' => ['required', 'string'],
+        ];
 
+        // Attachment is required only for new records, optional when editing
+        if ($this->modalMode === 'create') {
+            $rules['attachment'] = ['required', 'file', 'max:10240'];
+        } else {
+            $rules['attachment'] = ['nullable', 'file', 'max:10240'];
+        }
+
+        $this->validate($rules, [
+            'violation_id.required' => 'Please select a violation type.',
+            'violation_date.required' => 'Please enter the violation date.',
+            'notes.required' => 'Please add notes about this disciplinary issue.',
+            'attachment.required' => 'Please upload supporting documentation.',
+            'attachment.file' => 'The attachment must be a valid file.',
+            'attachment.max' => 'The attachment file size must not exceed 10MB.',
         ]);
+
+        // Upload attachment (only if a new file was uploaded)
+        if ($this->attachment && is_object($this->attachment) && method_exists($this->attachment, 'store')) {
+            $path = $this->attachment->store('attachments', 'public');
+            $this->attachment = $path;
+        }
 
         if ($this->modalMode === 'edit' && $this->displine_id) {
             // Update displine data if needed
             $displine = Employeedisplineissue::findOrFail($this->displine_id);
             $displine->update(['violation_id' => $this->violation_id, 'violation_date' => $this->violation_date, 'notes' => $this->notes, 'attachment' => $this->attachment]);
             $this->listdata();
-            session()->flash('success', 'Displine updated successfully!');
+            session()->flash('success', 'Disciplinary record updated successfully!');
         } else {
             // Create new displine
             Employeedisplineissue::create([
@@ -80,15 +138,16 @@ class Disciplinary extends Component
                 'notes' => $this->notes,
                 'attachment' => $this->attachment,
                 'employee_id' => $this->employee_id,
-                'added_by' => Auth::user()->id
+                'added_by' => Auth::user()->id,
 
             ]);
             $this->listdata();
-            session()->flash('success', 'Displine added successfully!');
+            session()->flash('success', 'Disciplinary record added successfully!');
         }
         $this->showModal = false;
-        $this->reset(['violation_id','violation_date',  'attachment', 'notes']);
+        $this->reset(['violation_id', 'violation_date',  'attachment', 'notes']);
     }
+
     public function delete($uuid)
     {
         $displine = Employeedisplineissue::findOrFail($uuid);
@@ -96,11 +155,12 @@ class Disciplinary extends Component
         $this->listdata();
         session()->flash('success', 'Displine deleted successfully!');
     }
-   
+
     public function listdata()
     {
         $this->displineissues = Employeedisplineissue::where('employee_id', $this->employee_id)->get();
     }
+
     public function render()
     {
         return view('livewire.hr.staffs.disciplinary');

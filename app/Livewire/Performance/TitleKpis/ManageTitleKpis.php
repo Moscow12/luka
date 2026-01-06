@@ -20,6 +20,10 @@ class ManageTitleKpis extends Component
 
     public $typeFilter = '';
 
+    public $mandatoryFilter = '';
+
+    public $perPage = 10;
+
     // Modal States
     public $showModal = false;
 
@@ -66,6 +70,22 @@ class ManageTitleKpis extends Component
 
     public function updatingTypeFilter()
     {
+        $this->resetPage();
+    }
+
+    public function updatingMandatoryFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters()
+    {
+        $this->reset(['search', 'jobTitleFilter', 'typeFilter', 'mandatoryFilter']);
         $this->resetPage();
     }
 
@@ -269,12 +289,17 @@ class ManageTitleKpis extends Component
             $kpisQuery->where('kpi_type', $this->typeFilter);
         }
 
+        // Apply mandatory filter
+        if ($this->mandatoryFilter !== '') {
+            $kpisQuery->where('is_mandatory', $this->mandatoryFilter);
+        }
+
         // Order by job title and display order
         $kpisQuery->orderBy('display_order')
             ->orderBy('created_at', 'desc');
 
         // Paginate
-        $kpis = $kpisQuery->paginate(10);
+        $kpis = $kpisQuery->paginate($this->perPage);
 
         // Calculate statistics
         $totalKpis = TitleKpi::count();

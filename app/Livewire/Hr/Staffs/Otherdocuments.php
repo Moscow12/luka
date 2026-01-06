@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Hr\Staffs;
 
-use App\Models\{Employeeotherattachments, Employee};
+use App\Models\Employee;
+use App\Models\Employeeotherattachments;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
@@ -10,14 +11,46 @@ use Livewire\Features\SupportFileUploads\WithFileUploads;
 class Otherdocuments extends Component
 {
     public $search = '';
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    public $otherdocument_id,  $type, $description, $attachment, $added_by;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
-    public $employee_id, $otherdocuments=[];
+
+    public $otherdocument_id;
+
+    public $type;
+
+    public $description;
+
+    public $attachment;
+
+    public $added_by;
+
+    public $first_name;
+
+    public $middle_name;
+
+    public $last_name;
+
+    public $gender;
+
+    public $getfullname;
+
+    public $age;
+
+    public $email;
+
+    public $editUrl;
+
+    public $photo;
+
+    public $employee_id;
+
+    public $otherdocuments = [];
 
     use WithFileUploads;
-    public function mount($id=null)
+
+    public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
         $this->employee_id = $id;
@@ -47,22 +80,37 @@ class Otherdocuments extends Component
             $this->type = $otherdocument->type;
             $this->description = $otherdocument->description;
             $this->attachment = $otherdocument->attachment;
-                
+
         } else {
             // Reset otherdocument fields for creation if needed
             $this->reset(['type', 'description', 'attachment']);
         }
     }
+
     public function save()
     {
-        $this->validate([
+        $rules = [
             'type' => 'required|string|max:255',
             'description' => 'required|string|max:500',
-            'attachment' => 'required',
+        ];
+
+        // Attachment is required only for new documents, optional when editing
+        if ($this->modalMode === 'create') {
+            $rules['attachment'] = ['required', 'file', 'max:10240'];
+        } else {
+            $rules['attachment'] = ['nullable', 'file', 'max:10240'];
+        }
+
+        $this->validate($rules, [
+            'type.required' => 'Please enter the document type.',
+            'description.required' => 'Please enter a description for this document.',
+            'attachment.required' => 'Please upload a document.',
+            'attachment.file' => 'The attachment must be a valid file.',
+            'attachment.max' => 'The attachment file size must not exceed 10MB.',
         ]);
-        //upload attachment
-        if ($this->attachment) {
-            // Store file in "attachments" folder inside /storage/app/public/
+
+        // Upload attachment (only if a new file was uploaded)
+        if ($this->attachment && is_object($this->attachment) && method_exists($this->attachment, 'store')) {
             $path = $this->attachment->store('attachments', 'public');
             $this->attachment = $path;
         }
@@ -73,8 +121,9 @@ class Otherdocuments extends Component
                 'description' => $this->description,
                 'attachment' => $this->attachment,
                 'employee_id' => $this->employee_id,
-                'added_by' => Auth::user()->id
+                'added_by' => Auth::user()->id,
             ]);
+            session()->flash('success', 'Document added successfully!');
         } elseif ($this->modalMode === 'edit' && $this->otherdocument_id) {
             $otherdocument = Employeeotherattachments::findOrFail($this->otherdocument_id);
             $otherdocument->update([
@@ -82,10 +131,12 @@ class Otherdocuments extends Component
                 'description' => $this->description,
                 'attachment' => $this->attachment,
             ]);
+            session()->flash('success', 'Document updated successfully!');
         }
 
         $this->listdata();
         $this->showModal = false;
+        $this->reset(['type', 'description', 'attachment']);
     }
 
     public function listdata()

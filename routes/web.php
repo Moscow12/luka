@@ -8,6 +8,7 @@ use App\Livewire\Chop\Chopsetting;
 use App\Livewire\Contracts\ContractDetails;
 use App\Livewire\Contracts\ContractForm;
 use App\Livewire\Contracts\ManageContracts;
+use App\Livewire\Hr\Attendance\Fpdevices;
 use App\Livewire\Hr\Attendance\Managefpattendance;
 use App\Livewire\Hr\Attendance\Managefpusers;
 use App\Livewire\Hr\Leave\Leaveapproval;
@@ -88,6 +89,7 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     // attendance routes
     Route::get('/attendance/managefpattendance', Managefpattendance::class)->name('fp.attendance');
     Route::get('/attendance/managefpusers', Managefpusers::class)->name('managefpusers');
+    Route::get('/attendance/fpdevices', Fpdevices::class)->name('fp.devices');
 
     // leave routes
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');
@@ -135,12 +137,15 @@ Route::prefix('chop')->middleware('auth')->group(function () {
 Route::prefix('performance')->middleware('auth')->group(function () {
     // Organizational Plans
     Route::get('organizational-plans', App\Livewire\Performance\OrganizationalPlans\ManagePlans::class)->name('performance.org.plans');
+    Route::get('organizational-plans/{planId}/items', App\Livewire\Performance\OrganizationalPlans\ManagePlanItems::class)->name('performance.org.plans.items');
 
     // Department Plans
     Route::get('department-plans', App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans::class)->name('performance.dept.plans');
+    Route::get('department-plans/{planId}/items', App\Livewire\Performance\DepartmentPlans\ManagePlanItems::class)->name('performance.dept.plans.items');
 
     // Employee Plans
     Route::get('employee-plans', App\Livewire\Performance\EmployeePlans\ManageEmployeePlans::class)->name('performance.employee.plans');
+    Route::get('employee-plans/{planId}/items', App\Livewire\Performance\EmployeePlans\ManagePlanItems::class)->name('performance.employee.plans.items');
 
     // Assigned Duties (Direct KPI Assignment)
     Route::get('assigned-duties', App\Livewire\Performance\AssignedDuties\ManageAssignedDuties::class)->name('performance.assigned.duties');

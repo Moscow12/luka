@@ -5,10 +5,24 @@
         ['label' => 'Performance Management', 'url' => '#'],
         ['label' => 'Employee Plans', 'url' => route('performance.employee.plans')],
     ]">
-        <button class='btn btn-primary d-md-flex align-items-center gap-2' data-bs-toggle="modal" data-bs-target="#createEmployeePlanModal">
+        <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createPlan">
             <i class="fa-solid fa-plus"></i> ASSIGN PLAN TO EMPLOYEE
         </button>
     </x-pages.breadcrumn>
+
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-xmark me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
     <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
@@ -18,7 +32,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <p class="text-muted mb-1 small text-uppercase">Total Employee Plans</p>
-                            <h3 class="mb-0 fw-bold">{{ $totalEmployeePlans ?? 0 }}</h3>
+                            <h3 class="mb-0 fw-bold">{{ $totalPlans ?? 0 }}</h3>
                         </div>
                         <div class="icon-shape icon-lg bg-primary-subtle text-primary rounded-3">
                             <i class="fa-solid fa-users fa-lg"></i>
@@ -34,7 +48,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <p class="text-muted mb-1 small text-uppercase">Active Plans</p>
-                            <h3 class="mb-0 fw-bold text-primary">{{ $activeEmployeePlans ?? 0 }}</h3>
+                            <h3 class="mb-0 fw-bold text-primary">{{ $activePlans ?? 0 }}</h3>
                         </div>
                         <div class="icon-shape icon-lg bg-primary-subtle text-primary rounded-3">
                             <i class="fa-solid fa-circle-play fa-lg"></i>
@@ -49,11 +63,11 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <p class="text-muted mb-1 small text-uppercase">Under Review</p>
-                            <h3 class="mb-0 fw-bold text-warning">{{ $underReviewPlans ?? 0 }}</h3>
+                            <p class="text-muted mb-1 small text-uppercase">Reviewed</p>
+                            <h3 class="mb-0 fw-bold text-info">{{ $reviewedPlans ?? 0 }}</h3>
                         </div>
-                        <div class="icon-shape icon-lg bg-warning-subtle text-warning rounded-3">
-                            <i class="fa-solid fa-clock fa-lg"></i>
+                        <div class="icon-shape icon-lg bg-info-subtle text-info rounded-3">
+                            <i class="fa-solid fa-clipboard-check fa-lg"></i>
                         </div>
                     </div>
                 </div>
@@ -66,7 +80,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <p class="text-muted mb-1 small text-uppercase">Completed</p>
-                            <h3 class="mb-0 fw-bold text-success">{{ $completedEmployeePlans ?? 0 }}</h3>
+                            <h3 class="mb-0 fw-bold text-success">{{ $completedPlans ?? 0 }}</h3>
                         </div>
                         <div class="icon-shape icon-lg bg-success-subtle text-success rounded-3">
                             <i class="fa-solid fa-circle-check fa-lg"></i>
@@ -91,8 +105,8 @@
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </span>
                                 <input type="search" wire:model.live.debounce.300ms="search" class="form-control"
-                                    placeholder="Search by employee name..." />
-                                @if ($search ?? false)
+                                    placeholder="Search by employee name or plan..." />
+                                @if ($search)
                                     <button wire:click="$set('search', '')" class="btn btn-outline-secondary"
                                         type="button">
                                         <i class="fa-solid fa-times"></i>
@@ -121,17 +135,8 @@
                                     <option value="cancelled">Cancelled</option>
                                 </select>
 
-                                <!-- Review Status Filter -->
-                                <select wire:model.live="reviewStatusFilter" class="form-select" style="width: auto;">
-                                    <option value="">All Review Status</option>
-                                    <option value="pending">Pending Review</option>
-                                    <option value="in_review">In Review</option>
-                                    <option value="reviewed">Reviewed</option>
-                                    <option value="approved">Approved</option>
-                                </select>
-
                                 <!-- Reset Filters -->
-                                @if ($search ?? false || $departmentFilter ?? false || $statusFilter ?? false || $reviewStatusFilter ?? false)
+                                @if ($search || $departmentFilter || $statusFilter)
                                     <button wire:click="resetFilters" type="button" class="btn btn-outline-secondary">
                                         <i class="fa-solid fa-rotate-left me-1"></i> Reset
                                     </button>
@@ -147,36 +152,26 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="text-center" style="width: 50px;">#</th>
-                                <th>Employee Name</th>
+                                <th>Employee</th>
                                 <th>Plan Name</th>
                                 <th>Department Plan</th>
                                 <th class="text-center">Status</th>
-                                <th>Assigned Date</th>
-                                <th class="text-center">Review Status</th>
-                                <th class="text-center">Score</th>
-                                <th class="text-end" style="width: 150px;">Actions</th>
+                                <th class="text-center">Reviewed</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end" style="width: 200px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($plans ?? [] as $index => $empPlan)
-                                <tr wire:key="emp-plan-{{ $empPlan->id ?? $index }}">
+                                <tr wire:key="emp-plan-{{ $empPlan->id }}">
                                     <td class="text-center text-muted">
-                                        {{ ($plans->firstItem() ?? 0) + $index }}
+                                        {{ $plans->firstItem() + $index }}
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
-                                            @if (!empty($empPlan->employee->photo))
-                                                <img src="{{ asset('storage/' . $empPlan->employee->photo) }}"
-                                                    alt="{{ $empPlan->employee->first_name }}"
-                                                    class="rounded-circle"
-                                                    width="40" height="40"
-                                                    style="object-fit: cover;">
-                                            @else
-                                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
-                                                    style="width: 40px; height: 40px; font-size: 14px;">
-                                                    {{ strtoupper(substr($empPlan->employee->first_name ?? 'U', 0, 1)) }}{{ strtoupper(substr($empPlan->employee->last_name ?? 'N', 0, 1)) }}
-                                                </div>
-                                            @endif
+                                            <div class="icon-shape icon-sm bg-primary-subtle text-primary rounded-2">
+                                                <i class="fa-solid fa-user"></i>
+                                            </div>
                                             <div>
                                                 <span class="fw-semibold text-dark">
                                                     {{ $empPlan->employee->first_name ?? '' }} {{ $empPlan->employee->last_name ?? '' }}
@@ -187,18 +182,21 @@
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="fw-semibold text-dark">{{ $empPlan->name ?? 'N/A' }}</span>
-                                            @if (!empty($empPlan->description))
-                                                <small class="text-muted">{{ Str::limit($empPlan->description, 30) }}</small>
+                                            <span class="fw-semibold text-dark">{{ $empPlan->plan_name }}</span>
+                                            @if ($empPlan->description)
+                                                <small class="text-muted">{{ Str::limit($empPlan->description, 40) }}</small>
                                             @endif
                                         </div>
                                     </td>
                                     <td>
-                                        @if (!empty($empPlan->department_plan))
+                                        @if ($empPlan->departmentPlan)
                                             <span class="badge bg-light text-dark">
                                                 <i class="fa-solid fa-link me-1"></i>
-                                                {{ $empPlan->department_plan->name ?? 'N/A' }}
+                                                {{ $empPlan->departmentPlan->plan_name }}
                                             </span>
+                                            @if ($empPlan->departmentPlan->department)
+                                                <small class="text-muted d-block">{{ $empPlan->departmentPlan->department->name }}</small>
+                                            @endif
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
@@ -211,85 +209,99 @@
                                                 'completed' => 'success',
                                                 'cancelled' => 'danger',
                                             ];
-                                            $statusColor = $statusColors[$empPlan->status ?? 'draft'] ?? 'secondary';
+                                            $statusColor = $statusColors[$empPlan->status] ?? 'secondary';
                                         @endphp
                                         <span class="badge bg-{{ $statusColor }}">
                                             <i class="fa-solid fa-circle me-1" style="font-size: 6px;"></i>
-                                            {{ ucfirst($empPlan->status ?? 'Draft') }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">
-                                            <i class="fa-solid fa-calendar me-1"></i>
-                                            {{ $empPlan->assigned_date ? \Carbon\Carbon::parse($empPlan->assigned_date)->format('d M Y') : '-' }}
-                                        </small>
-                                    </td>
-                                    <td class="text-center">
-                                        @php
-                                            $reviewColors = [
-                                                'pending' => 'secondary',
-                                                'in_review' => 'warning',
-                                                'reviewed' => 'info',
-                                                'approved' => 'success',
-                                            ];
-                                            $reviewColor = $reviewColors[$empPlan->review_status ?? 'pending'] ?? 'secondary';
-                                        @endphp
-                                        <span class="badge bg-{{ $reviewColor }}">
-                                            {{ ucfirst(str_replace('_', ' ', $empPlan->review_status ?? 'Pending')) }}
+                                            {{ ucfirst($empPlan->status) }}
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        @php
-                                            $score = $empPlan->score ?? 0;
-                                            $scoreColor = $score >= 80 ? 'success' : ($score >= 60 ? 'primary' : ($score >= 40 ? 'warning' : 'danger'));
-                                        @endphp
-                                        <span class="badge bg-{{ $scoreColor }}-subtle text-{{ $scoreColor }}-emphasis fs-6 px-3 py-2">
-                                            {{ $score }}%
+                                        @if ($empPlan->reviewed_at)
+                                            <span class="badge bg-info-subtle text-info">
+                                                <i class="fa-solid fa-check me-1"></i>
+                                                {{ \Carbon\Carbon::parse($empPlan->reviewed_at)->format('d M Y') }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary-subtle text-secondary">Pending</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary-subtle text-primary">
+                                            {{ $empPlan->employee_plan_items_count ?? 0 }} Items
                                         </span>
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
-                                            <button wire:click="viewDetails('{{ $empPlan->id ?? '' }}')"
+                                            <a href="{{ route('performance.employee.plans.items', $empPlan->id) }}"
                                                 class="btn btn-sm btn-ghost-info rounded-circle"
-                                                title="View Details">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </button>
-                                            <button wire:click="editEmployeePlan('{{ $empPlan->id ?? '' }}')"
+                                                title="Manage Items">
+                                                <i class="fa-solid fa-list"></i>
+                                            </a>
+                                            @if ($empPlan->employee_plan_items_count == 0)
+                                                <button wire:click="distributePlanItems('{{ $empPlan->id }}')"
+                                                    wire:confirm="This will copy all items from the department plan. Continue?"
+                                                    class="btn btn-sm btn-ghost-success rounded-circle"
+                                                    title="Distribute Items from Dept Plan">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </button>
+                                            @endif
+                                            @if ($empPlan->status === 'draft' && $empPlan->employee_plan_items_count > 0)
+                                                <button wire:click="activatePlan('{{ $empPlan->id }}')"
+                                                    wire:confirm="Activate this plan?"
+                                                    class="btn btn-sm btn-ghost-primary rounded-circle"
+                                                    title="Activate Plan">
+                                                    <i class="fa-solid fa-play"></i>
+                                                </button>
+                                            @endif
+                                            @if ($empPlan->status === 'active' && !$empPlan->reviewed_at)
+                                                <button wire:click="reviewPlan('{{ $empPlan->id }}')"
+                                                    wire:confirm="Mark this plan as reviewed?"
+                                                    class="btn btn-sm btn-ghost-info rounded-circle"
+                                                    title="Mark as Reviewed">
+                                                    <i class="fa-solid fa-clipboard-check"></i>
+                                                </button>
+                                            @endif
+                                            @if ($empPlan->status === 'active' && $empPlan->reviewed_at)
+                                                <button wire:click="completePlan('{{ $empPlan->id }}')"
+                                                    wire:confirm="Mark this plan as completed?"
+                                                    class="btn btn-sm btn-ghost-success rounded-circle"
+                                                    title="Mark as Completed">
+                                                    <i class="fa-solid fa-check-double"></i>
+                                                </button>
+                                            @endif
+                                            <button wire:click="editPlan('{{ $empPlan->id }}')"
                                                 class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                 title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                            <button wire:click="reviewPlan('{{ $empPlan->id ?? '' }}')"
-                                                class="btn btn-sm btn-ghost-success rounded-circle"
-                                                title="Review">
-                                                <i class="fa-solid fa-clipboard-check"></i>
-                                            </button>
-                                            <button wire:click="deleteEmployeePlan('{{ $empPlan->id ?? '' }}')"
-                                                type="button"
-                                                class="btn btn-sm btn-ghost-danger rounded-circle"
-                                                title="Delete"
-                                                onclick="confirm('Are you sure you want to delete this employee plan?') || event.stopImmediatePropagation()">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
+                                            @if (in_array($empPlan->status, ['draft', 'cancelled']) && !$empPlan->reviewed_at)
+                                                <button wire:click="deletePlan('{{ $empPlan->id }}')"
+                                                    wire:confirm="Are you sure you want to delete this employee plan?"
+                                                    class="btn btn-sm btn-ghost-danger rounded-circle"
+                                                    title="Delete">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center py-5">
+                                    <td colspan="8" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center justify-content-center">
                                             <i class="fa-solid fa-users text-muted mb-3"
                                                 style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Employee Plans Found</h5>
                                             <p class="text-muted">
-                                                @if ($search ?? false || $departmentFilter ?? false || $statusFilter ?? false || $reviewStatusFilter ?? false)
+                                                @if ($search || $departmentFilter || $statusFilter)
                                                     Try adjusting your filters or search query
                                                 @else
                                                     Start by assigning plans to employees
                                                 @endif
                                             </p>
-                                            @if (!($search ?? false) && !($departmentFilter ?? false) && !($statusFilter ?? false) && !($reviewStatusFilter ?? false))
-                                                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#createEmployeePlanModal">
+                                            @if (!$search && !$departmentFilter && !$statusFilter)
+                                                <button class="btn btn-primary mt-2" wire:click="createPlan">
                                                     <i class="fa-solid fa-plus me-1"></i> Assign Plan to Employee
                                                 </button>
                                             @endif
@@ -307,8 +319,8 @@
                         <!-- Results Info -->
                         <div class="text-muted">
                             @if (($plans->total() ?? 0) > 0)
-                                Showing {{ $plans->firstItem() ?? 0 }} to {{ $plans->lastItem() ?? 0 }} of
-                                {{ $plans->total() ?? 0 }} employee plans
+                                Showing {{ $plans->firstItem() }} to {{ $plans->lastItem() }} of
+                                {{ $plans->total() }} employee plans
                             @else
                                 No employee plans found
                             @endif
@@ -329,11 +341,9 @@
                             </div>
 
                             <!-- Pagination Links -->
-                            @if (isset($plans) && method_exists($plans, 'links'))
-                                <div>
-                                    {{ $plans->links() }}
-                                </div>
-                            @endif
+                            <div>
+                                {{ $plans->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -342,112 +352,102 @@
     </div>
 
     <!-- Create/Edit Employee Plan Modal -->
-    <x-forms.modal id="createEmployeePlanModal" title="{{ $editingEmployeePlanId ?? false ? 'Edit Employee Plan' : 'Assign Plan to Employee' }}" size="modal-lg" :centered="true">
-        <form wire:submit.prevent="saveEmployeePlan">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
-                    <select wire:model="employeePlanForm.employee_id" class="form-select @error('employeePlanForm.employee_id') is-invalid @enderror" id="employee">
-                        <option value="">Select Employee</option>
-                        @foreach ($employees ?? [] as $emp)
-                            <option value="{{ $emp->id }}">{{ $emp->first_name }} {{ $emp->last_name }} ({{ $emp->employee_no }})</option>
-                        @endforeach
-                    </select>
-                    @error('employeePlanForm.employee_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+    @if ($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fa-solid fa-user me-2"></i>
+                            {{ $editingPlanId ? 'Edit Employee Plan' : 'Assign Plan to Employee' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                    </div>
+                    <form wire:submit.prevent="savePlan">
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select wire:model="planForm.employee_id" class="form-select @error('planForm.employee_id') is-invalid @enderror" id="employee">
+                                        <option value="">Select Employee</option>
+                                        @foreach ($employees ?? [] as $emp)
+                                            <option value="{{ $emp->id }}">{{ $emp->first_name }} {{ $emp->last_name }} ({{ $emp->employee_no ?? 'N/A' }})</option>
+                                        @endforeach
+                                    </select>
+                                    @error('planForm.employee_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-6">
-                    <label for="deptPlan" class="form-label">Department Plan</label>
-                    <select wire:model="employeePlanForm.department_plan_id" class="form-select @error('employeePlanForm.department_plan_id') is-invalid @enderror" id="deptPlan">
-                        <option value="">Select Department Plan</option>
-                        @foreach ($departmentPlans ?? [] as $deptPlan)
-                            <option value="{{ $deptPlan->id }}">{{ $deptPlan->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('employeePlanForm.department_plan_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="deptPlan" class="form-label">Department Plan <span class="text-danger">*</span></label>
+                                    <select wire:model="planForm.department_plan_id" class="form-select @error('planForm.department_plan_id') is-invalid @enderror" id="deptPlan">
+                                        <option value="">Select Department Plan</option>
+                                        @forelse ($departmentPlans ?? [] as $deptPlan)
+                                            <option value="{{ $deptPlan->id }}">
+                                                {{ $deptPlan->plan_name }}
+                                                @if ($deptPlan->department)
+                                                    ({{ $deptPlan->department->name }})
+                                                @endif
+                                            </option>
+                                        @empty
+                                            <option value="" disabled>No active department plans available</option>
+                                        @endforelse
+                                    </select>
+                                    @error('planForm.department_plan_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @if ($departmentPlans->isEmpty())
+                                        <div class="form-text text-warning">
+                                            <i class="fa-solid fa-exclamation-triangle me-1"></i>
+                                            No active department plans available. Please activate a department plan first.
+                                        </div>
+                                    @endif
+                                </div>
 
-                <div class="col-12">
-                    <label for="empPlanName" class="form-label">Plan Name <span class="text-danger">*</span></label>
-                    <input type="text" wire:model="employeePlanForm.name" class="form-control @error('employeePlanForm.name') is-invalid @enderror" id="empPlanName" placeholder="Enter employee plan name">
-                    @error('employeePlanForm.name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-12">
+                                    <label for="planName" class="form-label">Plan Name <span class="text-danger">*</span></label>
+                                    <input type="text" wire:model="planForm.plan_name" class="form-control @error('planForm.plan_name') is-invalid @enderror" id="planName" placeholder="Enter employee plan name">
+                                    @error('planForm.plan_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-12">
-                    <label for="empPlanDescription" class="form-label">Description</label>
-                    <textarea wire:model="employeePlanForm.description" class="form-control @error('employeePlanForm.description') is-invalid @enderror" id="empPlanDescription" rows="3" placeholder="Enter plan description"></textarea>
-                    @error('employeePlanForm.description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-12">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea wire:model="planForm.description" class="form-control @error('planForm.description') is-invalid @enderror" id="description" rows="3" placeholder="Enter plan description"></textarea>
+                                    @error('planForm.description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-6">
-                    <label for="empAssignedDate" class="form-label">Assigned Date <span class="text-danger">*</span></label>
-                    <input type="date" wire:model="employeePlanForm.assigned_date" class="form-control @error('employeePlanForm.assigned_date') is-invalid @enderror" id="empAssignedDate">
-                    @error('employeePlanForm.assigned_date')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label for="empStatus" class="form-label">Status <span class="text-danger">*</span></label>
-                    <select wire:model="employeePlanForm.status" class="form-select @error('employeePlanForm.status') is-invalid @enderror" id="empStatus">
-                        <option value="draft">Draft</option>
-                        <option value="active">Active</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                    @error('employeePlanForm.status')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label for="reviewStatus" class="form-label">Review Status</label>
-                    <select wire:model="employeePlanForm.review_status" class="form-select @error('employeePlanForm.review_status') is-invalid @enderror" id="reviewStatus">
-                        <option value="pending">Pending Review</option>
-                        <option value="in_review">In Review</option>
-                        <option value="reviewed">Reviewed</option>
-                        <option value="approved">Approved</option>
-                    </select>
-                    @error('employeePlanForm.review_status')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label for="targetScore" class="form-label">Target Score (%)</label>
-                    <input type="number" wire:model="employeePlanForm.target_score" class="form-control @error('employeePlanForm.target_score') is-invalid @enderror" id="targetScore" placeholder="0" min="0" max="100" step="1">
-                    @error('employeePlanForm.target_score')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-12">
-                    <label for="objectives" class="form-label">Key Objectives</label>
-                    <textarea wire:model="employeePlanForm.objectives" class="form-control @error('employeePlanForm.objectives') is-invalid @enderror" id="objectives" rows="3" placeholder="Enter key objectives for this employee"></textarea>
-                    @error('employeePlanForm.objectives')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                                <div class="col-md-6">
+                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select wire:model="planForm.status" class="form-select @error('planForm.status') is-invalid @enderror" id="status">
+                                        <option value="draft">Draft</option>
+                                        <option value="active">Active</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                    @error('planForm.status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                                <i class="fa-solid fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" @if($departmentPlans->isEmpty()) disabled @endif>
+                                <i class="fa-solid fa-save me-1"></i> {{ $editingPlanId ? 'Update Plan' : 'Save Plan' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <x-slot name="footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fa-solid fa-times me-1"></i> Cancel
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-save me-1"></i> Save Employee Plan
-                </button>
-            </x-slot>
-        </form>
-    </x-forms.modal>
+        </div>
+    @endif
 
     <!-- Loading Indicator -->
     <div wire:loading class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">

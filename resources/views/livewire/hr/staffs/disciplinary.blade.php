@@ -56,7 +56,7 @@
                             <td>{{ $displineissue->violation_date }}</td>
                             <td>{{ $displineissue->notes }}</td>
                             <td>
-                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $displineissue->id }})" />
+                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $displineissue->id }}')" />
                                 <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $displineissue->id }}')">Delete</a>
                             </td>
                         </tr>
@@ -69,7 +69,7 @@
                 </table>
             </div>
         </x-pages.card>
-        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Disciplinary Action' : 'Add Disciplinary Action' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal">
+        <x-pages.model :title="$modalMode === 'edit' ? 'Edit Disciplinary Action' : 'Add Disciplinary Action'" formaction="save" :modalMode="$modalMode" :showModal="$showModal">
             <x-forms.input type="select" name="violation_id" label="Violation" :options="$violations->pluck('violation_type', 'id')" required />
             <x-forms.input type="date" name="violation_date" label="Violation Date" required />
             <x-forms.input type="textarea" name="notes" label="Notes" rows="2" required />

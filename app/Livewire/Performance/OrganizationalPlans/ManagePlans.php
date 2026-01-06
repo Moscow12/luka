@@ -15,42 +15,51 @@ class ManagePlans extends Component
 
     // Search and Filters
     public $search = '';
-    public $selectedStatus = '';
-    public $selectedPeriodType = '';
+
+    public $statusFilter = '';
+
+    public $periodTypeFilter = '';
+
+    public $perPage = 10;
 
     // Modal States
-    public $showModal = false;
+    public $showPlanModal = false;
+
     public $showItemsModal = false;
+
+    public $showItemForm = false;
+
     public $modalMode = 'create';
+
     public $itemModalMode = 'create';
 
     // Selected Records
     public $selectedPlan = null;
-    public $selectedItem = null;
+
+    public $editingPlanId = null;
+
+    public $editingItemId = null;
+
+    public $planItems = [];
 
     // Plan Form Fields
-    public $plan_id;
-    public $plan_name;
-    public $description;
-    public $start_date;
-    public $end_date;
-    public $period_type = 'annual';
-    public $status = 'draft';
+    public $planForm = [
+        'name' => '',
+        'description' => '',
+        'start_date' => '',
+        'end_date' => '',
+        'period_type' => 'yearly',
+        'status' => 'draft',
+    ];
 
     // Item Form Fields
-    public $item_id;
-    public $item_name;
-    public $item_description;
-    public $kpi_type = 'quantitative';
-    public $measurement_type = 'numeric';
-    public $weight;
-    public $target_value;
-    public $target_unit;
-    public $min_acceptable;
-    public $max_possible;
-    public $rating_scale_max = 5;
-    public $scoring_criteria;
-    public $display_order;
+    public $itemForm = [
+        'name' => '',
+        'description' => '',
+        'weight' => '',
+        'target' => '',
+        'unit' => '',
+    ];
 
     // Pagination reset on search/filter changes
     public function updatingSearch()
@@ -58,88 +67,121 @@ class ManagePlans extends Component
         $this->resetPage();
     }
 
-    public function updatingSelectedStatus()
+    public function updatingStatusFilter()
     {
         $this->resetPage();
     }
 
-    public function updatingSelectedPeriodType()
+    public function updatingPeriodTypeFilter()
     {
         $this->resetPage();
     }
 
-    public function mount()
+    public function resetFilters()
     {
-        //
+        $this->reset(['search', 'statusFilter', 'periodTypeFilter']);
+        $this->resetPage();
     }
 
     // Plan CRUD Operations
-    public function openCreateModal()
+    public function createPlan()
     {
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
-        $this->showModal = true;
-        $this->resetPlanForm();
-        $this->period_type = 'annual';
-        $this->status = 'draft';
+        $this->editingPlanId = null;
+        $this->planForm = [
+            'name' => '',
+            'description' => '',
+            'start_date' => '',
+            'end_date' => '',
+            'period_type' => 'yearly',
+            'status' => 'draft',
+        ];
+        $this->showPlanModal = true;
     }
 
-    public function openEditModal($planId)
+    public function editPlan($planId)
     {
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'edit';
-        $this->showModal = true;
+        $this->editingPlanId = $planId;
 
         $plan = OrganizationalPlan::findOrFail($planId);
-        $this->plan_id = $plan->id;
-        $this->plan_name = $plan->plan_name;
-        $this->description = $plan->description;
-        $this->start_date = $plan->start_date->format('Y-m-d');
-        $this->end_date = $plan->end_date->format('Y-m-d');
-        $this->period_type = $plan->period_type;
-        $this->status = $plan->status;
+        $this->planForm = [
+            'name' => $plan->plan_name,
+            'description' => $plan->description,
+            'start_date' => $plan->start_date->format('Y-m-d'),
+            'end_date' => $plan->end_date->format('Y-m-d'),
+            'period_type' => $plan->period_type,
+            'status' => $plan->status,
+        ];
+        $this->showPlanModal = true;
     }
 
     public function savePlan()
     {
-        $this->validate($this->getPlanValidationRules());
+        $rules = [
+            'planForm.name' => 'required|string|max:255',
+            'planForm.description' => 'nullable|string',
+            'planForm.start_date' => 'required|date',
+            'planForm.end_date' => 'required|date|after:planForm.start_date',
+            'planForm.period_type' => 'required|in:monthly,quarterly,yearly',
+            'planForm.status' => 'required|in:draft,active,completed,cancelled',
+        ];
+
+        $messages = [
+            'planForm.name.required' => 'Please enter the plan name.',
+            'planForm.start_date.required' => 'Please select a start date.',
+            'planForm.end_date.required' => 'Please select an end date.',
+            'planForm.end_date.after' => 'End date must be after start date.',
+            'planForm.period_type.required' => 'Please select a period type.',
+            'planForm.status.required' => 'Please select a status.',
+        ];
+
+        $this->validate($rules, $messages);
 
         try {
             DB::beginTransaction();
 
-            if ($this->modalMode === 'edit' && $this->plan_id) {
-                $plan = OrganizationalPlan::findOrFail($this->plan_id);
+            if ($this->modalMode === 'edit' && $this->editingPlanId) {
+                $plan = OrganizationalPlan::findOrFail($this->editingPlanId);
                 $plan->update([
-                    'plan_name' => $this->plan_name,
-                    'description' => $this->description,
-                    'start_date' => $this->start_date,
-                    'end_date' => $this->end_date,
-                    'period_type' => $this->period_type,
-                    'status' => $this->status,
+                    'plan_name' => $this->planForm['name'],
+                    'description' => $this->planForm['description'],
+                    'start_date' => $this->planForm['start_date'],
+                    'end_date' => $this->planForm['end_date'],
+                    'period_type' => $this->planForm['period_type'],
+                    'status' => $this->planForm['status'],
                 ]);
-                session()->flash('success', 'Organizational Plan updated successfully!');
+                session()->flash('success', 'Plan updated successfully!');
             } else {
                 OrganizationalPlan::create([
-                    'plan_name' => $this->plan_name,
-                    'description' => $this->description,
-                    'start_date' => $this->start_date,
-                    'end_date' => $this->end_date,
-                    'period_type' => $this->period_type,
-                    'status' => $this->status,
+                    'plan_name' => $this->planForm['name'],
+                    'description' => $this->planForm['description'],
+                    'start_date' => $this->planForm['start_date'],
+                    'end_date' => $this->planForm['end_date'],
+                    'period_type' => $this->planForm['period_type'],
+                    'status' => $this->planForm['status'],
                     'created_by' => Auth::id(),
                 ]);
-                session()->flash('success', 'Organizational Plan created successfully!');
+                session()->flash('success', 'Plan created successfully!');
             }
 
             DB::commit();
-            $this->showModal = false;
-            $this->resetPlanForm();
+            $this->closePlanModal();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
+    }
+
+    public function closePlanModal()
+    {
+        $this->showPlanModal = false;
+        $this->editingPlanId = null;
+        $this->resetErrorBag();
     }
 
     public function deletePlan($planId)
@@ -147,26 +189,27 @@ class ManagePlans extends Component
         try {
             $plan = OrganizationalPlan::findOrFail($planId);
 
-            // Check if plan has department plans
             if ($plan->departmentPlans()->count() > 0) {
-                session()->flash('error', 'Cannot delete plan with existing department plans!');
+                session()->flash('error', 'Cannot delete plan with existing department plans.');
+
                 return;
             }
 
-            // Check if plan is approved
             if ($plan->status === 'approved') {
-                session()->flash('error', 'Cannot delete an approved plan!');
+                session()->flash('error', 'Cannot delete an approved plan.');
+
                 return;
             }
 
             DB::beginTransaction();
+            $plan->items()->delete();
             $plan->delete();
             DB::commit();
 
-            session()->flash('success', 'Organizational Plan deleted successfully!');
+            session()->flash('success', 'Plan deleted successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
@@ -175,140 +218,151 @@ class ManagePlans extends Component
         try {
             $plan = OrganizationalPlan::findOrFail($planId);
 
-            // Validate that plan has items
             if ($plan->items()->count() === 0) {
-                session()->flash('error', 'Cannot approve a plan without items!');
+                session()->flash('error', 'Cannot approve a plan without items.');
+
                 return;
             }
 
-            // Validate total weight equals 100
             $totalWeight = $plan->items()->sum('weight');
             if ($totalWeight != 100) {
-                session()->flash('error', "Cannot approve plan! Total weight of items is {$totalWeight}%, must be exactly 100%.");
+                session()->flash('error', "Total weight is {$totalWeight}%, must be exactly 100%.");
+
                 return;
             }
 
             DB::beginTransaction();
             $plan->update([
-                'status' => 'approved',
+                'status' => 'active',
                 'approved_by' => Auth::id(),
                 'approved_at' => now(),
             ]);
             DB::commit();
 
-            session()->flash('success', 'Organizational Plan approved successfully!');
+            session()->flash('success', 'Plan approved and activated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
     // Plan Items CRUD Operations
-    public function openItemsModal($planId)
+    public function manageItems($planId)
     {
-        $this->selectedPlan = OrganizationalPlan::with('items')->findOrFail($planId);
+        $this->selectedPlan = OrganizationalPlan::findOrFail($planId);
+        $this->loadPlanItems();
         $this->showItemsModal = true;
+        $this->showItemForm = false;
         $this->resetItemForm();
+    }
+
+    public function loadPlanItems()
+    {
+        if ($this->selectedPlan) {
+            $this->planItems = OrganizationalPlanItem::where('organizational_plan_id', $this->selectedPlan->id)
+                ->orderBy('display_order')
+                ->get();
+        }
     }
 
     public function closeItemsModal()
     {
         $this->showItemsModal = false;
         $this->selectedPlan = null;
+        $this->planItems = [];
         $this->resetItemForm();
     }
 
-    public function openCreateItemModal()
+    public function addNewItem()
     {
         $this->resetErrorBag();
         $this->resetValidation();
         $this->itemModalMode = 'create';
+        $this->editingItemId = null;
         $this->resetItemForm();
-        $this->kpi_type = 'quantitative';
-        $this->measurement_type = 'numeric';
-        $this->rating_scale_max = 5;
+        $this->showItemForm = true;
     }
 
-    public function openEditItemModal($itemId)
+    public function editItem($itemId)
     {
         $this->resetErrorBag();
         $this->resetValidation();
         $this->itemModalMode = 'edit';
+        $this->editingItemId = $itemId;
 
         $item = OrganizationalPlanItem::findOrFail($itemId);
-        $this->item_id = $item->id;
-        $this->item_name = $item->item_name;
-        $this->item_description = $item->description;
-        $this->kpi_type = $item->kpi_type;
-        $this->measurement_type = $item->measurement_type;
-        $this->weight = $item->weight;
-        $this->target_value = $item->target_value;
-        $this->target_unit = $item->target_unit;
-        $this->min_acceptable = $item->min_acceptable;
-        $this->max_possible = $item->max_possible;
-        $this->rating_scale_max = $item->rating_scale_max;
-        $this->scoring_criteria = $item->scoring_criteria;
-        $this->display_order = $item->display_order;
+        $this->itemForm = [
+            'name' => $item->item_name,
+            'description' => $item->description,
+            'weight' => $item->weight,
+            'target' => $item->target_value,
+            'unit' => $item->target_unit,
+        ];
+        $this->showItemForm = true;
     }
 
     public function saveItem()
     {
-        if (!$this->selectedPlan) {
-            session()->flash('error', 'No plan selected!');
+        if (! $this->selectedPlan) {
+            session()->flash('error', 'No plan selected.');
+
             return;
         }
 
-        $this->validate($this->getItemValidationRules());
+        $rules = [
+            'itemForm.name' => 'required|string|max:255',
+            'itemForm.description' => 'nullable|string',
+            'itemForm.weight' => 'required|numeric|min:0|max:100',
+            'itemForm.target' => 'nullable|string',
+            'itemForm.unit' => 'nullable|string|max:100',
+        ];
+
+        $messages = [
+            'itemForm.name.required' => 'Please enter the item name.',
+            'itemForm.weight.required' => 'Please enter the weight percentage.',
+            'itemForm.weight.min' => 'Weight must be at least 0%.',
+            'itemForm.weight.max' => 'Weight cannot exceed 100%.',
+        ];
+
+        $this->validate($rules, $messages);
 
         try {
             DB::beginTransaction();
 
-            if ($this->itemModalMode === 'edit' && $this->item_id) {
-                $item = OrganizationalPlanItem::findOrFail($this->item_id);
+            if ($this->itemModalMode === 'edit' && $this->editingItemId) {
+                $item = OrganizationalPlanItem::findOrFail($this->editingItemId);
                 $item->update([
-                    'item_name' => $this->item_name,
-                    'description' => $this->item_description,
-                    'kpi_type' => $this->kpi_type,
-                    'measurement_type' => $this->measurement_type,
-                    'weight' => $this->weight,
-                    'target_value' => $this->target_value,
-                    'target_unit' => $this->target_unit,
-                    'min_acceptable' => $this->min_acceptable,
-                    'max_possible' => $this->max_possible,
-                    'rating_scale_max' => $this->rating_scale_max,
-                    'scoring_criteria' => $this->scoring_criteria,
-                    'display_order' => $this->display_order,
+                    'item_name' => $this->itemForm['name'],
+                    'description' => $this->itemForm['description'],
+                    'weight' => $this->itemForm['weight'],
+                    'target_value' => $this->itemForm['target'],
+                    'target_unit' => $this->itemForm['unit'],
                 ]);
-                session()->flash('success', 'Plan Item updated successfully!');
+                session()->flash('success', 'Item updated successfully!');
             } else {
+                $maxOrder = OrganizationalPlanItem::where('organizational_plan_id', $this->selectedPlan->id)->max('display_order') ?? 0;
+
                 OrganizationalPlanItem::create([
                     'organizational_plan_id' => $this->selectedPlan->id,
-                    'item_name' => $this->item_name,
-                    'description' => $this->item_description,
-                    'kpi_type' => $this->kpi_type,
-                    'measurement_type' => $this->measurement_type,
-                    'weight' => $this->weight,
-                    'target_value' => $this->target_value,
-                    'target_unit' => $this->target_unit,
-                    'min_acceptable' => $this->min_acceptable,
-                    'max_possible' => $this->max_possible,
-                    'rating_scale_max' => $this->rating_scale_max,
-                    'scoring_criteria' => $this->scoring_criteria,
-                    'display_order' => $this->display_order ?? 0,
+                    'item_name' => $this->itemForm['name'],
+                    'description' => $this->itemForm['description'],
+                    'weight' => $this->itemForm['weight'],
+                    'target_value' => $this->itemForm['target'],
+                    'target_unit' => $this->itemForm['unit'],
+                    'kpi_type' => 'quantitative',
+                    'measurement_type' => 'numeric',
+                    'display_order' => $maxOrder + 1,
                     'is_active' => true,
                 ]);
-                session()->flash('success', 'Plan Item created successfully!');
+                session()->flash('success', 'Item added successfully!');
             }
 
             DB::commit();
-            $this->resetItemForm();
-            $this->itemModalMode = 'create';
-
-            // Refresh selected plan
-            $this->selectedPlan = OrganizationalPlan::with('items')->findOrFail($this->selectedPlan->id);
+            $this->loadPlanItems();
+            $this->cancelItemForm();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
@@ -317,9 +371,9 @@ class ManagePlans extends Component
         try {
             $item = OrganizationalPlanItem::findOrFail($itemId);
 
-            // Check if item has department plan items
-            if ($item->departmentPlanItems()->count() > 0) {
-                session()->flash('error', 'Cannot delete item with existing department plan items!');
+            if (method_exists($item, 'departmentPlanItems') && $item->departmentPlanItems()->count() > 0) {
+                session()->flash('error', 'Cannot delete item with existing department plan items.');
+
                 return;
             }
 
@@ -327,138 +381,71 @@ class ManagePlans extends Component
             $item->delete();
             DB::commit();
 
-            session()->flash('success', 'Plan Item deleted successfully!');
-
-            // Refresh selected plan
-            if ($this->selectedPlan) {
-                $this->selectedPlan = OrganizationalPlan::with('items')->findOrFail($this->selectedPlan->id);
-            }
+            session()->flash('success', 'Item deleted successfully!');
+            $this->loadPlanItems();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
-    // Validation Rules
-    protected function getPlanValidationRules()
+    public function cancelItemForm()
     {
-        return [
-            'plan_name' => [
-                'required',
-                'string',
-                'max:255',
-                $this->modalMode === 'create'
-                    ? 'unique:organizational_plans,plan_name'
-                    : 'unique:organizational_plans,plan_name,' . $this->plan_id
-            ],
-            'description' => ['nullable', 'string'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after:start_date'],
-            'period_type' => ['required', 'in:monthly,quarterly,semi-annual,annual'],
-            'status' => ['required', 'in:draft,active,approved,completed,cancelled'],
-        ];
-    }
-
-    protected function getItemValidationRules()
-    {
-        return [
-            'item_name' => ['required', 'string', 'max:255'],
-            'item_description' => ['nullable', 'string'],
-            'kpi_type' => ['required', 'in:quantitative,qualitative'],
-            'measurement_type' => ['required', 'in:numeric,percentage,rating,binary,text'],
-            'weight' => ['required', 'numeric', 'min:0', 'max:100'],
-            'target_value' => ['nullable', 'numeric'],
-            'target_unit' => ['nullable', 'string', 'max:100'],
-            'min_acceptable' => ['nullable', 'numeric'],
-            'max_possible' => ['nullable', 'numeric'],
-            'rating_scale_max' => ['nullable', 'integer', 'min:1', 'max:10'],
-            'scoring_criteria' => ['nullable', 'string'],
-            'display_order' => ['nullable', 'integer', 'min:0'],
-        ];
-    }
-
-    // Helper Methods
-    protected function resetPlanForm()
-    {
-        $this->reset([
-            'plan_id',
-            'plan_name',
-            'description',
-            'start_date',
-            'end_date',
-            'period_type',
-            'status'
-        ]);
+        $this->showItemForm = false;
+        $this->editingItemId = null;
+        $this->resetItemForm();
     }
 
     protected function resetItemForm()
     {
-        $this->reset([
-            'item_id',
-            'item_name',
-            'item_description',
-            'kpi_type',
-            'measurement_type',
-            'weight',
-            'target_value',
-            'target_unit',
-            'min_acceptable',
-            'max_possible',
-            'rating_scale_max',
-            'scoring_criteria',
-            'display_order'
-        ]);
-    }
-
-    public function closeModal()
-    {
-        $this->showModal = false;
-        $this->resetPlanForm();
+        $this->itemForm = [
+            'name' => '',
+            'description' => '',
+            'weight' => '',
+            'target' => '',
+            'unit' => '',
+        ];
     }
 
     public function render()
     {
-        // Build query with eager loading
         $plansQuery = OrganizationalPlan::query()
             ->with(['creator', 'items'])
-            ->withCount('items');
+            ->withCount('items')
+            ->withSum('items', 'weight');
 
-        // Apply search filter
         if ($this->search) {
             $plansQuery->where(function ($query) {
-                $query->where('plan_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('description', 'like', '%' . $this->search . '%');
+                $query->where('plan_name', 'like', '%'.$this->search.'%')
+                    ->orWhere('description', 'like', '%'.$this->search.'%');
             });
         }
 
-        // Apply status filter
-        if ($this->selectedStatus) {
-            $plansQuery->where('status', $this->selectedStatus);
+        if ($this->statusFilter) {
+            $plansQuery->where('status', $this->statusFilter);
         }
 
-        // Apply period type filter
-        if ($this->selectedPeriodType) {
-            $plansQuery->where('period_type', $this->selectedPeriodType);
+        if ($this->periodTypeFilter) {
+            $plansQuery->where('period_type', $this->periodTypeFilter);
         }
 
-        // Order by latest
         $plansQuery->orderBy('created_at', 'desc');
+        $plans = $plansQuery->paginate($this->perPage);
 
-        // Paginate
-        $plans = $plansQuery->paginate(10);
+        // Add total_weight accessor to each plan
+        $plans->getCollection()->transform(function ($plan) {
+            $plan->total_weight = $plan->items_sum_weight ?? 0;
+            $plan->name = $plan->plan_name; // alias for blade compatibility
 
-        // Calculate statistics
-        $totalPlans = OrganizationalPlan::count();
-        $activePlans = OrganizationalPlan::where('status', 'active')->count();
-        $completedPlans = OrganizationalPlan::where('status', 'completed')->count();
-        $approvedPlans = OrganizationalPlan::where('status', 'approved')->count();
+            return $plan;
+        });
 
         return view('livewire.performance.organizational-plans.manage-plans', [
             'plans' => $plans,
-            'totalPlans' => $totalPlans,
-            'activePlans' => $activePlans,
-            'completedPlans' => $completedPlans,
-            'approvedPlans' => $approvedPlans,
+            'totalPlans' => OrganizationalPlan::count(),
+            'activePlans' => OrganizationalPlan::where('status', 'active')->count(),
+            'completedPlans' => OrganizationalPlan::where('status', 'completed')->count(),
+            'approvedPlans' => OrganizationalPlan::whereNotNull('approved_at')->count(),
         ]);
     }
 }

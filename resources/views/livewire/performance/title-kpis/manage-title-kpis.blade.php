@@ -5,10 +5,24 @@
         ['label' => 'Performance Management', 'url' => '#'],
         ['label' => 'Job Title KPIs', 'url' => route('performance.title.kpis')],
     ]">
-        <button class='btn btn-primary d-md-flex align-items-center gap-2' data-bs-toggle="modal" data-bs-target="#createTitleKpiModal">
+        <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="openCreateModal">
             <i class="fa-solid fa-plus"></i> ADD NEW KPI
         </button>
     </x-pages.breadcrumn>
+
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-xmark me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
     <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
@@ -92,7 +106,7 @@
                                 </span>
                                 <input type="search" wire:model.live.debounce.300ms="search" class="form-control"
                                     placeholder="Search KPIs by name..." />
-                                @if ($search ?? false)
+                                @if ($search)
                                     <button wire:click="$set('search', '')" class="btn btn-outline-secondary"
                                         type="button">
                                         <i class="fa-solid fa-times"></i>
@@ -113,12 +127,10 @@
                                 </select>
 
                                 <!-- KPI Type Filter -->
-                                <select wire:model.live="kpiTypeFilter" class="form-select" style="width: auto;">
+                                <select wire:model.live="typeFilter" class="form-select" style="width: auto;">
                                     <option value="">All KPI Types</option>
                                     <option value="quantitative">Quantitative</option>
                                     <option value="qualitative">Qualitative</option>
-                                    <option value="behavioral">Behavioral</option>
-                                    <option value="project">Project-based</option>
                                 </select>
 
                                 <!-- Mandatory Filter -->
@@ -129,7 +141,7 @@
                                 </select>
 
                                 <!-- Reset Filters -->
-                                @if ($search ?? false || $jobTitleFilter ?? false || $kpiTypeFilter ?? false || $mandatoryFilter ?? false)
+                                @if ($search || $jobTitleFilter || $typeFilter || $mandatoryFilter !== '')
                                     <button wire:click="resetFilters" type="button" class="btn btn-outline-secondary">
                                         <i class="fa-solid fa-rotate-left me-1"></i> Reset
                                     </button>
@@ -148,18 +160,19 @@
                                 <th>Job Title</th>
                                 <th>KPI Name</th>
                                 <th class="text-center">KPI Type</th>
+                                <th class="text-center">Measurement</th>
                                 <th class="text-center">Weight (%)</th>
                                 <th class="text-center">Target</th>
                                 <th class="text-center">Mandatory</th>
                                 <th class="text-center">Status</th>
-                                <th class="text-end" style="width: 150px;">Actions</th>
+                                <th class="text-end" style="width: 120px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($kpis ?? [] as $index => $kpi)
-                                <tr wire:key="kpi-{{ $kpi->id ?? $index }}">
+                                <tr wire:key="kpi-{{ $kpi->id }}">
                                     <td class="text-center text-muted">
-                                        {{ ($kpis->firstItem() ?? 0) + $index }}
+                                        {{ $kpis->firstItem() + $index }}
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
@@ -167,87 +180,68 @@
                                                 <i class="fa-solid fa-briefcase"></i>
                                             </div>
                                             <div>
-                                                <span class="fw-semibold text-dark">{{ $kpi->job_title->name ?? 'N/A' }}</span>
-                                                @if (!empty($kpi->job_title->code))
-                                                    <small class="text-muted d-block">Code: {{ $kpi->job_title->code }}</small>
-                                                @endif
+                                                <span class="fw-semibold text-dark">{{ $kpi->jobtitle->name ?? 'N/A' }}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="fw-semibold text-dark">{{ $kpi->kpi_name ?? 'N/A' }}</span>
-                                            @if (!empty($kpi->description))
+                                            <span class="fw-semibold text-dark">{{ $kpi->kpi_name }}</span>
+                                            @if ($kpi->description)
                                                 <small class="text-muted">{{ Str::limit($kpi->description, 40) }}</small>
                                             @endif
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        @php
-                                            $kpiTypeColors = [
-                                                'quantitative' => 'primary',
-                                                'qualitative' => 'info',
-                                                'behavioral' => 'warning',
-                                                'project' => 'success',
-                                            ];
-                                            $kpiTypeColor = $kpiTypeColors[$kpi->kpi_type ?? 'quantitative'] ?? 'secondary';
-                                        @endphp
-                                        <span class="badge bg-{{ $kpiTypeColor }}-subtle text-{{ $kpiTypeColor }}-emphasis">
-                                            {{ ucfirst($kpi->kpi_type ?? 'N/A') }}
+                                        <span class="badge bg-{{ $kpi->kpi_type === 'quantitative' ? 'primary' : 'info' }}-subtle text-{{ $kpi->kpi_type === 'quantitative' ? 'primary' : 'info' }}">
+                                            {{ ucfirst($kpi->kpi_type) }}
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="fw-semibold">{{ $kpi->weight ?? 0 }}%</span>
+                                        <span class="badge bg-secondary-subtle text-secondary">
+                                            {{ ucfirst($kpi->measurement_type) }}
+                                        </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="fw-semibold">{{ $kpi->target ?? '-' }}</span>
-                                        @if (!empty($kpi->unit))
-                                            <small class="text-muted d-block">{{ $kpi->unit }}</small>
+                                        <span class="fw-semibold">{{ number_format($kpi->weight, 2) }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if ($kpi->target_value)
+                                            <span class="fw-semibold">{{ number_format($kpi->target_value, 2) }}</span>
+                                            @if ($kpi->target_unit)
+                                                <small class="text-muted d-block">{{ $kpi->target_unit }}</small>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        @if ($kpi->is_mandatory ?? false)
+                                        @if ($kpi->is_mandatory)
                                             <span class="badge bg-success">
-                                                <i class="fa-solid fa-star me-1"></i>
-                                                Mandatory
+                                                <i class="fa-solid fa-star me-1"></i> Mandatory
                                             </span>
                                         @else
-                                            <span class="badge bg-light text-dark">
-                                                Optional
-                                            </span>
+                                            <span class="badge bg-light text-dark">Optional</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        @php
-                                            $statusColor = ($kpi->is_active ?? true) ? 'success' : 'secondary';
-                                        @endphp
-                                        <span class="badge bg-{{ $statusColor }}">
-                                            <i class="fa-solid fa-circle me-1" style="font-size: 6px;"></i>
-                                            {{ ($kpi->is_active ?? true) ? 'Active' : 'Inactive' }}
-                                        </span>
+                                        <button wire:click="toggleActive('{{ $kpi->id }}')"
+                                            class="badge border-0 bg-{{ $kpi->is_active ? 'success' : 'danger' }}-subtle text-{{ $kpi->is_active ? 'success' : 'danger' }}"
+                                            style="cursor: pointer;">
+                                            {{ $kpi->is_active ? 'Active' : 'Inactive' }}
+                                        </button>
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
-                                            <button wire:click="viewKpi('{{ $kpi->id ?? '' }}')"
-                                                class="btn btn-sm btn-ghost-info rounded-circle"
-                                                title="View Details">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </button>
-                                            <button wire:click="editKpi('{{ $kpi->id ?? '' }}')"
+                                            <button wire:click="openEditModal('{{ $kpi->id }}')"
                                                 class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                 title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                            <button wire:click="toggleKpiStatus('{{ $kpi->id ?? '' }}')"
-                                                class="btn btn-sm btn-ghost-{{ ($kpi->is_active ?? true) ? 'warning' : 'success' }} rounded-circle"
-                                                title="{{ ($kpi->is_active ?? true) ? 'Deactivate' : 'Activate' }}">
-                                                <i class="fa-solid fa-{{ ($kpi->is_active ?? true) ? 'pause' : 'play' }}"></i>
-                                            </button>
-                                            <button wire:click="deleteKpi('{{ $kpi->id ?? '' }}')"
-                                                type="button"
+                                            <button wire:click="delete('{{ $kpi->id }}')"
+                                                wire:confirm="Are you sure you want to delete this KPI?"
                                                 class="btn btn-sm btn-ghost-danger rounded-circle"
-                                                title="Delete"
-                                                onclick="confirm('Are you sure you want to delete this KPI?') || event.stopImmediatePropagation()">
+                                                title="Delete">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </div>
@@ -255,20 +249,20 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center py-5">
+                                    <td colspan="10" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center justify-content-center">
                                             <i class="fa-solid fa-bullseye text-muted mb-3"
                                                 style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No KPIs Found</h5>
                                             <p class="text-muted">
-                                                @if ($search ?? false || $jobTitleFilter ?? false || $kpiTypeFilter ?? false || $mandatoryFilter ?? false)
+                                                @if ($search || $jobTitleFilter || $typeFilter || $mandatoryFilter !== '')
                                                     Try adjusting your filters or search query
                                                 @else
                                                     Start by defining standard KPIs for job titles
                                                 @endif
                                             </p>
-                                            @if (!($search ?? false) && !($jobTitleFilter ?? false) && !($kpiTypeFilter ?? false) && !($mandatoryFilter ?? false))
-                                                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#createTitleKpiModal">
+                                            @if (!$search && !$jobTitleFilter && !$typeFilter && $mandatoryFilter === '')
+                                                <button class="btn btn-primary mt-2" wire:click="openCreateModal">
                                                     <i class="fa-solid fa-plus me-1"></i> Add New KPI
                                                 </button>
                                             @endif
@@ -285,9 +279,9 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                         <!-- Results Info -->
                         <div class="text-muted">
-                            @if (($kpis->total() ?? 0) > 0)
-                                Showing {{ $kpis->firstItem() ?? 0 }} to {{ $kpis->lastItem() ?? 0 }} of
-                                {{ $kpis->total() ?? 0 }} KPIs
+                            @if ($kpis->total() > 0)
+                                Showing {{ $kpis->firstItem() }} to {{ $kpis->lastItem() }} of
+                                {{ $kpis->total() }} KPIs
                             @else
                                 No KPIs found
                             @endif
@@ -308,11 +302,9 @@
                             </div>
 
                             <!-- Pagination Links -->
-                            @if (isset($kpis) && method_exists($kpis, 'links'))
-                                <div>
-                                    {{ $kpis->links() }}
-                                </div>
-                            @endif
+                            <div>
+                                {{ $kpis->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -321,137 +313,138 @@
     </div>
 
     <!-- Create/Edit KPI Modal -->
-    <x-forms.modal id="createTitleKpiModal" title="{{ $editingKpiId ?? false ? 'Edit Job Title KPI' : 'Add New Job Title KPI' }}" size="modal-lg" :centered="true">
-        <form wire:submit.prevent="saveKpi">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="jobTitle" class="form-label">Job Title <span class="text-danger">*</span></label>
-                    <select wire:model="kpiForm.job_title_id" class="form-select @error('kpiForm.job_title_id') is-invalid @enderror" id="jobTitle">
-                        <option value="">Select Job Title</option>
-                        @foreach ($jobTitles ?? [] as $jobTitle)
-                            <option value="{{ $jobTitle->id }}">{{ $jobTitle->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('kpiForm.job_title_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label for="kpiTypeSelect" class="form-label">KPI Type <span class="text-danger">*</span></label>
-                    <select wire:model="kpiForm.kpi_type" class="form-select @error('kpiForm.kpi_type') is-invalid @enderror" id="kpiTypeSelect">
-                        <option value="">Select KPI Type</option>
-                        <option value="quantitative">Quantitative</option>
-                        <option value="qualitative">Qualitative</option>
-                        <option value="behavioral">Behavioral</option>
-                        <option value="project">Project-based</option>
-                    </select>
-                    @error('kpiForm.kpi_type')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-12">
-                    <label for="kpiName" class="form-label">KPI Name <span class="text-danger">*</span></label>
-                    <input type="text" wire:model="kpiForm.kpi_name" class="form-control @error('kpiForm.kpi_name') is-invalid @enderror" id="kpiName" placeholder="Enter KPI name">
-                    @error('kpiForm.kpi_name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-12">
-                    <label for="kpiDescription" class="form-label">Description</label>
-                    <textarea wire:model="kpiForm.description" class="form-control @error('kpiForm.description') is-invalid @enderror" id="kpiDescription" rows="3" placeholder="Enter detailed description of the KPI"></textarea>
-                    @error('kpiForm.description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label for="kpiWeight" class="form-label">Weight (%) <span class="text-danger">*</span></label>
-                    <input type="number" wire:model="kpiForm.weight" class="form-control @error('kpiForm.weight') is-invalid @enderror" id="kpiWeight" placeholder="0" min="0" max="100" step="0.1">
-                    @error('kpiForm.weight')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label for="kpiTarget" class="form-label">Target <span class="text-danger">*</span></label>
-                    <input type="text" wire:model="kpiForm.target" class="form-control @error('kpiForm.target') is-invalid @enderror" id="kpiTarget" placeholder="Enter target value">
-                    @error('kpiForm.target')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label for="kpiUnit" class="form-label">Unit</label>
-                    <input type="text" wire:model="kpiForm.unit" class="form-control @error('kpiForm.unit') is-invalid @enderror" id="kpiUnit" placeholder="e.g., %, units, items">
-                    @error('kpiForm.unit')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label for="measurementMethod" class="form-label">Measurement Method</label>
-                    <input type="text" wire:model="kpiForm.measurement_method" class="form-control @error('kpiForm.measurement_method') is-invalid @enderror" id="measurementMethod" placeholder="How is this KPI measured?">
-                    @error('kpiForm.measurement_method')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label for="frequency" class="form-label">Review Frequency</label>
-                    <select wire:model="kpiForm.review_frequency" class="form-select @error('kpiForm.review_frequency') is-invalid @enderror" id="frequency">
-                        <option value="">Select Frequency</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="quarterly">Quarterly</option>
-                        <option value="annually">Annually</option>
-                    </select>
-                    @error('kpiForm.review_frequency')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <div class="form-check form-switch mt-4">
-                        <input class="form-check-input" type="checkbox" wire:model="kpiForm.is_mandatory" id="isMandatory">
-                        <label class="form-check-label" for="isMandatory">
-                            <i class="fa-solid fa-star text-warning me-1"></i>
-                            Mandatory KPI
-                        </label>
+    @if ($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fa-solid fa-bullseye me-2"></i>
+                            {{ $modalMode === 'edit' ? 'Edit Job Title KPI' : 'Add New Job Title KPI' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
-                </div>
+                    <form wire:submit.prevent="save">
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="jobTitle" class="form-label">Job Title <span class="text-danger">*</span></label>
+                                    <select wire:model="job_title_id" class="form-select @error('job_title_id') is-invalid @enderror" id="jobTitle">
+                                        <option value="">Select Job Title</option>
+                                        @foreach ($jobTitles ?? [] as $jobTitle)
+                                            <option value="{{ $jobTitle->id }}">{{ $jobTitle->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('job_title_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-6">
-                    <div class="form-check form-switch mt-4">
-                        <input class="form-check-input" type="checkbox" wire:model="kpiForm.is_active" id="isActive" checked>
-                        <label class="form-check-label" for="isActive">
-                            Active
-                        </label>
-                    </div>
-                </div>
+                                <div class="col-md-6">
+                                    <label for="kpiType" class="form-label">KPI Type <span class="text-danger">*</span></label>
+                                    <select wire:model="kpi_type" class="form-select @error('kpi_type') is-invalid @enderror" id="kpiType">
+                                        <option value="quantitative">Quantitative</option>
+                                        <option value="qualitative">Qualitative</option>
+                                    </select>
+                                    @error('kpi_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-12">
-                    <label for="criteria" class="form-label">Success Criteria</label>
-                    <textarea wire:model="kpiForm.success_criteria" class="form-control @error('kpiForm.success_criteria') is-invalid @enderror" id="criteria" rows="2" placeholder="Define what success looks like for this KPI"></textarea>
-                    @error('kpiForm.success_criteria')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                                <div class="col-12">
+                                    <label for="kpiName" class="form-label">KPI Name <span class="text-danger">*</span></label>
+                                    <input type="text" wire:model="kpi_name" class="form-control @error('kpi_name') is-invalid @enderror" id="kpiName" placeholder="Enter KPI name">
+                                    @error('kpi_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea wire:model="description" class="form-control @error('description') is-invalid @enderror" id="description" rows="2" placeholder="Enter detailed description of the KPI"></textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="measurementType" class="form-label">Measurement Type <span class="text-danger">*</span></label>
+                                    <select wire:model="measurement_type" class="form-select @error('measurement_type') is-invalid @enderror" id="measurementType">
+                                        <option value="numeric">Numeric</option>
+                                        <option value="percentage">Percentage</option>
+                                        <option value="rating">Rating</option>
+                                        <option value="binary">Binary (Yes/No)</option>
+                                        <option value="text">Text</option>
+                                    </select>
+                                    @error('measurement_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="weight" class="form-label">Weight (%) <span class="text-danger">*</span></label>
+                                    <input type="number" wire:model="weight" class="form-control @error('weight') is-invalid @enderror" id="weight" placeholder="0" min="0" max="100" step="0.01">
+                                    @error('weight')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="targetValue" class="form-label">Target Value</label>
+                                    <input type="number" wire:model="target_value" class="form-control @error('target_value') is-invalid @enderror" id="targetValue" placeholder="Enter target value" step="0.01">
+                                    @error('target_value')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="targetUnit" class="form-label">Target Unit</label>
+                                    <input type="text" wire:model="target_unit" class="form-control @error('target_unit') is-invalid @enderror" id="targetUnit" placeholder="e.g., %, count, TZS">
+                                    @error('target_unit')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="displayOrder" class="form-label">Display Order</label>
+                                    <input type="number" wire:model="display_order" class="form-control @error('display_order') is-invalid @enderror" id="displayOrder" placeholder="0" min="0">
+                                    @error('display_order')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" wire:model="is_mandatory" id="isMandatory">
+                                        <label class="form-check-label" for="isMandatory">
+                                            <i class="fa-solid fa-star text-warning me-1"></i>
+                                            Mandatory KPI
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="scoringCriteria" class="form-label">Scoring Criteria</label>
+                                    <textarea wire:model="scoring_criteria" class="form-control @error('scoring_criteria') is-invalid @enderror" id="scoringCriteria" rows="2" placeholder="Define how this KPI will be scored/evaluated"></textarea>
+                                    @error('scoring_criteria')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                                <i class="fa-solid fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-save me-1"></i> {{ $modalMode === 'edit' ? 'Update KPI' : 'Save KPI' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <x-slot name="footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fa-solid fa-times me-1"></i> Cancel
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-save me-1"></i> Save KPI
-                </button>
-            </x-slot>
-        </form>
-    </x-forms.modal>
+        </div>
+    @endif
 
     <!-- Loading Indicator -->
     <div wire:loading class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">

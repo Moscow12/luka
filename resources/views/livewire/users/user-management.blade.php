@@ -385,22 +385,16 @@
                                 </div>
                             </div>
 
-                            {{-- Roles --}}
+                            {{-- Role --}}
                             <div class="mb-4">
-                                <label class="form-label">Assign Roles</label>
-                                <div class="row g-2">
+                                <label class="form-label">Assign Role <span class="text-danger">*</span></label>
+                                <select wire:model="selectedRole" class="form-select @error('selectedRole') is-invalid @enderror">
+                                    <option value="">Select a role</option>
                                     @foreach ($roles as $role)
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="selectedRoles"
-                                                    value="{{ $role->id }}" id="role-{{ $role->id }}">
-                                                <label class="form-check-label" for="role-{{ $role->id }}">
-                                                    {{ ucfirst($role->name) }}
-                                                </label>
-                                            </div>
-                                        </div>
+                                        <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
                                     @endforeach
-                                </div>
+                                </select>
+                                @error('selectedRole') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             {{-- Additional Information --}}

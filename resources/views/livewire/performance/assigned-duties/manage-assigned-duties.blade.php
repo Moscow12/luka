@@ -5,10 +5,24 @@
         ['label' => 'Performance Management', 'url' => '#'],
         ['label' => 'Assigned Duties', 'url' => route('performance.assigned.duties')],
     ]">
-        <button class='btn btn-primary d-md-flex align-items-center gap-2' data-bs-toggle="modal" data-bs-target="#createDutyModal">
+        <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createDuty">
             <i class="fa-solid fa-plus"></i> ASSIGN NEW DUTY
         </button>
     </x-pages.breadcrumn>
+
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-xmark me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
     <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
@@ -92,7 +106,7 @@
                                 </span>
                                 <input type="search" wire:model.live.debounce.300ms="search" class="form-control"
                                     placeholder="Search duties by name or employee..." />
-                                @if ($search ?? false)
+                                @if ($search)
                                     <button wire:click="$set('search', '')" class="btn btn-outline-secondary"
                                         type="button">
                                         <i class="fa-solid fa-times"></i>
@@ -118,20 +132,20 @@
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
                                     <option value="high">High</option>
-                                    <option value="critical">Critical</option>
+                                    <option value="urgent">Urgent</option>
                                 </select>
 
                                 <!-- Status Filter -->
                                 <select wire:model.live="statusFilter" class="form-select" style="width: auto;">
                                     <option value="">All Status</option>
-                                    <option value="pending">Pending</option>
+                                    <option value="assigned">Assigned</option>
                                     <option value="in_progress">In Progress</option>
                                     <option value="completed">Completed</option>
-                                    <option value="overdue">Overdue</option>
+                                    <option value="cancelled">Cancelled</option>
                                 </select>
 
                                 <!-- Reset Filters -->
-                                @if ($search ?? false || $employeeFilter ?? false || $priorityFilter ?? false || $statusFilter ?? false)
+                                @if ($search || $employeeFilter || $priorityFilter || $statusFilter)
                                     <button wire:click="resetFilters" type="button" class="btn btn-outline-secondary">
                                         <i class="fa-solid fa-rotate-left me-1"></i> Reset
                                     </button>
@@ -151,22 +165,22 @@
                                 <th>Duty Name</th>
                                 <th>KPI Type</th>
                                 <th class="text-center">Target</th>
+                                <th class="text-center">Weight</th>
                                 <th class="text-center">Priority</th>
                                 <th class="text-center">Status</th>
-                                <th>Assigned Date</th>
-                                <th>Due Date</th>
-                                <th class="text-end" style="width: 150px;">Actions</th>
+                                <th>Period</th>
+                                <th class="text-end" style="width: 120px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($duties ?? [] as $index => $duty)
-                                <tr wire:key="duty-{{ $duty->id ?? $index }}">
+                                <tr wire:key="duty-{{ $duty->id }}">
                                     <td class="text-center text-muted">
-                                        {{ ($duties->firstItem() ?? 0) + $index }}
+                                        {{ $duties->firstItem() + $index }}
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
-                                            @if (!empty($duty->employee->photo))
+                                            @if ($duty->employee && $duty->employee->photo)
                                                 <img src="{{ asset('storage/' . $duty->employee->photo) }}"
                                                     alt="{{ $duty->employee->first_name }}"
                                                     class="rounded-circle"
@@ -187,21 +201,32 @@
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="fw-semibold text-dark">{{ $duty->duty_name ?? 'N/A' }}</span>
-                                            @if (!empty($duty->description))
+                                            <span class="fw-semibold text-dark">{{ $duty->duty_name }}</span>
+                                            @if ($duty->description)
                                                 <small class="text-muted">{{ Str::limit($duty->description, 40) }}</small>
                                             @endif
                                         </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-info-subtle text-info">
-                                            {{ ucfirst($duty->kpi_type ?? 'N/A') }}
+                                            {{ ucfirst($duty->kpi_type) }}
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="fw-semibold">{{ $duty->target ?? '-' }}</span>
-                                        @if (!empty($duty->unit))
-                                            <small class="text-muted d-block">{{ $duty->unit }}</small>
+                                        @if ($duty->target_value)
+                                            <span class="fw-semibold">{{ number_format($duty->target_value, 2) }}</span>
+                                            @if ($duty->target_unit)
+                                                <small class="text-muted d-block">{{ $duty->target_unit }}</small>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if ($duty->weight)
+                                            <span class="fw-semibold">{{ number_format($duty->weight, 2) }}%</span>
+                                        @else
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
@@ -210,54 +235,64 @@
                                                 'low' => 'secondary',
                                                 'medium' => 'info',
                                                 'high' => 'warning',
-                                                'critical' => 'danger',
+                                                'urgent' => 'danger',
                                             ];
-                                            $priorityColor = $priorityColors[$duty->priority ?? 'medium'] ?? 'secondary';
+                                            $priorityColor = $priorityColors[$duty->priority] ?? 'secondary';
                                             $priorityIcons = [
                                                 'low' => 'fa-arrow-down',
                                                 'medium' => 'fa-minus',
                                                 'high' => 'fa-arrow-up',
-                                                'critical' => 'fa-exclamation-triangle',
+                                                'urgent' => 'fa-exclamation-triangle',
                                             ];
-                                            $priorityIcon = $priorityIcons[$duty->priority ?? 'medium'] ?? 'fa-minus';
+                                            $priorityIcon = $priorityIcons[$duty->priority] ?? 'fa-minus';
                                         @endphp
                                         <span class="badge bg-{{ $priorityColor }}">
                                             <i class="fa-solid {{ $priorityIcon }} me-1"></i>
-                                            {{ ucfirst($duty->priority ?? 'Medium') }}
+                                            {{ ucfirst($duty->priority) }}
                                         </span>
                                     </td>
                                     <td class="text-center">
                                         @php
                                             $statusColors = [
-                                                'pending' => 'secondary',
+                                                'assigned' => 'secondary',
                                                 'in_progress' => 'primary',
                                                 'completed' => 'success',
-                                                'overdue' => 'danger',
+                                                'cancelled' => 'danger',
                                             ];
-                                            $statusColor = $statusColors[$duty->status ?? 'pending'] ?? 'secondary';
+                                            $statusColor = $statusColors[$duty->status] ?? 'secondary';
                                         @endphp
-                                        <span class="badge bg-{{ $statusColor }}">
-                                            <i class="fa-solid fa-circle me-1" style="font-size: 6px;"></i>
-                                            {{ ucfirst(str_replace('_', ' ', $duty->status ?? 'Pending')) }}
-                                        </span>
+                                        <div class="dropdown">
+                                            <button class="badge bg-{{ $statusColor }} border-0 dropdown-toggle"
+                                                type="button" data-bs-toggle="dropdown" style="cursor: pointer;">
+                                                {{ ucfirst(str_replace('_', ' ', $duty->status)) }}
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" wire:click.prevent="updateStatus('{{ $duty->id }}', 'assigned')">
+                                                    <i class="fa-solid fa-circle text-secondary me-2" style="font-size: 8px;"></i> Assigned
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" wire:click.prevent="updateStatus('{{ $duty->id }}', 'in_progress')">
+                                                    <i class="fa-solid fa-circle text-primary me-2" style="font-size: 8px;"></i> In Progress
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" wire:click.prevent="updateStatus('{{ $duty->id }}', 'completed')">
+                                                    <i class="fa-solid fa-circle text-success me-2" style="font-size: 8px;"></i> Completed
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" wire:click.prevent="updateStatus('{{ $duty->id }}', 'cancelled')">
+                                                    <i class="fa-solid fa-circle text-danger me-2" style="font-size: 8px;"></i> Cancelled
+                                                </a></li>
+                                            </ul>
+                                        </div>
                                     </td>
                                     <td>
-                                        <small class="text-muted">
-                                            <i class="fa-solid fa-calendar me-1"></i>
-                                            {{ $duty->assigned_date ? \Carbon\Carbon::parse($duty->assigned_date)->format('d M Y') : '-' }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        @if (!empty($duty->due_date))
-                                            @php
-                                                $dueDate = \Carbon\Carbon::parse($duty->due_date);
-                                                $isOverdue = $dueDate->isPast() && $duty->status !== 'completed';
-                                            @endphp
-                                            <small class="{{ $isOverdue ? 'text-danger fw-semibold' : 'text-muted' }}">
-                                                <i class="fa-solid fa-clock me-1"></i>
-                                                {{ $dueDate->format('d M Y') }}
-                                                @if ($isOverdue)
-                                                    <br><span class="badge bg-danger-subtle text-danger mt-1">Overdue</span>
+                                        @if ($duty->start_date || $duty->end_date)
+                                            <small class="text-muted">
+                                                @if ($duty->start_date)
+                                                    {{ $duty->start_date->format('d M Y') }}
+                                                @endif
+                                                @if ($duty->start_date && $duty->end_date)
+                                                    -
+                                                @endif
+                                                @if ($duty->end_date)
+                                                    {{ $duty->end_date->format('d M Y') }}
                                                 @endif
                                             </small>
                                         @else
@@ -266,23 +301,19 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
-                                            <button wire:click="viewDuty('{{ $duty->id ?? '' }}')"
-                                                class="btn btn-sm btn-ghost-info rounded-circle"
-                                                title="View Details">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </button>
-                                            <button wire:click="editDuty('{{ $duty->id ?? '' }}')"
+                                            <button wire:click="editDuty('{{ $duty->id }}')"
                                                 class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                 title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                            <button wire:click="deleteDuty('{{ $duty->id ?? '' }}')"
-                                                type="button"
-                                                class="btn btn-sm btn-ghost-danger rounded-circle"
-                                                title="Delete"
-                                                onclick="confirm('Are you sure you want to delete this duty?') || event.stopImmediatePropagation()">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
+                                            @if ($duty->status !== 'completed')
+                                                <button wire:click="deleteDuty('{{ $duty->id }}')"
+                                                    wire:confirm="Are you sure you want to delete this duty?"
+                                                    class="btn btn-sm btn-ghost-danger rounded-circle"
+                                                    title="Delete">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -294,14 +325,14 @@
                                                 style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Assigned Duties Found</h5>
                                             <p class="text-muted">
-                                                @if ($search ?? false || $employeeFilter ?? false || $priorityFilter ?? false || $statusFilter ?? false)
+                                                @if ($search || $employeeFilter || $priorityFilter || $statusFilter)
                                                     Try adjusting your filters or search query
                                                 @else
                                                     Start by assigning duties to employees
                                                 @endif
                                             </p>
-                                            @if (!($search ?? false) && !($employeeFilter ?? false) && !($priorityFilter ?? false) && !($statusFilter ?? false))
-                                                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#createDutyModal">
+                                            @if (!$search && !$employeeFilter && !$priorityFilter && !$statusFilter)
+                                                <button class="btn btn-primary mt-2" wire:click="createDuty">
                                                     <i class="fa-solid fa-plus me-1"></i> Assign New Duty
                                                 </button>
                                             @endif
@@ -318,9 +349,9 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                         <!-- Results Info -->
                         <div class="text-muted">
-                            @if (($duties->total() ?? 0) > 0)
-                                Showing {{ $duties->firstItem() ?? 0 }} to {{ $duties->lastItem() ?? 0 }} of
-                                {{ $duties->total() ?? 0 }} assigned duties
+                            @if ($duties->total() > 0)
+                                Showing {{ $duties->firstItem() }} to {{ $duties->lastItem() }} of
+                                {{ $duties->total() }} assigned duties
                             @else
                                 No assigned duties found
                             @endif
@@ -341,11 +372,9 @@
                             </div>
 
                             <!-- Pagination Links -->
-                            @if (isset($duties) && method_exists($duties, 'links'))
-                                <div>
-                                    {{ $duties->links() }}
-                                </div>
-                            @endif
+                            <div>
+                                {{ $duties->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -354,151 +383,161 @@
     </div>
 
     <!-- Create/Edit Duty Modal -->
-    <x-forms.modal id="createDutyModal" title="{{ $editingDutyId ?? false ? 'Edit Assigned Duty' : 'Assign New Duty' }}" size="modal-lg" :centered="true">
-        <form wire:submit.prevent="saveDuty">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="dutyEmployee" class="form-label">Employee <span class="text-danger">*</span></label>
-                    <select wire:model="dutyForm.employee_id" class="form-select @error('dutyForm.employee_id') is-invalid @enderror" id="dutyEmployee">
-                        <option value="">Select Employee</option>
-                        @foreach ($employees ?? [] as $emp)
-                            <option value="{{ $emp->id }}">{{ $emp->first_name }} {{ $emp->last_name }} ({{ $emp->employee_no }})</option>
-                        @endforeach
-                    </select>
-                    @error('dutyForm.employee_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+    @if ($showModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fa-solid fa-tasks me-2"></i>
+                            {{ $modalMode === 'edit' ? 'Edit Assigned Duty' : 'Assign New Duty' }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                    </div>
+                    <form wire:submit.prevent="saveDuty">
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="dutyEmployee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select wire:model="dutyForm.employee_id" class="form-select @error('dutyForm.employee_id') is-invalid @enderror" id="dutyEmployee">
+                                        <option value="">Select Employee</option>
+                                        @foreach ($employees ?? [] as $emp)
+                                            <option value="{{ $emp->id }}">{{ $emp->first_name }} {{ $emp->last_name }} ({{ $emp->employee_no ?? 'N/A' }})</option>
+                                        @endforeach
+                                    </select>
+                                    @error('dutyForm.employee_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-6">
-                    <label for="kpiType" class="form-label">KPI Type <span class="text-danger">*</span></label>
-                    <select wire:model="dutyForm.kpi_type" class="form-select @error('dutyForm.kpi_type') is-invalid @enderror" id="kpiType">
-                        <option value="">Select KPI Type</option>
-                        <option value="quantitative">Quantitative</option>
-                        <option value="qualitative">Qualitative</option>
-                        <option value="behavioral">Behavioral</option>
-                        <option value="project">Project-based</option>
-                    </select>
-                    @error('dutyForm.kpi_type')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="kpiType" class="form-label">KPI Type <span class="text-danger">*</span></label>
+                                    <select wire:model="dutyForm.kpi_type" class="form-select @error('dutyForm.kpi_type') is-invalid @enderror" id="kpiType">
+                                        <option value="quantitative">Quantitative</option>
+                                        <option value="qualitative">Qualitative</option>
+                                    </select>
+                                    @error('dutyForm.kpi_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-12">
-                    <label for="dutyName" class="form-label">Duty Name <span class="text-danger">*</span></label>
-                    <input type="text" wire:model="dutyForm.duty_name" class="form-control @error('dutyForm.duty_name') is-invalid @enderror" id="dutyName" placeholder="Enter duty name">
-                    @error('dutyForm.duty_name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-12">
+                                    <label for="dutyName" class="form-label">Duty Name <span class="text-danger">*</span></label>
+                                    <input type="text" wire:model="dutyForm.duty_name" class="form-control @error('dutyForm.duty_name') is-invalid @enderror" id="dutyName" placeholder="Enter duty name">
+                                    @error('dutyForm.duty_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-12">
-                    <label for="dutyDescription" class="form-label">Description</label>
-                    <textarea wire:model="dutyForm.description" class="form-control @error('dutyForm.description') is-invalid @enderror" id="dutyDescription" rows="3" placeholder="Enter detailed description of the duty"></textarea>
-                    @error('dutyForm.description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-12">
+                                    <label for="dutyDescription" class="form-label">Description</label>
+                                    <textarea wire:model="dutyForm.description" class="form-control @error('dutyForm.description') is-invalid @enderror" id="dutyDescription" rows="2" placeholder="Enter detailed description of the duty"></textarea>
+                                    @error('dutyForm.description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-4">
-                    <label for="target" class="form-label">Target <span class="text-danger">*</span></label>
-                    <input type="text" wire:model="dutyForm.target" class="form-control @error('dutyForm.target') is-invalid @enderror" id="target" placeholder="Enter target value">
-                    @error('dutyForm.target')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="measurementType" class="form-label">Measurement Type <span class="text-danger">*</span></label>
+                                    <select wire:model="dutyForm.measurement_type" class="form-select @error('dutyForm.measurement_type') is-invalid @enderror" id="measurementType">
+                                        <option value="numeric">Numeric</option>
+                                        <option value="boolean">Boolean (Yes/No)</option>
+                                        <option value="percentage">Percentage</option>
+                                        <option value="rating_scale">Rating Scale</option>
+                                    </select>
+                                    @error('dutyForm.measurement_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-4">
-                    <label for="unit" class="form-label">Unit</label>
-                    <input type="text" wire:model="dutyForm.unit" class="form-control @error('dutyForm.unit') is-invalid @enderror" id="unit" placeholder="e.g., %, units, items">
-                    @error('dutyForm.unit')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="weight" class="form-label">Weight (%)</label>
+                                    <input type="number" wire:model="dutyForm.weight" class="form-control @error('dutyForm.weight') is-invalid @enderror" id="weight" placeholder="0" min="0" max="100" step="0.01">
+                                    @error('dutyForm.weight')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-4">
-                    <label for="weight" class="form-label">Weight (%)</label>
-                    <input type="number" wire:model="dutyForm.weight" class="form-control @error('dutyForm.weight') is-invalid @enderror" id="weight" placeholder="0" min="0" max="100" step="0.1">
-                    @error('dutyForm.weight')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="targetValue" class="form-label">Target Value</label>
+                                    <input type="number" wire:model="dutyForm.target_value" class="form-control @error('dutyForm.target_value') is-invalid @enderror" id="targetValue" placeholder="Enter target value" step="0.01">
+                                    @error('dutyForm.target_value')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-4">
-                    <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
-                    <select wire:model="dutyForm.priority" class="form-select @error('dutyForm.priority') is-invalid @enderror" id="priority">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="critical">Critical</option>
-                    </select>
-                    @error('dutyForm.priority')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="targetUnit" class="form-label">Target Unit</label>
+                                    <input type="text" wire:model="dutyForm.target_unit" class="form-control @error('dutyForm.target_unit') is-invalid @enderror" id="targetUnit" placeholder="e.g., %, count, TZS">
+                                    @error('dutyForm.target_unit')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-4">
-                    <label for="dutyStatus" class="form-label">Status <span class="text-danger">*</span></label>
-                    <select wire:model="dutyForm.status" class="form-select @error('dutyForm.status') is-invalid @enderror" id="dutyStatus">
-                        <option value="pending">Pending</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="overdue">Overdue</option>
-                    </select>
-                    @error('dutyForm.status')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                                    <select wire:model="dutyForm.priority" class="form-select @error('dutyForm.priority') is-invalid @enderror" id="priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                    @error('dutyForm.priority')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-4">
-                    <label for="assignedDate" class="form-label">Assigned Date <span class="text-danger">*</span></label>
-                    <input type="date" wire:model="dutyForm.assigned_date" class="form-control @error('dutyForm.assigned_date') is-invalid @enderror" id="assignedDate">
-                    @error('dutyForm.assigned_date')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="dutyStatus" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select wire:model="dutyForm.status" class="form-select @error('dutyForm.status') is-invalid @enderror" id="dutyStatus">
+                                        <option value="assigned">Assigned</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                    @error('dutyForm.status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-6">
-                    <label for="dueDate" class="form-label">Due Date</label>
-                    <input type="date" wire:model="dutyForm.due_date" class="form-control @error('dutyForm.due_date') is-invalid @enderror" id="dueDate">
-                    @error('dutyForm.due_date')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="startDate" class="form-label">Start Date</label>
+                                    <input type="date" wire:model="dutyForm.start_date" class="form-control @error('dutyForm.start_date') is-invalid @enderror" id="startDate">
+                                    @error('dutyForm.start_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-md-6">
-                    <label for="reviewPeriod" class="form-label">Review Period</label>
-                    <select wire:model="dutyForm.review_period" class="form-select @error('dutyForm.review_period') is-invalid @enderror" id="reviewPeriod">
-                        <option value="">Select Review Period</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="quarterly">Quarterly</option>
-                        <option value="annually">Annually</option>
-                    </select>
-                    @error('dutyForm.review_period')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                                <div class="col-md-6">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <input type="date" wire:model="dutyForm.end_date" class="form-control @error('dutyForm.end_date') is-invalid @enderror" id="endDate">
+                                    @error('dutyForm.end_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                <div class="col-12">
-                    <label for="remarks" class="form-label">Remarks/Notes</label>
-                    <textarea wire:model="dutyForm.remarks" class="form-control @error('dutyForm.remarks') is-invalid @enderror" id="remarks" rows="2" placeholder="Any additional notes or remarks"></textarea>
-                    @error('dutyForm.remarks')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                                <div class="col-12">
+                                    <label for="scoringCriteria" class="form-label">Scoring Criteria</label>
+                                    <textarea wire:model="dutyForm.scoring_criteria" class="form-control @error('dutyForm.scoring_criteria') is-invalid @enderror" id="scoringCriteria" rows="2" placeholder="Describe how this duty will be scored/evaluated"></textarea>
+                                    @error('dutyForm.scoring_criteria')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                                <i class="fa-solid fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-save me-1"></i> {{ $modalMode === 'edit' ? 'Update Duty' : 'Save Duty' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <x-slot name="footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fa-solid fa-times me-1"></i> Cancel
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-save me-1"></i> Save Duty
-                </button>
-            </x-slot>
-        </form>
-    </x-forms.modal>
+        </div>
+    @endif
 
     <!-- Loading Indicator -->
     <div wire:loading class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">

@@ -60,8 +60,8 @@
                                 <td>{{ $leave->days }}</td>
                                 <td>{{ $leave->status }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $leave->id }})" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ $leave->id }})">Delete</a>
+                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $leave->id }}')" />
+                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')">Delete</a>
                                 </td>
                             </tr>
                             @endforeach
@@ -70,7 +70,7 @@
                 </div>
             </x-pages.card>
         </div>
-        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Leave' : 'Request Leave' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal">
+        <x-pages.model :title="$modalMode === 'edit' ? 'Edit Leave' : 'Request Leave'" formaction="save" :modalMode="$modalMode" :showModal="$showModal">
             <x-forms.input type="select" name="leave_id" label="Leave" :options="$leaveslist->pluck('name', 'id')" required />
             <x-forms.input type="date" name="start_date" label="Start Date" required  min="{{ now()->toDateString() }}" wire:model="start_date" />
             <x-forms.input type="number" name="days" label="Days" required  wire:model.live="days"         wire:input="calculateEndDate" />

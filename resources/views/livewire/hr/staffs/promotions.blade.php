@@ -62,7 +62,7 @@
                                     </a>
                             </td>
                             <td>
-                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $promotion->id }})" />
+                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $promotion->id }}')" />
                                 <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $promotion->id }}')">Delete</a>
                             </td>
                         </tr>
@@ -75,7 +75,7 @@
                 </table>
             </div>
         </x-pages.card>   
-        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Promotion' : 'Add Promotion' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal">
+        <x-pages.model :title="$modalMode === 'edit' ? 'Edit Promotion' : 'Add Promotion'" formaction="save" :modalMode="$modalMode" :showModal="$showModal">
             <x-forms.input type="select" name="title_id" label="Title" :options="$titles->pluck('name', 'id')" required />
             <x-forms.input type="select" name="workstation_id" label="Workstation" :options="$workstations->pluck('workstation_name', 'id')" required />
             <x-forms.input type="select" name="department_id" label="Department" :options="$departments->pluck('name', 'id')" required />

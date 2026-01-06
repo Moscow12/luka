@@ -66,7 +66,7 @@
                                 <td>{{ $dependant->address }}</td>
                                 <td>{{ $dependant->is_next_of_kin }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ $dependant->id }})" />
+                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $dependant->id }}')" />
                                     <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $dependant->id }}')">Delete</a>
                                 </td>
                             </tr>
@@ -76,9 +76,18 @@
                 </div>
             </x-pages.card>
         </div>
-        <x-pages.model :title=" $modalMode === 'edit' ? 'Edit Dependant' : 'Add Dependant' " :formaction=" $modalMode ==='edit' ? 'update' : 'save' " :modalMode="$modalMode" :showModal="$showModal">
+        <x-pages.model :title="$modalMode === 'edit' ? 'Edit Dependant' : 'Add Dependant'" formaction="save" :modalMode="$modalMode" :showModal="$showModal">
             <x-forms.input type="text" name="name" label="Name" required />
-            <x-forms.input type="select" name="relationship" label="Relationship" :options="['Father', 'Mother', 'Brother', 'Sister', 'Son', 'Daughter', 'Other']" :value="['Father', 'Mother', 'Brother', 'Sister', 'Son', 'Daughter', 'Other']" required />
+            <x-forms.input type="select" name="relationship" label="Relationship" :options="[
+    'Father' => 'Father',
+    'Mother' => 'Mother',
+    'Brother' => 'Brother',
+    'Sister' => 'Sister',
+    'Son' => 'Son',
+    'Daughter' => 'Daughter',
+    'Spouse' => 'Spouse',
+    'Other' => 'Other'
+]" required />
             <x-forms.input type="date" name="dob" label="Date of Birth" required />
             <x-forms.input type="text" name="phone" label="Phone" required />
             <x-forms.input type="text" name="dependantsemail" label="Email" required />
