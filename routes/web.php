@@ -15,6 +15,11 @@ use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Leavemanagement;
 use App\Livewire\Hr\Leave\Requestleave;
+use App\Livewire\Hr\Loan\Loanapproval;
+use App\Livewire\Hr\Loan\Loanbalance;
+use App\Livewire\Hr\Loan\Loanitems;
+use App\Livewire\Hr\Loan\Loanpayments;
+use App\Livewire\Hr\Loan\Requestloan;
 use App\Livewire\Hr\Roster\Generateroster;
 use App\Livewire\Hr\Roster\Viewroster;
 use App\Livewire\Hr\Staffs\Attendance;
@@ -30,6 +35,7 @@ use App\Livewire\Hr\Staffs\Qualifications;
 use App\Livewire\Hr\Staffs\Salary;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
+use App\Models\loanrequests;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', App\Livewire\LandingPage::class)->name('dashboard')->middleware('auth');
@@ -105,6 +111,13 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     // employee roster routes
     Route::get('/roster/viewroster', Viewroster::class)->name('viewroster.index');
     Route::get('/roster/generateroster', Generateroster::class)->name('roster.create');
+
+    // employee loan requests
+    Route::get('/loan/requestloan', Requestloan::class)->name('loan.requestloan');
+    Route::get('/loan/items', Loanitems::class)->name('loan.items');
+    Route::get('/loan/loanbalance', Loanbalance::class)->name('loan.loanbalance');
+    Route::get('/loan/loanapproval', Loanapproval::class)->name('loan.loanapproval');
+    Route::get('/loan/loanpayments', Loanpayments::class)->name('loan.loanpayments');
 });
 
 Route::prefix('contracts')->middleware('auth')->group(function () {

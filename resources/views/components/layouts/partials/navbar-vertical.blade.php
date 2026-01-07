@@ -5,6 +5,7 @@
     // Define route groups for active state detection
     $rosterRoutes = ['viewroster.index', 'roster.create', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
+    $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
     $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis', 'performance.*'];
@@ -78,6 +79,35 @@
     </li>
     @endif
 
+     <!-- Loan -->
+    @if($isSuperAdmin || $user?->canAny(['view-loan', 'request-loan', 'approve-loan']))
+    <li class="nav-item dropdown {{ request()->routeIs($loanRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($loanRoutes) ? 'active' : '' }}" href="{{ route('loan.loanbalance') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($loanRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-money-bill"></i>
+            </span>
+            <span class="text">Loan</span>
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($loanRoutes) ? 'show' : '' }}">
+            @if($isSuperAdmin || $user?->can('view-loan'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('loan.loanbalance') ? 'active' : '' }}" href="{{ route('loan.loanbalance') }}"><i class="fa-solid fa-wallet"></i> My Loan Balance</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user?->can('request-loan'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('loan.requestloan') ? 'active' : '' }}" href="{{ route('loan.requestloan') }}"><i class="fa-solid fa-hand-holding-dollar"></i> Request Loan</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user?->can('approve-loan'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('loan.loanapproval') ? 'active' : '' }}" href="{{ route('loan.loanapproval') }}"><i class="fa-solid fa-check-double"></i> Loan Approval</a>
+            </li>
+            @endif
+        </ul>
+    </li>
+    @endif
+
     <!-- Human Resources Section Header -->
     @if($isSuperAdmin || $user?->canAny(['view-staff', 'manage-staff', 'view-attendance', 'manage-leave', 'view-payroll', 'manage-payroll', 'view-performance']))
     <li class="nav-item">
@@ -120,6 +150,17 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('fp.devices') ? 'active' : '' }}" href="{{ route('fp.devices') }}"><i class="fa-solid fa-desktop"></i> Manage FP Devices</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user?->canAny(['view-loan', 'manage-loan']))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('loan.items') ? 'active' : '' }}" href="{{ route('loan.items') }}"><i class="fa-solid fa-list-ul"></i> Loan Types</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('loan.loanapproval') ? 'active' : '' }}" href="{{ route('loan.loanapproval') }}"><i class="fa-solid fa-check-double"></i> Loan Approval</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('loan.loanpayments') ? 'active' : '' }}" href="{{ route('loan.loanpayments') }}"><i class="fa-solid fa-money-bill-transfer"></i> Loan Payments</a>
             </li>
             @endif
         </ul>

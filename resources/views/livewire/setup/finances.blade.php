@@ -41,6 +41,13 @@
                         Financial Years
                     </a>
                 </li>
+                <!-- loan items -->
+                 <li class="nav-item">
+                    <a class="nav-link py-2" id="loan-items-tab" data-bs-toggle="pill" href="#loan-items" role="tab" aria-controls="loan-items" aria-selected="true">
+                        <i class="fa-solid fa-money-bill"></i>
+                        Loan Items
+                    </a>
+                </li>
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -54,7 +61,9 @@
                 <div class="tab-pane" id="financial-years" role="tabpanel" aria-labelledby="financial-years-tab">
                     <livewire:setup.finance.financial-years />
                 </div>
-                
+                <div class="tab-pane" id="loan-items" role="tabpanel" aria-labelledby="loan-items-tab">
+                    <livewire:hr.loan.loanitems />
+                </div>
             </div>
         </div>
     </div>
