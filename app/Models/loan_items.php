@@ -4,8 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Testing\Fluent\Concerns\Has;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class loan_items extends Model
 {
@@ -23,8 +22,8 @@ class loan_items extends Model
         'workstation_id',
     ];
 
-    public function workstation(): HasOne
+    public function workstation(): BelongsTo
     {
-        return $this->hasOne(workstations::class, 'id', 'workstation_id');
+        return $this->belongsTo(workstations::class, 'id', 'workstation_id');
     }
 }
