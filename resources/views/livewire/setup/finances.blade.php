@@ -48,6 +48,14 @@
                         Loan Items
                     </a>
                 </li>
+                <!-- PAYE Tax -->
+                 <li class="nav-item">
+                    <a class="nav-link py-2" id="payees-tab" data-bs-toggle="pill" href="#payees" role="tab" aria-controls="payees" aria-selected="true">
+                        <i class="fa-solid fa-percent"></i>
+                        PAYE Tax
+                    </a>
+                </li>
+                <!-- PAYE Tax -->
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -64,6 +72,11 @@
                 <div class="tab-pane" id="loan-items" role="tabpanel" aria-labelledby="loan-items-tab">
                     <livewire:hr.loan.loanitems />
                 </div>
+                <!-- PAYE Tax -->
+                <div class="tab-pane" id="payees" role="tabpanel" aria-labelledby="payees-tab">
+                    <livewire:setup.finance.payee />
+                </div>
+                <!-- PAYE Tax -->
             </div>
         </div>
     </div>
