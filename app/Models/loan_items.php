@@ -24,6 +24,6 @@ class loan_items extends Model
 
     public function workstation(): BelongsTo
     {
-        return $this->belongsTo(workstations::class, 'id', 'workstation_id');
+        return $this->belongsTo(workstations::class, 'workstation_id', 'id');
     }
 }
