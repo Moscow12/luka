@@ -204,7 +204,7 @@ class Requestleave extends Component
             }
 
             $start = Carbon::parse($this->start_date);
-            $this->end_date = $start->copy()->addDays($this->days + 1)->toDateString();
+            $this->end_date = $start->copy()->addDays((int) $this->days)->toDateString();
         } else {
             $this->end_date = null;
         }
