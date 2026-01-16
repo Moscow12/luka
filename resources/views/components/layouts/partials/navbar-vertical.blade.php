@@ -21,7 +21,7 @@
     }
 
     // Define route groups for active state detection
-    $rosterRoutes = ['viewroster.index', 'roster.create', 'roster.*'];
+    $rosterRoutes = ['viewroster.index', 'roster.create','roster.edit', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
     $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
     $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices'];
@@ -46,7 +46,7 @@
     </li>
 
     <!-- Roster -->
-    @if($isSuperAdmin || $user?->canAny(['view-roster', 'create-roster', 'manage-roster']))
+    @if($isSuperAdmin || $user?->canAny(['view-roster', 'create-roster', 'manage-roster', 'approve-roster','edit-roster']))
     <li class="nav-item dropdown {{ request()->routeIs($rosterRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($rosterRoutes) ? 'active' : '' }}" href="{{ route('viewroster.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($rosterRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -63,6 +63,11 @@
             @if($isSuperAdmin || $user?->can('create-roster'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('roster.create') ? 'active' : '' }}" href="{{ route('roster.create') }}"><i class="fa-solid fa-calendar-days"></i> Generate Roster</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user?->can('edit-roster'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('roster.edit') ? 'active' : '' }}" href="{{ route('roster.edit') }}"><i class="fa-solid fa-calendar-days"></i> Edit Roster</a>
             </li>
             @endif
         </ul>

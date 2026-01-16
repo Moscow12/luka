@@ -20,6 +20,7 @@ use App\Livewire\Hr\Loan\Loanbalance;
 use App\Livewire\Hr\Loan\Loanitems;
 use App\Livewire\Hr\Loan\Loanpayments;
 use App\Livewire\Hr\Loan\Requestloan;
+use App\Livewire\Hr\Roster\Editroster;
 use App\Livewire\Hr\Roster\Generateroster;
 use App\Livewire\Hr\Roster\Viewroster;
 use App\Livewire\Hr\Staffs\Attendance;
@@ -117,6 +118,7 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     // employee roster routes
     Route::get('/roster/viewroster', Viewroster::class)->name('viewroster.index');
     Route::get('/roster/generateroster', Generateroster::class)->name('roster.create');
+    Route::get('/roster/editroster', Editroster::class)->name('roster.edit');
 
     // employee loan requests
     Route::get('/loan/requestloan', Requestloan::class)->name('loan.requestloan');
