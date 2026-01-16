@@ -242,25 +242,25 @@ class Payrollgeneration extends Component
             return $item->calculateAmount($basicSalary);
         });
 
-        // Calculate gross salary (basic + allowances)
-        $grossSalary = $basicSalary + $totalAllowances;
-
-        // Calculate Mafao deductions (deduction_type = 'mafao') to determine taxable income
-        // Formula: TaxableAmount = GrossSalary - (MafaoDeductionValue% * GrossSalary / 100)
+        // Calculate Mafao deductions (deduction_type = 'mafao') on basic salary
+        // Formula: TaxableAmount = BasicSalary - (MafaoDeductionValue% * BasicSalary / 100)
         $mafaoDeductions = $contractDeductions->filter(function ($item) {
             return $item->deduction && $item->deduction->deduction_type === 'mafao';
         });
 
-        $totalMafaoDeduction = $mafaoDeductions->sum(function ($item) use ($grossSalary) {
-            return $item->calculateAmount($grossSalary, $grossSalary);
+        $totalMafaoDeduction = $mafaoDeductions->sum(function ($item) use ($basicSalary) {
+            return $item->calculateAmount($basicSalary, $basicSalary);
         });
 
-        // Calculate taxable salary (Gross Salary minus Mafao deductions)
-        $taxableSalary = $grossSalary - $totalMafaoDeduction;
+        // Calculate taxable salary (Basic Salary minus Mafao deductions) - PAYE is on salary only, not allowances
+        $taxableSalary = $basicSalary - $totalMafaoDeduction;
 
-        // Calculate PAYE based on taxable salary (after Mafao deductions)
+        // Calculate PAYE based on taxable salary (basic salary after Mafao deductions)
         $payeCalculation = calculate_paye($taxableSalary);
         $paye = $payeCalculation['tax_amount'];
+
+        // Calculate gross salary (basic + allowances) - for net salary calculation
+        $grossSalary = $basicSalary + $totalAllowances;
 
         // Calculate other deductions (non-Mafao) using the new method that handles percentage vs fixed
         $nonMafaoDeductions = $contractDeductions->filter(function ($item) {
@@ -315,9 +315,9 @@ class Payrollgeneration extends Component
             'added_by' => Auth::user()->id,
         ]);
 
-        // Create payroll items for Mafao deductions (pension/social security contributions)
+        // Create payroll items for Mafao deductions (pension/social security contributions) - based on basic salary
         foreach ($mafaoDeductions as $deduction) {
-            $calculatedAmount = $deduction->calculateAmount($grossSalary, $grossSalary);
+            $calculatedAmount = $deduction->calculateAmount($basicSalary, $basicSalary);
             payroll_items::create([
                 'payroll_id' => $payroll->id,
                 'contract_deduction_id' => $deduction->id,
