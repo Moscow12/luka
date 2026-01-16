@@ -74,7 +74,7 @@
             <x-forms.input type="select" name="leave_id" label="Leave" :options="$leaveslist->pluck('name', 'id')" required />
             <x-forms.input type="date" name="start_date" label="Start Date" required  min="{{ now()->toDateString() }}" wire:model="start_date" />
             <x-forms.input type="number" name="days" label="Days" required  wire:model.live="days"         wire:input="calculateEndDate" />
-            <x-forms.input type="text" name="end_date" label="End Date /Reporting Date" wire:model="end_date" disabled required  error="$error" />            
+            <x-forms.input type="text" name="end_date" label="Reporting Date" wire:model="end_date" disabled required  error="$error" />            
             <x-forms.input type="text" name="travel_to" label="Travel To" required />
             <x-forms.input type="text" name="othercontact" label="Other Contact" required />
             <x-forms.input type="textarea" name="comments" label="Comments" rows="2" required />
