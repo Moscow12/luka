@@ -35,6 +35,7 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th>Type</th>
+                                    <th>Deduction Type</th>
                                     <th>Value</th>
                                     <th>Applies To</th>
                                     <th>Status</th>
@@ -53,6 +54,23 @@
                                     <td>
                                         <span class="badge {{ $deduction->type === 'fixed' ? 'bg-primary' : 'bg-info' }}">
                                             {{ ucfirst($deduction->type) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @php
+                                            $deductionTypeClass = match($deduction->deduction_type) {
+                                                'mafao' => 'bg-success-subtle text-success',
+                                                'other_benefits' => 'bg-warning-subtle text-warning',
+                                                default => 'bg-secondary-subtle text-secondary'
+                                            };
+                                            $deductionTypeLabel = match($deduction->deduction_type) {
+                                                'mafao' => 'Mafao',
+                                                'other_benefits' => 'Other Benefits',
+                                                default => 'Non'
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $deductionTypeClass }}">
+                                            {{ $deductionTypeLabel }}
                                         </span>
                                     </td>
                                     <td>{{ number_format($deduction->deduction_value, 2) }}{{ $deduction->type === 'percentage' ? '%' : '' }}</td>
@@ -98,6 +116,7 @@
                    :title="$modalMode === 'edit' ? 'Edit Deduction' : 'Add Deduction'">
         <x-forms.input type="text" name="name" label="Name" placeholder="Enter Deduction Name" required />
         <x-forms.input type="select" name="type" label="Type" :options="['fixed' => 'Fixed', 'percentage' => 'Percentage']" required />
+        <x-forms.input type="select" name="deduction_type" label="Deduction Type" :options="['mafao' => 'Mafao', 'other_benefits' => 'Other Benefits', 'non' => 'Non']" required />
         <x-forms.input type="number" name="deduction_value" label="Value" placeholder="Enter Value" step="0.01" required />
         <x-forms.input type="text" name="applies_to" label="Applies To" placeholder="e.g., All Employees, Management" required />
         <x-forms.input type="textarea" name="description" label="Description" placeholder="Enter Description" rows="2" />

@@ -11,7 +11,7 @@ class Deductions extends Component
     public $search = '';
     public $modalMode = 'create';
     public $showModal = false;
-    public $deduction_id, $name, $type = 'fixed', $deduction_value, $applies_to, $is_active = true, $description;
+    public $deduction_id, $name, $type = 'fixed', $deduction_type = 'non', $deduction_value, $applies_to, $is_active = true, $description;
 
     public function openModal($mode = 'create', $id = null)
     {
@@ -25,13 +25,15 @@ class Deductions extends Component
             $this->deduction_id = $id;
             $this->name = $deduction->name;
             $this->type = $deduction->type;
+            $this->deduction_type = $deduction->deduction_type;
             $this->deduction_value = $deduction->deduction_value;
             $this->applies_to = $deduction->applies_to;
             $this->is_active = $deduction->is_active;
             $this->description = $deduction->description;
         } else {
-            $this->reset(['deduction_id', 'name', 'type', 'deduction_value', 'applies_to', 'is_active', 'description']);
+            $this->reset(['deduction_id', 'name', 'type', 'deduction_type', 'deduction_value', 'applies_to', 'is_active', 'description']);
             $this->type = 'fixed';
+            $this->deduction_type = 'non';
             $this->is_active = true;
         }
     }
@@ -41,6 +43,7 @@ class Deductions extends Component
         $this->validate([
             'name' => ['required', 'string', 'max:255', $this->modalMode === 'create' ? 'unique:deductions,name' : 'unique:deductions,name,' . $this->deduction_id],
             'type' => ['required', 'in:fixed,percentage'],
+            'deduction_type' => ['required', 'in:mafao,other_benefits,non'],
             'deduction_value' => ['required', 'numeric', 'min:0'],
             'applies_to' => ['required', 'string', 'max:255'],
             'is_active' => ['boolean'],
@@ -52,6 +55,7 @@ class Deductions extends Component
             $deduction->update([
                 'name' => $this->name,
                 'type' => $this->type,
+                'deduction_type' => $this->deduction_type,
                 'deduction_value' => $this->deduction_value,
                 'applies_to' => $this->applies_to,
                 'is_active' => $this->is_active,
@@ -62,6 +66,7 @@ class Deductions extends Component
             Deduction::create([
                 'name' => $this->name,
                 'type' => $this->type,
+                'deduction_type' => $this->deduction_type,
                 'deduction_value' => $this->deduction_value,
                 'applies_to' => $this->applies_to,
                 'is_active' => $this->is_active,
@@ -72,7 +77,7 @@ class Deductions extends Component
         }
 
         $this->showModal = false;
-        $this->reset(['deduction_id', 'name', 'type', 'deduction_value', 'applies_to', 'is_active', 'description']);
+        $this->reset(['deduction_id', 'name', 'type', 'deduction_type', 'deduction_value', 'applies_to', 'is_active', 'description']);
     }
 
     public function update()

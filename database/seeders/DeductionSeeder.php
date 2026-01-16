@@ -15,6 +15,7 @@ class DeductionSeeder extends Seeder
                 'type' => 'percentage',
                 'deduction_value' => 10,
                 'applies_to' => 'gross',
+                'deduction_type' => 'tax',
                 'description' => 'Pay As You Earn tax deduction (10%)',
             ],
             [
@@ -22,21 +23,24 @@ class DeductionSeeder extends Seeder
                 'type' => 'percentage',
                 'deduction_value' => 10,
                 'applies_to' => 'gross',
+                'deduction_type' => 'mafao',
                 'description' => 'National Social Security Fund contribution (10%)',
             ],
             [
                 'name' => 'NHIF Contribution',
-                'type' => 'fixed',
-                'deduction_value' => 10000,
+                'type' => 'percentage',
+                'deduction_value' => 3,
                 'applies_to' => 'gross',
+                'deduction_type' => 'non',
                 'description' => 'National Health Insurance Fund deduction',
             ],
             [
-                'name' => 'Loan Repayment',
-                'type' => 'fixed',
-                'deduction_value' => 50000,
+                'name' => 'WCF',
+                'type' => 'percentage',
+                'deduction_value' => 3,
                 'applies_to' => 'net',
-                'description' => 'Monthly loan repayment for staff loans',
+                'deduction_type' => 'non',
+                'description' => 'Monthly WCF',
             ],
         ];
 

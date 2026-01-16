@@ -10,8 +10,7 @@ class Deduction extends Model
 {
     use HasFactory, HasUuids;
     protected $table = 'deductions';
-    protected $fillable = ['name', 'type', 'deduction_value', 'applies_to', 'is_active', 'description',  'added_by',
-    ];
+    protected $fillable = ['name', 'type', 'deduction_type', 'deduction_value', 'applies_to', 'is_active', 'description', 'added_by'];
 
     public function added_by()
     {
