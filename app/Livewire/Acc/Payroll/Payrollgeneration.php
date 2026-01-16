@@ -361,7 +361,7 @@ class Payrollgeneration extends Component
                     $q->where('first_name', 'like', '%'.$this->search.'%')
                         ->orWhere('last_name', 'like', '%'.$this->search.'%')
                         ->orWhere('employee_no', 'like', '%'.$this->search.'%')
-                        ->orWhere('email_address', 'like', '%'.$this->search.'%');
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->department, fn ($query) => $query->where('department_id', $this->department))
@@ -381,16 +381,36 @@ class Payrollgeneration extends Component
 
     public function render()
     {
-        $employees = $this->getEmployeesQuery()->paginate($this->perPage);
+        try {
+            $employees = $this->getEmployeesQuery()->paginate($this->perPage);
+            $departments = departments::orderBy('name')->get();
+            $contractTypes = ['permanent', 'temporary', 'part_time'];
 
-        $departments = departments::orderBy('name')->get();
+            return view('livewire.acc.payroll.payrollgeneration', [
+                'employees' => $employees,
+                'departments' => $departments,
+                'contractTypes' => $contractTypes,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Payroll query error: ' . $e->getMessage());
+            ToastMagic::error('Unable to load employee data. Please try again or contact support.');
 
-        $contractTypes = ['permanent', 'temporary', 'part_time'];
+            $emptyPaginator = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->perPage);
+            return view('livewire.acc.payroll.payrollgeneration', [
+                'employees' => $emptyPaginator,
+                'departments' => collect(),
+                'contractTypes' => ['permanent', 'temporary', 'part_time'],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Payroll error: ' . $e->getMessage());
+            ToastMagic::error('An unexpected error occurred. Please try again.');
 
-        return view('livewire.acc.payroll.payrollgeneration', [
-            'employees' => $employees,
-            'departments' => $departments,
-            'contractTypes' => $contractTypes,
-        ]);
+            $emptyPaginator = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->perPage);
+            return view('livewire.acc.payroll.payrollgeneration', [
+                'employees' => $emptyPaginator,
+                'departments' => collect(),
+                'contractTypes' => ['permanent', 'temporary', 'part_time'],
+            ]);
+        }
     }
 }
