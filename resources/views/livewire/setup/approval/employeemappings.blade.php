@@ -5,15 +5,13 @@
     <div class="d-flex flex-column gap-6">
         <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
             <div class="d-flex flex-row gap-3 align-items-center">
-                <div>
-                    <form>
-                        <input class="form-control" type="search" wire:model.live="search" placeholder="Search" />
-                    </form>
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text bg-white">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input class="form-control" type="search" wire:model.live.debounce.300ms="search"
+                           placeholder="Search employee, approval level..." />
                 </div>
-                <a href="#!" class="text-inherit">
-                    <i class="fa-solid fa-filter"></i>
-                    <span>Filter</span>
-                </a>
             </div>
             <div>
                 <x-forms.button-model name="ADD EMPLOYEE MAPPING" />

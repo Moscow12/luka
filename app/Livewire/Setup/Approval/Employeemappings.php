@@ -7,9 +7,14 @@ use App\Models\approvalleveltoemployee;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Employeemappings extends Component
 {
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
+
     public $search = '';
     public $approval_level_employee_id;
     public $modalMode = 'create';
@@ -17,6 +22,11 @@ class Employeemappings extends Component
     public $approval_level_id, $employee_id, $is_active = true;
     public $approvallevels = [];
     public $employees = [];
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
 
     public function openModal($mode = 'create', $id = null)
     {
