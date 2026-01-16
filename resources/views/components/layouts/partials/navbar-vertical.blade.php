@@ -2,13 +2,32 @@
     $user = auth()->user();
     $isSuperAdmin = $user?->isSuperAdmin() ?? false;
 
+    // Check if user has an employee record (for My Performance section)
+    $hasEmployeeRecord = $user ? \App\Models\Employee::where('user_id', $user->id)->exists() : false;
+
+    // Check if user can approve performance evaluations
+    $canApprovePerformance = false;
+    if ($hasEmployeeRecord) {
+        $employee = \App\Models\Employee::where('user_id', $user->id)->first();
+        if ($employee) {
+            $assignedLevels = \App\Models\approvalleveltoemployee::where('employee_id', $employee->id)
+                ->where('is_active', true)
+                ->pluck('approval_level_id');
+            $canApprovePerformance = \App\Models\approvalleveltodocument::where('document_type', 'Performance')
+                ->where('is_active', true)
+                ->whereIn('approval_level_id', $assignedLevels)
+                ->exists();
+        }
+    }
+
     // Define route groups for active state detection
     $rosterRoutes = ['viewroster.index', 'roster.create', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
     $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
     $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
-    $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis', 'performance.*'];
+    $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.myduties'];
+    $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
     $contractRoutes = ['contracts.list', 'contracts.create', 'contracts.*'];
     $chopRoutes = ['chop.budget.requests', 'chop.reporting', 'chop.director.review', 'chop.activities', 'chop.cost.analysis', 'chop.monitoring', 'chop.settings', 'chop.*'];
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.*'];
@@ -102,6 +121,40 @@
             @if($isSuperAdmin || $user?->can('approve-loan'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('loan.loanapproval') ? 'active' : '' }}" href="{{ route('loan.loanapproval') }}"><i class="fa-solid fa-check-double"></i> Loan Approval</a>
+            </li>
+            @endif
+        </ul>
+    </li>
+    @endif
+
+    <!-- My Performance - Available to any logged-in staff with employee record -->
+    @if($hasEmployeeRecord)
+    <li class="nav-item dropdown {{ request()->routeIs($myPerformanceRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($myPerformanceRoutes) ? 'active' : '' }}" href="{{ route('performance.overview') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($myPerformanceRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </span>
+            <span class="text">My Performance</span>
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($myPerformanceRoutes) ? 'show' : '' }}">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.overview') ? 'active' : '' }}" href="{{ route('performance.overview') }}"><i class="fa-solid fa-gauge-high me-2"></i>Overview</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.myplanning') ? 'active' : '' }}" href="{{ route('performance.myplanning') }}"><i class="fa-solid fa-bullseye me-2"></i>My Planning</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.myimplementation') ? 'active' : '' }}" href="{{ route('performance.myimplementation') }}"><i class="fa-solid fa-tasks me-2"></i>My Implementation</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.myevaluation') ? 'active' : '' }}" href="{{ route('performance.myevaluation') }}"><i class="fa-solid fa-star me-2"></i>My Evaluation</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.myduties') ? 'active' : '' }}" href="{{ route('performance.myduties') }}"><i class="fa-solid fa-clipboard-list me-2"></i>My Duties</a>
+            </li>
+            @if($canApprovePerformance)
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.approve.evaluations') ? 'active' : '' }}" href="{{ route('performance.approve.evaluations') }}"><i class="fa-solid fa-check-double me-2"></i>Approve Evaluations</a>
             </li>
             @endif
         </ul>

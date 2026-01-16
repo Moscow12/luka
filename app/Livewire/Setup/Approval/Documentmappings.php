@@ -21,6 +21,8 @@ class Documentmappings extends Component
         'Roster' => 'Roster',
         'Payroll' => 'Payroll',
         'Allowances' => 'Allowances',
+        'Loan' => 'Loan',
+        'Performance' => 'Performance',
     ];
 
     public function openModal($mode = 'create', $id = null)

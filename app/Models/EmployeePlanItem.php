@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmployeePlanItem extends Model
@@ -48,5 +49,24 @@ class EmployeePlanItem extends Model
     public function departmentPlanItem(): BelongsTo
     {
         return $this->belongsTo(DepartmentPlanItem::class);
+    }
+
+    public function implementations(): HasMany
+    {
+        return $this->hasMany(EmployeePlanImplementation::class);
+    }
+
+    public function getTotalAchievedAttribute(): float
+    {
+        return $this->implementations()->where('status', '!=', 'rejected')->sum('quantity_achieved') ?? 0;
+    }
+
+    public function getProgressPercentageAttribute(): float
+    {
+        if (!$this->target_value || $this->target_value == 0) {
+            return 0;
+        }
+        $percentage = ($this->total_achieved / $this->target_value) * 100;
+        return min($percentage, 100);
     }
 }

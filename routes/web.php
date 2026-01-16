@@ -33,6 +33,12 @@ use App\Livewire\Hr\Staffs\Otherdocuments;
 use App\Livewire\Hr\Staffs\Promotions;
 use App\Livewire\Hr\Staffs\Qualifications;
 use App\Livewire\Hr\Staffs\Salary;
+use App\Livewire\Performance\Staffs\Myduties;
+use App\Livewire\Performance\Staffs\Myevaluations;
+use App\Livewire\Performance\Staffs\Myimplimentations;
+use App\Livewire\Performance\Staffs\Myperformanceview;
+use App\Livewire\Performance\Staffs\Myplanning;
+use App\Livewire\Performance\Supervisor\ApproveEvaluations;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
 use App\Models\loanrequests;
@@ -118,6 +124,19 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/loan/loanbalance', Loanbalance::class)->name('loan.loanbalance');
     Route::get('/loan/loanapproval', Loanapproval::class)->name('loan.loanapproval');
     Route::get('/loan/loanpayments', Loanpayments::class)->name('loan.loanpayments');
+
+    // employee performance
+    Route::get('/performance/overview', Myperformanceview::class)->name('performance.overview');
+    // myplanning
+    Route::get('/performance/myplanning', Myplanning::class)->name('performance.myplanning');
+    // my implementation
+    Route::get('/performance/myimplementation', Myimplimentations::class)->name('performance.myimplementation');
+    // my evaluation
+    Route::get('/performance/myevaluation', Myevaluations::class)->name('performance.myevaluation');
+    // supervisor evaluation approval
+    Route::get('/performance/approve-evaluations', ApproveEvaluations::class)->name('performance.approve.evaluations');
+    // my duties
+    Route::get('/performance/myduties', Myduties::class)->name('performance.myduties');
 });
 
 Route::prefix('contracts')->middleware('auth')->group(function () {
