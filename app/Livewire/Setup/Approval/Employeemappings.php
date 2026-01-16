@@ -87,7 +87,16 @@ class Employeemappings extends Component
 
     public function render()
     {
-        $employeeMappings = approvalleveltoemployee::with(['approval_level', 'employee'])
+        $employeeMappings = approvalleveltoemployee::with(['approval_level.approvalleveltodocuments', 'employee'])
+            ->when($this->search, function ($query) {
+                $query->whereHas('employee', function ($q) {
+                    $q->where('first_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('last_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('employee_no', 'like', '%' . $this->search . '%');
+                })->orWhereHas('approval_level', function ($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%');
+                });
+            })
             ->paginate(10);
         return view('livewire.setup.approval.employeemappings', ['employeeMappings' => $employeeMappings]);
     }

@@ -35,6 +35,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Approval Level</th>
+                                    <th>Document Type</th>
                                     <th>Employee</th>
                                     <th>Employee No</th>
                                     <th>Status</th>
@@ -52,6 +53,22 @@
                                         <span class="badge bg-info">
                                             {{ $mapping->approval_level->name ?? 'N/A' }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if($mapping->approval_level && $mapping->approval_level->approvalleveltodocuments->count() > 0)
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach($mapping->approval_level->approvalleveltodocuments as $doc)
+                                                    <span class="badge bg-primary-subtle text-primary">
+                                                        {{ ucwords(str_replace('_', ' ', $doc->document_type)) }}
+                                                        @if($doc->document_sub_type)
+                                                            <small class="text-muted">({{ ucwords(str_replace('_', ' ', $doc->document_sub_type)) }})</small>
+                                                        @endif
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td class="name">{{ $mapping->employee->getFullName() ?? 'N/A' }}</td>
                                     <td>{{ $mapping->employee->employee_no ?? '-' }}</td>
