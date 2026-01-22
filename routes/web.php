@@ -71,6 +71,10 @@ Route::group([
     Route::get('/permissions', \App\Livewire\Acl\PermissionIndex::class)->name('acl.permissions');
 });
 
+Route::prefix('assets')->middleware('auth')->group(function () {
+    Route::get('assets.index', App\Livewire\Assets\DepartmentAssets::class)->name('assets.index');
+});
+
 Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/settings', App\Livewire\Setup\Settings::class)->name('setup.index');
     Route::get('/setup/finance', App\Livewire\Setup\Finances::class)->name('setup.finances');

@@ -32,6 +32,7 @@
     $chopRoutes = ['chop.budget.requests', 'chop.reporting', 'chop.director.review', 'chop.activities', 'chop.cost.analysis', 'chop.monitoring', 'chop.settings', 'chop.*'];
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
+    $assetRoutes = ['assets.index', 'assets.*'];
 @endphp
 
 <ul class="navbar-nav flex-column">

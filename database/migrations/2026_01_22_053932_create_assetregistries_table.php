@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('make')->comment('wood, steel, aluminum, plastic, etc.')->nullable();
             $table->string('codeno')->comment('e.g., STJH/ICT/DESK/001, etc.')->nullable();
             $table->date('disposal_date')->nullable();
-            $table->foreignUuid('added_by')->constrained('employees')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
