@@ -30,7 +30,7 @@
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
     $contractRoutes = ['contracts.list', 'contracts.create', 'contracts.*'];
     $chopRoutes = ['chop.budget.requests', 'chop.reporting', 'chop.director.review', 'chop.activities', 'chop.cost.analysis', 'chop.monitoring', 'chop.settings', 'chop.*'];
-    $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.*'];
+    $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.termination-reasons', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
     $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
 @endphp
@@ -431,6 +431,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('setup.assetconfig') ? 'active' : '' }}" href="{{ route('setup.assetconfig') }}"><i class="fa-solid fa-boxes-stacked"></i> Asset Configuration</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('setup.termination-reasons') ? 'active' : '' }}" href="{{ route('setup.termination-reasons') }}"><i class="fa-solid fa-door-open"></i> Termination Reasons</a>
             </li>
         </ul>
     </li>

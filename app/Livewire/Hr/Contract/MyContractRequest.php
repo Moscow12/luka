@@ -5,6 +5,7 @@ namespace App\Livewire\Hr\Contract;
 use App\Models\ContractRequest;
 use App\Models\Employee;
 use App\Models\Employeecontracts;
+use App\Models\TerminationReason;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -43,6 +44,8 @@ class MyContractRequest extends Component
     public $last_working_day;
 
     public $handover_notes;
+
+    public $termination_reason_id;
 
     public $employee_attachment;
 
@@ -118,6 +121,7 @@ class MyContractRequest extends Component
         $this->reason = $request->reason;
         $this->last_working_day = $request->last_working_day?->format('Y-m-d');
         $this->handover_notes = $request->handover_notes;
+        $this->termination_reason_id = $request->termination_reason_id;
         $this->existing_attachment = $request->employee_attachment;
 
         $this->showModal = true;
@@ -140,6 +144,7 @@ class MyContractRequest extends Component
             'reason',
             'last_working_day',
             'handover_notes',
+            'termination_reason_id',
             'employee_attachment',
             'existing_attachment',
         ]);
@@ -161,6 +166,7 @@ class MyContractRequest extends Component
             $rules['extension_period'] = 'required|integer|min:1|max:24';
         } elseif ($this->request_type === 'termination') {
             $rules['last_working_day'] = 'required|date|after_or_equal:today';
+            $rules['termination_reason_id'] = 'required|uuid|exists:termination_reasons,id';
             $rules['handover_notes'] = 'nullable|string|max:2000';
             // Attachment is recommended for termination
             if (! $this->editingId || ! $this->existing_attachment) {
@@ -211,6 +217,7 @@ class MyContractRequest extends Component
             } elseif ($this->request_type === 'termination') {
                 $data['last_working_day'] = $this->last_working_day;
                 $data['handover_notes'] = $this->handover_notes;
+                $data['termination_reason_id'] = $this->termination_reason_id;
                 $data['extension_period'] = null;
                 $data['proposed_start_date'] = null;
                 $data['proposed_end_date'] = null;
@@ -260,6 +267,7 @@ class MyContractRequest extends Component
         } elseif ($this->request_type === 'termination') {
             $data['last_working_day'] = $this->last_working_day;
             $data['handover_notes'] = $this->handover_notes;
+            $data['termination_reason_id'] = $this->termination_reason_id;
         }
 
         // Handle attachment upload
@@ -306,13 +314,20 @@ class MyContractRequest extends Component
 
         if ($this->employee) {
             $myRequests = ContractRequest::where('employee_id', $this->employee->id)
-                ->with(['contract', 'reviewer'])
+                ->with(['contract', 'reviewer', 'terminationReason'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
         }
 
+        // Get active termination reasons for dropdown
+        $terminationReasons = TerminationReason::active()
+            ->forTermination()
+            ->orderBy('name')
+            ->get();
+
         return view('livewire.hr.contract.my-contract-request', [
             'myRequests' => $myRequests,
+            'terminationReasons' => $terminationReasons,
         ]);
     }
 }

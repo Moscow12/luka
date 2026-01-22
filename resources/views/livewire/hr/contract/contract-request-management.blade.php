@@ -300,6 +300,17 @@
                                         </div>
                                         <div class="col-12"><hr class="my-2"></div>
                                         @if($reviewingRequest->request_type === 'termination')
+                                            @if($reviewingRequest->terminationReason)
+                                                <div class="col-12">
+                                                    <p class="text-muted mb-1 small">Termination Reason</p>
+                                                    <p class="fw-medium mb-0">
+                                                        <span class="badge bg-danger">{{ $reviewingRequest->terminationReason->name }}</span>
+                                                        @if($reviewingRequest->terminationReason->description)
+                                                            <small class="text-muted d-block mt-1">{{ $reviewingRequest->terminationReason->description }}</small>
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            @endif
                                             <div class="col-12">
                                                 <p class="text-muted mb-1 small">Requested Last Working Day</p>
                                                 <p class="fw-medium mb-0 text-danger">

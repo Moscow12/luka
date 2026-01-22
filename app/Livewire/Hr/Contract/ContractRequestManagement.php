@@ -77,7 +77,7 @@ class ContractRequestManagement extends Component
 
     public function openReviewModal($id)
     {
-        $this->reviewingRequest = ContractRequest::with(['employee', 'contract', 'reviewer'])->find($id);
+        $this->reviewingRequest = ContractRequest::with(['employee', 'contract', 'reviewer', 'terminationReason'])->find($id);
         $this->review_comments = '';
         $this->action = '';
         $this->showReviewModal = true;

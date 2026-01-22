@@ -14,6 +14,7 @@ class ContractRequest extends Model
         'employee_id',
         'contract_id',
         'request_type',
+        'termination_reason_id',
         'proposed_start_date',
         'proposed_end_date',
         'extension_period',
@@ -66,6 +67,14 @@ class ContractRequest extends Model
     public function newContract(): BelongsTo
     {
         return $this->belongsTo(Employeecontracts::class, 'new_contract_id');
+    }
+
+    /**
+     * Get the termination reason for this request.
+     */
+    public function terminationReason(): BelongsTo
+    {
+        return $this->belongsTo(TerminationReason::class);
     }
 
     /**

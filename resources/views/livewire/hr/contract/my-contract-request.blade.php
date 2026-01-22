@@ -245,6 +245,17 @@
                                     </div>
                                 @endif
                                 <div class="mb-3">
+                                    <label class="form-label">Reason for Termination <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('termination_reason_id') is-invalid @enderror"
+                                            wire:model="termination_reason_id">
+                                        <option value="">Select reason...</option>
+                                        @foreach($terminationReasons as $reason)
+                                            <option value="{{ $reason->id }}">{{ $reason->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('termination_reason_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label">Proposed Last Working Day <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control @error('last_working_day') is-invalid @enderror"
                                            wire:model="last_working_day">
@@ -354,6 +365,12 @@
                                 </div>
                             @endif
                             @if($viewingRequest->request_type === 'termination')
+                                @if($viewingRequest->terminationReason)
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1">Termination Reason</p>
+                                        <h6>{{ $viewingRequest->terminationReason->name }}</h6>
+                                    </div>
+                                @endif
                                 <div class="col-md-6">
                                     <p class="text-muted mb-1">Last Working Day</p>
                                     <h6>{{ $viewingRequest->last_working_day?->format('d M Y') ?? '-' }}</h6>

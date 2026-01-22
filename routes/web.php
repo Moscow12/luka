@@ -83,6 +83,7 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/setup/approvalconfigurations', Approvalconfigurations::class)->name('setup.approvalconfig');
     Route::get('/vendors', App\Livewire\Setup\VendorManagement::class)->name('setup.vendors');
     Route::get('/asset-configuration', App\Livewire\Setup\Asset\Assetconf::class)->name('setup.assetconfig');
+    Route::get('/termination-reasons', App\Livewire\Setup\TerminationReasons::class)->name('setup.termination-reasons');
 });
 
 Route::prefix('hr')->middleware('auth')->group(function () {
