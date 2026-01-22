@@ -77,6 +77,7 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/', Index::class)->name('setup.location');
     Route::get('/setup/approvalconfigurations', Approvalconfigurations::class)->name('setup.approvalconfig');
     Route::get('/vendors', App\Livewire\Setup\VendorManagement::class)->name('setup.vendors');
+    Route::get('/asset-configuration', App\Livewire\Setup\Asset\Assetconf::class)->name('setup.assetconfig');
 });
 
 Route::prefix('hr')->middleware('auth')->group(function () {

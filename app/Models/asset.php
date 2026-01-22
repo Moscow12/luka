@@ -16,8 +16,8 @@ class asset extends Model
         return $this->belongsTo(assetclass::class, 'asset_class_id');
     }
 
-    public function added_by()
+    public function addedBy()
     {
-        return $this->belongsTo(employee::class, 'added_by');
+        return $this->belongsTo(User::class, 'added_by');
     }
 }

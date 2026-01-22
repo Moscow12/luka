@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('deductions', function (Blueprint $table) {
-            $table->enum('deduction_type', ['mafao', 'other_benefits', 'non'])->default('non')->after('type');
+            $table->enum('deduction_type', ['tax', 'mafao', 'other_benefits', 'non'])->default('non')->after('type');
         });
     }
 

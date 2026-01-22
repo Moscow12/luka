@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('type')->comment('e.g., current, non-current, intangible, physical, operating, non-operating');
             $table->foreignUuid('asset_class_id')->constrained('assetclasses')->cascadeOnDelete();
-            $table->foreignUuid('added_by')->constrained('employees')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

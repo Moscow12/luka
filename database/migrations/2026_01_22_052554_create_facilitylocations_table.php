@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignUuid('building_id')->constrained('buildings')->cascadeOnDelete();
             $table->foreignUuid('workstation_id')->constrained('workstations')->cascadeOnDelete();
-            $table->foreignUuid('added_by')->constrained('employees')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

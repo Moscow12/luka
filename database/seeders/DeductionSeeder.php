@@ -10,14 +10,7 @@ class DeductionSeeder extends Seeder
     public function run(): void
     {
         $deductions = [
-            [
-                'name' => 'PAYE',
-                'type' => 'percentage',
-                'deduction_value' => 10,
-                'applies_to' => 'gross',
-                'deduction_type' => 'tax',
-                'description' => 'Pay As You Earn tax deduction (10%)',
-            ],
+            
             [
                 'name' => 'NSSF Contribution',
                 'type' => 'percentage',

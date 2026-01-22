@@ -16,8 +16,8 @@ class building extends Model
         return $this->belongsTo(workstations::class, 'workstation_id');
     }
 
-    public function added_by()
+    public function addedBy()
     {
-        return $this->belongsTo(employee::class, 'added_by');
+        return $this->belongsTo(User::class, 'added_by');
     }
 }

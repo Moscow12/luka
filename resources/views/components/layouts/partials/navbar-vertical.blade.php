@@ -30,7 +30,7 @@
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
     $contractRoutes = ['contracts.list', 'contracts.create', 'contracts.*'];
     $chopRoutes = ['chop.budget.requests', 'chop.reporting', 'chop.director.review', 'chop.activities', 'chop.cost.analysis', 'chop.monitoring', 'chop.settings', 'chop.*'];
-    $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.*'];
+    $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
 @endphp
 
@@ -126,6 +126,25 @@
             @if($isSuperAdmin || $user?->can('approve-loan'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('loan.loanapproval') ? 'active' : '' }}" href="{{ route('loan.loanapproval') }}"><i class="fa-solid fa-check-double"></i> Loan Approval</a>
+            </li>
+            @endif
+        </ul>
+    </li>
+    @endif
+
+    <!-- allow HOD to add department assets -->
+    @if($isSuperAdmin || $user?->can('manage-assets'))
+    <li class="nav-item dropdown {{ request()->routeIs($assetRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($assetRoutes) ? 'active' : '' }}" href="{{ route('assets.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($assetRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </span>
+            <span class="text">Assets</span>
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($assetRoutes) ? 'show' : '' }}">
+            @if($isSuperAdmin || $user?->can('manage-assets'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('assets.index') ? 'active' : '' }}" href="{{ route('assets.index') }}"><i class="fa-solid fa-boxes"></i> Department Assets</a>
             </li>
             @endif
         </ul>
@@ -388,6 +407,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('setup.approvalconfig') ? 'active' : '' }}" href="{{ route('setup.approvalconfig') }}"><i class="fa-solid fa-clipboard-user"></i> Approval Configuration</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('setup.assetconfig') ? 'active' : '' }}" href="{{ route('setup.assetconfig') }}"><i class="fa-solid fa-boxes-stacked"></i> Asset Configuration</a>
             </li>
         </ul>
     </li>

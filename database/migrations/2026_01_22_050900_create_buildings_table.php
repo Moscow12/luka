@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->foreignUuid('workstation_id')->constrained('workstations')->cascadeOnDelete();
-            $table->foreignUuid('added_by')->constrained('employees')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
