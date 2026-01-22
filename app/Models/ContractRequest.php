@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ContractRequest extends Model
 {
@@ -75,6 +76,14 @@ class ContractRequest extends Model
     public function terminationReason(): BelongsTo
     {
         return $this->belongsTo(TerminationReason::class);
+    }
+
+    /**
+     * Get the certificate of service for this request.
+     */
+    public function certificate(): HasOne
+    {
+        return $this->hasOne(CertificateOfService::class, 'contract_request_id');
     }
 
     /**

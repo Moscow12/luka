@@ -494,6 +494,11 @@
                                 </span>
                             </button>
                         @endif
+                        @if($reviewingRequest->isApproved() && $reviewingRequest->request_type === 'termination' && !$reviewingRequest->certificate)
+                            <a href="{{ route('hr.certificates-of-service') }}?request={{ $reviewingRequest->id }}" class="btn btn-info">
+                                <i class="fa-solid fa-certificate me-1"></i> Create Certificate of Service
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

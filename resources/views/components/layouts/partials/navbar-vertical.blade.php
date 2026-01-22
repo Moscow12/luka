@@ -24,7 +24,7 @@
     $rosterRoutes = ['viewroster.index', 'roster.create','roster.edit', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
     $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
-    $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices', 'hr.my-contract-request', 'hr.contract-requests'];
+    $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices', 'hr.my-contract-request', 'hr.contract-requests', 'hr.certificates-of-service'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
     $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.myduties'];
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
@@ -259,6 +259,9 @@
             @if($isSuperAdmin || $user?->canAny(['manage-staff', 'approve-contract-requests']))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('hr.contract-requests') ? 'active' : '' }}" href="{{ route('hr.contract-requests') }}"><i class="fa-solid fa-file-signature"></i> Contract Requests</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('hr.certificates-of-service') ? 'active' : '' }}" href="{{ route('hr.certificates-of-service') }}"><i class="fa-solid fa-certificate"></i> Certificate of Service</a>
             </li>
             @endif
         </ul>
