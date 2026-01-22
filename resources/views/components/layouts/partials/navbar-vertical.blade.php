@@ -32,7 +32,7 @@
     $chopRoutes = ['chop.budget.requests', 'chop.reporting', 'chop.director.review', 'chop.activities', 'chop.cost.analysis', 'chop.monitoring', 'chop.settings', 'chop.*'];
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
-    $assetRoutes = ['assets.index', 'assets.*'];
+    $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
 @endphp
 
 <ul class="navbar-nav flex-column">
@@ -146,6 +146,9 @@
             @if($isSuperAdmin || $user?->can('manage-assets'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('assets.index') ? 'active' : '' }}" href="{{ route('assets.index') }}"><i class="fa-solid fa-boxes"></i> Department Assets</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('assets.reports') ? 'active' : '' }}" href="{{ route('assets.reports') }}"><i class="fa-solid fa-chart-bar"></i> Asset Reports</a>
             </li>
             @endif
         </ul>

@@ -72,7 +72,8 @@ Route::group([
 });
 
 Route::prefix('assets')->middleware('auth')->group(function () {
-    Route::get('assets.index', App\Livewire\Assets\DepartmentAssets::class)->name('assets.index');
+    Route::get('/assets.index', App\Livewire\Assets\DepartmentAssets::class)->name('assets.index');
+    Route::get('/reports', App\Livewire\Assets\Assetreports::class)->name('assets.reports');
 });
 
 Route::prefix('setup')->middleware('auth')->group(function () {
