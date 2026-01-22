@@ -38,6 +38,8 @@ class DepartmentAssets extends Component
     public $model;
     public $make;
     public $codeno;
+    public $depreciation_method;
+    public $useful_life_years;
 
     // UI State
     public $editingId = null;
@@ -74,6 +76,8 @@ class DepartmentAssets extends Component
             'model' => 'nullable|string|max:255',
             'make' => 'nullable|string|max:255',
             'codeno' => 'nullable|string|max:255',
+            'depreciation_method' => 'nullable|in:straight_line,reducing_balance',
+            'useful_life_years' => 'nullable|integer|min:1',
         ];
     }
 
@@ -117,6 +121,8 @@ class DepartmentAssets extends Component
             $this->model = $registry->model;
             $this->make = $registry->make;
             $this->codeno = $registry->codeno;
+            $this->depreciation_method = $registry->depreciation_method;
+            $this->useful_life_years = $registry->useful_life_years;
         } else {
             // Set default department if user has one
             $employee = Employee::where('user_id', Auth::id())->first();
@@ -149,6 +155,8 @@ class DepartmentAssets extends Component
         $this->model = '';
         $this->make = '';
         $this->codeno = '';
+        $this->depreciation_method = '';
+        $this->useful_life_years = '';
         $this->resetValidation();
     }
 
@@ -175,6 +183,8 @@ class DepartmentAssets extends Component
             'model' => $this->model ?: null,
             'make' => $this->make ?: null,
             'codeno' => $this->codeno ?: null,
+            'depreciation_method' => $this->depreciation_method ?: null,
+            'useful_life_years' => $this->useful_life_years ?: null,
             'added_by' => Auth::id(),
         ];
 
@@ -266,6 +276,10 @@ class DepartmentAssets extends Component
                 'bad' => 'Bad',
                 'poor' => 'Poor',
                 'worse' => 'Worse',
+            ],
+            'depreciationMethods' => [
+                'straight_line' => 'Straight Line',
+                'reducing_balance' => 'Reducing Balance',
             ],
         ]);
     }

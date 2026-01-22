@@ -31,6 +31,9 @@ class Assetconf extends Component
     // Asset Class fields
     public $class_name;
     public $class_depreciation;
+    public $class_depreciation_method = 'straight_line';
+    public $class_useful_life_years;
+    public $class_depreciation_rate;
     public $editingClassId = null;
 
     // Asset fields
@@ -211,6 +214,9 @@ class Assetconf extends Component
             $this->editingClassId = $id;
             $this->class_name = $class->name;
             $this->class_depreciation = $class->depreciation;
+            $this->class_depreciation_method = $class->depreciation_method;
+            $this->class_useful_life_years = $class->useful_life_years;
+            $this->class_depreciation_rate = $class->depreciation_rate;
         }
         $this->showClassModal = true;
     }
@@ -220,19 +226,28 @@ class Assetconf extends Component
         $this->editingClassId = null;
         $this->class_name = '';
         $this->class_depreciation = '';
-        $this->resetValidation(['class_name', 'class_depreciation']);
+        $this->class_depreciation_method = 'straight_line';
+        $this->class_useful_life_years = '';
+        $this->class_depreciation_rate = '';
+        $this->resetValidation(['class_name', 'class_depreciation', 'class_depreciation_method', 'class_useful_life_years', 'class_depreciation_rate']);
     }
 
     public function saveClass()
     {
         $this->validate([
             'class_name' => 'required|string|max:255',
-            'class_depreciation' => 'required|string|max:255',
+            'class_depreciation' => 'nullable|string|max:255',
+            'class_depreciation_method' => 'required|in:straight_line,reducing_balance',
+            'class_useful_life_years' => 'nullable|integer|min:1',
+            'class_depreciation_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $data = [
             'name' => $this->class_name,
             'depreciation' => $this->class_depreciation,
+            'depreciation_method' => $this->class_depreciation_method,
+            'useful_life_years' => $this->class_useful_life_years ?: null,
+            'depreciation_rate' => $this->class_depreciation_rate ?: null,
             'added_by' => Auth::id(),
         ];
 
@@ -387,6 +402,10 @@ class Assetconf extends Component
                 'physical' => 'Physical Asset',
                 'operating' => 'Operating Asset',
                 'non-operating' => 'Non-Operating Asset',
+            ],
+            'depreciationMethods' => [
+                'straight_line' => 'Straight Line',
+                'reducing_balance' => 'Reducing Balance',
             ],
         ]);
     }

@@ -368,9 +368,9 @@
                                     <tr>
                                         <th class="ps-4" style="width: 50px;">#</th>
                                         <th>Class Name</th>
-                                        <th>Depreciation Rate</th>
-                                        <th>Assets Count</th>
-                                        <th>Created</th>
+                                        <th>Method</th>
+                                        <th>Rate / Life</th>
+                                        <th>Assets</th>
                                         <th class="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -386,17 +386,29 @@
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0">{{ $class->name }}</h6>
+                                                    @if($class->depreciation)
+                                                        <small class="text-muted">{{ $class->depreciation }}</small>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-info-subtle text-info">{{ $class->depreciation }}</span>
+                                            <span class="badge bg-{{ $class->depreciation_method === 'straight_line' ? 'primary' : 'success' }}-subtle text-{{ $class->depreciation_method === 'straight_line' ? 'primary' : 'success' }}">
+                                                {{ $class->depreciation_method === 'straight_line' ? 'Straight Line' : 'Reducing Balance' }}
+                                            </span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ $class->assets_count }} assets</span>
+                                            <div>
+                                                @if($class->depreciation_rate)
+                                                    <span class="badge bg-info">{{ $class->depreciation_rate }}%</span>
+                                                @endif
+                                                @if($class->useful_life_years)
+                                                    <span class="badge bg-secondary">{{ $class->useful_life_years }} yrs</span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
-                                            <small class="text-muted">{{ $class->created_at->format('M d, Y') }}</small>
+                                            <span class="badge bg-dark">{{ $class->assets_count }}</span>
                                         </td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
@@ -743,7 +755,7 @@
     {{-- Asset Class Modal --}}
     @if($showClassModal)
     <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); position: fixed; inset: 0; z-index: 1050; overflow-y: auto;">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <form wire:submit="saveClass">
                     <div class="modal-header border-bottom">
@@ -760,25 +772,70 @@
                     </div>
 
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Class Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('class_name') is-invalid @enderror"
-                                wire:model="class_name"
-                                placeholder="e.g., Furniture, Electronics, Vehicles">
-                            @error('class_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Class Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('class_name') is-invalid @enderror"
+                                    wire:model="class_name"
+                                    placeholder="e.g., Furniture, Electronics, Vehicles">
+                                @error('class_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Depreciation Method <span class="text-danger">*</span></label>
+                                <select class="form-select @error('class_depreciation_method') is-invalid @enderror"
+                                    wire:model="class_depreciation_method">
+                                    @foreach($depreciationMethods as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('class_depreciation_method')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Useful Life (Years)</label>
+                                <input type="number" class="form-control @error('class_useful_life_years') is-invalid @enderror"
+                                    wire:model="class_useful_life_years"
+                                    placeholder="e.g., 5"
+                                    min="1">
+                                @error('class_useful_life_years')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Depreciation Rate (%)</label>
+                                <input type="number" step="0.01" class="form-control @error('class_depreciation_rate') is-invalid @enderror"
+                                    wire:model="class_depreciation_rate"
+                                    placeholder="e.g., 20.00"
+                                    min="0"
+                                    max="100">
+                                @error('class_depreciation_rate')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Description</label>
+                                <input type="text" class="form-control @error('class_depreciation') is-invalid @enderror"
+                                    wire:model="class_depreciation"
+                                    placeholder="e.g., Office equipment">
+                                @error('class_depreciation')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Depreciation Rate <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('class_depreciation') is-invalid @enderror"
-                                wire:model="class_depreciation"
-                                placeholder="e.g., 10%, 20% per annum, Straight-line 5 years">
-                            @error('class_depreciation')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="text-muted">Enter the depreciation rate or method for this asset class</small>
+                        <div class="alert alert-info mt-3 mb-0">
+                            <small>
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                <strong>Straight Line:</strong> Equal depreciation each year (Cost / Useful Life) |
+                                <strong>Reducing Balance:</strong> Percentage of remaining value each year
+                            </small>
                         </div>
                     </div>
 

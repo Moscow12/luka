@@ -10,7 +10,7 @@ class assetclass extends Model
     use HasUuids;
 
     protected $table = 'assetclasses';
-    protected $fillable = ['name', 'depreciation', 'added_by'];
+    protected $fillable = ['name', 'depreciation', 'depreciation_method', 'useful_life_years', 'depreciation_rate', 'added_by'];
 
     public function addedBy()
     {

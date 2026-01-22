@@ -30,6 +30,8 @@ class assetregistry extends Model
         'depreciation',
         'depreciation_rate',
         'depreciation_period',
+        'depreciation_method',
+        'useful_life_years',
         'model',
         'make',
         'codeno',

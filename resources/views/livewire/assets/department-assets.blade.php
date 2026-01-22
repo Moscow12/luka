@@ -411,7 +411,7 @@
                         </div>
 
                         <!-- Purchase Information -->
-                        <div>
+                        <div class="mb-4">
                             <h6 class="text-primary mb-3">
                                 <i class="fa-solid fa-receipt me-2"></i>Purchase Information
                             </h6>
@@ -453,6 +453,40 @@
                                     @error('vendor_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Depreciation Information -->
+                        <div>
+                            <h6 class="text-primary mb-3">
+                                <i class="fa-solid fa-chart-line me-2"></i>Depreciation Settings (Override)
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Depreciation Method</label>
+                                    <select class="form-select @error('depreciation_method') is-invalid @enderror"
+                                        wire:model="depreciation_method">
+                                        <option value="">Use Class Default</option>
+                                        @foreach($depreciationMethods as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('depreciation_method')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted">Leave empty to use the asset class default</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Useful Life (Years)</label>
+                                    <input type="number" class="form-control @error('useful_life_years') is-invalid @enderror"
+                                        wire:model="useful_life_years"
+                                        placeholder="e.g., 5"
+                                        min="1">
+                                    @error('useful_life_years')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted">Leave empty to use the asset class default</small>
                                 </div>
                             </div>
                         </div>
