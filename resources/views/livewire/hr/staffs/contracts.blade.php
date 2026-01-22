@@ -144,7 +144,7 @@
                     <x-forms.input type="select" name="position_id" label="Position" :options="$positions->pluck('name', 'id')" required />
                 </div>
                 <div class="col-12 col-lg-6">
-                    <x-forms.input type="select" name="contract_type" label="Contract Type" :options="['permanent'=>'Permanent', 'temporary'=>'Temporary', 'part_time'=>'Part Time']" required />
+                    <x-forms.input type="select" name="contract_type" label="Contract Type" :options="['permanent'=>'Permanent', 'temporary'=>'Temporary', 'part_time'=>'Part Time', 'probation'=>'Probation', 'internship'=>'Internship', 'consultancy'=>'Consultancy', 'other'=>'Other']" required />
                 </div>
                 <div class="col-12 col-lg-6">
                     <x-forms.input type="date" name="start_date" label="Start Date" required />

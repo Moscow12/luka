@@ -45,7 +45,7 @@ class Contracts extends Component
             'workstation_id' => 'required|uuid|exists:workstations,id',
             'department_id' => 'nullable|uuid|exists:departments,id',
             'position_id' => 'required|uuid|exists:jobtitles,id',
-            'contract_type' => 'required|in:permanent,temporary,part_time',
+            'contract_type' => 'required|in:permanent,temporary,part_time,probation,internship,consultancy,other',
             'start_date' => 'required|date',
             'expire_date' => 'required|date|after:start_date',
             'expirenotification' => 'boolean',

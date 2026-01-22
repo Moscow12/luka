@@ -24,7 +24,7 @@ class EmployeecontractsFactory extends Factory
             'workstation_id' => \App\Models\workstations::inRandomOrder()->first()?->id ?? \App\Models\workstations::factory(),
             'department_id' => \App\Models\departments::inRandomOrder()->first()?->id,
             'position_id' => \App\Models\Jobtitle::inRandomOrder()->first()?->id ?? \App\Models\Jobtitle::factory(),
-            'contract_type' => $this->faker->randomElement(['permanent', 'temporary', 'part_time']),
+            'contract_type' => $this->faker->randomElement(['permanent', 'temporary', 'part_time', 'probation', 'internship', 'consultancy', 'other']),
             'status' => $this->faker->randomElement(['active', 'expired', 'suspended', 'terminated']),
             'start_date' => $startDate,
             'expire_date' => $expireDate,
