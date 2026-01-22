@@ -92,6 +92,10 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/addstaff/edit/{id}', App\Livewire\Hr\Staffs\Addstaff::class)->name('hr.editstaff');
     Route::get('/staffs/staffdetails/{id}', App\Livewire\Hr\Staffs\Staffdetails::class)->name('hr.staffdetails');
     Route::get('/staffs/contracts/{id}', Contracts::class)->name('hr.contracts');
+
+    // Contract Requests
+    Route::get('/my-contract-request', App\Livewire\Hr\Contract\MyContractRequest::class)->name('hr.my-contract-request');
+    Route::get('/contract-requests', App\Livewire\Hr\Contract\ContractRequestManagement::class)->name('hr.contract-requests');
     Route::get('/staffs/salary/{id}', Salary::class)->name('hr.salary');
     Route::get('staffs/qualifications/{id}', Qualifications::class)->name('hr.qualifications');
     Route::get('/staffs/import', Importstaffs::class)->name('hr.importstaffs');

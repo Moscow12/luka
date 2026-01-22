@@ -131,6 +131,11 @@ class Employee extends Model
         return $this->hasOne(Employeecontracts::class, 'employee_id')->where('status', 'active');
     }
 
+    public function contractRequests()
+    {
+        return $this->hasMany(ContractRequest::class, 'employee_id');
+    }
+
     // ================ end relationships ================#
 
     // ================ COMPUTED ATTRIBUTES ================#

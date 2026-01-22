@@ -34,20 +34,5 @@
             {{ $slot }}
          </div>
      </div>
-     <!-- card footer -->
-     <div class="card-footer border-top border-dashed px-6 py-5">
-        <span class="me-3">
-            <span>
-                <i class="ti ti-list"></i>
-            </span>
-            <span class="ms-1">10 Task</span>
-        </span>
-        <span>
-            <span>
-                <i class="ti ti-user"></i>
-            </span>
-            <span class="ms-1">2k Comments</span>
-        </span>
-    </div>
  </div>
  <!-- card -->

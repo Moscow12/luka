@@ -24,7 +24,7 @@
     $rosterRoutes = ['viewroster.index', 'roster.create','roster.edit', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
     $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
-    $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices'];
+    $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices', 'hr.my-contract-request', 'hr.contract-requests'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
     $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.myduties'];
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
@@ -155,6 +155,18 @@
     </li>
     @endif
 
+    <!-- My Contract Request - Available to any logged-in staff with employee record -->
+    @if($hasEmployeeRecord)
+    <li class="nav-item">
+        <a class="nav-link {{ request()->routeIs('hr.my-contract-request') ? 'active' : '' }}" href="{{ route('hr.my-contract-request') }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-file-contract"></i>
+            </span>
+            <span class="text">My Contract</span>
+        </a>
+    </li>
+    @endif
+
     <!-- My Performance - Available to any logged-in staff with employee record -->
     @if($hasEmployeeRecord)
     <li class="nav-item dropdown {{ request()->routeIs($myPerformanceRoutes) ? 'show' : '' }}">
@@ -242,6 +254,11 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('loan.loanpayments') ? 'active' : '' }}" href="{{ route('loan.loanpayments') }}"><i class="fa-solid fa-money-bill-transfer"></i> Loan Payments</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user?->canAny(['manage-staff', 'approve-contract-requests']))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('hr.contract-requests') ? 'active' : '' }}" href="{{ route('hr.contract-requests') }}"><i class="fa-solid fa-file-signature"></i> Contract Requests</a>
             </li>
             @endif
         </ul>
