@@ -22,6 +22,7 @@ class Employeeleaves extends Model
         'travel_to',
         'othercontact',
         'comments',
+        'document',
         'status',
         'added_by',
         'approved_by',
@@ -52,5 +53,10 @@ class Employeeleaves extends Model
     public function approvalnote()
     {
         return $this->hasMany(leaverequestapproval::class, 'leave_request_id');
+    }
+
+    public function actingAssignment()
+    {
+        return $this->hasOne(ActingAssignment::class, 'leave_request_id');
     }
 }

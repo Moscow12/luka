@@ -22,7 +22,7 @@
 
     // Define route groups for active state detection
     $rosterRoutes = ['viewroster.index', 'roster.create','roster.edit', 'roster.*'];
-    $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.*'];
+    $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.acting-assignments', 'leave.acting-settings', 'leave.*'];
     $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
     $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices', 'hr.my-contract-request', 'hr.contract-requests', 'hr.certificates-of-service'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
@@ -98,6 +98,12 @@
             @if($isSuperAdmin || $user?->can('approve-leave'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('leave.leaveapproval') ? 'active' : '' }}" href="{{ route('leave.leaveapproval') }}"><i class="fa-solid fa-check-double"></i> Leave Approval</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('leave.acting-assignments') ? 'active' : '' }}" href="{{ route('leave.acting-assignments') }}"><i class="fa-solid fa-user-tie"></i> Acting Assignments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('leave.acting-settings') ? 'active' : '' }}" href="{{ route('leave.acting-settings') }}"><i class="fa-solid fa-cog"></i> Acting Settings</a>
             </li>
             @endif
         </ul>

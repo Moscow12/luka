@@ -2,8 +2,12 @@
 
 namespace App\Livewire\Hr\Leave;
 
+use App\Models\ActingAssignment;
+use App\Models\departments;
+use App\Models\designations;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
+use App\Models\LeaveSetting;
 use App\Models\Leaves;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +26,17 @@ class Requestleave extends Component
     public $hasEmployeeRecord = false;
     public $editingLeaveId = null;
     public $requiresDocument = false;
+
+    // Acting Assignment fields
+    public $showActingAssignment = false;
+    public $actingAssignmentRequired = false;
+    public $acting_employee_id, $acting_designation_id, $acting_department_id;
+    public $acting_responsibilities, $acting_notes;
+    public $notify_acting_employee = true;
+    public $grant_system_access = false;
+    public $employeesList = [];
+    public $designationsList = [];
+    public $departmentsList = [];
 
     public function mount()
     {
@@ -44,6 +59,13 @@ class Requestleave extends Component
                 ->get();
 
             $this->listdata();
+
+            // Load employees, designations, and departments for acting assignment
+            $this->employeesList = Employee::where('status', 'active')
+                ->where('id', '!=', $this->employee_id)
+                ->get();
+            $this->designationsList = designations::where('status', 'active')->get();
+            $this->departmentsList = departments::all();
         }
     }
 
@@ -86,6 +108,13 @@ class Requestleave extends Component
     {
         $this->checkLeaveRequirements();
         $this->calculateLeaveBalance();
+        $this->checkActingAssignmentRequirement();
+    }
+
+    public function updatedDays()
+    {
+        $this->calculateEndDate();
+        $this->checkActingAssignmentRequirement();
     }
 
     public function checkLeaveRequirements()
@@ -95,6 +124,27 @@ class Requestleave extends Component
             $this->requiresDocument = $leave ? (bool) $leave->require_document : false;
         } else {
             $this->requiresDocument = false;
+        }
+    }
+
+    public function checkActingAssignmentRequirement()
+    {
+        $actingEnabled = LeaveSetting::get('acting_assignment_enabled', true);
+        $actingMandatory = LeaveSetting::get('acting_assignment_mandatory', false);
+        $minDays = LeaveSetting::get('acting_assignment_min_days', 5);
+
+        if (!$actingEnabled) {
+            $this->showActingAssignment = false;
+            $this->actingAssignmentRequired = false;
+            return;
+        }
+
+        if ($this->days && $this->days >= $minDays) {
+            $this->showActingAssignment = true;
+            $this->actingAssignmentRequired = $actingMandatory;
+        } else {
+            $this->showActingAssignment = false;
+            $this->actingAssignmentRequired = false;
         }
     }
 
@@ -116,6 +166,11 @@ class Requestleave extends Component
             $rules['document'] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
         }
 
+        // Add acting assignment validation if required
+        if ($this->actingAssignmentRequired && $this->showActingAssignment) {
+            $rules['acting_employee_id'] = ['required', 'exists:employees,id'];
+        }
+
         $this->validate($rules);
 
         // Handle document upload
@@ -124,7 +179,7 @@ class Requestleave extends Component
             $documentPath = $this->document->store('leave-documents', 'public');
         }
 
-        Employeeleaves::create([
+        $leaveRequest = Employeeleaves::create([
             'leave_id' => $this->leave_id,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
@@ -138,9 +193,28 @@ class Requestleave extends Component
             'employee_id' => $this->employee_id,
         ]);
 
+        // Create acting assignment if provided
+        if ($this->acting_employee_id && $this->showActingAssignment) {
+            ActingAssignment::create([
+                'leave_request_id' => $leaveRequest->id,
+                'employee_on_leave_id' => $this->employee_id,
+                'acting_employee_id' => $this->acting_employee_id,
+                'acting_designation_id' => $this->acting_designation_id,
+                'acting_department_id' => $this->acting_department_id,
+                'start_date' => $this->start_date,
+                'end_date' => $this->end_date,
+                'responsibilities' => $this->acting_responsibilities,
+                'notes' => $this->acting_notes,
+                'notify_acting_employee' => $this->notify_acting_employee,
+                'grant_system_access' => $this->grant_system_access,
+                'added_by' => Auth::id(),
+            ]);
+        }
+
         session()->flash('success', 'Leave request submitted successfully!');
         $this->showModal = false;
-        $this->reset(['leave_id', 'start_date', 'end_date', 'days', 'travel_to', 'othercontact', 'comments', 'document']);
+        $this->reset(['leave_id', 'start_date', 'end_date', 'days', 'travel_to', 'othercontact', 'comments', 'document',
+            'acting_employee_id', 'acting_designation_id', 'acting_department_id', 'acting_responsibilities', 'acting_notes']);
         $this->listdata();
     }
 
@@ -202,12 +276,6 @@ class Requestleave extends Component
         $leave->delete();
         $this->listdata();
         session()->flash('success', 'Leave request deleted successfully!');
-    }
-
-    
-    public function updatedDays()
-    {
-        $this->calculateEndDate();
     }
 
     public function updatedStartDate()

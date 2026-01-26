@@ -136,6 +136,16 @@ class Employee extends Model
         return $this->hasMany(ContractRequest::class, 'employee_id');
     }
 
+    public function actingAssignmentsAsActing()
+    {
+        return $this->hasMany(ActingAssignment::class, 'acting_employee_id');
+    }
+
+    public function actingAssignmentsOnLeave()
+    {
+        return $this->hasMany(ActingAssignment::class, 'employee_on_leave_id');
+    }
+
     // ================ end relationships ================#
 
     // ================ COMPUTED ATTRIBUTES ================#

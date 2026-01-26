@@ -11,6 +11,8 @@ use App\Livewire\Contracts\ManageContracts;
 use App\Livewire\Hr\Attendance\Fpdevices;
 use App\Livewire\Hr\Attendance\Managefpattendance;
 use App\Livewire\Hr\Attendance\Managefpusers;
+use App\Livewire\Hr\Leave\ActingAssignmentManagement;
+use App\Livewire\Hr\Leave\ActingAssignmentSettings;
 use App\Livewire\Hr\Leave\Leaveapproval;
 use App\Livewire\Hr\Leave\Leavebalance;
 use App\Livewire\Hr\Leave\Leavemanagement;
@@ -121,6 +123,8 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('leave/leavebalance', Leavebalance::class)->name('leave.leavebalance');
     Route::get('leave/leaveapproval', Leaveapproval::class)->name('leave.leaveapproval');
     Route::get('/leave/leavemanagement', Leavemanagement::class)->name('leave.leavemanagement');
+    Route::get('/leave/acting-assignments', ActingAssignmentManagement::class)->name('leave.acting-assignments');
+    Route::get('/leave/acting-settings', ActingAssignmentSettings::class)->name('leave.acting-settings');
 
     // payroll routes
     Route::get('/payroll/payrollgeneration', Payrollgeneration::class)->name('payrollgeneration');

@@ -117,6 +117,88 @@
                 <x-forms.input type="text" name="othercontact" label="Other Contact" required />
                 <x-forms.input type="textarea" name="comments" label="Comments" rows="2" required />
 
+                @if ($showActingAssignment)
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">
+                            <strong><i class="fa fa-user-tie me-1"></i> Acting Assignment</strong>
+                            @if($actingAssignmentRequired)
+                                <span class="badge bg-danger">Required</span>
+                            @else
+                                <span class="badge bg-info">Optional</span>
+                            @endif
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label" for="acting_employee_id">
+                                    Acting Employee @if($actingAssignmentRequired)<span class="text-danger">*</span>@endif
+                                </label>
+                                <select class="form-select" id="acting_employee_id" wire:model.defer="acting_employee_id" @if($actingAssignmentRequired) required @endif>
+                                    <option value="">Select Employee</option>
+                                    @foreach($employeesList as $emp)
+                                        <option value="{{ $emp->id }}">
+                                            {{ $emp->first_name }} {{ $emp->last_name }} - {{ $emp->designation->name ?? 'N/A' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('acting_employee_id')
+                                    <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="acting_designation_id">Acting Designation (Optional)</label>
+                                    <select class="form-select" id="acting_designation_id" wire:model.defer="acting_designation_id">
+                                        <option value="">Same as current</option>
+                                        @foreach($designationsList as $designation)
+                                            <option value="{{ $designation->id }}">{{ $designation->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="acting_department_id">Acting Department (Optional)</label>
+                                    <select class="form-select" id="acting_department_id" wire:model.defer="acting_department_id">
+                                        <option value="">Same as current</option>
+                                        @foreach($departmentsList as $department)
+                                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="acting_responsibilities">Responsibilities</label>
+                                <textarea class="form-control" id="acting_responsibilities" wire:model.defer="acting_responsibilities" rows="3"
+                                    placeholder="Describe specific duties to be performed during acting role..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="acting_notes">Additional Notes</label>
+                                <textarea class="form-control" id="acting_notes" wire:model.defer="acting_notes" rows="2"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" wire:model.defer="notify_acting_employee" id="notify_acting_employee">
+                                        <label class="form-check-label" for="notify_acting_employee">
+                                            Notify Acting Employee
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" wire:model.defer="grant_system_access" id="grant_system_access">
+                                        <label class="form-check-label" for="grant_system_access">
+                                            Grant System Access
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 @if ($requiresDocument)
                     <div class="mb-3">
                         <label class="form-label" for="document">Supporting Document <span class="text-danger">*</span></label>
