@@ -98,10 +98,10 @@
                 :formaction="$modalMode === 'edit' ? 'update' : 'save'"
                 :modalMode="$modalMode"
                 :showModal="$showModal">
-            <x-forms.input type="select" name="leave_id" label="Leave" :options="$leaveslist->pluck('name', 'id')" required />
+            <x-forms.input type="select" name="leave_id" label="Leave" :options="$leaveslist->pluck('name', 'id')" required wire:model.live="leave_id" />
             <x-forms.input type="date" name="start_date" label="Start Date" required  min="{{ now()->toDateString() }}" wire:model="start_date" />
             <x-forms.input type="number" name="days" label="Days" required  wire:model.live="days"         wire:input="calculateEndDate" />
-            
+
             @if ($errorMessage)
                 <div class="text-danger mt-2">{{ $errorMessage }}</div>
             @endif
@@ -112,10 +112,26 @@
                     </div>
                 @endif
 
-                <x-forms.input type="text" name="end_date" label="Reporting Date" wire:model="end_date" disabled required  error="$error" />            
+                <x-forms.input type="text" name="end_date" label="Reporting Date" wire:model="end_date" disabled required  error="$error" />
                 <x-forms.input type="text" name="travel_to" label="Travel To" required />
                 <x-forms.input type="text" name="othercontact" label="Other Contact" required />
                 <x-forms.input type="textarea" name="comments" label="Comments" rows="2" required />
+
+                @if ($requiresDocument)
+                    <div class="mb-3">
+                        <label class="form-label" for="document">Supporting Document <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="document" wire:model="document" accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="text-muted">This leave type requires supporting documentation. Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</small>
+                        @error('document')
+                            <span class="text-danger d-block mt-1">{{ $message }}</span>
+                        @enderror
+                        @if ($document)
+                            <div class="mt-2 text-success">
+                                <i class="fa fa-check-circle"></i> File selected: {{ $document->getClientOriginalName() }}
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
                 @if ($errorMessage)
                     <div class="alert alert-danger mt-2">{{ $errorMessage }}</div>

@@ -8,8 +8,10 @@ use Livewire\Component;
 
 class Leavemngts extends Component
 {
-    public $leavetypes, $leavetype, $days, $gender, $status= true, $description, $name;
-    
+    public $leavetypes, $leavetype, $days, $gender, $status = 'active', $description, $name;
+    public $require_document = false;
+    public $paid = false;
+
     public $leave_id;
     public $modalMode = 'create'; // or 'edit'
     public $showModal = false;
@@ -31,8 +33,10 @@ class Leavemngts extends Component
             $this->description = $leave->description;
             $this->days = $leave->days;
             $this->gender = $leave->gender;
+            $this->require_document = (bool) $leave->require_document;
+            $this->paid = (bool) $leave->paid;
         } else {
-            $this->reset(['name', 'leave_id', 'description', 'days', 'gender']);
+            $this->reset(['name', 'leave_id', 'description', 'days', 'gender', 'require_document', 'paid']);
         }
     }
 
@@ -43,33 +47,46 @@ class Leavemngts extends Component
 
     public function save()
     {
-        $this->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:leaves,name'],            
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:255'],
             'days' => ['required', 'numeric', 'max:255'],
             'gender' => ['required', 'string', 'max:255'],
-        ]);
+        ];
+
+        // Add unique validation only for create or when name changes
+        if ($this->modalMode === 'create') {
+            $rules['name'][] = 'unique:leaves,name';
+        } elseif ($this->modalMode === 'edit' && $this->leave_id) {
+            $rules['name'][] = 'unique:leaves,name,' . $this->leave_id;
+        }
+
+        $this->validate($rules);
+
+        $data = [
+            'name' => $this->name,
+            'description' => $this->description,
+            'days' => $this->days,
+            'gender' => $this->gender,
+            'require_document' => (bool) $this->require_document,
+            'paid' => (bool) $this->paid,
+        ];
 
         if ($this->modalMode === 'edit' && $this->leave_id) {
             $shift = leaves::findOrFail($this->leave_id);
-            $shift->update(['name' => $this->name,  'description' => $this->description, 'days' => $this->days,  'gender' => $this->gender]);
+            $shift->update($data);
             $this->listdata();
             session()->flash('success', 'Data updated successfully!');
         } else {
-            leaves::create([
-                'name' => $this->name,
-                'description' => $this->description,
-                'days' => $this->days,
-                'status' => $this->status,
-                'gender' => $this->gender,
-                'added_by' => Auth::user()->id
-            ]);
+            $data['status'] = $this->status;
+            $data['added_by'] = Auth::user()->id;
+            leaves::create($data);
             $this->listdata();
             session()->flash('success', 'Data added successfully!');
         }
 
         $this->showModal = false;
-        $this->reset(['name', 'leave_id',  'description', 'days', 'status', 'gender']);
+        $this->reset(['name', 'leave_id', 'description', 'days', 'status', 'gender', 'require_document', 'paid']);
     }
 
     public function delete($uuid)

@@ -16,8 +16,15 @@ class Leaves extends Model
         'description',
         'days',
         'gender',
+        'require_document',
+        'paid',
         'status',
         'added_by',
+    ];
+
+    protected $casts = [
+        'require_document' => 'boolean',
+        'paid' => 'boolean',
     ];
 
     public function added_by()

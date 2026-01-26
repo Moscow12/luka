@@ -8,15 +8,19 @@ use App\Models\Leaves;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Leave extends Component
 {
+    use WithFileUploads;
+
     public $search = '';
     public $modalMode = 'create';
     public $showModal = false;
-    public $leave_id, $start_date, $end_date, $days, $travel_to, $othercontact, $comments, $added_by;
+    public $leave_id, $start_date, $end_date, $days, $travel_to, $othercontact, $comments, $added_by, $document;
     public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
     public $employee_id, $leaveslist=[], $leaves=[], $errorMessage,$status='Awaiting', $available_days;
+    public $selectedLeaveType, $requiresDocument = false;
 
     public function mount($id=null)
     {
@@ -60,7 +64,7 @@ class Leave extends Component
         $this->showModal = true;
         if ($mode === 'edit' && $id) {
             $leave = Employeeleaves::findOrFail($id);
-            $this->leave_id = $id;
+            $this->leave_id = $leave->leave_id;
             $this->start_date = $leave->start_date;
             $this->end_date = $leave->end_date;
             $this->days = $leave->days;
@@ -68,28 +72,73 @@ class Leave extends Component
             $this->othercontact = $leave->othercontact;
             $this->comments = $leave->comments;
             $this->added_by = $leave->added_by;
+            $this->checkLeaveRequirements();
         } else {
-            $this->reset(['start_date', 'end_date', 'days',  'travel_to']);
+            $this->reset(['start_date', 'end_date', 'days',  'travel_to', 'document', 'requiresDocument']);
+        }
+    }
+
+    public function updatedLeaveId()
+    {
+        $this->checkLeaveRequirements();
+        $this->calculateLeaveBalance();
+    }
+
+    public function checkLeaveRequirements()
+    {
+        if ($this->leave_id) {
+            $leave = Leaves::find($this->leave_id);
+            $this->requiresDocument = $leave ? $leave->require_document : false;
+        } else {
+            $this->requiresDocument = false;
         }
     }
 
     public function save()
     {
-        $this->validate([
+        $rules = [
+            'leave_id' => ['required'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['date', 'after:start_date'],
             'days' => ['required', 'integer'],
             'travel_to' => ['required', 'string', 'max:255'],
             'othercontact' => ['nullable', 'string'],
             'comments' => ['nullable', 'string'],
-        ]);
+        ];
+
+        // Add document validation if leave type requires it
+        if ($this->requiresDocument) {
+            $rules['document'] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
+        }
+
+        $this->validate($rules);
+
+        // Handle document upload
+        $documentPath = null;
+        if ($this->document) {
+            $documentPath = $this->document->store('leave-documents', 'public');
+        }
 
         if ($this->modalMode === 'edit' && $this->leave_id) {
             $leave = Employeeleaves::findOrFail($this->leave_id);
-            $leave->update(['start_date' => $this->start_date, 'end_date' => $this->end_date, 'days' => $this->days, 'travel_to' => $this->travel_to, 'othercontact' => $this->othercontact, 'comments' => $this->comments, 'added_by' => $this->added_by]);
+            $updateData = [
+                'start_date' => $this->start_date,
+                'end_date' => $this->end_date,
+                'days' => $this->days,
+                'travel_to' => $this->travel_to,
+                'othercontact' => $this->othercontact,
+                'comments' => $this->comments,
+                'added_by' => $this->added_by
+            ];
+
+            if ($documentPath) {
+                $updateData['document'] = $documentPath;
+            }
+
+            $leave->update($updateData);
             $this->listdata();
             session()->flash('success', 'Leave updated successfully!');
-        }else {
+        } else {
             Employeeleaves::create([
                 'leave_id' => $this->leave_id,
                 'start_date' => $this->start_date,
@@ -99,13 +148,14 @@ class Leave extends Component
                 'othercontact' => $this->othercontact,
                 'status' => $this->status,
                 'comments' => $this->comments,
-                'added_by' =>Auth::user()->id,
+                'document' => $documentPath,
+                'added_by' => Auth::user()->id,
                 'employee_id' => $this->employee_id,
             ]);
             session()->flash('success', 'Leave added successfully!');
         }
         $this->showModal = false;
-        $this->reset(['start_date', 'end_date', 'days', 'status', 'travel_to', 'othercontact', 'comments']);
+        $this->reset(['start_date', 'end_date', 'days', 'status', 'travel_to', 'othercontact', 'comments', 'document']);
     }
     public function delete($uuid)
     {

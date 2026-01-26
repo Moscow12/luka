@@ -175,6 +175,32 @@
                                     </span>
                                 @enderror
                             </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" wire:model.defer="require_document" id="require_document" value="1">
+                                    <label class="form-check-label" for="require_document">
+                                        Require Document (Current: {{ $require_document ? 'Yes' : 'No' }})
+                                    </label>
+                                </div>
+                                @error('require_document')
+                                    <span class="invalid-feedback d-block" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" wire:model.defer="paid" id="paid" value="1">
+                                    <label class="form-check-label" for="paid">
+                                        Paid Leave (Current: {{ $paid ? 'Yes' : 'No' }})
+                                    </label>
+                                </div>
+                                @error('paid')
+                                    <span class="invalid-feedback d-block" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">close</button>
