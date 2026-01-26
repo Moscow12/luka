@@ -3,6 +3,7 @@
 use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Paymentreports;
 use App\Livewire\Acc\Payroll\Payrollgeneration;
+use App\Livewire\Audit\Auditlog;
 use App\Livewire\Chop\ActivitiesManagement;
 use App\Livewire\Chop\Chopsetting;
 use App\Livewire\Contracts\ContractDetails;
@@ -36,12 +37,17 @@ use App\Livewire\Hr\Staffs\Otherdocuments;
 use App\Livewire\Hr\Staffs\Promotions;
 use App\Livewire\Hr\Staffs\Qualifications;
 use App\Livewire\Hr\Staffs\Salary;
+use App\Livewire\Performance\AssignedDuties\ManageAssignedDuties;
+use App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans;
+use App\Livewire\Performance\EmployeePlans\ManageEmployeePlans;
+use App\Livewire\Performance\OrganizationalPlans\{ManagePlanItems, ManagePlans};
 use App\Livewire\Performance\Staffs\Myduties;
 use App\Livewire\Performance\Staffs\Myevaluations;
 use App\Livewire\Performance\Staffs\Myimplimentations;
 use App\Livewire\Performance\Staffs\Myperformanceview;
 use App\Livewire\Performance\Staffs\Myplanning;
 use App\Livewire\Performance\Supervisor\ApproveEvaluations;
+use App\Livewire\Performance\TitleKpis\ManageTitleKpis;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
 use App\Models\loanrequests;
@@ -86,6 +92,7 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/vendors', App\Livewire\Setup\VendorManagement::class)->name('setup.vendors');
     Route::get('/asset-configuration', App\Livewire\Setup\Asset\Assetconf::class)->name('setup.assetconfig');
     Route::get('/termination-reasons', App\Livewire\Setup\TerminationReasons::class)->name('setup.termination-reasons');
+    Route::get('/backuprecovery', App\Livewire\Setup\Backuprecovery::class)->name('setup.backuprecovery');
 });
 
 Route::prefix('hr')->middleware('auth')->group(function () {
@@ -186,21 +193,24 @@ Route::prefix('chop')->middleware('auth')->group(function () {
 
 Route::prefix('performance')->middleware('auth')->group(function () {
     // Organizational Plans
-    Route::get('organizational-plans', App\Livewire\Performance\OrganizationalPlans\ManagePlans::class)->name('performance.org.plans');
-    Route::get('organizational-plans/{planId}/items', App\Livewire\Performance\OrganizationalPlans\ManagePlanItems::class)->name('performance.org.plans.items');
+    Route::get('organizational-plans', ManagePlans::class)->name('performance.org.plans');
+    Route::get('organizational-plans/{planId}/items', ManagePlanItems::class)->name('performance.org.plans.items');
 
     // Department Plans
-    Route::get('department-plans', App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans::class)->name('performance.dept.plans');
-    Route::get('department-plans/{planId}/items', App\Livewire\Performance\DepartmentPlans\ManagePlanItems::class)->name('performance.dept.plans.items');
+    Route::get('department-plans', ManageDepartmentPlans::class)->name('performance.dept.plans');
+    Route::get('department-plans/{planId}/items', ManagePlanItems::class)->name('performance.dept.plans.items');
 
     // Employee Plans
-    Route::get('employee-plans', App\Livewire\Performance\EmployeePlans\ManageEmployeePlans::class)->name('performance.employee.plans');
-    Route::get('employee-plans/{planId}/items', App\Livewire\Performance\EmployeePlans\ManagePlanItems::class)->name('performance.employee.plans.items');
+    Route::get('employee-plans', ManageEmployeePlans::class)->name('performance.employee.plans');
+    Route::get('employee-plans/{planId}/items', ManagePlanItems::class)->name('performance.employee.plans.items');
 
     // Assigned Duties (Direct KPI Assignment)
-    Route::get('assigned-duties', App\Livewire\Performance\AssignedDuties\ManageAssignedDuties::class)->name('performance.assigned.duties');
+    Route::get('assigned-duties', ManageAssignedDuties::class)->name('performance.assigned.duties');
 
     // Job Title KPIs
-    Route::get('title-kpis', App\Livewire\Performance\TitleKpis\ManageTitleKpis::class)->name('performance.title.kpis');
+    Route::get('title-kpis', ManageTitleKpis::class)->name('performance.title.kpis');
+
+    // audit logs
+    Route::get('audit-logs', Auditlog::class)->name('audit-logs');
 });
 

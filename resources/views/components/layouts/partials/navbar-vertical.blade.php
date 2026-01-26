@@ -33,6 +33,7 @@
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.termination-reasons', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
     $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
+    $auditRoutes = ['audit-logs'];
 @endphp
 
 <ul class="navbar-nav flex-column">
@@ -444,6 +445,9 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('setup.termination-reasons') ? 'active' : '' }}" href="{{ route('setup.termination-reasons') }}"><i class="fa-solid fa-door-open"></i> Termination Reasons</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('setup.backuprecovery') ? 'active' : '' }}" href="{{ route('setup.backuprecovery') }}"><i class="fa-solid fa-file-arrow-up"></i> Backup & Recovery</a>
+            </li>
         </ul>
     </li>
     @endif
@@ -474,6 +478,18 @@
             </li>
             @endif
         </ul>
+    </li>
+    @endif
+
+    <!-- Audit Logs -->
+    @if($isSuperAdmin || $user?->canAny(['view-audit-logs', 'manage-audit-logs']))
+    <li class="nav-item">
+        <a class="nav-link {{ request()->routeIs($auditRoutes) ? 'active' : '' }}" href="{{ route('audit-logs') }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-shield-alt"></i>
+            </span>
+            <span class="text">Audit Logs</span>
+        </a>
     </li>
     @endif
 </ul>
