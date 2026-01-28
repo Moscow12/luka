@@ -1,51 +1,23 @@
 <?php
 
-use App\Livewire\Acc\Payroll\Allowancepayment;
-use App\Livewire\Acc\Payroll\Paymentreports;
-use App\Livewire\Acc\Payroll\Payrollgeneration;
+use App\Livewire\Acc\Payroll\{Allowancepayment, Paymentreports, Payrollgeneration};
 use App\Livewire\Audit\Auditlog;
-use App\Livewire\Chop\ActivitiesManagement;
-use App\Livewire\Chop\Chopsetting;
-use App\Livewire\Contracts\ContractDetails;
-use App\Livewire\Contracts\ContractForm;
-use App\Livewire\Contracts\ManageContracts;
-use App\Livewire\Hr\Attendance\Fpdevices;
-use App\Livewire\Hr\Attendance\Managefpattendance;
-use App\Livewire\Hr\Attendance\Managefpusers;
-use App\Livewire\Hr\Leave\ActingAssignmentManagement;
-use App\Livewire\Hr\Leave\ActingAssignmentSettings;
-use App\Livewire\Hr\Leave\Leaveapproval;
-use App\Livewire\Hr\Leave\Leavebalance;
-use App\Livewire\Hr\Leave\Leavemanagement;
-use App\Livewire\Hr\Leave\Requestleave;
-use App\Livewire\Hr\Loan\Loanapproval;
-use App\Livewire\Hr\Loan\Loanbalance;
-use App\Livewire\Hr\Loan\Loanitems;
-use App\Livewire\Hr\Loan\Loanpayments;
-use App\Livewire\Hr\Loan\Requestloan;
-use App\Livewire\Hr\Roster\Editroster;
-use App\Livewire\Hr\Roster\Generateroster;
-use App\Livewire\Hr\Roster\Viewroster;
-use App\Livewire\Hr\Staffs\Attendance;
-use App\Livewire\Hr\Staffs\Contracts;
-use App\Livewire\Hr\Staffs\Dependants;
-use App\Livewire\Hr\Staffs\Digitalsignature;
-use App\Livewire\Hr\Staffs\Disciplinary;
-use App\Livewire\Hr\Staffs\Importstaffs;
-use App\Livewire\Hr\Staffs\Leave;
-use App\Livewire\Hr\Staffs\Otherdocuments;
-use App\Livewire\Hr\Staffs\Promotions;
-use App\Livewire\Hr\Staffs\Qualifications;
-use App\Livewire\Hr\Staffs\Salary;
+use App\Livewire\Chop\{ActivitiesManagement, Budgetrequests, Chopsetting, CostAnalysis, DirectorReviewDashboard, MonitoringEvaluation, ActivityReporting, DepartmentBudgetRequest};
+
+use App\Livewire\Contracts\{ContractDetails, ContractForm, ManageContracts};
+use App\Livewire\Hr\Attendance\{Fpdevices, Managefpattendance, Managefpusers};
+use App\Livewire\Hr\Leave\{ActingAssignmentManagement, ActingAssignmentSettings, Leaveapproval, Leavebalance, Leavemanagement, Requestleave};
+
+use App\Livewire\Hr\Loan\{Loanapproval, Loanbalance, Loanitems, Loanpayments, Requestloan};
+use App\Livewire\Hr\Roster\{Editroster, Generateroster, Viewroster};
+use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Importstaffs, Leave, Otherdocuments, Promotions, Qualifications, Salary};
+
 use App\Livewire\Performance\AssignedDuties\ManageAssignedDuties;
 use App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans;
 use App\Livewire\Performance\EmployeePlans\ManageEmployeePlans;
 use App\Livewire\Performance\OrganizationalPlans\{ManagePlanItems, ManagePlans};
-use App\Livewire\Performance\Staffs\Myduties;
-use App\Livewire\Performance\Staffs\Myevaluations;
-use App\Livewire\Performance\Staffs\Myimplimentations;
-use App\Livewire\Performance\Staffs\Myperformanceview;
-use App\Livewire\Performance\Staffs\Myplanning;
+use App\Livewire\Performance\Staffs\{Myduties, Myevaluations, Myimplimentations, Myperformanceview, Myplanning};
+
 use App\Livewire\Performance\Supervisor\ApproveEvaluations;
 use App\Livewire\Performance\TitleKpis\ManageTitleKpis;
 use App\Livewire\Setup\Approvalconfigurations;
@@ -178,17 +150,17 @@ Route::prefix('chop')->middleware('auth')->group(function () {
     Route::get('activitiesmanagement', ActivitiesManagement::class)->name('chop.activities');
 
     // Budget Requests
-    Route::get('budget-requests', App\Livewire\Chop\DepartmentBudgetRequest::class)->name('chop.budget.requests');
-    Route::get('director-review', App\Livewire\Chop\DirectorReviewDashboard::class)->name('chop.director.review');
+    Route::get('budget-requests', DepartmentBudgetRequest::class)->name('chop.budget.requests');
+    Route::get('director-review', DirectorReviewDashboard::class)->name('chop.director.review');
 
     // Cost Analysis
-    Route::get('cost-analysis', App\Livewire\Chop\CostAnalysis::class)->name('chop.cost.analysis');
+    Route::get('cost-analysis', CostAnalysis::class)->name('chop.cost.analysis');
 
     // Monitoring & Evaluation
-    Route::get('monitoring-evaluation', App\Livewire\Chop\MonitoringEvaluation::class)->name('chop.monitoring');
+    Route::get('monitoring-evaluation', MonitoringEvaluation::class)->name('chop.monitoring');
 
     // Activity Reporting
-    Route::get('activity-reporting', App\Livewire\Chop\ActivityReporting::class)->name('chop.reporting');
+    Route::get('activity-reporting', ActivityReporting::class)->name('chop.reporting');
 });
 
 Route::prefix('performance')->middleware('auth')->group(function () {
