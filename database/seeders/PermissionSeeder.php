@@ -18,13 +18,23 @@ class PermissionSeeder extends Seeder
             'Roster Management' => [
                 ['name' => 'view-roster', 'description' => 'View roster schedules and overview'],
                 ['name' => 'create-roster', 'description' => 'Create and generate new rosters'],
-                ['name' => 'manage-roster', 'description' => 'Edit and delete roster schedules'],
+                ['name' => 'edit-roster', 'description' => 'Edit existing roster schedules'],
+                ['name' => 'manage-roster', 'description' => 'Manage and delete roster schedules'],
             ],
             'Leave Management' => [
                 ['name' => 'view-leave', 'description' => 'View leave balances and history'],
                 ['name' => 'request-leave', 'description' => 'Submit leave requests'],
                 ['name' => 'approve-leave', 'description' => 'Approve or reject leave requests'],
                 ['name' => 'manage-leave', 'description' => 'Manage leave types and policies'],
+            ],
+            'Loan Management' => [
+                ['name' => 'view-loan', 'description' => 'View loan balances and history'],
+                ['name' => 'request-loan', 'description' => 'Submit loan requests'],
+                ['name' => 'approve-loan', 'description' => 'Approve or reject loan requests'],
+                ['name' => 'manage-loan', 'description' => 'Manage loan types and policies'],
+            ],
+            'Asset Management' => [
+                ['name' => 'manage-assets', 'description' => 'Manage department assets and asset reports'],
             ],
             'Staff Management' => [
                 ['name' => 'view-staff', 'description' => 'View staff list and details'],
@@ -50,7 +60,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'approve-roster', 'description' => 'Approve or reject roster schedules'],
                 ['name' => 'approve-allowances', 'description' => 'Approve or reject allowance requests'],
                 ['name' => 'approve-chop', 'description' => 'Approve or reject CHOP activities'],
-                ['name' => 'approve-loan', 'description' => 'Approve or reject loan requests'],
+                ['name' => 'approve-contract-requests', 'description' => 'Approve or reject staff contract requests'],
             ],
             'CHOP Management' => [
                 ['name' => 'view-chop', 'description' => 'View CHOP budget requests and activity reports'],
@@ -58,6 +68,7 @@ class PermissionSeeder extends Seeder
             ],
             'System Settings' => [
                 ['name' => 'manage-settings', 'description' => 'Manage system settings, locations, and configurations'],
+                ['name' => 'view-audit-logs', 'description' => 'View audit logs'],
                 ['name' => 'manage-audit-logs', 'description' => 'View and manage audit logs'],
                 ['name' => 'manage-activity-logs', 'description' => 'View and manage activity logs'],
                 ['name' => 'manage-error-logs', 'description' => 'View and manage error logs'],
@@ -68,7 +79,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-maintenance-tasks', 'description' => 'View and manage maintenance tasks'],
                 ['name' => 'manage-system-info', 'description' => 'View and manage system information'],
                 ['name' => 'Use-api', 'description' => 'Use the API to manage the system and load data'],
-                
+
             ],
             'User Management' => [
                 ['name' => 'manage-users', 'description' => 'Create, edit, and manage user accounts'],

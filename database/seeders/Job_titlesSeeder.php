@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\job_titles;
+use App\Models\Jobtitle;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +13,7 @@ class Job_titlesSeeder extends Seeder
      */
     public function run(): void
     {
-        job_titles::create(
+        Jobtitle::create(
             ['title' => 'Medical Doctor', 'code' => 'MD', 'description'=>'MD', 'added_by' => \App\Models\User::factory()],
             ['title' => 'Registered Nurse', 'code' => 'RN', 'description'=>'RN', 'added_by' => \App\Models\User::factory()],
             ['title' => 'Laboratory Technician', 'code' => 'LT', 'description'=>'LT', 'added_by' => \App\Models\User::factory()],

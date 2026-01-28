@@ -18,8 +18,7 @@ class DepartmentsSeeder extends Seeder
 
             ['name' => 'Finance', 'description'=>'Finance', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
             ['name' => 'Accounting', 'description'=>'Accounting', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'IT', 'description'=>'IT', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Information Technology', 'description'=>'IT', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
+            ['name' => 'IT', 'description'=>'Information Technology', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
             ['name' => 'Administration', 'description'=>'Administration', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
             ['name' => 'Medical Ward', 'description'=>'MW', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
             ['name' => 'Surgical Ward', 'description'=>'SW', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
@@ -27,7 +26,6 @@ class DepartmentsSeeder extends Seeder
             ['name' => 'Pharmacy', 'description'=>'Pharmacy', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
             ['name' => 'Laboratory', 'description'=>'Laboratory', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
             ['name' => 'OPD', 'description'=>'OPD', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Accounting', 'description'=>'Accounting', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
         );
     }
 }

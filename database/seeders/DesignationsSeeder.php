@@ -15,7 +15,6 @@ class DesignationsSeeder extends Seeder
     {
         designations::create(
             ['name' => 'Chief Executive Officer', 'code' => 'CEO', 'added_by' => \App\Models\User::factory()->create()->id],
-            ['name' => 'Chief Financial Officer', 'code' => 'CFO', 'added_by' => \App\Models\User::factory()->create()->id],
             ['name' => 'Chief Human Resources Officer', 'code' => 'CHRO', 'added_by' => \App\Models\User::factory()->create()->id],
             ['name' => 'Chief Information Officer', 'code' => 'CIO', 'added_by' => \App\Models\User::factory()->create()->id],
             ['name' => 'Chief Legal Officer', 'code' => 'CLO', 'added_by' => \App\Models\User::factory()->create()->id],
