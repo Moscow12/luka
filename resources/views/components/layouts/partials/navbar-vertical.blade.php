@@ -445,6 +445,9 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('setup.termination-reasons') ? 'active' : '' }}" href="{{ route('setup.termination-reasons') }}"><i class="fa-solid fa-door-open"></i> Termination Reasons</a>
             </li>
+            <li class="nav-item">   
+                <a class="nav-link {{ request()->routeIs('setup.smsapis') ? 'active' : '' }}" href="{{ route('setup.smsapis') }}"><i class="fa-solid fa-phone"></i> SMS APIs</a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('setup.backuprecovery') ? 'active' : '' }}" href="{{ route('setup.backuprecovery') }}"><i class="fa-solid fa-file-arrow-up"></i> Backup & Recovery</a>
             </li>
