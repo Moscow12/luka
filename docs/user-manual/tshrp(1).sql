@@ -30,10 +30,10 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `attendances` (
   `id` bigint UNSIGNED NOT NULL,
-  `device_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `clocktimestamp` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `device_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `clocktimestamp` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `clockdate` date DEFAULT NULL,
   `clocktime` time DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -81442,7 +81442,7 @@ CREATE TABLE `departmentalplans` (
   `addedat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedat` datetime DEFAULT NULL,
   `updatedby` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -81462,7 +81462,7 @@ CREATE TABLE `employeeplans` (
   `addedat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedat` datetime DEFAULT NULL,
   `updatedby` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -81473,15 +81473,15 @@ CREATE TABLE `employeeplans` (
 CREATE TABLE `empplanimplimentation` (
   `id` int NOT NULL,
   `empplanid` int NOT NULL,
-  `empvalue` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `empunit` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `empvalue` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `empunit` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `remarks` varchar(255) NOT NULL,
-  `reportingschedule` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `reportingschedule` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `addedby` int NOT NULL,
   `addedat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedat` datetime DEFAULT NULL,
   `updatedby` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -81494,7 +81494,7 @@ CREATE TABLE `fpuser` (
   `EmpNo` varchar(10) NOT NULL,
   `Name` varchar(100) NOT NULL,
   `timesaved` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `fpuser`
@@ -81747,14 +81747,14 @@ CREATE TABLE `orgplans` (
   `planname` varchar(200) NOT NULL,
   `planvalue` varchar(20) NOT NULL,
   `planunit` varchar(20) NOT NULL,
-  `plantype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `plantype` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `financilyear` varchar(20) NOT NULL,
-  `descriptions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `descriptions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `addedby` int NOT NULL,
   `addedat` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedby` datetime DEFAULT NULL,
   `updatedat` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -81768,7 +81768,7 @@ CREATE TABLE `tbl_about_section` (
   `image_responce` varchar(250) NOT NULL,
   `added_by` int DEFAULT NULL,
   `added_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -81783,7 +81783,7 @@ CREATE TABLE `tbl_ApprovalDocument` (
   `ApprovalTItleID` int NOT NULL,
   `Added_By` int NOT NULL,
   `Date_Added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_ApprovalDocument`
@@ -81810,7 +81810,7 @@ CREATE TABLE `tbl_assets_items` (
   `Asset_Type` varchar(50) NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_assets_items`
@@ -81898,7 +81898,7 @@ CREATE TABLE `tbl_Asset_class` (
   `Asset_Depreciation` varchar(150) NOT NULL,
   `Added_By` int NOT NULL,
   `Added_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_Asset_class`
@@ -81926,7 +81926,7 @@ CREATE TABLE `tbl_Bank` (
   `BankDescription` text NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_Bank`
@@ -81949,7 +81949,7 @@ CREATE TABLE `tbl_blocked_employee` (
   `AttachmentLetter` varchar(200) NOT NULL,
   `datecreated` datetime NOT NULL,
   `BlockedBy` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_blocked_employee`
@@ -82011,7 +82011,7 @@ CREATE TABLE `tbl_buildings` (
   `BuildingName` varchar(200) NOT NULL,
   `AddedBy` int NOT NULL,
   `AddedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_buildings`
@@ -82039,7 +82039,7 @@ CREATE TABLE `tbl_contactus` (
   `SenderMessage` text NOT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'active',
   `received_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -82104,7 +82104,7 @@ CREATE TABLE `tbl_denomination` (
   `Religion_ID` int NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -82116,7 +82116,7 @@ CREATE TABLE `tbl_department` (
   `Department_ID` int NOT NULL,
   `name_of_department` varchar(250) NOT NULL,
   `Title` varchar(250) NOT NULL,
-  `Descriptions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Descriptions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `whychooseus` text NOT NULL,
   `Precaution` text NOT NULL,
   `Inteligence` text NOT NULL,
@@ -82124,7 +82124,7 @@ CREATE TABLE `tbl_department` (
   `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `added_by` int NOT NULL,
   `dp_status` varchar(15) NOT NULL DEFAULT 'active'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -82159,7 +82159,7 @@ CREATE TABLE `tbl_districts` (
   `Region_ID` int NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_districts`
@@ -82272,7 +82272,7 @@ INSERT INTO `tbl_districts` (`Destrict_ID`, `District_name`, `Region_ID`, `added
 
 CREATE TABLE `tbl_doctors` (
   `Doctor_ID` int NOT NULL,
-  `Doctor_Name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Doctor_Name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Title` text NOT NULL,
   `responce_image_path` varchar(250) NOT NULL,
   `Doctor_description` text NOT NULL,
@@ -82286,7 +82286,7 @@ CREATE TABLE `tbl_doctors` (
   `doctor_status` varchar(50) NOT NULL DEFAULT 'active',
   `added_by` int DEFAULT NULL,
   `added_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -82309,7 +82309,7 @@ CREATE TABLE `tbl_employee` (
   `doctor_status` varchar(50) NOT NULL DEFAULT 'active',
   `added_by` int DEFAULT NULL,
   `added_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -82326,7 +82326,7 @@ CREATE TABLE `tbl_employee_approvals` (
   `ApprovedBy` int NOT NULL,
   `DocumentType` varchar(25) NOT NULL,
   `Title_ID` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_approvals`
@@ -85584,7 +85584,7 @@ CREATE TABLE `tbl_employee_contract` (
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ContractStatus` varchar(25) NOT NULL DEFAULT 'Active'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_contract`
@@ -85964,7 +85964,7 @@ CREATE TABLE `tbl_employee_deductions` (
   `Payment_ID` int NOT NULL,
   `AddedBy` int NOT NULL,
   `AddedTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_deductions`
@@ -89786,14 +89786,14 @@ CREATE TABLE `tbl_employee_leave` (
   `Leave_Start_Date` date NOT NULL,
   `Leave_End_Date` date NOT NULL,
   `EmployeeID` int NOT NULL,
-  `LeaveStatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'Awaiting',
+  `LeaveStatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Awaiting',
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `TravelTo` varchar(50) NOT NULL,
   `TravelDays` varchar(20) NOT NULL,
   `OtherLeaveContact` varchar(15) NOT NULL,
   `EmployeeComments` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_leave`
@@ -90852,7 +90852,7 @@ CREATE TABLE `tbl_employee_OtherAttachment` (
   `EmployeeID` int NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_OtherAttachment`
@@ -94959,13 +94959,13 @@ CREATE TABLE `tbl_employee_promotion` (
   `New_workstation` int NOT NULL,
   `New_Department` int NOT NULL,
   `StartDate` date NOT NULL,
-  `PromotionLetter` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `PromotionLetter` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Promotion_comment` text NOT NULL,
   `EmployeeID` int NOT NULL,
   `status` varchar(25) NOT NULL DEFAULT 'active',
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_promotion`
@@ -95087,7 +95087,7 @@ CREATE TABLE `tbl_employee_qualification` (
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Updated_by` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_qualification`
@@ -96217,7 +96217,7 @@ CREATE TABLE `tbl_employee_title` (
   `Job_code` varchar(50) NOT NULL,
   `added_by` int NOT NULL,
   `Date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_employee_title`
@@ -96290,7 +96290,7 @@ CREATE TABLE `tbl_employee_violation` (
   `EmployeeID` int NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -96309,7 +96309,7 @@ CREATE TABLE `tbl_emp_attendance` (
   `DateCreated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `AddedBy` int NOT NULL,
   `Status` varchar(25) NOT NULL DEFAULT 'active'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -96327,7 +96327,7 @@ CREATE TABLE `tbl_emp_shift` (
   `AddedBy` int NOT NULL,
   `updatedAt` datetime NOT NULL,
   `UpdatedBy` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_emp_shift`
@@ -107074,7 +107074,7 @@ CREATE TABLE `tbl_Events` (
   `Event_date` date NOT NULL,
   `Date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `added_by` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -107102,7 +107102,7 @@ CREATE TABLE `tbl_facility_asset_registry` (
   `AddedBy` int NOT NULL,
   `Updated_by` int NOT NULL,
   `PurchaseDate` varchar(25) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_asset_registry`
@@ -107243,10 +107243,10 @@ CREATE TABLE `tbl_facility_department` (
   `Facility_dept_ID` int NOT NULL,
   `Department_name` varchar(250) NOT NULL,
   `Department_description` text NOT NULL,
-  `Supervisor` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'Matron',
+  `Supervisor` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Matron',
   `added_by` int NOT NULL,
   `added_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_department`
@@ -107304,8 +107304,8 @@ CREATE TABLE `tbl_facility_emp_changed_objectives` (
   `Approved_By` int DEFAULT NULL,
   `Date_approved` datetime DEFAULT NULL,
   `Status` varchar(20) NOT NULL DEFAULT 'Active',
-  `FinancialYear` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `FinancialYear` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_emp_changed_objectives`
@@ -108003,8 +108003,8 @@ CREATE TABLE `tbl_facility_emp_objectives` (
   `Date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Date_approved` datetime DEFAULT NULL,
   `ObjStatus` varchar(20) NOT NULL DEFAULT 'Active',
-  `FinancialYear` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `FinancialYear` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_emp_objectives`
@@ -109445,7 +109445,7 @@ CREATE TABLE `tbl_facility_emp_objectives_development` (
   `Date_approved` datetime DEFAULT NULL,
   `Status` varchar(20) NOT NULL DEFAULT 'Active',
   `FinancialYear` varchar(15) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_emp_objectives_development`
@@ -110682,8 +110682,8 @@ CREATE TABLE `tbl_facility_emp_objectives_Score` (
   `Approved_By` int DEFAULT NULL,
   `Approved_Date` datetime DEFAULT NULL,
   `ApprovalStatus` varchar(50) NOT NULL DEFAULT 'Active',
-  `FinancialYear` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `FinancialYear` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_emp_objectives_Score`
@@ -111606,8 +111606,8 @@ CREATE TABLE `tbl_facility_emp_objective_comments` (
   `Date_Msikilizaji` datetime DEFAULT NULL,
   `Date_Msimamizi` datetime DEFAULT NULL,
   `Msimamizi_Status` varchar(30) NOT NULL DEFAULT 'Active',
-  `FinancialYear` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `FinancialYear` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_emp_objective_comments`
@@ -111775,7 +111775,7 @@ CREATE TABLE `tbl_facility_locations` (
   `Location_Building` int NOT NULL,
   `AddedBy` int NOT NULL,
   `CreatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_locations`
@@ -111827,11 +111827,11 @@ INSERT INTO `tbl_facility_locations` (`Location_ID`, `LocationName`, `Location_B
 
 CREATE TABLE `tbl_facility_objectives` (
   `Objective_ID` int NOT NULL,
-  `Objective_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Objective_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Objective_year` int NOT NULL,
   `Added_by` int NOT NULL,
   `Added_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_facility_objectives`
@@ -111853,10 +111853,10 @@ INSERT INTO `tbl_facility_objectives` (`Objective_ID`, `Objective_name`, `Object
 
 CREATE TABLE `tbl_financial_year` (
   `FInance_Year_ID` int NOT NULL,
-  `Financial_year_start` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `Financial_year_end` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Financial_year_start` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Financial_year_end` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_financial_year`
@@ -111883,7 +111883,7 @@ CREATE TABLE `tbl_images` (
   `section` varchar(50) NOT NULL,
   `added_by` int DEFAULT NULL,
   `added_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -111896,7 +111896,7 @@ CREATE TABLE `tbl_kpi_Indicator` (
   `Indicator_Name` varchar(250) NOT NULL,
   `Added_By` int NOT NULL,
   `AddedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_kpi_Indicator`
@@ -111918,7 +111918,7 @@ CREATE TABLE `tbl_leave_type` (
   `Descriptions` text NOT NULL,
   `added_by` int NOT NULL,
   `Leave_status` varchar(15) NOT NULL DEFAULT 'Active'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_leave_type`
@@ -111947,7 +111947,7 @@ CREATE TABLE `tbl_patients` (
   `Oldfiles_Numer` int NOT NULL,
   `added_by` int NOT NULL,
   `Added_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -111962,7 +111962,7 @@ CREATE TABLE `tbl_patient_record_attachment` (
   `UploadedAttachment` varchar(250) NOT NULL,
   `Uploaded_by` int NOT NULL,
   `Uploaded_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -111976,7 +111976,7 @@ CREATE TABLE `tbl_privilage` (
   `roles` varchar(25) NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_privilage`
@@ -112000,7 +112000,7 @@ CREATE TABLE `tbl_region` (
   `Region_Name` varchar(200) NOT NULL,
   `added_by` int NOT NULL,
   `Date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_region`
@@ -112052,7 +112052,7 @@ CREATE TABLE `tbl_religions` (
   `Religion_Name` varchar(200) NOT NULL,
   `added_by` int NOT NULL,
   `Date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -112096,7 +112096,7 @@ CREATE TABLE `tbl_salary_grade` (
   `Grade_Code` varchar(30) NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -112110,7 +112110,7 @@ CREATE TABLE `tbl_salary_scale` (
   `Scale_Code` varchar(30) NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -112125,7 +112125,7 @@ CREATE TABLE `tbl_service` (
   `Icon_name` varchar(250) NOT NULL,
   `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `added_by` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -112143,7 +112143,7 @@ CREATE TABLE `tbl_shift_register` (
   `Colorwheel` varchar(25) NOT NULL,
   `Created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Created_by` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_shift_register`
@@ -112173,10 +112173,10 @@ CREATE TABLE `tbl_Users` (
   `Phone_number` varchar(50) NOT NULL,
   `Workstation_ID` int NOT NULL,
   `username` varchar(250) NOT NULL,
-  `Password` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Password` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Added_by` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -112189,7 +112189,7 @@ CREATE TABLE `tbl_user_privalege` (
   `Privilage_ID` int NOT NULL,
   `User_ID` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -112213,17 +112213,17 @@ CREATE TABLE `tbl_utendaji_bora_watumishi` (
   `UboraWaUtendajiMsimamizi` varchar(25) DEFAULT NULL,
   `UongoziNaUsimamiziMtumishi` varchar(25) NOT NULL,
   `UongoziNaUsimamiziMsimamizi` varchar(25) DEFAULT NULL,
-  `MawasilianoMtumishi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `MawasilianoMsimamizi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `MawasilianoMtumishi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `MawasilianoMsimamizi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `UhusianoKaziniMtumishi` varchar(25) NOT NULL,
   `UhusianoKaziniMsimamizi` varchar(25) DEFAULT NULL,
   `Mtumishi` int NOT NULL,
   `Msimamizi` int DEFAULT NULL,
   `Date_Created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Date_Approved` datetime NOT NULL,
-  `ApprovalStatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'active',
+  `ApprovalStatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `FInancialYear` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_utendaji_bora_watumishi`
@@ -112450,7 +112450,7 @@ CREATE TABLE `tbl_violation_type` (
   `ViolationDescription` text NOT NULL,
   `added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_violation_type`
@@ -112474,14 +112474,14 @@ INSERT INTO `tbl_violation_type` (`VIolation_ID`, `Violation_Type`, `ViolationDe
 CREATE TABLE `tbl_working_station` (
   `Workstation_ID` int NOT NULL,
   `Workstation_name` varchar(250) NOT NULL,
-  `StationLocation` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `StationLocation` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `StationPhone_Number` varchar(50) NOT NULL,
   `Tin_Number` varchar(50) NOT NULL,
   `StationEmail_Address` varchar(120) NOT NULL,
   `StationAddress` varchar(250) NOT NULL,
   `Added_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tbl_working_station`
@@ -112498,7 +112498,7 @@ INSERT INTO `tbl_working_station` (`Workstation_ID`, `Workstation_name`, `Statio
 
 CREATE TABLE `test` (
   `col` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Indexes for dumped tables

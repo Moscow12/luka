@@ -71,7 +71,7 @@ class ImportFromTshrpDatabase extends Command
         $this->newLine();
 
         // Check database connection
-        if (!$this->checkConnection()) {
+        if (! $this->checkConnection()) {
             return Command::FAILURE;
         }
 
@@ -86,8 +86,9 @@ class ImportFromTshrpDatabase extends Command
 
         // Get admin user for added_by field
         $adminUser = User::first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $this->error('No users found in the system. Please create at least one user first.');
+
             return Command::FAILURE;
         }
 
@@ -107,12 +108,12 @@ class ImportFromTshrpDatabase extends Command
 
         foreach ($importSequence as $table => $label) {
             // Skip if only specific tables requested
-            if ($onlyTables && !in_array($table, $onlyTables)) {
+            if ($onlyTables && ! in_array($table, $onlyTables)) {
                 continue;
             }
 
             $this->info("📦 Importing {$label}...");
-            $methodName = 'import' . Str::studly($table);
+            $methodName = 'import'.Str::studly($table);
 
             if (method_exists($this, $methodName)) {
                 $this->$methodName($adminUser->id, $dryRun);
@@ -136,6 +137,7 @@ class ImportFromTshrpDatabase extends Command
             DB::connection('tshrp')->getPdo();
             $this->info('✅ Connected to TSHRP database');
             $this->newLine();
+
             return true;
         } catch (\Exception $e) {
             $this->error('❌ Failed to connect to TSHRP database');
@@ -147,6 +149,7 @@ class ImportFromTshrpDatabase extends Command
             $this->line('TSHRP_DB_DATABASE=tshrp');
             $this->line('TSHRP_DB_USERNAME=root');
             $this->line('TSHRP_DB_PASSWORD=your_password');
+
             return false;
         }
     }
@@ -162,6 +165,7 @@ class ImportFromTshrpDatabase extends Command
 
         if ($oldTitles->isEmpty()) {
             $this->warn('  No job titles found in TSHRP database');
+
             return;
         }
 
@@ -178,10 +182,11 @@ class ImportFromTshrpDatabase extends Command
                     $this->stats['skipped']++;
                     $this->addSkipReason("Job Title '{$oldTitle->Employee_Title}': Already exists");
                     $progressBar->advance();
+
                     continue;
                 }
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $newTitle = Jobtitle::create([
                         'name' => $oldTitle->Employee_Title,
                         'code' => $oldTitle->Job_code ?? Str::slug($oldTitle->Employee_Title),
@@ -196,7 +201,7 @@ class ImportFromTshrpDatabase extends Command
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing title '{$oldTitle->Employee_Title}': " . $e->getMessage());
+                $this->error("  Error importing title '{$oldTitle->Employee_Title}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -219,6 +224,7 @@ class ImportFromTshrpDatabase extends Command
 
         if ($oldDesignations->isEmpty()) {
             $this->warn('  No designations found in TSHRP database');
+
             return;
         }
 
@@ -234,10 +240,11 @@ class ImportFromTshrpDatabase extends Command
                     $this->idMaps['designations'][$oldDesignation->Desagnation_ID] = $existing->id;
                     $this->stats['skipped']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $newDesignation = designations::create([
                         'name' => $oldDesignation->Desagnation_name,
                         'code' => Str::slug($oldDesignation->Desagnation_name),
@@ -252,7 +259,7 @@ class ImportFromTshrpDatabase extends Command
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing designation '{$oldDesignation->Desagnation_name}': " . $e->getMessage());
+                $this->error("  Error importing designation '{$oldDesignation->Desagnation_name}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -270,11 +277,12 @@ class ImportFromTshrpDatabase extends Command
     protected function importDepartments(string $adminUserId, bool $dryRun): void
     {
         $oldDepartments = DB::connection('tshrp')
-            ->table('tbl_department')
+            ->table('tbl_facility_department')
             ->get();
 
         if ($oldDepartments->isEmpty()) {
             $this->warn('  No departments found in TSHRP database');
+
             return;
         }
 
@@ -284,32 +292,33 @@ class ImportFromTshrpDatabase extends Command
         foreach ($oldDepartments as $oldDept) {
             try {
                 // Check if already exists by name
-                $existing = departments::where('name', $oldDept->name_of_department)->first();
+                $existing = departments::where('name', $oldDept->Department_name)->first();
 
                 if ($existing) {
-                    $this->idMaps['departments'][$oldDept->Department_ID] = $existing->id;
+                    $this->idMaps['departments'][$oldDept->Facility_dept_ID] = $existing->id;
                     $this->stats['skipped']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $newDept = departments::create([
-                        'name' => $oldDept->name_of_department,
-                        'description' => $oldDept->Descriptions ?? null,
-                        'status' => $oldDept->dp_status ?? 'active',
+                        'name' => $oldDept->Department_name,
+                        'description' => $oldDept->Department_description ?? null,
+                        'status' => 'active',
                         'supervisor_title_id' => null, // Can be updated later if needed
                         'added_by' => $adminUserId,
                     ]);
 
-                    $this->idMaps['departments'][$oldDept->Department_ID] = $newDept->id;
+                    $this->idMaps['departments'][$oldDept->Facility_dept_ID] = $newDept->id;
                 }
 
                 $this->stats['imported']++;
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing department '{$oldDept->name_of_department}': " . $e->getMessage());
+                $this->error("  Error importing department '{$oldDept->Department_name}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -332,13 +341,15 @@ class ImportFromTshrpDatabase extends Command
 
         if ($oldBuildings->isEmpty()) {
             $this->warn('  No buildings found in TSHRP database');
+
             return;
         }
 
         // Get default workstation
         $defaultWorkstation = \App\Models\workstations::first();
-        if (!$defaultWorkstation) {
+        if (! $defaultWorkstation) {
             $this->error('  No workstations found. Please create at least one workstation first.');
+
             return;
         }
 
@@ -354,10 +365,11 @@ class ImportFromTshrpDatabase extends Command
                     $this->idMaps['buildings'][$oldBuilding->Building_ID] = $existing->id;
                     $this->stats['skipped']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $newBuilding = building::create([
                         'name' => $oldBuilding->BuildingName,
                         'workstation_id' => $defaultWorkstation->id,
@@ -371,7 +383,7 @@ class ImportFromTshrpDatabase extends Command
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing building '{$oldBuilding->BuildingName}': " . $e->getMessage());
+                $this->error("  Error importing building '{$oldBuilding->BuildingName}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -394,6 +406,7 @@ class ImportFromTshrpDatabase extends Command
 
         if ($oldAssetClasses->isEmpty()) {
             $this->warn('  No asset classes found in TSHRP database');
+
             return;
         }
 
@@ -409,10 +422,11 @@ class ImportFromTshrpDatabase extends Command
                     $this->idMaps['assetclasses'][$oldClass->Asset_Class_ID] = $existing->id;
                     $this->stats['skipped']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $depreciation = $oldClass->Asset_Depreciation ?? '0';
                     if (empty(trim($depreciation))) {
                         $depreciation = '0';
@@ -431,7 +445,7 @@ class ImportFromTshrpDatabase extends Command
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing asset class '{$oldClass->Asset_Class_Name}': " . $e->getMessage());
+                $this->error("  Error importing asset class '{$oldClass->Asset_Class_Name}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -454,13 +468,15 @@ class ImportFromTshrpDatabase extends Command
 
         if ($oldAssets->isEmpty()) {
             $this->warn('  No assets found in TSHRP database');
+
             return;
         }
 
         // Get default asset class if asset_class_id is missing
         $defaultAssetClass = assetclass::first();
-        if (!$defaultAssetClass) {
+        if (! $defaultAssetClass) {
             $this->error('  No asset classes found. Please import asset classes first.');
+
             return;
         }
 
@@ -476,10 +492,11 @@ class ImportFromTshrpDatabase extends Command
                     $this->idMaps['assets'][$oldAsset->Asset_ID] = $existing->id;
                     $this->stats['skipped']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $newAsset = asset::create([
                         'name' => $oldAsset->Asset_Name,
                         'type' => $oldAsset->Asset_Type ?? 'current',
@@ -494,7 +511,7 @@ class ImportFromTshrpDatabase extends Command
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing asset '{$oldAsset->Asset_Name}': " . $e->getMessage());
+                $this->error("  Error importing asset '{$oldAsset->Asset_Name}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -514,8 +531,9 @@ class ImportFromTshrpDatabase extends Command
         $this->warn('  ⚠️  Employee import requires proper mapping of all foreign keys.');
         $this->warn('  Please ensure all related data (departments, titles, locations, etc.) are imported first.');
 
-        if (!$this->confirm('  Do you want to continue with employee import?', false)) {
+        if (! $this->confirm('  Do you want to continue with employee import?', false)) {
             $this->info('  Skipping employee import.');
+
             return;
         }
 
@@ -525,13 +543,15 @@ class ImportFromTshrpDatabase extends Command
 
         if ($oldEmployees->isEmpty()) {
             $this->warn('  No employees found in TSHRP database');
+
             return;
         }
 
         // Get required defaults
         $defaults = $this->getEmployeeDefaults();
-        if (!$defaults) {
+        if (! $defaults) {
             $this->error('  Missing required data. Cannot import employees.');
+
             return;
         }
 
@@ -542,7 +562,7 @@ class ImportFromTshrpDatabase extends Command
             try {
                 // Check if already exists by employee number or email
                 $existingByEmpNo = Employee::where('employee_no', $oldEmp->Emp_RER_NO)->first();
-                $existingByEmail = !empty($oldEmp->email_address)
+                $existingByEmail = ! empty($oldEmp->email_address)
                     ? Employee::where('email', $oldEmp->email_address)->first()
                     : null;
 
@@ -550,6 +570,7 @@ class ImportFromTshrpDatabase extends Command
                     $this->stats['skipped']++;
                     $this->addSkipReason("Employee #{$oldEmp->Emp_RER_NO} ({$oldEmp->Full_name}): Already exists with same employee number");
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -557,6 +578,7 @@ class ImportFromTshrpDatabase extends Command
                     $this->stats['skipped']++;
                     $this->addSkipReason("Employee #{$oldEmp->Emp_RER_NO} ({$oldEmp->Full_name}): Already exists with same email");
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -568,7 +590,7 @@ class ImportFromTshrpDatabase extends Command
                 $titleId = $this->idMaps['jobtitles'][$oldEmp->title] ?? $defaults['title_id'];
                 $designationId = $this->idMaps['designations'][$oldEmp->Desagnation_ID] ?? $defaults['designation_id'];
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     Employee::create([
                         'added_by' => $adminUserId,
                         'employee_no' => $oldEmp->Emp_RER_NO,
@@ -599,7 +621,7 @@ class ImportFromTshrpDatabase extends Command
             } catch (\Exception $e) {
                 $this->stats['errors']++;
                 $this->newLine();
-                $this->error("  Error importing employee '{$oldEmp->Full_name}': " . $e->getMessage());
+                $this->error("  Error importing employee '{$oldEmp->Full_name}': ".$e->getMessage());
             }
 
             $progressBar->advance();
@@ -629,8 +651,9 @@ class ImportFromTshrpDatabase extends Command
         $defaults['denomination_id'] = \App\Models\denominations::first()?->id;
 
         foreach ($defaults as $key => $value) {
-            if (!$value) {
+            if (! $value) {
                 $this->error("  Missing required data: {$key}");
+
                 return null;
             }
         }
@@ -729,9 +752,9 @@ class ImportFromTshrpDatabase extends Command
         }
 
         // Display skip reasons if any
-        if (!empty($this->skipReasons)) {
+        if (! empty($this->skipReasons)) {
             $this->newLine();
-            $this->warn('⚠️  Skip Reasons (' . count($this->skipReasons) . ' total):');
+            $this->warn('⚠️  Skip Reasons ('.count($this->skipReasons).' total):');
             $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
             // Check if user wants to see all skip reasons
@@ -766,18 +789,18 @@ class ImportFromTshrpDatabase extends Command
     protected function exportSkipReasons(string $filePath): void
     {
         try {
-            $content = "TSHRP Import Skip Reasons - " . now()->format('Y-m-d H:i:s') . "\n";
-            $content .= str_repeat('=', 80) . "\n\n";
-            $content .= "Total skipped: " . count($this->skipReasons) . "\n\n";
+            $content = 'TSHRP Import Skip Reasons - '.now()->format('Y-m-d H:i:s')."\n";
+            $content .= str_repeat('=', 80)."\n\n";
+            $content .= 'Total skipped: '.count($this->skipReasons)."\n\n";
 
             foreach ($this->skipReasons as $index => $reason) {
-                $content .= ($index + 1) . ". {$reason}\n";
+                $content .= ($index + 1).". {$reason}\n";
             }
 
             file_put_contents($filePath, $content);
             $this->info("  📄 Skip reasons exported to: {$filePath}");
         } catch (\Exception $e) {
-            $this->error("  Failed to export skip reasons: " . $e->getMessage());
+            $this->error('  Failed to export skip reasons: '.$e->getMessage());
         }
     }
 
