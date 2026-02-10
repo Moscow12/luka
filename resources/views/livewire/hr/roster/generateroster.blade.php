@@ -43,79 +43,246 @@
         </div>
     @endif
 
+    {{-- Mode Toggle Buttons --}}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="btn-group w-100" role="group">
+                <button type="button"
+                        wire:click="toggleAutoGenerateMode"
+                        class="btn {{ !$autoGenerateMode ? 'btn-primary' : 'btn-outline-primary' }}">
+                    <i class="fa-solid fa-hand-pointer me-2"></i> Manual Generate
+                </button>
+                <button type="button"
+                        wire:click="toggleAutoGenerateMode"
+                        class="btn {{ $autoGenerateMode ? 'btn-success' : 'btn-outline-success' }}">
+                    <i class="fa-solid fa-robot me-2"></i> Auto Generate Mode
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- Roster Generation Form --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary bg-gradient text-white">
+                <div class="card-header {{ $autoGenerateMode ? 'bg-success' : 'bg-primary' }} bg-gradient text-white">
                     <h5 class="mb-0">
-                        <i class="fa-solid fa-calendar-days me-2"></i> Roster Details
+                        <i class="fa-solid fa-{{ $autoGenerateMode ? 'robot' : 'calendar-days' }} me-2"></i>
+                        {{ $autoGenerateMode ? 'Auto Generate Roster' : 'Manual Roster Details' }}
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
-                        <!-- Roster Date -->
-                        <div class="col-md-3">
-                            <label class="form-label">
-                                <i class="fa-solid fa-calendar text-primary"></i> Roster Date
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" wire:model="rosterDate" class="form-control flatpickr @error('rosterDate') is-invalid @enderror" placeholder="Select Date">
-                            @error('rosterDate')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    @if(!$autoGenerateMode)
+                        {{-- Manual Generate Mode --}}
+                        <div class="row g-3">
+                            <!-- Roster Date -->
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-calendar text-primary"></i> Roster Date
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" wire:model="rosterDate" class="form-control flatpickr @error('rosterDate') is-invalid @enderror" placeholder="Select Date">
+                                @error('rosterDate')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <!-- Shift Selection -->
-                        <div class="col-md-3">
-                            <label class="form-label">
-                                <i class="fa-solid fa-clock text-primary"></i> Shift
-                                <span class="text-danger">*</span>
-                            </label>
-                            <select wire:model="shift" class="form-select @error('shift') is-invalid @enderror">
-                                <option value="">Select Shift</option>
-                                @foreach($shifts as $shiftOption)
-                                    <option value="{{ $shiftOption->id }}">
-                                        {{ $shiftOption->name }} ({{ \Carbon\Carbon::parse($shiftOption->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($shiftOption->end_time)->format('H:i') }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('shift')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <!-- Shift Selection -->
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-clock text-primary"></i> Shift
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select wire:model="shift" class="form-select @error('shift') is-invalid @enderror">
+                                    <option value="">Select Shift</option>
+                                    @foreach($shifts as $shiftOption)
+                                        <option value="{{ $shiftOption->id }}">
+                                            {{ $shiftOption->name }} ({{ \Carbon\Carbon::parse($shiftOption->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($shiftOption->end_time)->format('H:i') }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('shift')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <!-- Shift Type -->
-                        <div class="col-md-3">
-                            <label class="form-label">
-                                <i class="fa-solid fa-tag text-primary"></i> Shift Type
-                            </label>
-                            <select wire:model="shiftType" class="form-select">
-                                <option value="regular">Regular</option>
-                                <option value="overtime">Overtime</option>
-                                <option value="special">Special</option>
-                            </select>
-                        </div>
+                            <!-- Shift Type -->
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-tag text-primary"></i> Shift Type
+                                </label>
+                                <select wire:model="shiftType" class="form-select">
+                                    <option value="regular">Regular</option>
+                                    <option value="overtime">Overtime</option>
+                                    <option value="special">Special</option>
+                                </select>
+                            </div>
 
-                        <!-- Notes -->
-                        <div class="col-md-3">
-                            <label class="form-label">
-                                <i class="fa-solid fa-note-sticky text-primary"></i> Notes (Optional)
-                            </label>
-                            <input type="text" wire:model="notes" class="form-control" placeholder="Add notes...">
-                        </div>
+                            <!-- Notes -->
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-note-sticky text-primary"></i> Notes (Optional)
+                                </label>
+                                <input type="text" wire:model="notes" class="form-control" placeholder="Add notes...">
+                            </div>
 
-                        <!-- Generate Button -->
-                        <div class="col-12">
-                            <button
-                                wire:click="generateRoster"
-                                class="btn btn-success btn-lg w-100"
-                                @if(count($selectedEmployees) === 0) disabled @endif>
-                                <i class="fa-solid fa-plus-circle me-2"></i>
-                                Generate Roster for {{ count($selectedEmployees) }} Selected Employee(s)
-                            </button>
+                            <!-- Generate Button -->
+                            <div class="col-12">
+                                <button
+                                    wire:click="generateRoster"
+                                    class="btn btn-success btn-lg w-100"
+                                    @if(count($selectedEmployees) === 0) disabled @endif>
+                                    <i class="fa-solid fa-plus-circle me-2"></i>
+                                    Generate Roster for {{ count($selectedEmployees) }} Selected Employee(s)
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        {{-- Auto Generate Mode --}}
+                        <div class="row g-3">
+                            <!-- Date Range -->
+                            <div class="col-md-6">
+                                <div class="alert alert-info mb-3">
+                                    <i class="fa-solid fa-info-circle me-2"></i>
+                                    <strong>Auto Generate:</strong> System will distribute selected employees across dates and shifts based on capacity settings.
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label">
+                                            <i class="fa-solid fa-calendar-day text-success"></i> Start Date
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" wire:model="startDate" class="form-control flatpickr @error('startDate') is-invalid @enderror" placeholder="Start Date">
+                                        @error('startDate')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">
+                                            <i class="fa-solid fa-calendar-check text-success"></i> End Date
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" wire:model="endDate" class="form-control flatpickr @error('endDate') is-invalid @enderror" placeholder="End Date">
+                                        @error('endDate')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shift Capacities -->
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-users-cog text-success"></i> Shift Capacities (Staff per Shift)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="border rounded p-3 bg-light">
+                                    @foreach($shifts as $shiftOption)
+                                        <div class="mb-2">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <label class="form-label mb-0 small">
+                                                    <i class="fa-solid fa-clock me-1"></i>
+                                                    {{ $shiftOption->name }}
+                                                    <span class="text-muted">({{ \Carbon\Carbon::parse($shiftOption->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($shiftOption->end_time)->format('H:i') }})</span>
+                                                </label>
+                                                <input type="number"
+                                                       wire:model="shiftCapacities.{{ $shiftOption->id }}"
+                                                       class="form-control form-control-sm"
+                                                       style="width: 80px;"
+                                                       min="0"
+                                                       max="{{ count($selectedEmployees) }}"
+                                                       placeholder="0">
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                    @error('shiftCapacities')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Distribution Method & Shift Type -->
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-sitemap text-success"></i> Distribution Method
+                                </label>
+                                <select wire:model="distributionMethod" class="form-select">
+                                    <option value="round_robin">Round Robin (Fair Distribution)</option>
+                                    <option value="random">Random Assignment</option>
+                                    <option value="balanced">Balanced Load</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-tag text-success"></i> Shift Type
+                                </label>
+                                <select wire:model="shiftType" class="form-select">
+                                    <option value="regular">Regular</option>
+                                    <option value="overtime">Overtime</option>
+                                    <option value="special">Special</option>
+                                </select>
+                            </div>
+
+                            <!-- Summary Card -->
+                            @if(count($selectedEmployees) > 0 && $startDate && $endDate)
+                                @php
+                                    $start = \Carbon\Carbon::parse($startDate);
+                                    $end = \Carbon\Carbon::parse($endDate);
+                                    $daysDiff = $start->diffInDays($end) + 1;
+                                    $totalCapacity = array_sum($shiftCapacities);
+                                    $estimatedRosters = $daysDiff * $totalCapacity;
+                                @endphp
+                                <div class="col-12">
+                                    <div class="card bg-success-subtle border-success">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-success">
+                                                <i class="fa-solid fa-chart-line me-2"></i> Generation Summary
+                                            </h6>
+                                            <div class="row g-3 mt-1">
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <div class="fs-4 fw-bold text-success">{{ count($selectedEmployees) }}</div>
+                                                        <div class="small text-muted">Selected Employees</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <div class="fs-4 fw-bold text-success">{{ $daysDiff }}</div>
+                                                        <div class="small text-muted">Days</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <div class="fs-4 fw-bold text-success">{{ $totalCapacity }}</div>
+                                                        <div class="small text-muted">Staff per Day</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <div class="fs-4 fw-bold text-success">~{{ $estimatedRosters }}</div>
+                                                        <div class="small text-muted">Est. Rosters</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Auto Generate Button -->
+                            <div class="col-12">
+                                <button
+                                    wire:click="autoGenerateRoster"
+                                    class="btn btn-success btn-lg w-100"
+                                    @if(count($selectedEmployees) === 0) disabled @endif>
+                                    <i class="fa-solid fa-robot me-2"></i>
+                                    Auto Generate Roster for {{ count($selectedEmployees) }} Selected Employee(s)
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

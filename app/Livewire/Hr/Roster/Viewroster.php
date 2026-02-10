@@ -260,9 +260,18 @@ class Viewroster extends Component
 
     private function getEmployees()
     {
+        $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        // Get employee IDs that have rosters in the selected month
+        $employeeIdsWithRosters = employeeroster::whereBetween('roster_date', [$startDate, $endDate])
+            ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
+            ->distinct()
+            ->pluck('employee_id');
+
         return Employee::query()
             ->with(['department', 'designation'])
-            ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
+            ->whereIn('id', $employeeIdsWithRosters)
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('first_name', 'like', '%'.$this->search.'%')
@@ -271,7 +280,6 @@ class Viewroster extends Component
                         ->orWhere('employee_no', 'like', '%'.$this->search.'%');
                 });
             })
-            ->whereRaw('LOWER(status) = ?', ['active'])
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get();
