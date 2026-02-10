@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\Jobtitle;
 use App\Models\regions;
 use App\Models\Role;
+use App\Models\SmsApiSetting;
 use App\Models\street;
 use App\Models\User;
 use App\Models\villages;
@@ -64,6 +65,11 @@ class Addstaff extends Component
     public $user_password_confirmation;
 
     public $selected_role;
+
+    // SMS notification toggle
+    public $sendSmsNotification = false;
+
+    public $hasSmsProvider = false;
 
     public $first_name;
 
@@ -167,6 +173,9 @@ class Addstaff extends Component
             $this->hasExistingUser = ! empty($employee->user_id);
         }
         $this->listdata();
+
+        // Check if SMS provider is configured
+        $this->hasSmsProvider = SmsApiSetting::where('is_active', true)->exists();
     }
 
     public function listdata()
@@ -246,6 +255,12 @@ class Addstaff extends Component
             $rules['user_password'] = ['required', 'string', 'min:8', 'confirmed'];
             $rules['selected_role'] = ['required', 'exists:roles,id'];
 
+            // Validate email is unique in users table (it must be unique in both tables)
+            $rules['email'] = ['required', 'email', 'max:255', 'unique:employees,email,'.$this->employee_id, 'unique:users,email'];
+
+            // Validate phone is unique in users table
+            $rules['phone'] = ['required', 'string', 'max:20', 'unique:users,phone_number'];
+
             $messages['username.required'] = 'Username is required for user account.';
             $messages['username.min'] = 'Username must be at least 3 characters.';
             $messages['username.max'] = 'Username cannot exceed 50 characters.';
@@ -254,6 +269,8 @@ class Addstaff extends Component
             $messages['user_password.min'] = 'Password must be at least 8 characters.';
             $messages['user_password.confirmed'] = 'Password confirmation does not match.';
             $messages['selected_role.required'] = 'Please select a role for the user.';
+            $messages['email.unique'] = 'This email is already registered to another user or employee.';
+            $messages['phone.unique'] = 'This phone number is already registered to another user.';
         }
 
         $this->validate($rules, $messages);
@@ -333,6 +350,11 @@ class Addstaff extends Component
                     $createdUser->assignRole($selectedRoleName);
                 }
 
+                // Send SMS notification if enabled
+                if ($this->createUserAccount && $this->sendSmsNotification && $this->phone) {
+                    $this->sendCredentialsSms($this->phone, $this->username, $this->user_password, $this->first_name);
+                }
+
                 session()->flash('success', $this->createUserAccount ? 'Staff updated and user account created successfully!' : 'Staff updated successfully!');
             } else {
                 Employee::create([
@@ -372,6 +394,11 @@ class Addstaff extends Component
                 // Assign role after transaction commits to avoid FK constraint issues
                 if ($createdUser && $selectedRoleName) {
                     $createdUser->assignRole($selectedRoleName);
+                }
+
+                // Send SMS notification if enabled
+                if ($this->createUserAccount && $this->sendSmsNotification && $this->phone) {
+                    $this->sendCredentialsSms($this->phone, $this->username, $this->user_password, $this->first_name);
                 }
 
                 $this->listdata();
@@ -430,6 +457,31 @@ class Addstaff extends Component
             $this->villages = street::where('ward_id', $this->ward_id)->orderBy('name')->get();
         } else {
             $this->villages = collect(); // Clear streets if no district is selected
+        }
+    }
+
+    /**
+     * Send user credentials via SMS
+     */
+    private function sendCredentialsSms($phoneNumber, $username, $password, $firstName)
+    {
+        try {
+            $message = "Dear {$firstName},\n\n";
+            $message .= "Your user account has been created successfully!\n\n";
+            $message .= "Login Details:\n";
+            $message .= "Username: {$username}\n";
+            $message .= "Password: {$password}\n\n";
+            $message .= "Please login and change your password immediately.\n\n";
+            $message .= '-HRP System';
+
+            $result = send_sms($phoneNumber, $message);
+
+            if ($result['success']) {
+                session()->flash('success', session('success').' SMS notification sent successfully!');
+            }
+        } catch (\Exception $e) {
+            // Don't fail the entire process if SMS fails, just log it
+            \Illuminate\Support\Facades\Log::error('Failed to send credentials SMS: '.$e->getMessage());
         }
     }
 

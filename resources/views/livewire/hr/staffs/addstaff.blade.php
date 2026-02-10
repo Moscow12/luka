@@ -564,6 +564,23 @@
                                 @error('selected_role') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
+                            @if($hasSmsProvider)
+                            <div class="border-top pt-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="sendSmsNotification"
+                                        wire:model="sendSmsNotification">
+                                    <label class="form-check-label fw-medium" for="sendSmsNotification">
+                                        <i class="fa-solid fa-mobile-screen me-1 text-success"></i>
+                                        Send credentials via SMS
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fa-solid fa-info-circle me-1"></i>
+                                    Username and password will be sent to the staff's phone number
+                                </small>
+                            </div>
+                            @endif
+
                             <small class="text-muted">
                                 <i class="fa-solid fa-info-circle me-1"></i>
                                 Password must be at least 8 characters
