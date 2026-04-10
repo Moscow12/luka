@@ -173,6 +173,33 @@ class Generateroster extends Component
         $this->reset(['notes']);
     }
 
+    /**
+     * Check if employee worked night shift yesterday and needs rest
+     */
+    private function needsRestAfterNightShift($employeeId, $currentDate)
+    {
+        $yesterday = \Carbon\Carbon::parse($currentDate)->subDay();
+
+        // Get yesterday's roster
+        $yesterdayRoster = employeeroster::where('employee_id', $employeeId)
+            ->where('roster_date', $yesterday->format('Y-m-d'))
+            ->with('shift')
+            ->first();
+
+        if (! $yesterdayRoster || ! $yesterdayRoster->shift) {
+            return false;
+        }
+
+        // Check if it was a night shift (shift ending after midnight or starting after 10 PM)
+        $shiftEndTime = \Carbon\Carbon::parse($yesterdayRoster->shift->end_time);
+        $shiftStartTime = \Carbon\Carbon::parse($yesterdayRoster->shift->start_time);
+
+        // Night shift typically starts after 8 PM or ends before 8 AM
+        $isNightShift = $shiftStartTime->hour >= 20 || $shiftEndTime->hour <= 8;
+
+        return $isNightShift;
+    }
+
     public function autoGenerateRoster()
     {
         // Validation
@@ -229,44 +256,155 @@ class Generateroster extends Component
             // Get selected employees
             $employees = Employee::whereIn('id', $this->selectedEmployees)->get();
             $employeePool = $employees->toArray();
-            $employeeIndex = 0;
 
-            // Generate rosters for each date
-            $currentDate = $start->copy();
-            while ($currentDate->lte($end)) {
-                foreach ($this->shiftCapacities as $shiftId => $capacity) {
-                    if ($capacity <= 0) {
-                        continue;
+            // Get active shifts for rotation
+            $activeShifts = array_keys(array_filter($this->shiftCapacities, fn ($capacity) => $capacity > 0));
+
+            // Track employee shift assignments for balanced distribution
+            $employeeShiftTracker = [];
+            foreach ($employeePool as $employee) {
+                $employeeShiftTracker[$employee['id']] = [
+                    'last_shift_id' => null,
+                    'shift_counts' => [],
+                    'days_worked' => 0,
+                ];
+            }
+
+            if ($this->distributionMethod === 'round_robin') {
+                // Round Robin: Rotate employees through shifts fairly
+                $employeeIndex = 0;
+
+                $currentDate = $start->copy();
+                while ($currentDate->lte($end)) {
+                    foreach ($this->shiftCapacities as $shiftId => $capacity) {
+                        if ($capacity <= 0) {
+                            continue;
+                        }
+
+                        $assignedCount = 0;
+                        $attempts = 0;
+                        $maxAttempts = count($employeePool) * 2;
+
+                        while ($assignedCount < $capacity && $attempts < $maxAttempts) {
+                            $employee = $employeePool[$employeeIndex % count($employeePool)];
+                            $employeeId = $employee['id'];
+
+                            // Check if employee needs rest after night shift
+                            $needsRest = $this->needsRestAfterNightShift($employeeId, $currentDate);
+
+                            // Check if employee already has a roster for this date
+                            $hasConflict = employeeroster::where('employee_id', $employeeId)
+                                ->where('roster_date', $currentDate->format('Y-m-d'))
+                                ->exists();
+
+                            if (! $hasConflict && ! $needsRest) {
+                                employeeroster::create([
+                                    'employee_id' => $employeeId,
+                                    'department_id' => $employee['department_id'],
+                                    'shift_id' => $shiftId,
+                                    'roster_date' => $currentDate->format('Y-m-d'),
+                                    'shift_type' => $this->shiftType,
+                                    'status' => 'scheduled',
+                                    'notes' => 'Auto-generated (round_robin)',
+                                    'added_by' => Auth::id(),
+                                ]);
+
+                                $created++;
+                                $assignedCount++;
+                            } else {
+                                $skipped++;
+                            }
+
+                            $employeeIndex++;
+                            $attempts++;
+                        }
+
+                        if ($assignedCount < $capacity) {
+                            $shift = shifts::find($shiftId);
+                            $errors[] = "Could not fill {$shift->name} on {$currentDate->format('Y-m-d')} - Only {$assignedCount}/{$capacity} assigned";
+                        }
                     }
 
-                    $assignedCount = 0;
-                    $attempts = 0;
-                    $maxAttempts = count($employeePool) * 2;
+                    $currentDate->addDay();
+                }
+            } elseif ($this->distributionMethod === 'balanced') {
+                // Balanced: Rotate shifts for each employee across the period
+                $employeeIndex = 0;
+                $shiftRotationPattern = $activeShifts; // Shifts to rotate through
 
-                    while ($assignedCount < $capacity && $attempts < $maxAttempts) {
+                $currentDate = $start->copy();
+                while ($currentDate->lte($end)) {
+                    // Calculate total staff needed for this day
+                    $totalStaffNeeded = array_sum($this->shiftCapacities);
+                    $staffAssigned = 0;
+
+                    // Assign employees to shifts for this day
+                    $attempts = 0;
+                    $maxAttempts = count($employeePool) * 3;
+
+                    while ($staffAssigned < $totalStaffNeeded && $attempts < $maxAttempts) {
                         $employee = $employeePool[$employeeIndex % count($employeePool)];
                         $employeeId = $employee['id'];
+
+                        // Check if employee needs rest after night shift
+                        $needsRest = $this->needsRestAfterNightShift($employeeId, $currentDate);
 
                         // Check if employee already has a roster for this date
                         $hasConflict = employeeroster::where('employee_id', $employeeId)
                             ->where('roster_date', $currentDate->format('Y-m-d'))
                             ->exists();
 
-                        if (! $hasConflict) {
-                            // Create roster
-                            employeeroster::create([
-                                'employee_id' => $employeeId,
-                                'department_id' => $employee['department_id'],
-                                'shift_id' => $shiftId,
-                                'roster_date' => $currentDate->format('Y-m-d'),
-                                'shift_type' => $this->shiftType,
-                                'status' => 'scheduled',
-                                'notes' => 'Auto-generated ('.$this->distributionMethod.')',
-                                'added_by' => Auth::id(),
-                            ]);
+                        if (! $hasConflict && ! $needsRest) {
+                            // Determine which shift to assign based on rotation
+                            $lastShift = $employeeShiftTracker[$employeeId]['last_shift_id'];
+                            $daysWorked = $employeeShiftTracker[$employeeId]['days_worked'];
 
-                            $created++;
-                            $assignedCount++;
+                            // Create rotation pattern: work 2-3 days, then potentially off
+                            // Rotate through available shifts
+                            $assignedShift = null;
+
+                            foreach ($this->shiftCapacities as $shiftId => $capacity) {
+                                if ($capacity <= 0) {
+                                    continue;
+                                }
+
+                                // Get current count for this shift on this day
+                                $currentShiftCount = employeeroster::where('shift_id', $shiftId)
+                                    ->where('roster_date', $currentDate->format('Y-m-d'))
+                                    ->count();
+
+                                // Check if this shift still needs staff
+                                if ($currentShiftCount < $capacity) {
+                                    // Prefer different shift than last assigned
+                                    if ($shiftId != $lastShift || count($activeShifts) === 1) {
+                                        $assignedShift = $shiftId;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // If we found a shift, assign it
+                            if ($assignedShift) {
+                                employeeroster::create([
+                                    'employee_id' => $employeeId,
+                                    'department_id' => $employee['department_id'],
+                                    'shift_id' => $assignedShift,
+                                    'roster_date' => $currentDate->format('Y-m-d'),
+                                    'shift_type' => $this->shiftType,
+                                    'status' => 'scheduled',
+                                    'notes' => 'Auto-generated (balanced)',
+                                    'added_by' => Auth::id(),
+                                ]);
+
+                                // Update tracker
+                                $employeeShiftTracker[$employeeId]['last_shift_id'] = $assignedShift;
+                                $employeeShiftTracker[$employeeId]['days_worked']++;
+                                $employeeShiftTracker[$employeeId]['shift_counts'][$assignedShift] =
+                                    ($employeeShiftTracker[$employeeId]['shift_counts'][$assignedShift] ?? 0) + 1;
+
+                                $created++;
+                                $staffAssigned++;
+                            }
                         } else {
                             $skipped++;
                         }
@@ -275,14 +413,80 @@ class Generateroster extends Component
                         $attempts++;
                     }
 
-                    // If couldn't fill the capacity, note it
-                    if ($assignedCount < $capacity) {
-                        $shift = shifts::find($shiftId);
-                        $errors[] = "Could not fill {$shift->name} on {$currentDate->format('Y-m-d')} - Only {$assignedCount}/{$capacity} assigned";
-                    }
+                    $currentDate->addDay();
                 }
+            } elseif ($this->distributionMethod === 'random') {
+                // Random: Randomly assign employees to shifts with rotation
+                $currentDate = $start->copy();
 
-                $currentDate->addDay();
+                while ($currentDate->lte($end)) {
+                    // Shuffle employees for this day
+                    $shuffledEmployees = $employeePool;
+                    shuffle($shuffledEmployees);
+
+                    $employeeIndex = 0;
+
+                    // For each shift that needs staff
+                    foreach ($this->shiftCapacities as $shiftId => $capacity) {
+                        if ($capacity <= 0) {
+                            continue;
+                        }
+
+                        $assignedCount = 0;
+                        $attempts = 0;
+                        $maxAttempts = count($shuffledEmployees) * 2;
+
+                        while ($assignedCount < $capacity && $attempts < $maxAttempts) {
+                            $employee = $shuffledEmployees[$employeeIndex % count($shuffledEmployees)];
+                            $employeeId = $employee['id'];
+
+                            // Check if employee needs rest after night shift
+                            $needsRest = $this->needsRestAfterNightShift($employeeId, $currentDate);
+
+                            // Check conflicts
+                            $hasConflict = employeeroster::where('employee_id', $employeeId)
+                                ->where('roster_date', $currentDate->format('Y-m-d'))
+                                ->exists();
+
+                            // Check if employee worked this shift too recently (within last 2 days)
+                            $recentShift = employeeroster::where('employee_id', $employeeId)
+                                ->where('shift_id', $shiftId)
+                                ->whereBetween('roster_date', [
+                                    $currentDate->copy()->subDays(2)->format('Y-m-d'),
+                                    $currentDate->copy()->subDay()->format('Y-m-d'),
+                                ])
+                                ->exists();
+
+                            if (! $hasConflict && ! $recentShift && ! $needsRest) {
+                                employeeroster::create([
+                                    'employee_id' => $employeeId,
+                                    'department_id' => $employee['department_id'],
+                                    'shift_id' => $shiftId,
+                                    'roster_date' => $currentDate->format('Y-m-d'),
+                                    'shift_type' => $this->shiftType,
+                                    'status' => 'scheduled',
+                                    'notes' => 'Auto-generated (random with rotation)',
+                                    'added_by' => Auth::id(),
+                                ]);
+
+                                $created++;
+                                $assignedCount++;
+                            } else {
+                                $skipped++;
+                            }
+
+                            $employeeIndex++;
+                            $attempts++;
+                        }
+
+                        if ($assignedCount < $capacity) {
+                            $shift = shifts::find($shiftId);
+                            $errors[] = "Could not fill {$shift->name} on {$currentDate->format('Y-m-d')} - Only {$assignedCount}/{$capacity} assigned";
+                        }
+                    }
+
+                    $currentDate->addDay();
+                }
             }
 
             \DB::commit();
