@@ -443,6 +443,9 @@
                 <a class="nav-link {{ request()->routeIs('setup.assetconfig') ? 'active' : '' }}" href="{{ route('setup.assetconfig') }}"><i class="fa-solid fa-boxes-stacked"></i> Asset Configuration</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('setup.product-categories') ? 'active' : '' }}" href="{{ route('setup.product-categories') }}"><i class="fa-solid fa-boxes-stacked"></i> Product Categories</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('setup.termination-reasons') ? 'active' : '' }}" href="{{ route('setup.termination-reasons') }}"><i class="fa-solid fa-door-open"></i> Termination Reasons</a>
             </li>
             <li class="nav-item">   

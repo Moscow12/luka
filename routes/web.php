@@ -65,6 +65,7 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/asset-configuration', App\Livewire\Setup\Asset\Assetconf::class)->name('setup.assetconfig');
     Route::get('/termination-reasons', App\Livewire\Setup\TerminationReasons::class)->name('setup.termination-reasons');
     Route::get('/backuprecovery', App\Livewire\Setup\Backuprecovery::class)->name('setup.backuprecovery');
+    Route::get('/products/categories', App\Livewire\Setup\Products\Productcategory::class)->name('setup.product-categories');
     Route::get('/setup/smsapis', App\Livewire\Setup\Smsapis::class)->name('setup.smsapis');
     Route::get('/setup/smslogs', App\Livewire\Setup\Smslogs::class)->name('setup.smslogs');
 });
@@ -186,5 +187,12 @@ Route::prefix('performance')->middleware('auth')->group(function () {
 
     // audit logs
     Route::get('audit-logs', Auditlog::class)->name('audit-logs');
+});
+
+// storage and supply and procurement routes
+Route::prefix('supply')->middleware('auth')->group(function () {
+    // Route::get('purchase-orders', App\Livewire\Supply\PurchaseOrders::class)->name('supply.purchase.orders');
+    // Route::get('stock-management', App\Livewire\Supply\StockManagement::class)->name('supply.stock.management');
+    // Route::get('inventory-reports', App\Livewire\Supply\InventoryReports::class)->name('supply.inventory.reports');
 });
 
