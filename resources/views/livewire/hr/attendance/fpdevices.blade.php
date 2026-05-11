@@ -173,13 +173,21 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted small">Device Type:</span>
+                                            <span class="badge bg-{{ $device->device_type === 'zkteco' ? 'primary' : 'info' }}">
+                                                {{ strtoupper($device->device_type ?? 'ZKTeco') }}
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">IP Address:</span>
                                             <span class="fw-semibold font-monospace">{{ $device->ip_address }}</span>
                                         </div>
+                                        @if($device->device_type === 'zkteco' && $device->port)
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">Port:</span>
                                             <span class="fw-semibold">{{ $device->port }}</span>
                                         </div>
+                                        @endif
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">Last Sync:</span>
                                             <span class="fw-semibold">
@@ -330,7 +338,21 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-8">
+                                <div class="col-12">
+                                    <label for="deviceType" class="form-label">Device Type <span class="text-danger">*</span></label>
+                                    <select wire:model.live="deviceForm.device_type"
+                                        class="form-select @error('deviceForm.device_type') is-invalid @enderror"
+                                        id="deviceType">
+                                        <option value="zkteco">ZKTeco</option>
+                                        <option value="anviz">Anviz</option>
+                                    </select>
+                                    @error('deviceForm.device_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Select your fingerprint device manufacturer</div>
+                                </div>
+
+                                <div class="col-md-{{ $deviceForm['device_type'] === 'anviz' ? '12' : '8' }}">
                                     <label for="ipAddress" class="form-label">IP Address <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fa-solid fa-network-wired"></i></span>
@@ -341,9 +363,10 @@
                                     @error('deviceForm.ip_address')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Enter the ZKTeco device IP address</div>
+                                    <div class="form-text">Enter the device IP address</div>
                                 </div>
 
+                                @if($deviceForm['device_type'] === 'zkteco')
                                 <div class="col-md-4">
                                     <label for="port" class="form-label">Port <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="deviceForm.port"
@@ -354,6 +377,7 @@
                                     @enderror
                                     <div class="form-text">Default: 4370</div>
                                 </div>
+                                @endif
 
                                 <div class="col-12">
                                     <label for="location" class="form-label">Location</label>
@@ -393,8 +417,13 @@
                                             <i class="fa-solid fa-info-circle me-1"></i> Connection Information
                                         </h6>
                                         <ul class="mb-0 small">
+                                            @if($deviceForm['device_type'] === 'zkteco')
                                             <li>Make sure the ZKTeco device is powered on and connected to the network</li>
                                             <li>The default port for ZKTeco devices is <strong>4370</strong></li>
+                                            @else
+                                            <li>Make sure the Anviz device is powered on and connected to the network</li>
+                                            <li>Anviz devices do not require a port number - only IP address is needed</li>
+                                            @endif
                                             <li>Ensure your server can reach the device IP address (check firewall rules)</li>
                                             <li>After registering, use the "Test" button to verify connectivity</li>
                                         </ul>

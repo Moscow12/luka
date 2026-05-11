@@ -13,6 +13,7 @@ class FpDevice extends Model
 
     protected $fillable = [
         'name',
+        'device_type',
         'ip_address',
         'port',
         'location',

@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('requisitionitems', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('requisition_id')->constrained('requisitions')->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->foreignUuid('requisition_id')->constrained('requisitions')->cascadeOnDelete();
+            $table->foreignUuid('product_id')->constrained('products')->cascadeOnDelete();
             $table->integer('quantity');
             $table->string('remarks')->nullable();
             $table->boolean('require_purchase_order')->default(false)->nullable();
             $table->boolean('is_approved')->default(false)->nullable();
             $table->boolean('is_rejected')->default(false)->nullable();
             $table->string('progress')->default('pending')->comment('pending, approved, rejected', 'procurement');
-            $table->foreignId('added_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

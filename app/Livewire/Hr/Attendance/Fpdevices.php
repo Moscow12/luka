@@ -34,6 +34,7 @@ class Fpdevices extends Component
     // Device Form
     public $deviceForm = [
         'name' => '',
+        'device_type' => 'zkteco',
         'ip_address' => '',
         'port' => 4370,
         'location' => '',
@@ -72,6 +73,7 @@ class Fpdevices extends Component
         $this->editingDeviceId = null;
         $this->deviceForm = [
             'name' => '',
+            'device_type' => 'zkteco',
             'ip_address' => '',
             'port' => 4370,
             'location' => '',
@@ -91,8 +93,9 @@ class Fpdevices extends Component
         $device = FpDevice::findOrFail($deviceId);
         $this->deviceForm = [
             'name' => $device->name,
+            'device_type' => $device->device_type ?? 'zkteco',
             'ip_address' => $device->ip_address,
-            'port' => $device->port,
+            'port' => $device->port ?? 4370,
             'location' => $device->location,
             'description' => $device->description,
             'is_active' => $device->is_active,
@@ -104,8 +107,9 @@ class Fpdevices extends Component
     {
         $rules = [
             'deviceForm.name' => 'required|string|max:255',
+            'deviceForm.device_type' => 'required|in:zkteco,anviz',
             'deviceForm.ip_address' => 'required|ip',
-            'deviceForm.port' => 'required|integer|min:1|max:65535',
+            'deviceForm.port' => 'nullable|integer|min:1|max:65535|required_if:deviceForm.device_type,zkteco',
             'deviceForm.location' => 'nullable|string|max:255',
             'deviceForm.description' => 'nullable|string',
             'deviceForm.is_active' => 'boolean',
@@ -113,9 +117,11 @@ class Fpdevices extends Component
 
         $messages = [
             'deviceForm.name.required' => 'Device name is required.',
+            'deviceForm.device_type.required' => 'Device type is required.',
+            'deviceForm.device_type.in' => 'Invalid device type selected.',
             'deviceForm.ip_address.required' => 'IP address is required.',
             'deviceForm.ip_address.ip' => 'Please enter a valid IP address.',
-            'deviceForm.port.required' => 'Port number is required.',
+            'deviceForm.port.required_if' => 'Port number is required for ZKTeco devices.',
             'deviceForm.port.integer' => 'Port must be a number.',
         ];
 
@@ -126,8 +132,9 @@ class Fpdevices extends Component
 
             $data = [
                 'name' => $this->deviceForm['name'],
+                'device_type' => $this->deviceForm['device_type'],
                 'ip_address' => $this->deviceForm['ip_address'],
-                'port' => $this->deviceForm['port'],
+                'port' => $this->deviceForm['device_type'] === 'zkteco' ? $this->deviceForm['port'] : null,
                 'location' => $this->deviceForm['location'],
                 'description' => $this->deviceForm['description'],
                 'is_active' => $this->deviceForm['is_active'],
@@ -205,24 +212,36 @@ class Fpdevices extends Component
             $pingResult = $this->pingDevice($device->ip_address);
 
             if ($pingResult) {
-                // Try to connect to the port
-                $socketResult = $this->testSocketConnection($device->ip_address, $device->port);
-
-                if ($socketResult) {
-                    // Update device status
+                // For Anviz devices, ping is sufficient since they don't use port connection
+                if ($device->device_type === 'anviz') {
                     $device->update([
                         'status' => 'active',
                         'last_connected_at' => now(),
                     ]);
 
                     $this->testStatus = 'success';
-                    $this->testResult = 'Connection successful! Device is reachable and responding on port '.$device->port;
+                    $this->testResult = 'Connection successful! Anviz device is reachable at '.$device->ip_address;
                     session()->flash('success', 'Device connection test passed!');
                 } else {
-                    $device->update(['status' => 'offline']);
-                    $this->testStatus = 'error';
-                    $this->testResult = 'Device is reachable but port '.$device->port.' is not responding. Please check if the ZKTeco service is running.';
-                    session()->flash('error', 'Port connection failed!');
+                    // For ZKTeco devices, try to connect to the port
+                    $socketResult = $this->testSocketConnection($device->ip_address, $device->port);
+
+                    if ($socketResult) {
+                        // Update device status
+                        $device->update([
+                            'status' => 'active',
+                            'last_connected_at' => now(),
+                        ]);
+
+                        $this->testStatus = 'success';
+                        $this->testResult = 'Connection successful! Device is reachable and responding on port '.$device->port;
+                        session()->flash('success', 'Device connection test passed!');
+                    } else {
+                        $device->update(['status' => 'offline']);
+                        $this->testStatus = 'error';
+                        $this->testResult = 'Device is reachable but port '.$device->port.' is not responding. Please check if the ZKTeco service is running.';
+                        session()->flash('error', 'Port connection failed!');
+                    }
                 }
             } else {
                 $device->update(['status' => 'offline']);
@@ -264,15 +283,22 @@ class Fpdevices extends Component
         try {
             $device = FpDevice::findOrFail($deviceId);
 
-            // Check if device is reachable first
-            if (! $this->testSocketConnection($device->ip_address, $device->port)) {
+            // Handle different device types
+            if ($device->device_type === 'anviz') {
+                session()->flash('error', 'Anviz device sync is not yet implemented. Please use Anviz software or API for now.');
+
+                return;
+            }
+
+            // Check if device is reachable first (ZKTeco only)
+            if ($device->device_type === 'zkteco' && ! $this->testSocketConnection($device->ip_address, $device->port)) {
                 $device->update(['status' => 'offline']);
                 session()->flash('error', 'Cannot sync - device is offline!');
 
                 return;
             }
 
-            // Call Python script to get attendance data
+            // Call Python script to get attendance data (ZKTeco)
             $pythonScript = base_path('public/zkteco_sync.py');
             $pythonVenv = base_path('zkteco_venv/bin/python3');
 

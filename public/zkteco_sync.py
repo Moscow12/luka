@@ -52,8 +52,18 @@ def sync_device(ip, port, days_back=7):
     conn = None
     try:
         # Create ZK connection with shorter timeout
-        zk = ZK(ip, port=int(port), timeout=10, password=0, force_udp=False, ommit_ping=False)
-        conn = zk.connect()
+        # Try TCP first, then UDP if it fails
+        zk = ZK(ip, port=int(port), timeout=15, password=0, force_udp=False, ommit_ping=False)
+        try:
+            conn = zk.connect()
+        except Exception as tcp_error:
+            # If TCP fails, try UDP
+            zk = ZK(ip, port=int(port), timeout=15, password=0, force_udp=True, ommit_ping=False)
+            try:
+                conn = zk.connect()
+            except Exception as udp_error:
+                output_error(f"Connection failed (TCP: {str(tcp_error)[:50]}, UDP: {str(udp_error)[:50]})")
+                return
 
         if not conn:
             output_error(f"Failed to connect to device at {ip}:{port}")
@@ -135,6 +145,15 @@ def sync_device(ip, port, days_back=7):
             "days_synced": days_back
         })
 
+    except BrokenPipeError as e:
+        signal.alarm(0)
+        if conn:
+            try:
+                conn.enable_device()
+                conn.disconnect()
+            except:
+                pass
+        output_error("Connection lost (Broken pipe). Device may have closed connection. Try: 1) Restart device 2) Check network stability 3) Reduce sync frequency")
     except Exception as e:
         signal.alarm(0)
         if conn:
@@ -143,7 +162,13 @@ def sync_device(ip, port, days_back=7):
                 conn.disconnect()
             except:
                 pass
-        output_error(str(e))
+        error_msg = str(e)
+        # Make error message more helpful
+        if "Broken pipe" in error_msg or "errno 32" in error_msg.lower():
+            error_msg = "Connection lost during sync. Device closed connection unexpectedly. Try restarting the device."
+        elif "timeout" in error_msg.lower():
+            error_msg = "Device timeout. Device may be busy or have too many records. Try syncing fewer days."
+        output_error(error_msg)
 
 def main():
     if len(sys.argv) < 3:

@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('fp_devices', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->enum('device_type', ['zkteco', 'anviz'])->default('zkteco');
             $table->string('ip_address');
-            $table->integer('port')->default(4370);
+            $table->integer('port')->nullable();
             $table->string('location')->nullable();
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive', 'offline'])->default('inactive');
