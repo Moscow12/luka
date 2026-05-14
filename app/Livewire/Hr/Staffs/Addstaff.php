@@ -467,12 +467,11 @@ class Addstaff extends Component
     {
         try {
             $message = "Dear {$firstName},\n\n";
-            $message .= "Your user account has been created successfully!\n\n";
             $message .= "Login Details:\n";
             $message .= "Username: {$username}\n";
             $message .= "Password: {$password}\n\n";
-            $message .= "Please login and change your password immediately.\n\n";
-            $message .= '-HRP System';
+            $message .= "Please login. \n\n";
+            $message .= '-HRP System Link https://hrp.stjosephhospitalmoshi.or.tz/auth/login';
 
             $result = send_sms($phoneNumber, $message);
 
