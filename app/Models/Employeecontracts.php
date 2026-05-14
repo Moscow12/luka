@@ -27,12 +27,16 @@ class Employeecontracts extends Model
         'base_salary',
         'attachment',
         'description',
+        'termination_reason',
+        'termination_date',
+        'termination_notes',
         'added_by',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'expire_date' => 'date',
+        'termination_date' => 'date',
     ];
 
     public function added_by()
@@ -95,6 +99,14 @@ class Employeecontracts extends Model
     }
 
     /**
+     * Check if contract is terminated
+     */
+    public function isTerminated(): bool
+    {
+        return $this->status === 'terminated';
+    }
+
+    /**
      * Check if contract is about to expire (based on expirenotification days)
      */
     public function isAboutToExpire(): bool
@@ -118,6 +130,7 @@ class Employeecontracts extends Model
             'active' => $this->isAboutToExpire() ? 'bg-warning' : 'bg-success',
             'expired' => 'bg-danger',
             'suspended' => 'bg-secondary',
+            'terminated' => 'bg-dark',
             default => 'bg-primary'
         };
     }
@@ -135,6 +148,29 @@ class Employeecontracts extends Model
             return 'Expiring Soon';
         }
 
+        if ($this->isTerminated() && $this->termination_reason) {
+            return ucfirst(str_replace('_', ' ', $this->termination_reason));
+        }
+
         return ucfirst($this->status);
+    }
+
+    /**
+     * Get formatted termination reason label
+     */
+    public function getTerminationReasonLabel(): string
+    {
+        return match ($this->termination_reason) {
+            'contract_ended' => 'Contract Ended',
+            'resigned' => 'Resigned',
+            'terminated' => 'Terminated',
+            'deceased' => 'Deceased',
+            'transferred' => 'Transferred',
+            'retired' => 'Retired',
+            'study_leave' => 'Study Leave',
+            'absconded' => 'Absconded',
+            'other' => 'Other',
+            default => 'N/A'
+        };
     }
 }

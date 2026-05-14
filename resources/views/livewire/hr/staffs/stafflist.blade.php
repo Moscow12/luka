@@ -119,11 +119,18 @@
                             <div class="col-12 col-md-6 col-lg-4">
                                 <label class="form-label small text-muted mb-1">Status</label>
                                 <select wire:model.live="status" class="form-select">
-                                    <option value="">All Statuses</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Suspended">Suspended</option>
-                                    <option value="Terminated">Terminated</option>
-                                    <option value="Retired">Retired</option>
+                                    <option value="all">All Statuses</option>
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="terminated">Terminated</option>
+                                    <option value="retired">Retired</option>
+                                    <option value="contract_ended">Contract Ended</option>
+                                    <option value="resigned">Resigned</option>
+                                    <option value="deceased">Deceased</option>
+                                    <option value="transferred">Transferred</option>
+                                    <option value="study_leave">Study Leave</option>
+                                    <option value="absconded">Absconded</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </div>
 
@@ -150,10 +157,10 @@
                     @endif
                 </div>
 
-                <!-- Table Section -->
-                <div class="table-responsive" style="min-height: 400px;">
+                <!-- Table Section with Sticky Header and Scrollable Body -->
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover table-centered align-middle mb-0">
-                        <thead class="table-light">
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
                             <tr>
                                 <th class="text-center" style="width: 50px;">#</th>
                                 <th style="width: 70px;">Photo</th>
@@ -236,16 +243,9 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @php
-                                            $statusColors = [
-                                                'Active' => 'success',
-                                                'Suspended' => 'warning',
-                                                'Terminated' => 'danger',
-                                                'Retired' => 'secondary',
-                                            ];
-                                            $statusColor = $statusColors[$employee->status] ?? 'secondary';
-                                        @endphp
-                                        <span class="badge bg-{{ $statusColor }}">{{ $employee->status }}</span>
+                                        <span class="badge bg-{{ $employee->getStatusBadgeClass() }}">
+                                            {{ $employee->getStatusLabel() }}
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
@@ -308,25 +308,16 @@
                             @endif
                         </div>
 
-                        <!-- Pagination and Per Page -->
-                        <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
-                            <!-- Per Page Selector -->
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="form-label mb-0 text-nowrap small">Rows per page:</label>
-                                <select wire:model.live="perPage" class="form-select form-select-sm"
-                                    style="width: auto;">
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
-
-                            <!-- Pagination Links -->
-                            <div>
-                                {{ $employees->links() }}
-                            </div>
+                        <!-- Rows Per Page Only -->
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label mb-0 text-nowrap small">Rows per page:</label>
+                            <select wire:model.live="perPage" class="form-select form-select-sm"
+                                style="width: auto;">
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="250">250</option>
+                                <option value="999999">All</option>
+                            </select>
                         </div>
                     </div>
                 </div>

@@ -19,6 +19,10 @@ class Contracts extends Component
     public $contract_type = 'permanent', $start_date, $expire_date, $expirenotification = false, $notify_time, $payment_frequency = 'monthly', $base_salary = 0, $description, $attachment, $contract_id, $contracts=[];
     public $canAddNewContract = true;
     public $activeContractMessage = '';
+    public $showTerminateModal = false;
+    public $termination_reason = '';
+    public $termination_date = '';
+    public $termination_notes = '';
     public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
@@ -104,7 +108,12 @@ class Contracts extends Component
                 'attachment' => $paths,
                 'added_by' => Auth::user()->id
             ]);
-            session()->flash('success', 'Contract added successfully!');
+
+            // Update employee status to active when new contract is added
+            $employee = Employee::findOrFail($this->employee_id);
+            $employee->update(['status' => 'active']);
+
+            session()->flash('success', 'Contract added successfully and employee activated!');
         }
 
         $this->editmode = false;
@@ -230,6 +239,90 @@ class Contracts extends Component
         $contract->update(['status' => 'active']);
         $this->listdata();
         session()->flash('success', 'Contract activated successfully!');
+    }
+
+    /**
+     * Open terminate contract modal
+     */
+    public function openTerminateModal($id)
+    {
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->contract_id = $id;
+        $this->showTerminateModal = true;
+        $this->termination_date = now()->format('Y-m-d');
+        $this->termination_reason = '';
+        $this->termination_notes = '';
+    }
+
+    /**
+     * Terminate a contract and update employee status
+     */
+    public function terminateContract()
+    {
+        $this->validate([
+            'termination_reason' => 'required|in:contract_ended,resigned,terminated,deceased,transferred,retired,study_leave,absconded,other',
+            'termination_date' => 'required|date',
+            'termination_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $contract = Employeecontracts::findOrFail($this->contract_id);
+
+        // Update contract status to terminated
+        $contract->update([
+            'status' => 'terminated',
+            'termination_reason' => $this->termination_reason,
+            'termination_date' => $this->termination_date,
+            'termination_notes' => $this->termination_notes,
+        ]);
+
+        // Map termination reason to employee status (use lowercase to match new enum values)
+        $employeeStatus = match ($this->termination_reason) {
+            'retired' => 'retired',
+            'contract_ended' => 'contract_ended',
+            'resigned' => 'resigned',
+            'deceased' => 'deceased',
+            'transferred' => 'transferred',
+            'study_leave' => 'study_leave',
+            'absconded' => 'absconded',
+            'terminated' => 'terminated',
+            'other' => 'other',
+            default => 'terminated'
+        };
+
+        // Update employee status
+        $employee = Employee::findOrFail($this->employee_id);
+        $employee->update(['status' => $employeeStatus]);
+
+        $this->showTerminateModal = false;
+        $this->listdata();
+
+        // Get human-readable status for flash message
+        $statusLabel = match ($employeeStatus) {
+            'active' => 'Active',
+            'suspended' => 'Suspended',
+            'terminated' => 'Terminated',
+            'retired' => 'Retired',
+            'contract_ended' => 'Contract Ended',
+            'resigned' => 'Resigned',
+            'deceased' => 'Deceased',
+            'transferred' => 'Transferred',
+            'study_leave' => 'Study Leave',
+            'absconded' => 'Absconded',
+            'other' => 'Other',
+            default => ucfirst($employeeStatus)
+        };
+
+        session()->flash('success', "Contract terminated successfully and employee marked as {$statusLabel}!");
+    }
+
+    /**
+     * Close terminate modal
+     */
+    public function closeTerminateModal()
+    {
+        $this->showTerminateModal = false;
+        $this->reset(['contract_id', 'termination_reason', 'termination_date', 'termination_notes']);
     }
     public function render()
     {

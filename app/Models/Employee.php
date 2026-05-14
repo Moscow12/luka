@@ -183,7 +183,43 @@ class Employee extends Model
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('employment_status', 'active');
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Get formatted status label
+     */
+    public function getStatusLabel(): string
+    {
+        return match ($this->status) {
+            'active' => 'Active',
+            'suspended' => 'Suspended',
+            'terminated' => 'Terminated',
+            'retired' => 'Retired',
+            'contract_ended' => 'Contract Ended',
+            'resigned' => 'Resigned',
+            'deceased' => 'Deceased',
+            'transferred' => 'Transferred',
+            'study_leave' => 'Study Leave',
+            'absconded' => 'Absconded',
+            'other' => 'Other',
+            default => ucfirst($this->status)
+        };
+    }
+
+    /**
+     * Get status badge class
+     */
+    public function getStatusBadgeClass(): string
+    {
+        return match ($this->status) {
+            'active' => 'success',
+            'suspended' => 'warning',
+            'terminated', 'deceased', 'absconded' => 'danger',
+            'retired', 'contract_ended' => 'secondary',
+            'resigned', 'transferred', 'study_leave' => 'info',
+            default => 'primary'
+        };
     }
     // ================ END computed attributes ================#
 }

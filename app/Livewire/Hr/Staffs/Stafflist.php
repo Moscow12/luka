@@ -27,7 +27,7 @@ class Stafflist extends Component
     public $workstation = '';
 
     #[Url]
-    public $status = '';
+    public $status = 'active';
 
     #[Url]
     public $gender = '';
@@ -110,7 +110,7 @@ class Stafflist extends Component
             ->when($this->department, fn ($query) => $query->where('department_id', $this->department))
             ->when($this->designation, fn ($query) => $query->where('designation_id', $this->designation))
             ->when($this->workstation, fn ($query) => $query->where('workstation_id', $this->workstation))
-            ->when($this->status, fn ($query) => $query->where('status', $this->status))
+            ->when($this->status && $this->status !== 'all', fn ($query) => $query->where('status', $this->status))
             ->when($this->gender, fn ($query) => $query->where('gender', $this->gender))
             ->when($this->employmentType, fn ($query) => $query->where('employment_type', $this->employmentType))
             ->latest()
