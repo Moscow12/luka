@@ -20,4 +20,15 @@ Route::prefix('employees')->group(function () {
     Route::post('/register', [EmployeeController::class, 'store']);
     Route::get('/', [EmployeeController::class, 'index']);
     Route::get('/{id}', [EmployeeController::class, 'show']);
+
+    // Debug test endpoint
+    Route::post('/test-register', function(Request $request) {
+        return response()->json([
+            'debug_info' => 'This is a test endpoint to see raw request data',
+            'received_data' => $request->all(),
+            'employee_id' => $request->employee_id ?? 'Not provided',
+            'employee_name' => $request->employee_name ?? 'Not provided',
+            'all_fields_count' => count($request->all())
+        ], 200);
+    });
 });

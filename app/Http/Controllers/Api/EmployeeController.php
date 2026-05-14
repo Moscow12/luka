@@ -69,12 +69,12 @@ class EmployeeController extends Controller
                 'education_level' => 'required|in:Primary,Diploma,Certificate,Degree,Masters,PhD',
                 'marital_status' => 'required|in:Single,Married,Divorced,Widowed,Separated,Never married,Not applicable',
 
-                // Foreign keys - can be name or ID
-                'department' => 'required|string',
-                'title' => 'required|string',
-                'designation' => 'required|string',
-                'workstation' => 'required|string',
-                'denomination' => 'required|string',
+                // Foreign keys - can be name or ID (now optional with fallbacks)
+                'department' => 'nullable|string',
+                'title' => 'nullable|string',
+                'designation' => 'nullable|string',
+                'workstation' => 'nullable|string',
+                'denomination' => 'nullable|string',
 
                 // Location - use default (Tanzania)
                 'district' => 'nullable|string',
@@ -138,11 +138,11 @@ class EmployeeController extends Controller
             $firstUserId = DB::table('users')->first()->id ?? null;
 
             // Resolve or create foreign keys by name
-            $departmentId = $this->resolveOrCreateDepartment($request->department, $firstUserId);
-            $titleId = $this->resolveOrCreateJobTitle($request->title, $firstUserId);
-            $designationId = $this->resolveOrCreateDesignation($request->designation, $firstUserId);
-            $workstationId = $this->resolveOrCreateWorkstation($request->workstation, $firstUserId);
-            $denominationId = $this->resolveOrCreateDenomination($request->denomination);
+            $departmentId = $this->resolveOrCreateDepartment($request->department ?? 'General', $firstUserId);
+            $titleId = $this->resolveOrCreateJobTitle($request->title ?? null, $firstUserId);
+            $designationId = $this->resolveOrCreateDesignation($request->designation ?? null, $firstUserId);
+            $workstationId = $this->resolveOrCreateWorkstation($request->workstation ?? 'Main Office', $firstUserId);
+            $denominationId = $this->resolveOrCreateDenomination($request->denomination ?? 'Not Specified');
 
             // Get Tanzania as default country
             $country = DB::table('countries')->where('name', 'LIKE', '%Tanzania%')->first();
@@ -333,8 +333,17 @@ class EmployeeController extends Controller
     /**
      * Resolve or create job title
      */
-    private function resolveOrCreateJobTitle(string $name, ?string $addedBy): ?string
+    private function resolveOrCreateJobTitle(?string $name, ?string $addedBy): ?string
     {
+        // If no name provided, pick random existing title
+        if (empty($name)) {
+            $random = DB::table('jobtitles')->inRandomOrder()->first();
+            if ($random) {
+                Log::info("Using random job title: {$random->name}", ['id' => $random->id]);
+                return $random->id;
+            }
+        }
+
         // Try to find existing
         $existing = DB::table('jobtitles')
             ->where('name', 'LIKE', '%' . $name . '%')
@@ -344,27 +353,46 @@ class EmployeeController extends Controller
             return $existing->id;
         }
 
-        // Create new job title
-        $id = (string) Str::uuid();
-        DB::table('jobtitles')->insert([
-            'id' => $id,
-            'name' => $name,
-            'code' => strtoupper(substr($name, 0, 3)) . rand(100, 999),
-            'description' => 'Auto-created job title',
-            'added_by' => $addedBy,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Try to create new job title
+        try {
+            $id = (string) Str::uuid();
+            DB::table('jobtitles')->insert([
+                'id' => $id,
+                'name' => $name,
+                'code' => strtoupper(substr($name, 0, 3)) . rand(100, 999),
+                'description' => 'Auto-created job title',
+                'added_by' => $addedBy,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        Log::info("Auto-created job title: {$name}", ['id' => $id]);
-        return $id;
+            Log::info("Auto-created job title: {$name}", ['id' => $id]);
+            return $id;
+        } catch (\Exception $e) {
+            // If creation fails, pick random existing title
+            Log::warning("Failed to create job title '{$name}', picking random: {$e->getMessage()}");
+            $random = DB::table('jobtitles')->inRandomOrder()->first();
+            if ($random) {
+                return $random->id;
+            }
+            return null;
+        }
     }
 
     /**
      * Resolve or create designation
      */
-    private function resolveOrCreateDesignation(string $name, ?string $addedBy): ?string
+    private function resolveOrCreateDesignation(?string $name, ?string $addedBy): ?string
     {
+        // If no name provided, pick random existing designation
+        if (empty($name)) {
+            $random = DB::table('designations')->inRandomOrder()->first();
+            if ($random) {
+                Log::info("Using random designation: {$random->name}", ['id' => $random->id]);
+                return $random->id;
+            }
+        }
+
         // Try to find existing
         $existing = DB::table('designations')
             ->where('name', 'LIKE', '%' . $name . '%')
@@ -374,22 +402,32 @@ class EmployeeController extends Controller
             return $existing->id;
         }
 
-        // Create new designation
-        $id = (string) Str::uuid();
-        $code = strtoupper(substr(str_replace(' ', '', $name), 0, 5)) . rand(10, 99);
+        // Try to create new designation
+        try {
+            $id = (string) Str::uuid();
+            $code = strtoupper(substr(str_replace(' ', '', $name), 0, 5)) . rand(10, 99);
 
-        DB::table('designations')->insert([
-            'id' => $id,
-            'name' => $name,
-            'code' => $code,
-            'status' => 'Active',
-            'added_by' => $addedBy,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            DB::table('designations')->insert([
+                'id' => $id,
+                'name' => $name,
+                'code' => $code,
+                'status' => 'Active',
+                'added_by' => $addedBy,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        Log::info("Auto-created designation: {$name}", ['id' => $id]);
-        return $id;
+            Log::info("Auto-created designation: {$name}", ['id' => $id]);
+            return $id;
+        } catch (\Exception $e) {
+            // If creation fails, pick random existing designation
+            Log::warning("Failed to create designation '{$name}', picking random: {$e->getMessage()}");
+            $random = DB::table('designations')->inRandomOrder()->first();
+            if ($random) {
+                return $random->id;
+            }
+            return null;
+        }
     }
 
     /**
