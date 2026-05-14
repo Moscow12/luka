@@ -35,9 +35,20 @@ class EmployeeController extends Controller
             if ($existingEmployee) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Employee already exists',
-                    'data' => [
-                        'employee' => $existingEmployee->load(['department', 'designation', 'workstation'])
+                    'error_code' => 'EMPLOYEE_ALREADY_EXISTS',
+                    'message' => 'Employee already exists in the system',
+                    'error_summary' => "An employee with phone '{$request->phone}' or employee number '{$request->employee_no}' already exists",
+                    'matched_by' => [
+                        'phone' => $existingEmployee->phone === $request->phone ? 'matched' : 'not matched',
+                        'employee_no' => $existingEmployee->employee_no === $request->employee_no ? 'matched' : 'not matched'
+                    ],
+                    'existing_employee' => [
+                        'id' => $existingEmployee->id,
+                        'employee_no' => $existingEmployee->employee_no,
+                        'full_name' => $existingEmployee->first_name . ' ' . $existingEmployee->last_name,
+                        'phone' => $existingEmployee->phone,
+                        'email' => $existingEmployee->email,
+                        'status' => $existingEmployee->status
                     ]
                 ], 200);
             }
@@ -86,11 +97,38 @@ class EmployeeController extends Controller
                     'validation_errors' => $validator->errors()
                 ]);
 
+                // Format errors with detailed messages
+                $formattedErrors = [];
+                $missingFields = [];
+                $invalidFields = [];
+
+                foreach ($validator->errors()->messages() as $field => $messages) {
+                    $formattedErrors[$field] = $messages[0]; // Get first error message
+
+                    if (str_contains($messages[0], 'required')) {
+                        $missingFields[] = $field;
+                    } else {
+                        $invalidFields[] = $field;
+                    }
+                }
+
+                $errorSummary = [];
+                if (!empty($missingFields)) {
+                    $errorSummary[] = 'Missing required fields: ' . implode(', ', $missingFields);
+                }
+                if (!empty($invalidFields)) {
+                    $errorSummary[] = 'Invalid field values: ' . implode(', ', $invalidFields);
+                }
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors(),
-                    'received_data' => $request->all()
+                    'error_code' => 'VALIDATION_FAILED',
+                    'message' => 'Employee registration validation failed',
+                    'error_summary' => implode('. ', $errorSummary),
+                    'detailed_errors' => $formattedErrors,
+                    'total_errors' => count($formattedErrors),
+                    'employee_id' => $request->employee_id ?? null,
+                    'employee_name' => $request->employee_name ?? null
                 ], 422);
             }
 
@@ -151,10 +189,22 @@ class EmployeeController extends Controller
                     'denomination' => $denominationId,
                 ]);
 
+                $failedFields = [];
+                if (!$departmentId) $failedFields[] = "department ('{$request->department}')";
+                if (!$titleId) $failedFields[] = "title ('{$request->title}')";
+                if (!$designationId) $failedFields[] = "designation ('{$request->designation}')";
+                if (!$workstationId) $failedFields[] = "workstation ('{$request->workstation}')";
+                if (!$denominationId) $failedFields[] = "denomination ('{$request->denomination}')";
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to resolve or create required fields',
-                    'error' => 'Could not create required database records'
+                    'error_code' => 'FIELD_RESOLUTION_FAILED',
+                    'message' => 'Failed to resolve or create required organizational fields',
+                    'error_summary' => 'Could not find or create the following fields: ' . implode(', ', $failedFields),
+                    'failed_fields' => $failedFields,
+                    'employee_id' => $request->employee_id ?? null,
+                    'employee_name' => $request->employee_name ?? null,
+                    'hint' => 'Please ensure the field names exist in the database or contact administrator'
                 ], 422);
             }
 
@@ -206,18 +256,42 @@ class EmployeeController extends Controller
 
         } catch (ValidationException $e) {
             DB::rollBack();
+
+            Log::error('Employee Registration Validation Exception', [
+                'employee_id' => $request->employee_id ?? 'N/A',
+                'employee_name' => $request->employee_name ?? 'N/A',
+                'exception' => $e->getMessage(),
+                'errors' => $e->errors()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error',
-                'errors' => $e->errors()
+                'error_code' => 'VALIDATION_EXCEPTION',
+                'message' => 'Employee registration validation exception occurred',
+                'error_summary' => $e->getMessage(),
+                'detailed_errors' => $e->errors(),
+                'employee_id' => $request->employee_id ?? null,
+                'employee_name' => $request->employee_name ?? null
             ], 422);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            Log::error('Employee Registration Failed', [
+                'employee_id' => $request->employee_id ?? 'N/A',
+                'employee_name' => $request->employee_name ?? 'N/A',
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to register employee',
-                'error' => $e->getMessage()
+                'error_code' => 'REGISTRATION_FAILED',
+                'message' => 'Failed to register employee due to server error',
+                'error_summary' => $e->getMessage(),
+                'employee_id' => $request->employee_id ?? null,
+                'employee_name' => $request->employee_name ?? null,
+                'hint' => 'Please check the data format and try again, or contact administrator if the issue persists'
             ], 500);
         }
     }
