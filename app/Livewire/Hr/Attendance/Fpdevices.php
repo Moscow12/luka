@@ -37,6 +37,8 @@ class Fpdevices extends Component
         'device_type' => 'zkteco',
         'ip_address' => '',
         'port' => 4370,
+        'username' => '',
+        'password' => '',
         'location' => '',
         'description' => '',
         'is_active' => true,
@@ -76,6 +78,8 @@ class Fpdevices extends Component
             'device_type' => 'zkteco',
             'ip_address' => '',
             'port' => 4370,
+            'username' => '',
+            'password' => '',
             'location' => '',
             'description' => '',
             'is_active' => true,
@@ -96,6 +100,8 @@ class Fpdevices extends Component
             'device_type' => $device->device_type ?? 'zkteco',
             'ip_address' => $device->ip_address,
             'port' => $device->port ?? 4370,
+            'username' => $device->username ?? '',
+            'password' => $device->password ?? '',
             'location' => $device->location,
             'description' => $device->description,
             'is_active' => $device->is_active,
@@ -110,6 +116,8 @@ class Fpdevices extends Component
             'deviceForm.device_type' => 'required|in:zkteco,anviz',
             'deviceForm.ip_address' => 'required|ip',
             'deviceForm.port' => 'nullable|integer|min:1|max:65535|required_if:deviceForm.device_type,zkteco',
+            'deviceForm.username' => 'nullable|string|max:255',
+            'deviceForm.password' => 'nullable|string|max:255',
             'deviceForm.location' => 'nullable|string|max:255',
             'deviceForm.description' => 'nullable|string',
             'deviceForm.is_active' => 'boolean',
@@ -135,6 +143,8 @@ class Fpdevices extends Component
                 'device_type' => $this->deviceForm['device_type'],
                 'ip_address' => $this->deviceForm['ip_address'],
                 'port' => $this->deviceForm['device_type'] === 'zkteco' ? $this->deviceForm['port'] : null,
+                'username' => $this->deviceForm['username'],
+                'password' => $this->deviceForm['password'],
                 'location' => $this->deviceForm['location'],
                 'description' => $this->deviceForm['description'],
                 'is_active' => $this->deviceForm['is_active'],
@@ -285,9 +295,7 @@ class Fpdevices extends Component
 
             // Handle different device types
             if ($device->device_type === 'anviz') {
-                session()->flash('error', 'Anviz device sync is not yet implemented. Please use Anviz software or API for now.');
-
-                return;
+                return $this->syncAnvizDevice($device);
             }
 
             // Check if device is reachable first (ZKTeco only)
@@ -483,6 +491,116 @@ PYTHON;
         }
 
         return $stats;
+    }
+
+    /**
+     * Sync Anviz device attendance data
+     */
+    private function syncAnvizDevice($device)
+    {
+        // Determine which protocol to use
+        // If device has been diagnosed and uses TCP (port 5010), use TCP script
+        $useTcpProtocol = false;
+
+        // Try TCP first if ping succeeds (TCP is more common for Anviz)
+        if ($this->pingDevice($device->ip_address)) {
+            // Quick check if port 5010 is open
+            $useTcpProtocol = $this->testSocketConnection($device->ip_address, 5010);
+        }
+
+        $pythonCmd = 'python3';
+        $daysBack = 1;
+
+        if ($useTcpProtocol) {
+            // Use TCP protocol script
+            $pythonScript = base_path('public/anviz_tcp_sync.py');
+
+            if (! file_exists($pythonScript)) {
+                session()->flash('error', 'Anviz TCP sync script not found!');
+
+                return;
+            }
+
+            $port = 5010;
+            $result = Process::timeout(200)->run("{$pythonCmd} {$pythonScript} {$device->ip_address} {$daysBack} {$port} 2>&1");
+        } else {
+            // Use HTTP API script
+            $pythonScript = base_path('public/anviz_sync_v2.py');
+
+            if (! file_exists($pythonScript)) {
+                $pythonScript = base_path('public/anviz_sync.py');
+            }
+
+            if (! file_exists($pythonScript)) {
+                session()->flash('error', 'Anviz HTTP sync script not found!');
+
+                return;
+            }
+
+            $username = $device->username ?? 'admin';
+            $password = $device->password ?? 'admin';
+            $result = Process::timeout(200)->run("{$pythonCmd} {$pythonScript} {$device->ip_address} {$daysBack} '{$username}' '{$password}' 2>&1");
+        }
+
+        // Try to parse JSON from output
+        $outputText = $result->output();
+        $output = json_decode($outputText, true);
+
+        if ($output && isset($output['success'])) {
+            if ($output['success']) {
+                // Process the sync data
+                $syncStats = $this->processSyncData($device, $output);
+
+                // Update device stats
+                $device->update([
+                    'status' => 'active',
+                    'last_sync_at' => now(),
+                    'total_synced_logs' => $device->total_synced_logs + $syncStats['new_attendance'],
+                ]);
+
+                session()->flash('success', "Synced {$syncStats['new_attendance']} attendance records from {$syncStats['total_users']} users!");
+            } else {
+                $errorMsg = $output['error'] ?? 'Unknown error during sync';
+                session()->flash('error', 'Anviz sync error: '.$errorMsg);
+            }
+        } else {
+            // Could not parse JSON - show raw output
+            $errorOutput = $outputText ?: $result->errorOutput() ?: 'Unknown error';
+            session()->flash('error', 'Anviz sync failed: '.substr($errorOutput, 0, 200));
+            Log::error('Anviz sync failed', ['output' => $outputText, 'error' => $result->errorOutput()]);
+        }
+    }
+
+    public function diagnoseAnvizDevice($deviceId)
+    {
+        try {
+            $device = FpDevice::findOrFail($deviceId);
+
+            if ($device->device_type !== 'anviz') {
+                session()->flash('error', 'Diagnostic is only for Anviz devices!');
+
+                return;
+            }
+
+            $pythonScript = base_path('public/anviz_diagnostic.py');
+
+            if (! file_exists($pythonScript)) {
+                session()->flash('error', 'Diagnostic script not found!');
+
+                return;
+            }
+
+            $result = Process::timeout(30)->run("python3 {$pythonScript} {$device->ip_address} 2>&1");
+            $output = $result->output();
+
+            Log::info('Anviz diagnostic output', ['device' => $device->name, 'output' => $output]);
+
+            session()->flash('success', 'Diagnostic completed! Check logs for details or contact support with this info.');
+            $this->testResult = "Diagnostic scan completed. Output logged for review.\n\n".substr($output, 0, 500);
+            $this->testStatus = 'success';
+        } catch (\Exception $e) {
+            session()->flash('error', 'Diagnostic failed: '.$e->getMessage());
+        }
     }
 
     public function clearTestResult()

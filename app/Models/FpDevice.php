@@ -16,6 +16,8 @@ class FpDevice extends Model
         'device_type',
         'ip_address',
         'port',
+        'username',
+        'password',
         'location',
         'description',
         'status',

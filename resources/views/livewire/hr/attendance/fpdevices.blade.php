@@ -220,6 +220,23 @@
                                             </span>
                                         </button>
 
+                                        @if($device->device_type === 'anviz')
+                                        <!-- Diagnostic Button (Anviz only) -->
+                                        <button wire:click="diagnoseAnvizDevice('{{ $device->id }}')"
+                                            wire:loading.attr="disabled"
+                                            wire:target="diagnoseAnvizDevice('{{ $device->id }}')"
+                                            class="btn btn-sm btn-outline-info flex-grow-1"
+                                            title="Run diagnostic to identify device protocol">
+                                            <span wire:loading.remove wire:target="diagnoseAnvizDevice('{{ $device->id }}')">
+                                                <i class="fa-solid fa-stethoscope me-1"></i> Diagnose
+                                            </span>
+                                            <span wire:loading wire:target="diagnoseAnvizDevice('{{ $device->id }}')">
+                                                <span class="spinner-border spinner-border-sm me-1"></span>
+                                                Scanning...
+                                            </span>
+                                        </button>
+                                        @endif
+
                                         <!-- Sync Button -->
                                         <button wire:click="syncAttendance('{{ $device->id }}')"
                                             wire:loading.attr="disabled"
@@ -379,6 +396,36 @@
                                 </div>
                                 @endif
 
+                                @if($deviceForm['device_type'] === 'anviz')
+                                <div class="col-md-6">
+                                    <label for="username" class="form-label">Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                                        <input type="text" wire:model="deviceForm.username"
+                                            class="form-control @error('deviceForm.username') is-invalid @enderror"
+                                            id="username" placeholder="admin">
+                                    </div>
+                                    @error('deviceForm.username')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Default: admin</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                                        <input type="password" wire:model="deviceForm.password"
+                                            class="form-control @error('deviceForm.password') is-invalid @enderror"
+                                            id="password" placeholder="admin">
+                                    </div>
+                                    @error('deviceForm.password')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Default: admin</div>
+                                </div>
+                                @endif
+
                                 <div class="col-12">
                                     <label for="location" class="form-label">Location</label>
                                     <input type="text" wire:model="deviceForm.location"
@@ -422,7 +469,8 @@
                                             <li>The default port for ZKTeco devices is <strong>4370</strong></li>
                                             @else
                                             <li>Make sure the Anviz device is powered on and connected to the network</li>
-                                            <li>Anviz devices do not require a port number - only IP address is needed</li>
+                                            <li>Anviz devices use HTTP API - no port number needed</li>
+                                            <li>Default credentials are usually <strong>admin/admin</strong></li>
                                             @endif
                                             <li>Ensure your server can reach the device IP address (check firewall rules)</li>
                                             <li>After registering, use the "Test" button to verify connectivity</li>
