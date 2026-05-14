@@ -466,11 +466,10 @@ class Addstaff extends Component
     private function sendCredentialsSms($phoneNumber, $username, $password, $firstName)
     {
         try {
-            $message = "Dear {$firstName},\n\n";
+            $message = "Dear {$firstName},\n";
             $message .= "Login Details:\n";
             $message .= "Username: {$username}\n";
-            $message .= "Password: {$password}\n\n";
-            $message .= "Please login. \n\n";
+            $message .= "Password: {$password}\n";
             $message .= '-HRP System Link https://hrp.stjosephhospitalmoshi.or.tz/auth/login';
 
             $result = send_sms($phoneNumber, $message);
