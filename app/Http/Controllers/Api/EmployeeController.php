@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -77,21 +79,32 @@ class EmployeeController extends Controller
             ]);
 
             if ($validator->fails()) {
+                Log::error('Employee Registration Validation Failed', [
+                    'employee_id' => $request->employee_id ?? 'N/A',
+                    'employee_name' => $request->employee_name ?? 'N/A',
+                    'request_data' => $request->all(),
+                    'validation_errors' => $validator->errors()
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
+                    'received_data' => $request->all()
                 ], 422);
             }
 
             DB::beginTransaction();
 
-            // Resolve foreign keys by name
-            $departmentId = $this->resolveId('departments', 'name', $request->department);
-            $titleId = $this->resolveId('jobtitles', 'name', $request->title);
-            $designationId = $this->resolveId('designations', 'name', $request->designation);
-            $workstationId = $this->resolveId('workstations', 'workstation_name', $request->workstation);
-            $denominationId = $this->resolveId('denominations', 'name', $request->denomination);
+            // Get first user for added_by field
+            $firstUserId = DB::table('users')->first()->id ?? null;
+
+            // Resolve or create foreign keys by name
+            $departmentId = $this->resolveOrCreateDepartment($request->department, $firstUserId);
+            $titleId = $this->resolveOrCreateJobTitle($request->title, $firstUserId);
+            $designationId = $this->resolveOrCreateDesignation($request->designation, $firstUserId);
+            $workstationId = $this->resolveOrCreateWorkstation($request->workstation, $firstUserId);
+            $denominationId = $this->resolveOrCreateDenomination($request->denomination);
 
             // Get Tanzania as default country
             $country = DB::table('countries')->where('name', 'LIKE', '%Tanzania%')->first();
@@ -124,19 +137,24 @@ class EmployeeController extends Controller
                 $ward = DB::table('wards')->first();
             }
 
-            // Validate that all IDs were resolved
+            // All IDs should now be resolved or created
             if (!$departmentId || !$titleId || !$designationId || !$workstationId || !$denominationId) {
                 DB::rollBack();
+
+                Log::error('Employee Registration Field Resolution Failed', [
+                    'employee_id' => $request->employee_id ?? 'N/A',
+                    'employee_name' => $request->employee_name ?? 'N/A',
+                    'department' => $departmentId,
+                    'title' => $titleId,
+                    'designation' => $designationId,
+                    'workstation' => $workstationId,
+                    'denomination' => $denominationId,
+                ]);
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to resolve required fields',
-                    'errors' => [
-                        'department' => !$departmentId ? 'Department not found' : null,
-                        'title' => !$titleId ? 'Job title not found' : null,
-                        'designation' => !$designationId ? 'Designation not found' : null,
-                        'workstation' => !$workstationId ? 'Workstation not found' : null,
-                        'denomination' => !$denominationId ? 'Denomination not found' : null,
-                    ]
+                    'message' => 'Failed to resolve or create required fields',
+                    'error' => 'Could not create required database records'
                 ], 422);
             }
 
@@ -205,20 +223,189 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Resolve ID from name using LIKE search
-     *
-     * @param string $table
-     * @param string $column
-     * @param string $value
-     * @return string|null
+     * Resolve or create department
      */
-    private function resolveId(string $table, string $column, string $value): ?string
+    private function resolveOrCreateDepartment(string $name, ?string $addedBy): ?string
     {
-        $result = DB::table($table)
-            ->where($column, 'LIKE', '%' . $value . '%')
+        // Try to find existing
+        $existing = DB::table('departments')
+            ->where('name', 'LIKE', '%' . $name . '%')
             ->first();
 
-        return $result ? $result->id : null;
+        if ($existing) {
+            return $existing->id;
+        }
+
+        // Get first job title for supervisor_title_id
+        $firstJobTitle = DB::table('jobtitles')->first();
+
+        // Create new department
+        $id = (string) Str::uuid();
+        DB::table('departments')->insert([
+            'id' => $id,
+            'name' => $name,
+            'description' => 'Auto-created department',
+            'supervisor_title_id' => $firstJobTitle->id ?? null,
+            'status' => 'active',
+            'added_by' => $addedBy,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Auto-created department: {$name}", ['id' => $id]);
+        return $id;
+    }
+
+    /**
+     * Resolve or create job title
+     */
+    private function resolveOrCreateJobTitle(string $name, ?string $addedBy): ?string
+    {
+        // Try to find existing
+        $existing = DB::table('jobtitles')
+            ->where('name', 'LIKE', '%' . $name . '%')
+            ->first();
+
+        if ($existing) {
+            return $existing->id;
+        }
+
+        // Create new job title
+        $id = (string) Str::uuid();
+        DB::table('jobtitles')->insert([
+            'id' => $id,
+            'name' => $name,
+            'code' => strtoupper(substr($name, 0, 3)) . rand(100, 999),
+            'description' => 'Auto-created job title',
+            'added_by' => $addedBy,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Auto-created job title: {$name}", ['id' => $id]);
+        return $id;
+    }
+
+    /**
+     * Resolve or create designation
+     */
+    private function resolveOrCreateDesignation(string $name, ?string $addedBy): ?string
+    {
+        // Try to find existing
+        $existing = DB::table('designations')
+            ->where('name', 'LIKE', '%' . $name . '%')
+            ->first();
+
+        if ($existing) {
+            return $existing->id;
+        }
+
+        // Create new designation
+        $id = (string) Str::uuid();
+        $code = strtoupper(substr(str_replace(' ', '', $name), 0, 5)) . rand(10, 99);
+
+        DB::table('designations')->insert([
+            'id' => $id,
+            'name' => $name,
+            'code' => $code,
+            'status' => 'Active',
+            'added_by' => $addedBy,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Auto-created designation: {$name}", ['id' => $id]);
+        return $id;
+    }
+
+    /**
+     * Resolve or create workstation
+     */
+    private function resolveOrCreateWorkstation(string $name, ?string $addedBy): ?string
+    {
+        // Try to find existing
+        $existing = DB::table('workstations')
+            ->where('workstation_name', 'LIKE', '%' . $name . '%')
+            ->first();
+
+        if ($existing) {
+            return $existing->id;
+        }
+
+        // Get default location data
+        $country = DB::table('countries')->where('name', 'LIKE', '%Tanzania%')->first();
+        if (!$country) {
+            $country = DB::table('countries')->first();
+        }
+
+        $region = DB::table('regions')->where('country_id', $country->id)->first();
+        if (!$region) {
+            $region = DB::table('regions')->first();
+        }
+
+        $district = DB::table('districts')->where('region_id', $region->id)->first();
+        if (!$district) {
+            $district = DB::table('districts')->first();
+        }
+
+        $ward = DB::table('wards')->where('district_id', $district->id)->first();
+        if (!$ward) {
+            $ward = DB::table('wards')->first();
+        }
+
+        // Create new workstation
+        $id = (string) Str::uuid();
+        DB::table('workstations')->insert([
+            'id' => $id,
+            'workstation_name' => $name,
+            'location' => 'Main Office',
+            'phone_number' => '0000000000',
+            'tin_number' => null,
+            'email_address' => null,
+            'postal_code' => null,
+            'physical_address' => 'Auto-created',
+            'country_id' => $country->id,
+            'region_id' => $region->id,
+            'district_id' => $district->id,
+            'ward_id' => $ward->id,
+            'added_by' => $addedBy,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Auto-created workstation: {$name}", ['id' => $id]);
+        return $id;
+    }
+
+    /**
+     * Resolve or create denomination
+     */
+    private function resolveOrCreateDenomination(string $name): ?string
+    {
+        // Try to find existing
+        $existing = DB::table('denominations')
+            ->where('name', 'LIKE', '%' . $name . '%')
+            ->first();
+
+        if ($existing) {
+            return $existing->id;
+        }
+
+        // Get first religion or null
+        $religion = DB::table('religions')->first();
+
+        // Create new denomination
+        $id = (string) Str::uuid();
+        DB::table('denominations')->insert([
+            'id' => $id,
+            'name' => $name,
+            'religion_id' => $religion->id ?? null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Auto-created denomination: {$name}", ['id' => $id]);
+        return $id;
     }
 
     /**
