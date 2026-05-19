@@ -37,6 +37,7 @@ Route::prefix('employees')->group(function () {
 
 // Leave API endpoints (third-party sync)
 Route::prefix('leaves')->group(function () {
+    Route::post('/register', [LeaveController::class, 'store']);
     Route::post('/sync', [LeaveController::class, 'store']);
     Route::get('/', [LeaveController::class, 'index']);
     Route::get('/{id}', [LeaveController::class, 'show']);
@@ -44,6 +45,7 @@ Route::prefix('leaves')->group(function () {
 
 // Asset API endpoints (third-party sync)
 Route::prefix('assets')->group(function () {
+    Route::post('/register', [AssetController::class, 'store']);
     Route::post('/sync', [AssetController::class, 'store']);
     Route::get('/', [AssetController::class, 'index']);
     Route::get('/{id}', [AssetController::class, 'show']);
