@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\LeaveController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,4 +33,18 @@ Route::prefix('employees')->group(function () {
             'all_fields_count' => count($request->all())
         ], 200);
     });
+});
+
+// Leave API endpoints (third-party sync)
+Route::prefix('leaves')->group(function () {
+    Route::post('/sync', [LeaveController::class, 'store']);
+    Route::get('/', [LeaveController::class, 'index']);
+    Route::get('/{id}', [LeaveController::class, 'show']);
+});
+
+// Asset API endpoints (third-party sync)
+Route::prefix('assets')->group(function () {
+    Route::post('/sync', [AssetController::class, 'store']);
+    Route::get('/', [AssetController::class, 'index']);
+    Route::get('/{id}', [AssetController::class, 'show']);
 });
