@@ -23,8 +23,11 @@ class LeaveController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validate incoming request
-            $validator = Validator::make($request->all(), [
+            // Remote exporters send "" for missing values; coerce to null before validating.
+            $input = $this->normalizeInput($request->all());
+            $request->replace($input);
+
+            $validator = Validator::make($input, [
                 'emp_leave_id'     => 'nullable|string|max:100',
                 'employee_id'      => 'nullable|string|max:100',
                 'employee_reg_no'  => 'required|string|max:100',
@@ -157,9 +160,11 @@ class LeaveController extends Controller
                 DB::commit();
 
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Leave already exists, updated successfully',
-                    'data'    => [
+                    'success'       => false,
+                    'error_code'    => 'LEAVE_ALREADY_EXISTS',
+                    'message'       => 'Leave already exists, updated successfully',
+                    'error_summary' => "A leave for employee '{$employee->employee_no}' with type '{$request->leave_name}' starting '{$request->leave_start_date}' already exists",
+                    'data'          => [
                         'leave'    => $existingLeave->load(['employee', 'leave']),
                         'employee' => [
                             'id'          => $employee->id,
@@ -271,6 +276,20 @@ class LeaveController extends Controller
 
         Log::info("Auto-created leave type: {$name}", ['id' => $id]);
         return $id;
+    }
+
+    /**
+     * Remote exporters ship "" for missing values; coerce empties to null so
+     * `date`/`email`/`numeric` validators don't reject perfectly valid payloads.
+     */
+    private function normalizeInput(array $input): array
+    {
+        foreach ($input as $key => $value) {
+            if (is_string($value) && trim($value) === '') {
+                $input[$key] = null;
+            }
+        }
+        return $input;
     }
 
     /**

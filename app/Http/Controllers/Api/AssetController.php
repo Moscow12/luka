@@ -23,7 +23,11 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
+            // Remote exporters send "" for missing values; coerce to null before validating.
+            $input = $this->normalizeInput($request->all());
+            $request->replace($input);
+
+            $validator = Validator::make($input, [
                 'asset_registry_id' => 'nullable|string|max:100',
                 'asset_id'          => 'nullable|string|max:100',
                 'asset_name'        => 'required|string|max:255',
@@ -43,7 +47,7 @@ class AssetController extends Controller
                 'replacement_cost'  => 'nullable|numeric|min:0',
                 'depreciated_cost'  => 'nullable|numeric|min:0',
                 'purchase_date'     => 'nullable|date',
-                'kind'              => 'nullable|string|max:50',
+                'kind'              => 'nullable|string|in:registry,catalogue',
             ]);
 
             if ($validator->fails()) {
@@ -92,11 +96,45 @@ class AssetController extends Controller
 
             $firstUserId = DB::table('users')->first()->id ?? null;
 
+            // Catalogue-only payload (kind=catalogue) carries no registry fields —
+            // just upsert the asset catalogue row and return.
+            if (($request->kind ?? 'registry') === 'catalogue') {
+                $assetClassId = $this->resolveOrCreateAssetClass('General', $firstUserId);
+                $assetId = $this->resolveOrCreateAsset(
+                    $request->asset_name,
+                    $request->asset_type ?: 'physical',
+                    $assetClassId,
+                    $firstUserId
+                );
+
+                if (!$assetId) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success'       => false,
+                        'error_code'    => 'ASSET_CREATE_FAILED',
+                        'message'       => 'Failed to create asset catalogue entry',
+                        'error_summary' => "Could not create asset '{$request->asset_name}'",
+                        'asset_name'    => $request->asset_name,
+                    ], 422);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Asset catalogue entry synced successfully',
+                    'data'    => [
+                        'asset' => asset::find($assetId),
+                        'kind'  => 'catalogue',
+                    ],
+                ], 201);
+            }
+
             // Resolve or create asset class
-            $assetClassId = $this->resolveOrCreateAssetClass($request->application ?? 'General', $firstUserId);
+            $assetClassId = $this->resolveOrCreateAssetClass($request->application ?: 'General', $firstUserId);
 
             // Resolve or create department
-            $departmentId = $this->resolveOrCreateDepartment($request->department ?? 'General', $firstUserId);
+            $departmentId = $this->resolveOrCreateDepartment($request->department ?: 'General', $firstUserId);
 
             // Resolve or create workstation (needed by buildings, facilitylocations)
             $workstationId = $this->resolveOrCreateWorkstation('Main Office', $firstUserId);
@@ -115,7 +153,7 @@ class AssetController extends Controller
             // Resolve or create the asset (catalog entry)
             $assetId = $this->resolveOrCreateAsset(
                 $request->asset_name,
-                $request->asset_type ?? 'physical',
+                $request->asset_type ?: 'physical',
                 $assetClassId,
                 $firstUserId
             );
@@ -182,9 +220,11 @@ class AssetController extends Controller
                 DB::commit();
 
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Asset registry already exists, updated successfully',
-                    'data'    => [
+                    'success'       => false,
+                    'error_code'    => 'ASSET_ALREADY_EXISTS',
+                    'message'       => 'Asset registry already exists, updated successfully',
+                    'error_summary' => "An asset registry with serial '{$request->serial_no}' or code '{$request->code_no}' already exists",
+                    'data'          => [
                         'asset_registry' => $existingRegistry->load(['asset', 'assetClass', 'department', 'building', 'facilityLocation']),
                     ],
                 ], 200);
@@ -436,6 +476,20 @@ class AssetController extends Controller
             $existing = DB::table('assets')->where('name', $name)->first();
             return $existing->id ?? null;
         }
+    }
+
+    /**
+     * Remote exporters ship "" for missing values; coerce empties to null so
+     * `date`/`numeric` validators don't reject perfectly valid payloads.
+     */
+    private function normalizeInput(array $input): array
+    {
+        foreach ($input as $key => $value) {
+            if (is_string($value) && trim($value) === '') {
+                $input[$key] = null;
+            }
+        }
+        return $input;
     }
 
     /**
