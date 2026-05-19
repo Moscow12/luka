@@ -479,8 +479,9 @@ class AssetController extends Controller
     }
 
     /**
-     * Remote exporters ship "" for missing values; coerce empties to null so
-     * `date`/`numeric` validators don't reject perfectly valid payloads.
+     * Remote exporters ship "" for missing values and DD/MM/YYYY dates;
+     * coerce empties to null and parse the legacy date format to ISO so the
+     * `date`/`numeric` validators accept perfectly valid payloads.
      */
     private function normalizeInput(array $input): array
     {
@@ -489,7 +490,29 @@ class AssetController extends Controller
                 $input[$key] = null;
             }
         }
+
+        $input['purchase_date'] = $this->normalizeDate($input['purchase_date'] ?? null);
+
         return $input;
+    }
+
+    /**
+     * Accepts ISO, DD/MM/YYYY, DD-MM-YYYY, or MySQL zero-date sentinels.
+     */
+    private function normalizeDate(?string $value): ?string
+    {
+        if ($value === null || $value === '' || str_starts_with($value, '0000-')) {
+            return null;
+        }
+
+        try {
+            if (preg_match('#^(\d{2})[/-](\d{2})[/-](\d{4})$#', $value, $m)) {
+                return \Carbon\Carbon::createFromFormat('d/m/Y', "{$m[1]}/{$m[2]}/{$m[3]}")->toDateString();
+            }
+            return \Carbon\Carbon::parse($value)->toDateString();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

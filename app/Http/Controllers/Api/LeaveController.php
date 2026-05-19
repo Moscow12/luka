@@ -40,7 +40,9 @@ class LeaveController extends Controller
                 'leave_id'         => 'nullable|string|max:100',
                 'leave_name'       => 'required|string|max:255',
                 'leave_start_date' => 'required|date',
-                'leave_end_date'   => 'required|date|after_or_equal:leave_start_date',
+                // Real-world data has rejected/awaiting leaves with end < start;
+                // accept any valid date and let downstream logic handle it.
+                'leave_end_date'   => 'required|date',
                 'number_of_days'   => 'nullable|numeric|min:0',
                 'leave_status'     => 'nullable|string|max:50',
                 'requested_at'     => 'nullable|date',
@@ -113,12 +115,13 @@ class LeaveController extends Controller
             // Get first user for added_by field
             $firstUserId = DB::table('users')->first()->id ?? null;
 
-            // Calculate number of days if not provided
+            // Calculate number of days if not provided. Use absolute diff so
+            // rejected leaves with end < start still produce a positive count.
             $numberOfDays = $request->number_of_days;
             if (empty($numberOfDays)) {
                 $start = \Carbon\Carbon::parse($request->leave_start_date);
                 $end = \Carbon\Carbon::parse($request->leave_end_date);
-                $numberOfDays = $start->diffInDays($end) + 1;
+                $numberOfDays = abs($start->diffInDays($end)) + 1;
             }
 
             // Resolve or create leave type by name
@@ -279,8 +282,9 @@ class LeaveController extends Controller
     }
 
     /**
-     * Remote exporters ship "" for missing values; coerce empties to null so
-     * `date`/`email`/`numeric` validators don't reject perfectly valid payloads.
+     * Remote exporters ship "" for missing values and MySQL "0000-00-00" sentinels;
+     * coerce empties to null and normalize dates so the `date`/`email`/`numeric`
+     * validators don't reject perfectly valid payloads.
      */
     private function normalizeInput(array $input): array
     {
@@ -289,7 +293,36 @@ class LeaveController extends Controller
                 $input[$key] = null;
             }
         }
+
+        $input['leave_start_date'] = $this->normalizeDate($input['leave_start_date'] ?? null);
+        $input['leave_end_date']   = $this->normalizeDate($input['leave_end_date'] ?? null);
+        $input['requested_at']     = $this->normalizeDate($input['requested_at'] ?? null);
+
+        // If end_date is missing/invalid, fall back to start_date so the row can save.
+        if ($input['leave_end_date'] === null && !empty($input['leave_start_date'])) {
+            $input['leave_end_date'] = $input['leave_start_date'];
+        }
+
         return $input;
+    }
+
+    /**
+     * Accepts ISO, DD/MM/YYYY, DD-MM-YYYY, or MySQL zero-date sentinels.
+     */
+    private function normalizeDate(?string $value): ?string
+    {
+        if ($value === null || $value === '' || str_starts_with($value, '0000-')) {
+            return null;
+        }
+
+        try {
+            if (preg_match('#^(\d{2})[/-](\d{2})[/-](\d{4})#', $value, $m)) {
+                return \Carbon\Carbon::createFromFormat('d/m/Y', "{$m[1]}/{$m[2]}/{$m[3]}")->toDateString();
+            }
+            return \Carbon\Carbon::parse($value)->toDateString();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**
