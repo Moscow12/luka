@@ -43,6 +43,8 @@ class LeaveController extends Controller
                 // Real-world data has rejected/awaiting leaves with end < start;
                 // accept any valid date and let downstream logic handle it.
                 'leave_end_date'   => 'required|date',
+                'travel_to'       => 'nullable|string|max:255',
+                'EmployeeComments' => 'nullable|string|max:255',
                 'number_of_days'   => 'nullable|numeric|min:0',
                 'leave_status'     => 'nullable|string|max:50',
                 'requested_at'     => 'nullable|date',
@@ -185,9 +187,9 @@ class LeaveController extends Controller
                 'start_date'   => $request->leave_start_date,
                 'end_date'     => $request->leave_end_date,
                 'days'         => $numberOfDays,
-                'travel_to'    => 'N/A',
+                'travel_to'    => $request->travel_to ?? 'N/A',
                 'othercontact' => $request->phone ?? 'N/A',
-                'comments'     => 'Synced from third-party system. Ref: ' . ($request->emp_leave_id ?? 'N/A'),
+                'comments'     => $request->EmployeeComments. 'Ref: ' . ($request->emp_leave_id ?? 'N/A'),
                 'status'       => $status,
                 'added_by'     => $firstUserId,
             ]);
