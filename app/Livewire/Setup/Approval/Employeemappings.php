@@ -23,9 +23,51 @@ class Employeemappings extends Component
     public $approvallevels = [];
     public $employees = [];
 
+    // Searchable employee picker (inside the modal)
+    public $employeeSearch = '';
+    public $showEmployeeDropdown = false;
+
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function getFilteredEmployeesProperty()
+    {
+        $term = trim($this->employeeSearch);
+
+        return $this->employees->filter(function ($emp) use ($term) {
+            if ($term === '') {
+                return true;
+            }
+
+            $haystack = strtolower($emp->getFullName() . ' ' . $emp->employee_no);
+
+            return str_contains($haystack, strtolower($term));
+        })->take(50);
+    }
+
+    public function getSelectedEmployeeProperty()
+    {
+        if (! $this->employee_id) {
+            return null;
+        }
+
+        return $this->employees->firstWhere('id', $this->employee_id);
+    }
+
+    public function selectEmployee($id)
+    {
+        $this->employee_id = $id;
+        $this->showEmployeeDropdown = false;
+        $this->employeeSearch = '';
+    }
+
+    public function clearEmployee()
+    {
+        $this->employee_id = null;
+        $this->employeeSearch = '';
+        $this->showEmployeeDropdown = true;
     }
 
     public function openModal($mode = 'create', $id = null)
@@ -34,6 +76,8 @@ class Employeemappings extends Component
         $this->resetValidation();
         $this->modalMode = $mode;
         $this->showModal = true;
+        $this->employeeSearch = '';
+        $this->showEmployeeDropdown = false;
 
         if ($mode === 'edit' && $id) {
             $emp = approvalleveltoemployee::findOrFail($id);

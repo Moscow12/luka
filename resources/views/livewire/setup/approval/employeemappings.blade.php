@@ -110,9 +110,57 @@
                    :showModal="$showModal">
         <x-forms.input type="select" name="approval_level_id" label="Approval Level" 
                        :options="$approvallevels->pluck('name', 'id')" required />
-        <x-forms.input type="select" name="employee_id" label="Employee" 
-                       :options="$employees->mapWithKeys(function($emp) { return [$emp->id => $emp->getFullName() . ' (' . $emp->employee_no . ')']; })" 
-                       required />
+        {{-- Searchable employee picker --}}
+        <div class="mb-3" wire:key="employee-picker">
+            <label class="form-label">Employee <span class="text-danger">*</span></label>
+
+            @if($this->selectedEmployee)
+                {{-- A chosen employee — show it with a button to change --}}
+                <div class="d-flex align-items-center justify-content-between border rounded p-2">
+                    <span>
+                        {{ $this->selectedEmployee->getFullName() }}
+                        <small class="text-muted">({{ $this->selectedEmployee->employee_no }})</small>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="clearEmployee">
+                        <i class="fa-solid fa-pen me-1"></i> Change
+                    </button>
+                </div>
+            @else
+                <div class="position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" class="form-control @error('employee_id') is-invalid @enderror"
+                               placeholder="Search employee by name or number..."
+                               wire:model.live.debounce.300ms="employeeSearch"
+                               wire:focus="$set('showEmployeeDropdown', true)"
+                               autocomplete="off" />
+                    </div>
+
+                    @if($showEmployeeDropdown || strlen($employeeSearch))
+                        <div class="border rounded mt-1 bg-white shadow-sm position-absolute w-100"
+                             style="z-index: 1056; max-height: 240px; overflow-y: auto;">
+                            @forelse($this->filteredEmployees as $emp)
+                                <button type="button"
+                                        class="dropdown-item d-flex justify-content-between px-3 py-2 text-wrap"
+                                        wire:key="emp-{{ $emp->id }}"
+                                        wire:click="selectEmployee('{{ $emp->id }}')">
+                                    <span>{{ $emp->getFullName() }}</span>
+                                    <small class="text-muted">{{ $emp->employee_no }}</small>
+                                </button>
+                            @empty
+                                <div class="px-3 py-2 text-muted">No employees found</div>
+                            @endforelse
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            @error('employee_id')
+                <small class="text-danger d-block mt-1">{{ $message }}</small>
+            @enderror
+        </div>
 
         <div class="mb-3">
             <div class="form-check">
