@@ -1,4 +1,27 @@
 <div class="container-fluid py-4">
+    @if(! $hasEmployee)
+        {{-- No employee profile linked to this account (e.g. admin) --}}
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fa-solid fa-id-badge text-muted fa-3x mb-3"></i>
+                        <h5 class="fw-bold mb-2">No employee profile linked</h5>
+                        <p class="text-muted mb-0">
+                            Your account isn't linked to an employee record yet, so there's no personal
+                            dashboard to show. Please ask HR to link your account.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+    {{-- Greeting --}}
+    <div class="mb-4">
+        <h5 class="fw-bold mb-0">Welcome, {{ $employeeName }}</h5>
+        <small class="text-muted">{{ $departmentName }} department overview</small>
+    </div>
+
     {{-- Summary Stats Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
@@ -7,14 +30,14 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                                <i class="fa-solid fa-users text-primary fa-lg"></i>
+                                <i class="fa-solid fa-people-group text-primary fa-lg"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="text-muted mb-1 small">Total Employees</p>
-                            <h4 class="mb-0 fw-bold">{{ number_format($totalEmployees) }}</h4>
+                            <p class="text-muted mb-1 small">My Department</p>
+                            <h4 class="mb-0 fw-bold">{{ $departmentName }}</h4>
                             <small class="text-success">
-                                <i class="fa-solid fa-circle-check"></i> {{ $activeEmployees }} active
+                                <i class="fa-solid fa-circle-check"></i> {{ number_format($deptHeadcount) }} active members
                             </small>
                         </div>
                     </div>
@@ -28,13 +51,13 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                                <i class="fa-solid fa-building text-success fa-lg"></i>
+                                <i class="fa-solid fa-calendar-check text-success fa-lg"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="text-muted mb-1 small">Departments</p>
-                            <h4 class="mb-0 fw-bold">{{ number_format($totalDepartments) }}</h4>
-                            <small class="text-muted">Organization units</small>
+                            <p class="text-muted mb-1 small">My Leave Days Used</p>
+                            <h4 class="mb-0 fw-bold">{{ number_format($myLeaveDaysUsed) }}</h4>
+                            <small class="text-muted">Approved, this year</small>
                         </div>
                     </div>
                 </div>
@@ -52,8 +75,8 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted mb-1 small">On Leave Today</p>
-                            <h4 class="mb-0 fw-bold">{{ number_format($onLeaveToday) }}</h4>
-                            <small class="text-muted">Employees away</small>
+                            <h4 class="mb-0 fw-bold">{{ number_format($deptOnLeaveToday) }}</h4>
+                            <small class="text-muted">In my department</small>
                         </div>
                     </div>
                 </div>
@@ -66,13 +89,18 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                                <i class="fa-solid fa-chart-line text-info fa-lg"></i>
+                                <i class="fa-solid fa-file-contract text-info fa-lg"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="text-muted mb-1 small">Avg Attendance</p>
-                            <h4 class="mb-0 fw-bold">{{ $attendanceChartData['average_rate'] ?? 0 }}%</h4>
-                            <small class="text-muted">Last 7 days</small>
+                            <p class="text-muted mb-1 small">My Contract</p>
+                            @if(! is_null($myContractDaysRemaining))
+                                <h4 class="mb-0 fw-bold">{{ number_format($myContractDaysRemaining) }}</h4>
+                                <small class="text-muted">days remaining</small>
+                            @else
+                                <h4 class="mb-0 fw-bold">&mdash;</h4>
+                                <small class="text-muted">No active contract</small>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -89,7 +117,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1 fw-bold">Attendance Rate</h6>
-                            <small class="text-muted">Daily attendance for the last 7 days</small>
+                            <small class="text-muted">My department &bull; last 7 days</small>
                         </div>
                         <span class="badge bg-primary-subtle text-primary">Weekly</span>
                     </div>
@@ -128,7 +156,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1 fw-bold">Departmental Performance</h6>
-                            <small class="text-muted">Average performance score by department</small>
+                            <small class="text-muted">Average performance score &bull; my department</small>
                         </div>
                         <i class="fa-solid fa-chart-bar text-muted"></i>
                     </div>
@@ -146,7 +174,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1 fw-bold">Performance Distribution</h6>
-                            <small class="text-muted">Employee scores breakdown</small>
+                            <small class="text-muted">My department &bull; employee scores breakdown</small>
                         </div>
                         <i class="fa-solid fa-chart-pie text-muted"></i>
                     </div>
@@ -243,7 +271,7 @@
                                 <i class="fa-solid fa-trophy text-warning me-2"></i>
                                 Top Performers
                             </h6>
-                            <small class="text-muted">Based on performance scores</small>
+                            <small class="text-muted">My department &bull; based on performance scores</small>
                         </div>
                         <span class="badge bg-warning-subtle text-warning">{{ count($topPerformers) }}</span>
                     </div>
@@ -293,68 +321,7 @@
         </div>
     </div>
 
-    {{-- Recent Leaves & Monthly Trend --}}
-    <div class="row g-3">
-        {{-- Monthly Leave Trend --}}
-        <div class="col-12 col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 pb-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 fw-bold">Monthly Leave Trend</h6>
-                            <small class="text-muted">Approved leaves per month in {{ now()->year }}</small>
-                        </div>
-                        <span class="badge bg-info-subtle text-info">{{ $leaveDistributionData['totalLeaveDays'] ?? 0 }} total days</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="monthlyLeaveChart" style="height: 250px;"></div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Recent Leaves --}}
-        <div class="col-12 col-lg-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 fw-bold">
-                                <i class="fa-solid fa-clock-rotate-left text-info me-2"></i>
-                                Recent Leaves
-                            </h6>
-                            <small class="text-muted">Latest leave requests</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    @if(count($recentLeaves) > 0)
-                        <div class="list-group list-group-flush">
-                            @foreach($recentLeaves as $leave)
-                                <div class="list-group-item border-0 py-2">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <div class="fw-medium small">{{ $leave['employee'] }}</div>
-                                            <small class="text-muted">{{ $leave['type'] }} &bull; {{ $leave['days'] }} days</small>
-                                        </div>
-                                        <span class="badge bg-{{ $leave['status'] == 'approved' ? 'success' : ($leave['status'] == 'pending' ? 'warning' : 'danger') }}-subtle text-{{ $leave['status'] == 'approved' ? 'success' : ($leave['status'] == 'pending' ? 'warning' : 'danger') }}">
-                                            {{ ucfirst($leave['status']) }}
-                                        </span>
-                                    </div>
-                                    <small class="text-muted">{{ $leave['start'] }} - {{ $leave['end'] }}</small>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-4">
-                            <i class="fa-solid fa-inbox text-muted fa-2x mb-2"></i>
-                            <p class="text-muted small mb-0">No recent leaves</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
+    @endif
 
     @push('scripts')
 <script>
@@ -558,54 +525,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }).render();
     } else {
         document.querySelector("#performanceDistChart").innerHTML = '<div class="text-center py-5 text-muted"><i class="fa-solid fa-chart-pie fa-3x mb-3 opacity-25"></i><p>No performance data</p></div>';
-    }
-
-    // Monthly Leave Trend Chart
-    if (leaveData.monthLabels && leaveData.monthLabels.length > 0) {
-        new ApexCharts(document.querySelector("#monthlyLeaveChart"), {
-            series: [{
-                name: 'Leaves',
-                data: leaveData.monthCounts
-            }],
-            chart: {
-                type: 'area',
-                height: 250,
-                toolbar: { show: false },
-                fontFamily: 'inherit',
-                sparkline: { enabled: false }
-            },
-            stroke: {
-                curve: 'smooth',
-                width: 3
-            },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.5,
-                    opacityTo: 0.1
-                }
-            },
-            colors: ['#6f42c1'],
-            xaxis: {
-                categories: leaveData.monthLabels,
-                labels: { style: { fontSize: '11px' } }
-            },
-            yaxis: {
-                title: { text: 'Leave Count' }
-            },
-            markers: {
-                size: 4,
-                colors: ['#6f42c1'],
-                strokeColors: '#fff',
-                strokeWidth: 2
-            },
-            tooltip: {
-                y: {
-                    formatter: function(val) { return val + ' leaves'; }
-                }
-            }
-        }).render();
     }
 });
 </script>

@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Hr;
 
-use App\Models\Employee;
-use App\Models\Employeecontracts;
 use App\Models\departments;
-use App\Models\Employeesalaries;
+use App\Models\Employee;
 use App\Models\Employeeallowances;
+use App\Models\Employeecontracts;
+use App\Models\Employeeleaves;
+use App\Models\Employeesalaries;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -29,14 +30,15 @@ class Overview extends Component
                 END as age_group,
                 COUNT(*) as count
             ")
-            ->whereNotNull('dob')
-            ->groupBy('age_group')
-            ->get()
-            ->sortBy(function($item) {
-                $order = ['Under 25' => 1, '25-34' => 2, '35-44' => 3, '45-54' => 4, '55+' => 5];
-                return $order[$item->age_group] ?? 999;
-            })
-            ->values();
+                ->whereNotNull('dob')
+                ->groupBy('age_group')
+                ->get()
+                ->sortBy(function ($item) {
+                    $order = ['Under 25' => 1, '25-34' => 2, '35-44' => 3, '45-54' => 4, '55+' => 5];
+
+                    return $order[$item->age_group] ?? 999;
+                })
+                ->values();
         }
 
         // SQLite-compatible age calculation
@@ -54,26 +56,27 @@ class Overview extends Component
             END as age_group,
             COUNT(*) as count
         ")
-        ->whereNotNull('dob')
-        ->groupBy('age_group')
-        ->get()
-        ->sortBy(function($item) {
-            $order = ['Under 25' => 1, '25-34' => 2, '35-44' => 3, '45-54' => 4, '55+' => 5];
-            return $order[$item->age_group] ?? 999;
-        })
-        ->values();
+            ->whereNotNull('dob')
+            ->groupBy('age_group')
+            ->get()
+            ->sortBy(function ($item) {
+                $order = ['Under 25' => 1, '25-34' => 2, '35-44' => 3, '45-54' => 4, '55+' => 5];
+
+                return $order[$item->age_group] ?? 999;
+            })
+            ->values();
     }
 
     public function getEducationLevelDistribution()
     {
-        return Employee::selectRaw("
+        return Employee::selectRaw('
             education_level,
             COUNT(*) as count
-        ")
-        ->whereNotNull('education_level')
-        ->groupBy('education_level')
-        ->orderBy('count', 'desc')
-        ->get();
+        ')
+            ->whereNotNull('education_level')
+            ->groupBy('education_level')
+            ->orderBy('count', 'desc')
+            ->get();
     }
 
     public function getContractsNearExpiry()
@@ -106,11 +109,11 @@ class Overview extends Component
                 DATE_FORMAT(hired_date, '%Y-%m') as month,
                 COUNT(*) as count
             ")
-            ->where('hired_date', '>=', Carbon::now()->subMonths(12))
-            ->whereNotNull('hired_date')
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get();
+                ->where('hired_date', '>=', Carbon::now()->subMonths(12))
+                ->whereNotNull('hired_date')
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get();
         }
 
         // SQLite-compatible date format
@@ -118,11 +121,11 @@ class Overview extends Component
             strftime('%Y-%m', hired_date) as month,
             COUNT(*) as count
         ")
-        ->where('hired_date', '>=', Carbon::now()->subMonths(12))
-        ->whereNotNull('hired_date')
-        ->groupBy('month')
-        ->orderBy('month', 'asc')
-        ->get();
+            ->where('hired_date', '>=', Carbon::now()->subMonths(12))
+            ->whereNotNull('hired_date')
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
     }
 
     public function getMonthlySalaryAndAllowances()
@@ -130,9 +133,9 @@ class Overview extends Component
         $currentMonth = Carbon::now()->format('Y-m');
 
         // Get total salaries for active employees
-        $totalSalaries = Employeesalaries::whereHas('employee', function($query) {
-                $query->where('status', 'Active');
-            })
+        $totalSalaries = Employeesalaries::whereHas('employee', function ($query) {
+            $query->where('status', 'Active');
+        })
             ->sum('amount');
 
         // Get total allowances for current month
@@ -144,8 +147,49 @@ class Overview extends Component
             'total_salaries' => $totalSalaries,
             'total_allowances' => $totalAllowances,
             'total_payroll' => $totalSalaries + $totalAllowances,
-            'month' => $currentMonth
+            'month' => $currentMonth,
         ];
+    }
+
+    public function getRecentLeaves()
+    {
+        return Employeeleaves::with(['employee', 'leave'])
+            ->orderByDesc('created_at')
+            ->limit(8)
+            ->get()
+            ->map(fn ($l) => [
+                'employee' => trim(($l->employee->first_name ?? '').' '.($l->employee->last_name ?? '')),
+                'type' => $l->leave->name ?? 'N/A',
+                'start' => Carbon::parse($l->start_date)->format('M d'),
+                'end' => Carbon::parse($l->end_date)->format('M d'),
+                'days' => $l->days,
+                'status' => $l->status,
+            ])
+            ->toArray();
+    }
+
+    public function getMonthlyLeaveTrend()
+    {
+        $year = Carbon::now()->year;
+
+        $approved = Employeeleaves::where('status', 'approved')
+            ->whereYear('start_date', $year)
+            ->get();
+
+        $byMonth = [];
+        foreach ($approved as $l) {
+            $m = Carbon::parse($l->start_date)->month;
+            $byMonth[$m] = ($byMonth[$m] ?? 0) + 1;
+        }
+
+        $labels = [];
+        $counts = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $labels[] = Carbon::create()->month($m)->format('M');
+            $counts[] = $byMonth[$m] ?? 0;
+        }
+
+        return ['labels' => $labels, 'counts' => $counts, 'total' => array_sum($counts)];
     }
 
     public function render()
@@ -157,6 +201,8 @@ class Overview extends Component
         $departmentCounts = $this->getDepartmentEmployeeCount();
         $hiringRate = $this->getHiringRate();
         $payrollStats = $this->getMonthlySalaryAndAllowances();
+        $recentLeaves = $this->getRecentLeaves();
+        $monthlyLeaveTrend = $this->getMonthlyLeaveTrend();
 
         // Get overall statistics
         $totalEmployees = Employee::where('status', 'Active')->count();
@@ -183,6 +229,8 @@ class Overview extends Component
             'departmentCounts' => $departmentCounts,
             'hiringRate' => $hiringRate,
             'payrollStats' => $payrollStats,
+            'recentLeaves' => $recentLeaves,
+            'monthlyLeaveTrend' => $monthlyLeaveTrend,
         ]);
     }
 }

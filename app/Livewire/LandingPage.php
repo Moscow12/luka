@@ -9,6 +9,7 @@ use App\Models\Employeecontracts;
 use App\Models\Employeeleaves;
 use App\Models\EmployeePlanItem;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -16,16 +17,29 @@ class LandingPage extends Component
 {
     public int $expiringContractsDays = 30;
 
-    // Summary stats
-    public int $totalEmployees = 0;
+    // Current user / department context
+    public ?string $employeeId = null;
 
-    public int $activeEmployees = 0;
+    public ?string $departmentId = null;
 
-    public int $totalDepartments = 0;
+    public bool $hasEmployee = false;
 
-    public int $onLeaveToday = 0;
+    public string $employeeName = '';
 
-    // Chart data
+    public string $departmentName = '';
+
+    // Personalized summary cards
+    public int $deptHeadcount = 0;          // active employees in my department
+
+    public int $activeEmployees = 0;        // = deptHeadcount (attendance rate denominator)
+
+    public float $myLeaveDaysUsed = 0;      // my approved leave days this year
+
+    public int $deptOnLeaveToday = 0;       // my dept on approved leave today
+
+    public ?int $myContractDaysRemaining = null; // days left on my active contract
+
+    // Chart data (scoped to my department)
     public array $attendanceChartData = [];
 
     public array $departmentPerformanceData = [];
@@ -34,15 +48,30 @@ class LandingPage extends Component
 
     public array $leaveDistributionData = [];
 
-    // Lists
+    // Lists (scoped to my department)
     public $expiringContracts = [];
 
     public $topPerformers = [];
 
-    public $recentLeaves = [];
-
     public function mount(): void
     {
+        $employee = Employee::with('department')
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $employee) {
+            // No linked employee profile (e.g. admin) — the view renders a friendly empty state.
+            $this->hasEmployee = false;
+
+            return;
+        }
+
+        $this->hasEmployee = true;
+        $this->employeeId = $employee->id;
+        $this->departmentId = $employee->department_id;
+        $this->employeeName = trim(($employee->first_name ?? '').' '.($employee->last_name ?? ''));
+        $this->departmentName = $employee->department->name ?? 'N/A';
+
         $this->loadDashboardData();
     }
 
@@ -59,18 +88,38 @@ class LandingPage extends Component
     protected function loadSummaryStats(): void
     {
         try {
-            $this->totalEmployees = Employee::count();
-            $this->activeEmployees = Employee::whereRaw('LOWER(status) = ?', ['active'])->count();
-            $this->totalDepartments = departments::count();
-
-            // Employees on leave today
             $today = Carbon::today();
-            $this->onLeaveToday = Employeeleaves::where('status', 'approved')
+
+            // Active headcount in my department (also used as the attendance-rate denominator).
+            $this->deptHeadcount = Employee::where('department_id', $this->departmentId)
+                ->whereRaw('LOWER(status) = ?', ['active'])
+                ->count();
+            $this->activeEmployees = $this->deptHeadcount;
+
+            // My own approved leave days taken this year.
+            $this->myLeaveDaysUsed = (float) (Employeeleaves::where('employee_id', $this->employeeId)
+                ->where('status', 'approved')
+                ->whereYear('start_date', $today->year)
+                ->sum('days') ?? 0);
+
+            // My department's employees on approved leave today.
+            $this->deptOnLeaveToday = Employeeleaves::where('status', 'approved')
                 ->whereDate('start_date', '<=', $today)
                 ->whereDate('end_date', '>=', $today)
+                ->whereHas('employee', fn ($q) => $q->where('department_id', $this->departmentId))
                 ->count();
+
+            // Days remaining on my nearest active contract.
+            $contract = Employeecontracts::where('employee_id', $this->employeeId)
+                ->where('status', 'active')
+                ->whereDate('expire_date', '>=', $today)
+                ->orderBy('expire_date')
+                ->first();
+            $this->myContractDaysRemaining = $contract
+                ? (int) $today->diffInDays($contract->expire_date)
+                : null;
         } catch (\Exception $e) {
-            // Keep default values of 0
+            // Keep default values
         }
     }
 
@@ -87,8 +136,17 @@ class LandingPage extends Component
         $rateData = [];
 
         try {
-            // Check if the table has data and get attendance counts
-            $attendanceByDate = employeeattendances::selectRaw('DATE(clockdate) as date, COUNT(DISTINCT id) as present_count')
+            // Attendance is linked to employees via fingerprint device id:
+            // Employee.fpid -> fpusers.fpdevice_id -> employeeattendances.fpuser_id.
+            $deptDeviceIds = Employee::where('department_id', $this->departmentId)
+                ->whereRaw('LOWER(status) = ?', ['active'])
+                ->whereNotNull('fpid')
+                ->pluck('fpid')
+                ->all();
+
+            // Get attendance counts for my department's employees only.
+            $attendanceByDate = employeeattendances::selectRaw('DATE(clockdate) as date, COUNT(DISTINCT fpuser_id) as present_count')
+                ->whereIn('fpuser_id', $deptDeviceIds)
                 ->whereDate('clockdate', '>=', $dates->first()->format('Y-m-d'))
                 ->whereDate('clockdate', '<=', $dates->last()->format('Y-m-d'))
                 ->groupByRaw('DATE(clockdate)')
@@ -128,11 +186,12 @@ class LandingPage extends Component
         $employeeCounts = [];
 
         try {
-            $departments = departments::withCount([
-                'employees' => function ($query) {
-                    $query->whereRaw('LOWER(status) = ?', ['active']);
-                },
-            ])->get();
+            $departments = departments::where('id', $this->departmentId)
+                ->withCount([
+                    'employees' => function ($query) {
+                        $query->whereRaw('LOWER(status) = ?', ['active']);
+                    },
+                ])->get();
 
             foreach ($departments as $department) {
                 // Get average performance score for employees in this department
@@ -164,8 +223,9 @@ class LandingPage extends Component
         $this->topPerformers = [];
 
         try {
-            // Get employees with their average performance scores
+            // Get my department's employees with their average performance scores
             $employeesWithScores = Employee::with('department')
+                ->where('department_id', $this->departmentId)
                 ->whereRaw('LOWER(status) = ?', ['active'])
                 ->get()
                 ->map(function ($employee) {
@@ -210,7 +270,9 @@ class LandingPage extends Component
         ];
 
         try {
-            $allScores = EmployeePlanItem::whereNotNull('score')->pluck('score');
+            $allScores = EmployeePlanItem::whereHas('employeePlan.employee', fn ($q) => $q->where('department_id', $this->departmentId))
+                ->whereNotNull('score')
+                ->pluck('score');
 
             foreach ($allScores as $score) {
                 if ($score <= 20) {
@@ -241,21 +303,22 @@ class LandingPage extends Component
 
     protected function loadLeaveData(): void
     {
+        // Leave distribution by type + coverage, scoped to my department.
+        // (Monthly trend and recent leaves now live on the HR Overview page.)
         $currentYear = Carbon::now()->year;
         $leaveLabels = [];
         $leaveCounts = [];
         $leaveColors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#0dcaf0'];
-        $monthLabels = [];
-        $monthCounts = [];
         $totalLeaveDays = 0;
         $leaveCoverageRate = 0;
 
         try {
-            // Leave distribution by type
+            // Leave distribution by type (my department)
             $leavesByType = Employeeleaves::select('leave_id', DB::raw('COUNT(*) as count'))
                 ->whereDate('start_date', '>=', $currentYear.'-01-01')
                 ->whereDate('start_date', '<=', $currentYear.'-12-31')
                 ->where('status', 'approved')
+                ->whereHas('employee', fn ($q) => $q->where('department_id', $this->departmentId))
                 ->groupBy('leave_id')
                 ->with('leave')
                 ->get();
@@ -265,70 +328,28 @@ class LandingPage extends Component
                 $leaveCounts[] = $leave->count;
             }
 
-            // Monthly leave trend - SQLite compatible using strftime
-            $approvedLeaves = Employeeleaves::whereDate('start_date', '>=', $currentYear.'-01-01')
-                ->whereDate('start_date', '<=', $currentYear.'-12-31')
-                ->where('status', 'approved')
-                ->get();
-
-            $monthlyLeaves = [];
-            foreach ($approvedLeaves as $leave) {
-                $month = Carbon::parse($leave->start_date)->month;
-                $monthlyLeaves[$month] = ($monthlyLeaves[$month] ?? 0) + 1;
-            }
-
-            for ($m = 1; $m <= 12; $m++) {
-                $monthLabels[] = Carbon::create()->month($m)->format('M');
-                $monthCounts[] = $monthlyLeaves[$m] ?? 0;
-            }
-
-            // Calculate leave coverage rate
+            // Coverage rate & total days (my department)
             $totalLeaveDays = Employeeleaves::whereDate('start_date', '>=', $currentYear.'-01-01')
                 ->whereDate('start_date', '<=', $currentYear.'-12-31')
                 ->where('status', 'approved')
+                ->whereHas('employee', fn ($q) => $q->where('department_id', $this->departmentId))
                 ->sum('days') ?? 0;
 
-            $totalPossibleLeaveDays = $this->activeEmployees * 30;
+            $totalPossibleLeaveDays = $this->deptHeadcount * 30;
             $leaveCoverageRate = $totalPossibleLeaveDays > 0
                 ? round(($totalLeaveDays / $totalPossibleLeaveDays) * 100, 1)
                 : 0;
         } catch (\Exception $e) {
-            // If query fails, use default values
-            for ($m = 1; $m <= 12; $m++) {
-                $monthLabels[] = Carbon::create()->month($m)->format('M');
-                $monthCounts[] = 0;
-            }
+            // If query fails, fall back to empty distribution
         }
 
         $this->leaveDistributionData = [
             'typeLabels' => $leaveLabels,
             'typeCounts' => $leaveCounts,
             'colors' => array_slice($leaveColors, 0, max(count($leaveLabels), 1)),
-            'monthLabels' => $monthLabels,
-            'monthCounts' => $monthCounts,
             'coverageRate' => $leaveCoverageRate,
             'totalLeaveDays' => $totalLeaveDays,
         ];
-
-        // Recent leave requests
-        try {
-            $this->recentLeaves = Employeeleaves::with(['employee', 'leave'])
-                ->orderByDesc('created_at')
-                ->limit(5)
-                ->get()
-                ->map(fn ($leave) => [
-                    'id' => $leave->id,
-                    'employee' => ($leave->employee->first_name ?? '').' '.($leave->employee->last_name ?? ''),
-                    'type' => $leave->leave->name ?? 'N/A',
-                    'start' => Carbon::parse($leave->start_date)->format('M d'),
-                    'end' => Carbon::parse($leave->end_date)->format('M d'),
-                    'days' => $leave->days,
-                    'status' => $leave->status,
-                ])
-                ->toArray();
-        } catch (\Exception $e) {
-            $this->recentLeaves = [];
-        }
     }
 
     protected function loadExpiringContracts(): void
@@ -340,6 +361,7 @@ class LandingPage extends Component
                 ->where('status', 'active')
                 ->whereDate('expire_date', '<=', $expiryDate)
                 ->whereDate('expire_date', '>=', Carbon::today())
+                ->whereHas('employee', fn ($q) => $q->where('department_id', $this->departmentId))
                 ->orderBy('expire_date')
                 ->limit(10)
                 ->get()

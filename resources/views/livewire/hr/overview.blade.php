@@ -354,6 +354,86 @@
         </div>
     </div>
 
+    <!-- Leaves Row: Monthly Trend + Recent Leaves -->
+    <div class="row g-4 mt-1">
+        <!-- Monthly Leave Trend -->
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fa-solid fa-chart-area text-primary me-2"></i>
+                            Monthly Leave Trend
+                        </h5>
+                        <span class="badge bg-info-subtle text-info">{{ $monthlyLeaveTrend['total'] ?? 0 }} approved this year</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @php
+                        $maxLeaves = max($monthlyLeaveTrend['counts'] ?? [0]) ?: 1;
+                    @endphp
+                    @if(($monthlyLeaveTrend['total'] ?? 0) > 0)
+                        @foreach($monthlyLeaveTrend['labels'] as $i => $monthLabel)
+                            @php $count = $monthlyLeaveTrend['counts'][$i] ?? 0; @endphp
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted">{{ $monthLabel }}</span>
+                                    <span class="badge bg-primary">{{ $count }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                         style="width: {{ ($count / $maxLeaves) * 100 }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fa-solid fa-calendar-xmark fa-3x text-muted mb-3"></i>
+                            <p class="text-muted small">No approved leaves this year</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Leaves -->
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-clock-rotate-left text-info me-2"></i>
+                        Recent Leaves
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if(count($recentLeaves) > 0)
+                        <div class="list-group list-group-flush" data-simplebar style="max-height: 400px;">
+                            @foreach($recentLeaves as $leave)
+                                <div class="list-group-item border-0 py-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-medium small">{{ $leave['employee'] }}</div>
+                                            <small class="text-muted">{{ $leave['type'] }} &bull; {{ $leave['days'] }} days</small>
+                                        </div>
+                                        <span class="badge bg-{{ $leave['status'] == 'approved' ? 'success' : ($leave['status'] == 'pending' ? 'warning' : 'danger') }}-subtle text-{{ $leave['status'] == 'approved' ? 'success' : ($leave['status'] == 'pending' ? 'warning' : 'danger') }}">
+                                            {{ ucfirst($leave['status']) }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">{{ $leave['start'] }} - {{ $leave['end'] }}</small>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fa-solid fa-inbox text-muted fa-2x mb-2"></i>
+                            <p class="text-muted small mb-0">No recent leaves</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         .icon-shape {
             width: 60px;
