@@ -6,6 +6,7 @@ namespace App\Livewire\Auth;
 
 use App\Models\PasswordResetToken;
 use App\Models\User;
+use App\Models\workstations;
 use App\Notifications\ResetPasswordCode;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -25,8 +26,10 @@ class ForgotPassword extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.forgot-password')
-            ->layout('components.layouts.guest');
+        return view('livewire.auth.forgot-password', [
+            'workstation' => workstations::first(),
+            'appName' => config('app.name', 'Dasher'),
+        ])->layout('components.layouts.guest');
     }
 
     /**

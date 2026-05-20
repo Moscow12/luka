@@ -77,16 +77,24 @@
     {{-- Main Content --}}
     <div class="container position-relative" style="z-index: 10;">
         <div class="row justify-content-center">
-            <div class="col-xl-4 col-lg-5 col-md-7 col-sm-9">
+            <div class="col-xl-5 col-lg-6 col-md-8 col-sm-10">
 
                 {{-- Login Card --}}
-                <div class="card border-0 shadow-lg rounded-4" style="backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);">
+                <div class="card border-0 shadow-lg rounded-4 mx-auto" style="backdrop-filter: blur(10px); background: rgba(255,255,255,0.95); max-width: 480px;">
                     <div class="card-body p-4 p-md-5">
 
-                        {{-- Icon & Title --}}
+                        {{-- Logo & Title --}}
                         <div class="text-center mb-4">
-                            <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-3 mb-3" style="width: 56px; height: 56px;">
-                                <i class="fa-solid fa-right-to-bracket fa-xl text-dark"></i>
+                            <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-3 mb-3 overflow-hidden" style="width: 72px; height: 72px;">
+                                @if($workstation && $workstation->logo)
+                                    <img
+                                        src="{{ asset('storage/' . $workstation->logo) }}"
+                                        alt="{{ $workstation->workstation_name ?? $appName }}"
+                                        style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                                    />
+                                @else
+                                    <i class="fa-solid fa-right-to-bracket fa-xl text-dark"></i>
+                                @endif
                             </div>
                             <h4 class="fw-bold text-dark mb-2">Sign in to your account</h4>
                             <p class="text-muted mb-0 small">
@@ -117,19 +125,28 @@
                             </div>
 
                             {{-- Password Field --}}
-                            <div class="mb-3">
+                            <div class="mb-3" x-data="{ show: false }">
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0">
                                         <i class="fa-solid fa-lock text-muted"></i>
                                     </span>
                                     <input
-                                        type="password"
+                                        :type="show ? 'text' : 'password'"
                                         id="password"
                                         wire:model="password"
-                                        class="form-control border-start-0 ps-0 @error('password') is-invalid @enderror"
+                                        class="form-control border-start-0 border-end-0 ps-0 @error('password') is-invalid @enderror"
                                         placeholder="Password"
                                         autocomplete="current-password"
                                     />
+                                    <button
+                                        type="button"
+                                        class="input-group-text bg-light border-start-0"
+                                        @click="show = !show"
+                                        :aria-label="show ? 'Hide password' : 'Show password'"
+                                        tabindex="-1"
+                                    >
+                                        <i class="fa-solid text-muted" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
                                 </div>
                                 @error('password')
                                     <div class="text-danger small mt-1">{{ $message }}</div>

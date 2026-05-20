@@ -7,6 +7,7 @@ namespace App\Livewire\Auth;
 use App\Models\PasswordResetToken;
 use App\Models\TrustedDevice;
 use App\Models\User;
+use App\Models\workstations;
 use App\Services\DeviceFingerprinter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -41,8 +42,10 @@ class ResetPassword extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.reset-password')
-            ->layout('components.layouts.guest');
+        return view('livewire.auth.reset-password', [
+            'workstation' => workstations::first(),
+            'appName' => config('app.name', 'Dasher'),
+        ])->layout('components.layouts.guest');
     }
 
     public function verifyToken(): void
