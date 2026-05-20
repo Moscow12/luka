@@ -5,6 +5,7 @@ namespace App\Livewire\Setup\Location;
 use App\Models\countries;
 use App\Models\regions;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Region extends Component
@@ -16,6 +17,12 @@ class Region extends Component
     public $modalMode = 'create'; // or 'edit'
     public $showModal = false;
     public function mount()
+    {
+        $this->listdata();
+    }
+
+    #[On('geodata-synced')]
+    public function refreshAfterSync()
     {
         $this->listdata();
     }

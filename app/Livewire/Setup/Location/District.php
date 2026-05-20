@@ -5,6 +5,7 @@ namespace App\Livewire\Setup\Location;
 use App\Models\districts;
 use App\Models\regions;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class District extends Component
@@ -16,6 +17,12 @@ class District extends Component
     public $showModal = false;
     public $country_id;
     public function mount()
+    {
+        $this->listdata();
+    }
+
+    #[On('geodata-synced')]
+    public function refreshAfterSync()
     {
         $this->listdata();
     }

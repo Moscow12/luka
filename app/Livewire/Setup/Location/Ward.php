@@ -6,6 +6,7 @@ use App\Models\districts;
 use App\Models\regions;
 use App\Models\wards;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Ward extends Component
@@ -17,6 +18,12 @@ class Ward extends Component
     public $showModal = false;
     public $country_id;
     public function mount()
+    {
+        $this->listdata();
+    }
+
+    #[On('geodata-synced')]
+    public function refreshAfterSync()
     {
         $this->listdata();
     }

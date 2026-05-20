@@ -5,6 +5,7 @@ namespace App\Livewire\Setup\Location;
 use App\Models\street as ModelsStreet;
 use App\Models\wards;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Street extends Component
@@ -16,6 +17,12 @@ class Street extends Component
     public $showModal = false;
     public $country_id;
     public function mount()
+    {
+        $this->listdata();
+    }
+
+    #[On('geodata-synced')]
+    public function refreshAfterSync()
     {
         $this->listdata();
     }

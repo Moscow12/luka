@@ -13,7 +13,36 @@
                         </ol>
                     </nav>
                 </div>
+                <div class="mt-3 mt-md-0">
+                    <button type="button"
+                        class="btn btn-primary"
+                        wire:click="syncGeodata"
+                        wire:loading.attr="disabled"
+                        wire:target="syncGeodata"
+                        wire:confirm="Synchronize Tanzania geo-location data from the bundled dataset? Existing locations are kept and missing ones are added — nothing is deleted.">
+                        <span wire:loading.remove wire:target="syncGeodata">
+                            <i class="fa-solid fa-rotate me-1"></i> Sync Geo Data
+                        </span>
+                        <span wire:loading wire:target="syncGeodata">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            Syncing…
+                        </span>
+                    </button>
+                </div>
             </div>
+
+            @if (session()->has('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if (session()->has('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
         </div>
     </div>
     <!-- row -->
