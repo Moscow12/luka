@@ -71,6 +71,12 @@ class Employee extends Model
         return $this->belongsTo(User::class, 'added_by');
     }
 
+    /** The login/user account linked to this employee (NOT the creator). */
+    public function account()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function department()
     {
         return $this->belongsTo(departments::class, 'department_id');

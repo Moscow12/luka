@@ -79,6 +79,41 @@
                                                     class="fa-solid fa-print me-2"></i>Print</a></li>
                                     </ul>
                                 </div>
+
+                                <!-- Bulk Actions Dropdown (shown when rows selected) -->
+                                @if (count($selectedEmployees) > 0)
+                                    <div class="dropdown">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa-solid fa-layer-group me-1"></i> Bulk Actions
+                                            <span class="badge bg-light text-dark ms-1">{{ count($selectedEmployees) }}</span>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <button type="button" class="dropdown-item"
+                                                    wire:click="sendCredentialsToSelected"
+                                                    wire:confirm="Create accounts (where missing) and send login credentials via SMS + email to the selected staff?">
+                                                    <i class="fa-solid fa-key me-2"></i>Send Credentials
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                                    data-bs-target="#bulkDeptModal">
+                                                    <i class="fa-solid fa-building me-2"></i>Update Department
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                                    data-bs-target="#bulkDesigModal">
+                                                    <i class="fa-solid fa-id-badge me-2"></i>Update Designation
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -162,6 +197,9 @@
                     <table class="table table-hover table-centered align-middle mb-0">
                         <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
                             <tr>
+                                <th class="text-center" style="width: 40px;">
+                                    <input type="checkbox" class="form-check-input" wire:model.live="selectAll" />
+                                </th>
                                 <th class="text-center" style="width: 50px;">#</th>
                                 <th style="width: 70px;">Photo</th>
                                 <th>Name</th>
@@ -178,6 +216,10 @@
                         <tbody>
                             @forelse ($employees as $index => $employee)
                                 <tr wire:key="employee-{{ $employee->id }}">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input"
+                                            wire:model.live="selectedEmployees" value="{{ $employee->id }}" />
+                                    </td>
                                     <td class="text-center text-muted">
                                         {{ $employees->firstItem() + $index }}
                                     </td>
@@ -269,7 +311,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="11" class="text-center py-5">
+                                    <td colspan="12" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center justify-content-center">
                                             <i class="fa-solid fa-users text-muted mb-3"
                                                 style="font-size: 48px;"></i>
@@ -331,4 +373,78 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
+
+    <!-- Bulk Update Department Modal -->
+    <div class="modal fade" id="bulkDeptModal" tabindex="-1" wire:ignore.self>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Department for {{ count($selectedEmployees) }} staff</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Target Department</label>
+                    <select wire:model="bulkDepartmentId" class="form-select">
+                        <option value="">Select department...</option>
+                        @foreach ($departments as $dept)
+                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" wire:click="bulkUpdateDepartment"
+                        wire:loading.attr="disabled" wire:target="bulkUpdateDepartment">
+                        <span wire:loading.remove wire:target="bulkUpdateDepartment">Update Department</span>
+                        <span wire:loading wire:target="bulkUpdateDepartment">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>Updating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Update Designation Modal -->
+    <div class="modal fade" id="bulkDesigModal" tabindex="-1" wire:ignore.self>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Designation for {{ count($selectedEmployees) }} staff</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Target Designation</label>
+                    <select wire:model="bulkDesignationId" class="form-select">
+                        <option value="">Select designation...</option>
+                        @foreach ($designations as $desig)
+                            <option value="{{ $desig->id }}">{{ $desig->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" wire:click="bulkUpdateDesignation"
+                        wire:loading.attr="disabled" wire:target="bulkUpdateDesignation">
+                        <span wire:loading.remove wire:target="bulkUpdateDesignation">Update Designation</span>
+                        <span wire:loading wire:target="bulkUpdateDesignation">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>Updating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close modals after a successful bulk update -->
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('close-bulk-dept-modal', () => {
+                bootstrap.Modal.getInstance(document.getElementById('bulkDeptModal'))?.hide();
+            });
+            Livewire.on('close-bulk-desig-modal', () => {
+                bootstrap.Modal.getInstance(document.getElementById('bulkDesigModal'))?.hide();
+            });
+        });
+    </script>
 </div>
