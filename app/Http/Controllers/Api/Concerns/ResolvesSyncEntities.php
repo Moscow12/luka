@@ -92,6 +92,16 @@ trait ResolvesSyncEntities
      */
     protected function validationErrorResponse(Validator $validator, string $message, array $extra = [])
     {
+        return response()->json($this->validationErrorPayload($validator, $message, $extra), 422);
+    }
+
+    /**
+     * The body array for a 422 validation failure (without wrapping it in a
+     * JsonResponse), so callers that aggregate results — e.g. a bulk handler —
+     * can embed it directly.
+     */
+    protected function validationErrorPayload(Validator $validator, string $message, array $extra = []): array
+    {
         $formattedErrors = [];
         $missingFields = [];
         $invalidFields = [];
@@ -114,13 +124,13 @@ trait ResolvesSyncEntities
             $errorSummary[] = 'Invalid field values: '.implode(', ', $invalidFields);
         }
 
-        return response()->json(array_merge([
+        return array_merge([
             'success' => false,
             'error_code' => 'VALIDATION_FAILED',
             'message' => $message,
             'error_summary' => implode('. ', $errorSummary),
             'detailed_errors' => $formattedErrors,
             'total_errors' => count($formattedErrors),
-        ], $extra), 422);
+        ], $extra);
     }
 }

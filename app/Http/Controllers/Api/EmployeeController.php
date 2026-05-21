@@ -23,26 +23,108 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
+        // The export script POSTs a bulk envelope ({action: bulk_register,
+        // employees: [...]}) to this same endpoint. Detect it and fan out to
+        // the per-employee registration logic.
+        if ($request->input('action') === 'bulk_register' || is_array($request->input('employees'))) {
+            return $this->bulkRegister($request);
+        }
+
+        $result = $this->registerOne($request->all());
+
+        return response()->json($result['body'], $result['status']);
+    }
+
+    /**
+     * Register many employees in one request. Mirrors the response shape the
+     * export script expects: { successful, failed, errors[] }.
+     */
+    public function bulkRegister(Request $request)
+    {
+        $rows = $request->input('employees', []);
+
+        if (! is_array($rows) || empty($rows)) {
+            return response()->json([
+                'success' => false,
+                'error_code' => 'EMPTY_BATCH',
+                'message' => 'No employees provided in the bulk payload.',
+            ], 422);
+        }
+
+        $successful = 0;
+        $failed = 0;
+        $errors = [];
+
+        foreach ($rows as $index => $row) {
+            $row = is_array($row) ? $row : [];
+            $result = $this->registerOne($row);
+
+            if ($result['status'] === 201) {
+                $successful++;
+
+                continue;
+            }
+
+            $failed++;
+            $body = $result['body'];
+            $errors[] = [
+                'index' => $index,
+                'employee_no' => $row['employee_no'] ?? null,
+                'employee_name' => trim(($row['first_name'] ?? '').' '.($row['last_name'] ?? '')) ?: null,
+                'error' => $body['error_summary'] ?? $body['message'] ?? 'Unknown error',
+                'error_code' => $body['error_code'] ?? null,
+                'http_code' => $result['status'],
+                'detailed_errors' => $body['detailed_errors'] ?? null,
+                'existing_employee' => $body['existing_employee'] ?? null,
+            ];
+        }
+
+        return response()->json([
+            'success' => $failed === 0,
+            'message' => 'Bulk employee registration completed',
+            'successful' => $successful,
+            'failed' => $failed,
+            'total' => count($rows),
+            'errors' => $errors,
+        ], 200);
+    }
+
+    /**
+     * Register a single employee from a flat data array. Returns
+     * ['status' => int, 'body' => array] so it can be reused by both the
+     * single-employee endpoint and the bulk handler.
+     */
+    private function registerOne(array $data): array
+    {
         try {
-            // Check if employee already exists by phone or employee_no
-            $existingEmployee = Employee::where(function ($query) use ($request) {
-                if ($request->phone) {
-                    $query->where('phone', $request->phone);
-                }
-                if ($request->employee_no) {
-                    $query->orWhere('employee_no', $request->employee_no);
-                }
-            })->first();
+            // Check if employee already exists by phone or employee_no.
+            // Only run the lookup when at least one identifier is present —
+            // otherwise an empty where-closure would match the first row in
+            // the table and report a bogus duplicate.
+            $phone = trim((string) ($data['phone'] ?? ''));
+            $employeeNoInput = trim((string) ($data['employee_no'] ?? ''));
+
+            $existingEmployee = null;
+            if ($phone !== '' || $employeeNoInput !== '') {
+                $existingEmployee = Employee::where(function ($query) use ($phone, $employeeNoInput) {
+                    if ($phone !== '') {
+                        $query->orWhere('phone', $phone);
+                    }
+                    if ($employeeNoInput !== '') {
+                        $query->orWhere('employee_no', $employeeNoInput);
+                    }
+                })->first();
+            }
 
             if ($existingEmployee) {
-                return response()->json([
+                return ['status' => 200, 'body' => [
                     'success' => false,
                     'error_code' => 'EMPLOYEE_ALREADY_EXISTS',
                     'message' => 'Employee already exists in the system',
-                    'error_summary' => "An employee with phone '{$request->phone}' or employee number '{$request->employee_no}' already exists",
+                    'error_summary' => "An employee with phone '{$phone}' or employee number '{$employeeNoInput}' already exists",
                     'matched_by' => [
-                        'phone' => $existingEmployee->phone === $request->phone ? 'matched' : 'not matched',
-                        'employee_no' => $existingEmployee->employee_no === $request->employee_no ? 'matched' : 'not matched',
+                        'phone' => $existingEmployee->phone === $phone ? 'matched' : 'not matched',
+                        'employee_no' => $existingEmployee->employee_no === $employeeNoInput ? 'matched' : 'not matched',
                     ],
                     'existing_employee' => [
                         'id' => $existingEmployee->id,
@@ -52,11 +134,11 @@ class EmployeeController extends Controller
                         'email' => $existingEmployee->email,
                         'status' => $existingEmployee->status,
                     ],
-                ], 200);
+                ]];
             }
 
-            // Validate incoming request
-            $validator = Validator::make($request->all(), [
+            // Validate incoming data
+            $validator = Validator::make($data, [
                 // Core mandatory fields
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
@@ -93,16 +175,16 @@ class EmployeeController extends Controller
 
             if ($validator->fails()) {
                 Log::error('Employee Registration Validation Failed', [
-                    'employee_id' => $request->employee_id ?? 'N/A',
-                    'employee_name' => $request->employee_name ?? 'N/A',
-                    'request_data' => $request->all(),
+                    'employee_id' => $data['employee_id'] ?? 'N/A',
+                    'employee_name' => $data['employee_name'] ?? 'N/A',
+                    'request_data' => $data,
                     'validation_errors' => $validator->errors(),
                 ]);
 
-                return $this->validationErrorResponse($validator, 'Employee registration validation failed', [
-                    'employee_id' => $request->employee_id ?? null,
-                    'employee_name' => $request->employee_name ?? null,
-                ]);
+                return ['status' => 422, 'body' => $this->validationErrorPayload($validator, 'Employee registration validation failed', [
+                    'employee_id' => $data['employee_id'] ?? null,
+                    'employee_name' => $data['employee_name'] ?? null,
+                ])];
             }
 
             DB::beginTransaction();
@@ -111,11 +193,11 @@ class EmployeeController extends Controller
             $firstUserId = DB::table('users')->first()->id ?? null;
 
             // Resolve or create foreign keys by name
-            $departmentId = $this->resolveOrCreateDepartment($request->department ?? 'General', $firstUserId);
-            $titleId = $this->resolveOrCreateJobTitle($request->title ?? null, $firstUserId);
-            $designationId = $this->resolveOrCreateDesignation($request->designation ?? null, $firstUserId);
-            $workstationId = $this->resolveWorkstation($request->workstation);
-            $denominationId = $this->resolveOrCreateDenomination($request->denomination ?? 'Not Specified');
+            $departmentId = $this->resolveOrCreateDepartment($data['department'] ?? 'General', $firstUserId);
+            $titleId = $this->resolveOrCreateJobTitle($data['title'] ?? null, $firstUserId);
+            $designationId = $this->resolveOrCreateDesignation($data['designation'] ?? null, $firstUserId);
+            $workstationId = $this->resolveWorkstation($data['workstation'] ?? null);
+            $denominationId = $this->resolveOrCreateDenomination($data['denomination'] ?? 'Not Specified');
 
             // Get Tanzania as default country
             $country = DB::table('countries')->where('name', 'LIKE', '%Tanzania%')->first();
@@ -130,12 +212,13 @@ class EmployeeController extends Controller
             }
 
             // Get district - either by name or first in region
-            if ($request->district) {
+            $district = null;
+            if (! empty($data['district'])) {
                 $district = DB::table('districts')
-                    ->where('name', 'LIKE', '%'.$request->district.'%')
+                    ->where('name', 'LIKE', '%'.$data['district'].'%')
                     ->first();
             }
-            if (! isset($district) || ! $district) {
+            if (! $district) {
                 $district = DB::table('districts')->where('region_id', $region->id)->first();
             }
             if (! $district) {
@@ -153,8 +236,8 @@ class EmployeeController extends Controller
                 DB::rollBack();
 
                 Log::error('Employee Registration Field Resolution Failed', [
-                    'employee_id' => $request->employee_id ?? 'N/A',
-                    'employee_name' => $request->employee_name ?? 'N/A',
+                    'employee_id' => $data['employee_id'] ?? 'N/A',
+                    'employee_name' => $data['employee_name'] ?? 'N/A',
                     'department' => $departmentId,
                     'title' => $titleId,
                     'designation' => $designationId,
@@ -164,51 +247,51 @@ class EmployeeController extends Controller
 
                 $failedFields = [];
                 if (! $departmentId) {
-                    $failedFields[] = "department ('{$request->department}')";
+                    $failedFields[] = "department ('".($data['department'] ?? '')."')";
                 }
                 if (! $titleId) {
-                    $failedFields[] = "title ('{$request->title}')";
+                    $failedFields[] = "title ('".($data['title'] ?? '')."')";
                 }
                 if (! $designationId) {
-                    $failedFields[] = "designation ('{$request->designation}')";
+                    $failedFields[] = "designation ('".($data['designation'] ?? '')."')";
                 }
                 if (! $workstationId) {
-                    $failedFields[] = "workstation ('{$request->workstation}')";
+                    $failedFields[] = "workstation ('".($data['workstation'] ?? '')."')";
                 }
                 if (! $denominationId) {
-                    $failedFields[] = "denomination ('{$request->denomination}')";
+                    $failedFields[] = "denomination ('".($data['denomination'] ?? '')."')";
                 }
 
-                return response()->json([
+                return ['status' => 422, 'body' => [
                     'success' => false,
                     'error_code' => 'FIELD_RESOLUTION_FAILED',
                     'message' => 'Failed to resolve or create required organizational fields',
                     'error_summary' => 'Could not find or create the following fields: '.implode(', ', $failedFields),
                     'failed_fields' => $failedFields,
-                    'employee_id' => $request->employee_id ?? null,
-                    'employee_name' => $request->employee_name ?? null,
+                    'employee_id' => $data['employee_id'] ?? null,
+                    'employee_name' => $data['employee_name'] ?? null,
                     'hint' => 'Please ensure the field names exist in the database or contact administrator',
-                ], 422);
+                ]];
             }
 
             // Auto-generate employee number if not provided
-            $employeeNo = $request->employee_no ?? $this->generateEmployeeNumber();
+            $employeeNo = ! empty($data['employee_no']) ? $data['employee_no'] : $this->generateEmployeeNumber();
 
             // Create employee
             $employee = Employee::create([
                 'employee_no' => $employeeNo,
-                'first_name' => $request->first_name,
-                'middle_name' => $request->middle_name,
-                'last_name' => $request->last_name,
-                'gender' => $request->gender,
-                'dob' => $request->dob,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'employment_type' => $request->employment_type,
-                'hired_date' => $request->hired_date,
+                'first_name' => $data['first_name'] ?? null,
+                'middle_name' => $data['middle_name'] ?? null,
+                'last_name' => $data['last_name'] ?? null,
+                'gender' => $data['gender'] ?? null,
+                'dob' => $data['dob'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'email' => $data['email'] ?? null,
+                'employment_type' => $data['employment_type'] ?? null,
+                'hired_date' => $data['hired_date'] ?? null,
                 'status' => 'active',
-                'education_level' => $request->education_level,
-                'marital_status' => $request->marital_status,
+                'education_level' => $data['education_level'] ?? null,
+                'marital_status' => $data['marital_status'] ?? null,
                 'department_id' => $departmentId,
                 'title_id' => $titleId,
                 'designation_id' => $designationId,
@@ -219,63 +302,63 @@ class EmployeeController extends Controller
                 'district_id' => $district->id,
                 'ward_id' => $ward->id,
                 'vilstreet_id' => null,
-                'national_id' => $request->national_id,
-                'tin_number' => $request->tin_number,
-                'fpid' => $request->fpid,
-                'photo' => $request->photo,
-                'signature' => $request->signature,
-                'added_by' => auth()->check() ? auth()->id() : $request->input('added_by', DB::table('users')->first()->id ?? null),
+                'national_id' => $data['national_id'] ?? null,
+                'tin_number' => $data['tin_number'] ?? null,
+                'fpid' => $data['fpid'] ?? null,
+                'photo' => $data['photo'] ?? null,
+                'signature' => $data['signature'] ?? null,
+                'added_by' => auth()->check() ? auth()->id() : ($data['added_by'] ?? (DB::table('users')->first()->id ?? null)),
             ]);
 
             DB::commit();
 
-            return response()->json([
+            return ['status' => 201, 'body' => [
                 'success' => true,
                 'message' => 'Employee registered successfully',
                 'data' => [
                     'employee' => $employee->load(['department', 'designation', 'workstation']),
                 ],
-            ], 201);
+            ]];
 
         } catch (ValidationException $e) {
             DB::rollBack();
 
             Log::error('Employee Registration Validation Exception', [
-                'employee_id' => $request->employee_id ?? 'N/A',
-                'employee_name' => $request->employee_name ?? 'N/A',
+                'employee_id' => $data['employee_id'] ?? 'N/A',
+                'employee_name' => $data['employee_name'] ?? 'N/A',
                 'exception' => $e->getMessage(),
                 'errors' => $e->errors(),
             ]);
 
-            return response()->json([
+            return ['status' => 422, 'body' => [
                 'success' => false,
                 'error_code' => 'VALIDATION_EXCEPTION',
                 'message' => 'Employee registration validation exception occurred',
                 'error_summary' => $e->getMessage(),
                 'detailed_errors' => $e->errors(),
-                'employee_id' => $request->employee_id ?? null,
-                'employee_name' => $request->employee_name ?? null,
-            ], 422);
+                'employee_id' => $data['employee_id'] ?? null,
+                'employee_name' => $data['employee_name'] ?? null,
+            ]];
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             Log::error('Employee Registration Failed', [
-                'employee_id' => $request->employee_id ?? 'N/A',
-                'employee_name' => $request->employee_name ?? 'N/A',
+                'employee_id' => $data['employee_id'] ?? 'N/A',
+                'employee_name' => $data['employee_name'] ?? 'N/A',
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json([
+            return ['status' => 500, 'body' => [
                 'success' => false,
                 'error_code' => 'REGISTRATION_FAILED',
                 'message' => 'Failed to register employee due to server error',
                 'error_summary' => $e->getMessage(),
-                'employee_id' => $request->employee_id ?? null,
-                'employee_name' => $request->employee_name ?? null,
+                'employee_id' => $data['employee_id'] ?? null,
+                'employee_name' => $data['employee_name'] ?? null,
                 'hint' => 'Please check the data format and try again, or contact administrator if the issue persists',
-            ], 500);
+            ]];
         }
     }
 
