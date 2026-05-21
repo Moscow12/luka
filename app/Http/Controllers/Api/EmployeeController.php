@@ -59,7 +59,8 @@ class EmployeeController extends Controller
             $row = is_array($row) ? $row : [];
             $result = $this->registerOne($row);
 
-            if ($result['status'] === 201) {
+            // A created (201) or updated (200, success=true) row counts as a success.
+            if (! empty($result['body']['success'])) {
                 $successful++;
 
                 continue;
@@ -97,9 +98,20 @@ class EmployeeController extends Controller
     private function registerOne(array $data): array
     {
         try {
-            // An employee is a duplicate only when BOTH employee_no AND phone
-            // match the same record. The check therefore only runs when both
-            // identifiers are present.
+            // Remote exporters ship dates as DD-MM-YYYY / DD/MM/YYYY (e.g.
+            // "01-01-2026"); normalise to ISO so the `date` validator accepts
+            // them instead of erroring "must be a valid date".
+            $data['dob'] = $this->normalizeDate($data['dob'] ?? null);
+
+            // hired_date may arrive empty or as a "0000-00-00" sentinel when the
+            // source has no contract/joined date; fall back to today so the
+            // column is never left null.
+            $data['hired_date'] = $this->normalizeDate($data['hired_date'] ?? null)
+                ?? now()->toDateString();
+
+            // An employee is matched when BOTH employee_no AND phone match the
+            // same record. A match means update that record; no match means
+            // create a new one. The lookup only runs when both are present.
             $phone = trim((string) ($data['phone'] ?? ''));
             $employeeNoInput = trim((string) ($data['employee_no'] ?? ''));
 
@@ -110,22 +122,10 @@ class EmployeeController extends Controller
                     ->first();
             }
 
-            if ($existingEmployee) {
-                return ['status' => 200, 'body' => [
-                    'success' => false,
-                    'error_code' => 'EMPLOYEE_ALREADY_EXISTS',
-                    'message' => 'Employee already exists in the system',
-                    'error_summary' => "An employee with employee number '{$employeeNoInput}' and phone '{$phone}' already exists",
-                    'existing_employee' => [
-                        'id' => $existingEmployee->id,
-                        'employee_no' => $existingEmployee->employee_no,
-                        'full_name' => $existingEmployee->first_name.' '.$existingEmployee->last_name,
-                        'phone' => $existingEmployee->phone,
-                        'email' => $existingEmployee->email,
-                        'status' => $existingEmployee->status,
-                    ],
-                ]];
-            }
+            // When updating an existing record, exclude it from the unique
+            // checks so its own employee_no/email/national_id don't trip them.
+            $ignoreId = $existingEmployee?->id;
+            $uniqueSuffix = $ignoreId ? ','.$ignoreId : '';
 
             // Validate incoming data
             $validator = Validator::make($data, [
@@ -135,7 +135,7 @@ class EmployeeController extends Controller
                 'gender' => 'required|in:Male,Female,Other',
                 'dob' => 'required|date|before:today',
                 'phone' => 'required|string|max:20',
-                'email' => 'nullable|email|max:255|unique:employees,email',
+                'email' => 'nullable|email|max:255|unique:employees,email'.$uniqueSuffix,
 
                 // Employment info
                 'employment_type' => 'nullable|string',
@@ -155,8 +155,8 @@ class EmployeeController extends Controller
 
                 // Optional fields
                 'middle_name' => 'nullable|string|max:100',
-                'national_id' => 'nullable|string|max:50|unique:employees,national_id',
-                'employee_no' => 'required|string|max:50|unique:employees,employee_no',
+                'national_id' => 'nullable|string|max:50|unique:employees,national_id'.$uniqueSuffix,
+                'employee_no' => 'required|string|max:50|unique:employees,employee_no'.$uniqueSuffix,
                 'tin_number' => 'nullable|string|max:50',
                 'fpid' => 'nullable|string|max:50',
                 'photo' => 'nullable|string',
@@ -265,7 +265,7 @@ class EmployeeController extends Controller
             }
 
             // employee_no is supplied by the remote system (validated as required above).
-            $employee = Employee::create([
+            $attributes = [
                 'employee_no' => $data['employee_no'],
                 'first_name' => $data['first_name'] ?? null,
                 'middle_name' => $data['middle_name'] ?? null,
@@ -276,7 +276,6 @@ class EmployeeController extends Controller
                 'email' => $data['email'] ?? null,
                 'employment_type' => $data['employment_type'] ?? null,
                 'hired_date' => $data['hired_date'] ?? null,
-                'status' => 'active',
                 'education_level' => $data['education_level'] ?? null,
                 'marital_status' => $data['marital_status'] ?? null,
                 'department_id' => $departmentId,
@@ -288,20 +287,35 @@ class EmployeeController extends Controller
                 'region_id' => $region->id,
                 'district_id' => $district->id,
                 'ward_id' => $ward->id,
-                'vilstreet_id' => null,
                 'national_id' => $data['national_id'] ?? null,
                 'tin_number' => $data['tin_number'] ?? null,
                 'fpid' => $data['fpid'] ?? null,
                 'photo' => $data['photo'] ?? null,
                 'signature' => $data['signature'] ?? null,
                 'added_by' => auth()->check() ? auth()->id() : ($data['added_by'] ?? (DB::table('users')->first()->id ?? null)),
-            ]);
+            ];
+
+            if ($existingEmployee) {
+                // Already registered: update the existing record from the payload.
+                $existingEmployee->update($attributes);
+                $employee = $existingEmployee;
+                $status = 200;
+                $message = 'Employee updated successfully';
+            } else {
+                // Not yet registered: create it.
+                $employee = Employee::create($attributes + [
+                    'status' => 'active',
+                    'vilstreet_id' => null,
+                ]);
+                $status = 201;
+                $message = 'Employee registered successfully';
+            }
 
             DB::commit();
 
-            return ['status' => 201, 'body' => [
+            return ['status' => $status, 'body' => [
                 'success' => true,
-                'message' => 'Employee registered successfully',
+                'message' => $message,
                 'data' => [
                     'employee' => $employee->load(['department', 'designation', 'workstation']),
                 ],
