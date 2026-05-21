@@ -97,23 +97,17 @@ class EmployeeController extends Controller
     private function registerOne(array $data): array
     {
         try {
-            // Check if employee already exists by phone or employee_no.
-            // Only run the lookup when at least one identifier is present —
-            // otherwise an empty where-closure would match the first row in
-            // the table and report a bogus duplicate.
+            // An employee is a duplicate only when BOTH employee_no AND phone
+            // match the same record. The check therefore only runs when both
+            // identifiers are present.
             $phone = trim((string) ($data['phone'] ?? ''));
             $employeeNoInput = trim((string) ($data['employee_no'] ?? ''));
 
             $existingEmployee = null;
-            if ($phone !== '' || $employeeNoInput !== '') {
-                $existingEmployee = Employee::where(function ($query) use ($phone, $employeeNoInput) {
-                    if ($phone !== '') {
-                        $query->orWhere('phone', $phone);
-                    }
-                    if ($employeeNoInput !== '') {
-                        $query->orWhere('employee_no', $employeeNoInput);
-                    }
-                })->first();
+            if ($phone !== '' && $employeeNoInput !== '') {
+                $existingEmployee = Employee::where('employee_no', $employeeNoInput)
+                    ->where('phone', $phone)
+                    ->first();
             }
 
             if ($existingEmployee) {
@@ -121,11 +115,7 @@ class EmployeeController extends Controller
                     'success' => false,
                     'error_code' => 'EMPLOYEE_ALREADY_EXISTS',
                     'message' => 'Employee already exists in the system',
-                    'error_summary' => "An employee with phone '{$phone}' or employee number '{$employeeNoInput}' already exists",
-                    'matched_by' => [
-                        'phone' => $existingEmployee->phone === $phone ? 'matched' : 'not matched',
-                        'employee_no' => $existingEmployee->employee_no === $employeeNoInput ? 'matched' : 'not matched',
-                    ],
+                    'error_summary' => "An employee with employee number '{$employeeNoInput}' and phone '{$phone}' already exists",
                     'existing_employee' => [
                         'id' => $existingEmployee->id,
                         'employee_no' => $existingEmployee->employee_no,
@@ -166,7 +156,7 @@ class EmployeeController extends Controller
                 // Optional fields
                 'middle_name' => 'nullable|string|max:100',
                 'national_id' => 'nullable|string|max:50|unique:employees,national_id',
-                'employee_no' => 'nullable|string|max:50|unique:employees,employee_no',
+                'employee_no' => 'required|string|max:50|unique:employees,employee_no',
                 'tin_number' => 'nullable|string|max:50',
                 'fpid' => 'nullable|string|max:50',
                 'photo' => 'nullable|string',
@@ -274,12 +264,9 @@ class EmployeeController extends Controller
                 ]];
             }
 
-            // Auto-generate employee number if not provided
-            $employeeNo = ! empty($data['employee_no']) ? $data['employee_no'] : $this->generateEmployeeNumber();
-
-            // Create employee
+            // employee_no is supplied by the remote system (validated as required above).
             $employee = Employee::create([
-                'employee_no' => $employeeNo,
+                'employee_no' => $data['employee_no'],
                 'first_name' => $data['first_name'] ?? null,
                 'middle_name' => $data['middle_name'] ?? null,
                 'last_name' => $data['last_name'] ?? null,
@@ -522,28 +509,6 @@ class EmployeeController extends Controller
         Log::info("Auto-created denomination: {$name}", ['id' => $id]);
 
         return $id;
-    }
-
-    /**
-     * Generate unique employee number
-     *
-     * @return string
-     */
-    private function generateEmployeeNumber()
-    {
-        $year = date('Y');
-        $lastEmployee = Employee::whereYear('created_at', $year)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if ($lastEmployee && preg_match('/STJH\/\d{4}\/(\d+)/', $lastEmployee->employee_no, $matches)) {
-            $lastNumber = intval($matches[1]);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return 'STJH/'.$year.'/'.str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     /**
