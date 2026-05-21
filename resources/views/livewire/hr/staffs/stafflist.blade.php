@@ -300,12 +300,6 @@
                                                 class="btn btn-sm btn-ghost-secondary rounded-circle" title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <button type="button"
-                                                class="btn btn-sm btn-ghost-danger rounded-circle"
-                                                title="Delete"
-                                                onclick="confirm('Are you sure you want to delete this employee?') || event.stopImmediatePropagation()">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>
