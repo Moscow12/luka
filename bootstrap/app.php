@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'api.token' => \App\Http\Middleware\VerifyApiToken::class,
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         // Update current financial year daily at midnight

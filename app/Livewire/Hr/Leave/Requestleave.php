@@ -7,8 +7,8 @@ use App\Models\departments;
 use App\Models\designations;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
-use App\Models\LeaveSetting;
 use App\Models\Leaves;
+use App\Models\LeaveSetting;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -19,23 +19,70 @@ class Requestleave extends Component
     use WithFileUploads;
 
     public $search = '';
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    public $leave_id, $start_date, $end_date, $days, $travel_to, $othercontact, $comments, $document;
-    public $employee, $employee_id, $leaveslist = [], $leaves = [], $errorMessage, $status = 'Awaiting', $available_days;
+
+    public $leave_id;
+
+    public $start_date;
+
+    public $end_date;
+
+    public $days;
+
+    public $travel_to;
+
+    public $othercontact;
+
+    public $comments;
+
+    public $document;
+
+    public $employee;
+
+    public $employee_id;
+
+    public $leaveslist = [];
+
+    public $leaves = [];
+
+    public $errorMessage;
+
+    public $status = 'Awaiting';
+
+    public $available_days;
+
     public $hasEmployeeRecord = false;
+
     public $editingLeaveId = null;
+
     public $requiresDocument = false;
 
     // Acting Assignment fields
     public $showActingAssignment = false;
+
     public $actingAssignmentRequired = false;
-    public $acting_employee_id, $acting_designation_id, $acting_department_id;
-    public $acting_responsibilities, $acting_notes;
+
+    public $acting_employee_id;
+
+    public $acting_designation_id;
+
+    public $acting_department_id;
+
+    public $acting_responsibilities;
+
+    public $acting_notes;
+
     public $notify_acting_employee = true;
+
     public $grant_system_access = false;
+
     public $employeesList = [];
+
     public $designationsList = [];
+
     public $departmentsList = [];
 
     public function mount()
@@ -71,7 +118,9 @@ class Requestleave extends Component
 
     public function listdata()
     {
-        if (!$this->hasEmployeeRecord) return;
+        if (! $this->hasEmployeeRecord) {
+            return;
+        }
 
         $this->leaves = Employeeleaves::where('employee_id', $this->employee_id)
             ->orderBy('created_at', 'desc')
@@ -80,7 +129,9 @@ class Requestleave extends Component
 
     public function openModal($mode = 'create', $id = null)
     {
-        if (!$this->hasEmployeeRecord) return;
+        if (! $this->hasEmployeeRecord) {
+            return;
+        }
 
         $this->resetErrorBag();
         $this->resetValidation();
@@ -133,9 +184,10 @@ class Requestleave extends Component
         $actingMandatory = LeaveSetting::get('acting_assignment_mandatory', false);
         $minDays = LeaveSetting::get('acting_assignment_min_days', 5);
 
-        if (!$actingEnabled) {
+        if (! $actingEnabled) {
             $this->showActingAssignment = false;
             $this->actingAssignmentRequired = false;
+
             return;
         }
 
@@ -150,7 +202,9 @@ class Requestleave extends Component
 
     public function save()
     {
-        if (!$this->hasEmployeeRecord) return;
+        if (! $this->hasEmployeeRecord) {
+            return;
+        }
 
         $rules = [
             'leave_id' => ['required'],
@@ -220,7 +274,9 @@ class Requestleave extends Component
 
     public function update()
     {
-        if (!$this->hasEmployeeRecord || !$this->editingLeaveId) return;
+        if (! $this->hasEmployeeRecord || ! $this->editingLeaveId) {
+            return;
+        }
 
         $rules = [
             'leave_id' => ['required'],
@@ -267,11 +323,20 @@ class Requestleave extends Component
 
     public function delete($uuid)
     {
-        if (!$this->hasEmployeeRecord) return;
+        if (! $this->hasEmployeeRecord) {
+            return;
+        }
 
         $leave = Employeeleaves::where('id', $uuid)
             ->where('employee_id', $this->employee_id)
             ->firstOrFail();
+
+        // Employees may only withdraw requests that are still pending.
+        if ($leave->status !== 'Awaiting') {
+            session()->flash('error', 'You can only delete leave requests that are still awaiting approval.');
+
+            return;
+        }
 
         $leave->delete();
         $this->listdata();
@@ -282,14 +347,18 @@ class Requestleave extends Component
     {
         $this->calculateEndDate();
     }
+
     public function calculateLeaveBalance()
     {
-        if (!$this->leave_id || !$this->hasEmployeeRecord) return;
+        if (! $this->leave_id || ! $this->hasEmployeeRecord) {
+            return;
+        }
 
         $leave = Leaves::find($this->leave_id);
 
-        if (!$leave) {
+        if (! $leave) {
             $this->available_days = null;
+
             return;
         }
 
@@ -309,14 +378,16 @@ class Requestleave extends Component
             $this->calculateLeaveBalance();
 
             if ($this->available_days <= 0) {
-                $this->errorMessage = "You have no remaining days for this leave type.";
+                $this->errorMessage = 'You have no remaining days for this leave type.';
                 $this->end_date = null;
+
                 return;
             }
 
             if ($this->days > $this->available_days) {
                 $this->errorMessage = "You only have {$this->available_days} leave days remaining.";
                 $this->end_date = null;
+
                 return;
             }
 

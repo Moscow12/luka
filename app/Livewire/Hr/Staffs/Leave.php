@@ -15,14 +15,64 @@ class Leave extends Component
     use WithFileUploads;
 
     public $search = '';
-    public $modalMode = 'create';
-    public $showModal = false;
-    public $leave_id, $start_date, $end_date, $days, $travel_to, $othercontact, $comments, $added_by, $document;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
-    public $employee_id, $leaveslist=[], $leaves=[], $errorMessage,$status='Awaiting', $available_days;
-    public $selectedLeaveType, $requiresDocument = false;
 
-    public function mount($id=null)
+    public $modalMode = 'create';
+
+    public $showModal = false;
+
+    public $leave_id;
+
+    public $start_date;
+
+    public $end_date;
+
+    public $days;
+
+    public $travel_to;
+
+    public $othercontact;
+
+    public $comments;
+
+    public $added_by;
+
+    public $document;
+
+    public $first_name;
+
+    public $middle_name;
+
+    public $last_name;
+
+    public $gender;
+
+    public $getfullname;
+
+    public $age;
+
+    public $email;
+
+    public $editUrl;
+
+    public $photo;
+
+    public $employee_id;
+
+    public $leaveslist = [];
+
+    public $leaves = [];
+
+    public $errorMessage;
+
+    public $status = 'Awaiting';
+
+    public $available_days;
+
+    public $selectedLeaveType;
+
+    public $requiresDocument = false;
+
+    public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
         $this->employee_id = $id;
@@ -128,7 +178,7 @@ class Leave extends Component
                 'travel_to' => $this->travel_to,
                 'othercontact' => $this->othercontact,
                 'comments' => $this->comments,
-                'added_by' => $this->added_by
+                'added_by' => $this->added_by,
             ];
 
             if ($documentPath) {
@@ -157,11 +207,21 @@ class Leave extends Component
         $this->showModal = false;
         $this->reset(['start_date', 'end_date', 'days', 'status', 'travel_to', 'othercontact', 'comments', 'document']);
     }
+
     public function delete($uuid)
     {
+        $user = Auth::user();
+
+        if (! $user->can('manage-leave') && ! $user->isSuperAdmin()) {
+            session()->flash('error', 'You do not have permission to delete leave records.');
+
+            return;
+        }
+
         $leave = Employeeleaves::findOrFail($uuid);
         $leave->delete();
         $this->listdata();
+        session()->flash('success', 'Leave record deleted successfully!');
     }
 
     public function updatedDays()
@@ -173,20 +233,24 @@ class Leave extends Component
     {
         $this->calculateEndDate();
     }
+
     public function calculateLeaveBalance()
     {
-        if (!$this->leave_id) return;
-
-        $leave = Leaves::find($this->leave_id);
-
-        if (!$leave) {
-            $this->available_days = null;
+        if (! $this->leave_id) {
             return;
         }
 
-        $used = EmployeeLeaves::where('employee_id',  $this->employee_id)
-                    ->where('leave_id', $this->leave_id)
-                    ->sum('days_used');
+        $leave = Leaves::find($this->leave_id);
+
+        if (! $leave) {
+            $this->available_days = null;
+
+            return;
+        }
+
+        $used = EmployeeLeaves::where('employee_id', $this->employee_id)
+            ->where('leave_id', $this->leave_id)
+            ->sum('days_used');
 
         $this->available_days = max($leave->days - $used, 0);
     }
@@ -199,14 +263,16 @@ class Leave extends Component
             $this->calculateLeaveBalance();
 
             if ($this->available_days <= 0) {
-                $this->errorMessage = "You have no remaining days for this leave type.";
+                $this->errorMessage = 'You have no remaining days for this leave type.';
                 $this->end_date = null;
+
                 return;
             }
 
             if ($this->days > $this->available_days) {
                 $this->errorMessage = "You only have {$this->available_days} leave days remaining.";
                 $this->end_date = null;
+
                 return;
             }
 
@@ -216,6 +282,7 @@ class Leave extends Component
             $this->end_date = null;
         }
     }
+
     public function render()
     {
         return view('livewire.hr.staffs.leave');
