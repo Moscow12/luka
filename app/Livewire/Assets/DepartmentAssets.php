@@ -21,36 +21,61 @@ class DepartmentAssets extends Component
 
     // Form fields
     public $asset_class_id;
+
     public $facility_location_id;
+
     public $asset_id;
+
     public $workstation_id;
+
     public $building_id;
+
     public $department_id;
+
     public $description;
+
     public $status = 'active';
+
     public $serial_number;
+
     public $purchase_date;
+
     public $purchase_cost;
+
     public $warranty_expiry_date;
+
     public $vendor;
+
     public $vendor_id;
+
     public $condition;
+
     public $model;
+
     public $make;
+
     public $codeno;
+
     public $depreciation_method;
+
     public $useful_life_years;
 
     // UI State
     public $editingId = null;
+
     public $showModal = false;
+
     public $confirmingDelete = false;
+
     public $deleteId = '';
+
     public $search = '';
 
     // Filters
     public $filterDepartment = '';
+
     public $filterStatus = '';
+
     public $filterAssetClass = '';
 
     protected $paginationTheme = 'bootstrap';
@@ -66,7 +91,7 @@ class DepartmentAssets extends Component
             'department_id' => 'required|exists:departments,id',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,disposed,under_maintenance',
-            'serial_number' => 'nullable|string|unique:assetregistries,serial_number,' . $this->editingId,
+            'serial_number' => 'nullable|string|unique:assetregistries,serial_number,'.$this->editingId,
             'purchase_date' => 'nullable|date',
             'purchase_cost' => 'nullable|numeric|min:0',
             'warranty_expiry_date' => 'nullable|date',
@@ -220,6 +245,15 @@ class DepartmentAssets extends Component
 
     public function delete()
     {
+        $user = Auth::user();
+
+        if (! $user->can('manage-assets') && ! $user->isSuperAdmin()) {
+            session()->flash('error', 'You do not have permission to delete assets.');
+            $this->cancelDelete();
+
+            return;
+        }
+
         assetregistry::findOrFail($this->deleteId)->delete();
         session()->flash('success', 'Asset deleted successfully.');
         $this->cancelDelete();
@@ -228,15 +262,15 @@ class DepartmentAssets extends Component
     public function render()
     {
         $query = assetregistry::with(['asset', 'assetClass', 'building', 'facilityLocation', 'department', 'workstation'])
-            ->when($this->search, fn($q) => $q->where(function($query) {
-                $query->where('serial_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('codeno', 'like', '%' . $this->search . '%')
-                    ->orWhere('model', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('asset', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
+            ->when($this->search, fn ($q) => $q->where(function ($query) {
+                $query->where('serial_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('codeno', 'like', '%'.$this->search.'%')
+                    ->orWhere('model', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('asset', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
             }))
-            ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterAssetClass, fn($q) => $q->where('asset_class_id', $this->filterAssetClass))
+            ->when($this->filterDepartment, fn ($q) => $q->where('department_id', $this->filterDepartment))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterAssetClass, fn ($q) => $q->where('asset_class_id', $this->filterAssetClass))
             ->latest();
 
         // Get buildings filtered by workstation

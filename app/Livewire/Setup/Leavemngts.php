@@ -8,13 +8,30 @@ use Livewire\Component;
 
 class Leavemngts extends Component
 {
-    public $leavetypes, $leavetype, $days, $gender, $status = 'active', $description, $name;
+    public $leavetypes;
+
+    public $leavetype;
+
+    public $days;
+
+    public $gender;
+
+    public $status = 'active';
+
+    public $description;
+
+    public $name;
+
     public $require_document = false;
+
     public $paid = false;
 
     public $leave_id;
+
     public $modalMode = 'create'; // or 'edit'
+
     public $showModal = false;
+
     public function mount()
     {
         $this->listdata();
@@ -58,7 +75,7 @@ class Leavemngts extends Component
         if ($this->modalMode === 'create') {
             $rules['name'][] = 'unique:leaves,name';
         } elseif ($this->modalMode === 'edit' && $this->leave_id) {
-            $rules['name'][] = 'unique:leaves,name,' . $this->leave_id;
+            $rules['name'][] = 'unique:leaves,name,'.$this->leave_id;
         }
 
         $this->validate($rules);
@@ -91,6 +108,14 @@ class Leavemngts extends Component
 
     public function delete($uuid)
     {
+        $user = Auth::user();
+
+        if (! $user->can('manage-leave') && ! $user->isSuperAdmin()) {
+            session()->flash('error', 'You do not have permission to delete leave types.');
+
+            return;
+        }
+
         $shift = leaves::findOrFail($uuid);
         $shift->delete();
         $this->listdata();

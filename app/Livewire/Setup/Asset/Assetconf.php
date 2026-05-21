@@ -19,44 +19,65 @@ class Assetconf extends Component
 
     // Building fields
     public $building_name;
+
     public $building_workstation_id;
+
     public $editingBuildingId = null;
 
     // Facility Location fields
     public $location_name;
+
     public $location_building_id;
+
     public $location_workstation_id;
+
     public $editingLocationId = null;
 
     // Asset Class fields
     public $class_name;
+
     public $class_depreciation;
+
     public $class_depreciation_method = 'straight_line';
+
     public $class_useful_life_years;
+
     public $class_depreciation_rate;
+
     public $editingClassId = null;
 
     // Asset fields
     public $asset_name;
+
     public $asset_type;
+
     public $asset_class_id;
+
     public $editingAssetId = null;
 
     // Search
     public $searchBuilding = '';
+
     public $searchLocation = '';
+
     public $searchClass = '';
+
     public $searchAsset = '';
 
     // Modal states
     public $showBuildingModal = false;
+
     public $showLocationModal = false;
+
     public $showClassModal = false;
+
     public $showAssetModal = false;
 
     // Delete confirmation
     public $confirmingDelete = false;
+
     public $deleteType = '';
+
     public $deleteId = '';
 
     protected $paginationTheme = 'bootstrap';
@@ -78,7 +99,7 @@ class Assetconf extends Component
             'class_depreciation' => 'required|string|max:255',
 
             // Asset rules
-            'asset_name' => 'required|string|max:255|unique:assets,name,' . $this->editingAssetId,
+            'asset_name' => 'required|string|max:255|unique:assets,name,'.$this->editingAssetId,
             'asset_type' => 'required|string|in:current,non-current,intangible,physical,operating,non-operating',
             'asset_class_id' => 'required|exists:assetclasses,id',
         ];
@@ -289,7 +310,7 @@ class Assetconf extends Component
     public function saveAsset()
     {
         $this->validate([
-            'asset_name' => 'required|string|max:255|unique:assets,name,' . $this->editingAssetId,
+            'asset_name' => 'required|string|max:255|unique:assets,name,'.$this->editingAssetId,
             'asset_type' => 'required|string|in:current,non-current,intangible,physical,operating,non-operating',
             'asset_class_id' => 'required|exists:assetclasses,id',
         ]);
@@ -330,6 +351,15 @@ class Assetconf extends Component
 
     public function delete()
     {
+        $user = Auth::user();
+
+        if (! $user->can('manage-assets') && ! $user->isSuperAdmin()) {
+            session()->flash('error', 'You do not have permission to delete asset configuration.');
+            $this->cancelDelete();
+
+            return;
+        }
+
         switch ($this->deleteType) {
             case 'building':
                 building::findOrFail($this->deleteId)->delete();
@@ -368,22 +398,22 @@ class Assetconf extends Component
     public function render()
     {
         $buildings = building::with('workstation')
-            ->when($this->searchBuilding, fn($q) => $q->where('name', 'like', '%' . $this->searchBuilding . '%'))
+            ->when($this->searchBuilding, fn ($q) => $q->where('name', 'like', '%'.$this->searchBuilding.'%'))
             ->latest()
             ->paginate(10, ['*'], 'buildingsPage');
 
         $locations = facilitylocation::with(['building', 'workstation'])
-            ->when($this->searchLocation, fn($q) => $q->where('name', 'like', '%' . $this->searchLocation . '%'))
+            ->when($this->searchLocation, fn ($q) => $q->where('name', 'like', '%'.$this->searchLocation.'%'))
             ->latest()
             ->paginate(10, ['*'], 'locationsPage');
 
         $assetClasses = assetclass::withCount('assets')
-            ->when($this->searchClass, fn($q) => $q->where('name', 'like', '%' . $this->searchClass . '%'))
+            ->when($this->searchClass, fn ($q) => $q->where('name', 'like', '%'.$this->searchClass.'%'))
             ->latest()
             ->paginate(10, ['*'], 'classesPage');
 
         $assets = asset::with('asset_class')
-            ->when($this->searchAsset, fn($q) => $q->where('name', 'like', '%' . $this->searchAsset . '%'))
+            ->when($this->searchAsset, fn ($q) => $q->where('name', 'like', '%'.$this->searchAsset.'%'))
             ->latest()
             ->paginate(10, ['*'], 'assetsPage');
 

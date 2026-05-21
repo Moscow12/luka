@@ -2,28 +2,30 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ResolvesSyncEntities;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
+    use ResolvesSyncEntities;
+
     /**
      * Register a new employee
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
         try {
             // Check if employee already exists by phone or employee_no
-            $existingEmployee = Employee::where(function($query) use ($request) {
+            $existingEmployee = Employee::where(function ($query) use ($request) {
                 if ($request->phone) {
                     $query->where('phone', $request->phone);
                 }
@@ -40,16 +42,16 @@ class EmployeeController extends Controller
                     'error_summary' => "An employee with phone '{$request->phone}' or employee number '{$request->employee_no}' already exists",
                     'matched_by' => [
                         'phone' => $existingEmployee->phone === $request->phone ? 'matched' : 'not matched',
-                        'employee_no' => $existingEmployee->employee_no === $request->employee_no ? 'matched' : 'not matched'
+                        'employee_no' => $existingEmployee->employee_no === $request->employee_no ? 'matched' : 'not matched',
                     ],
                     'existing_employee' => [
                         'id' => $existingEmployee->id,
                         'employee_no' => $existingEmployee->employee_no,
-                        'full_name' => $existingEmployee->first_name . ' ' . $existingEmployee->last_name,
+                        'full_name' => $existingEmployee->first_name.' '.$existingEmployee->last_name,
                         'phone' => $existingEmployee->phone,
                         'email' => $existingEmployee->email,
-                        'status' => $existingEmployee->status
-                    ]
+                        'status' => $existingEmployee->status,
+                    ],
                 ], 200);
             }
 
@@ -94,42 +96,13 @@ class EmployeeController extends Controller
                     'employee_id' => $request->employee_id ?? 'N/A',
                     'employee_name' => $request->employee_name ?? 'N/A',
                     'request_data' => $request->all(),
-                    'validation_errors' => $validator->errors()
+                    'validation_errors' => $validator->errors(),
                 ]);
 
-                // Format errors with detailed messages
-                $formattedErrors = [];
-                $missingFields = [];
-                $invalidFields = [];
-
-                foreach ($validator->errors()->messages() as $field => $messages) {
-                    $formattedErrors[$field] = $messages[0]; // Get first error message
-
-                    if (str_contains($messages[0], 'required')) {
-                        $missingFields[] = $field;
-                    } else {
-                        $invalidFields[] = $field;
-                    }
-                }
-
-                $errorSummary = [];
-                if (!empty($missingFields)) {
-                    $errorSummary[] = 'Missing required fields: ' . implode(', ', $missingFields);
-                }
-                if (!empty($invalidFields)) {
-                    $errorSummary[] = 'Invalid field values: ' . implode(', ', $invalidFields);
-                }
-
-                return response()->json([
-                    'success' => false,
-                    'error_code' => 'VALIDATION_FAILED',
-                    'message' => 'Employee registration validation failed',
-                    'error_summary' => implode('. ', $errorSummary),
-                    'detailed_errors' => $formattedErrors,
-                    'total_errors' => count($formattedErrors),
+                return $this->validationErrorResponse($validator, 'Employee registration validation failed', [
                     'employee_id' => $request->employee_id ?? null,
-                    'employee_name' => $request->employee_name ?? null
-                ], 422);
+                    'employee_name' => $request->employee_name ?? null,
+                ]);
             }
 
             DB::beginTransaction();
@@ -141,42 +114,42 @@ class EmployeeController extends Controller
             $departmentId = $this->resolveOrCreateDepartment($request->department ?? 'General', $firstUserId);
             $titleId = $this->resolveOrCreateJobTitle($request->title ?? null, $firstUserId);
             $designationId = $this->resolveOrCreateDesignation($request->designation ?? null, $firstUserId);
-            $workstationId = $this->resolveOrCreateWorkstation($request->workstation ?? 'Main Office', $firstUserId);
+            $workstationId = $this->resolveWorkstation($request->workstation);
             $denominationId = $this->resolveOrCreateDenomination($request->denomination ?? 'Not Specified');
 
             // Get Tanzania as default country
             $country = DB::table('countries')->where('name', 'LIKE', '%Tanzania%')->first();
-            if (!$country) {
+            if (! $country) {
                 $country = DB::table('countries')->first();
             }
 
             // Get first region
             $region = DB::table('regions')->where('country_id', $country->id)->first();
-            if (!$region) {
+            if (! $region) {
                 $region = DB::table('regions')->first();
             }
 
             // Get district - either by name or first in region
             if ($request->district) {
                 $district = DB::table('districts')
-                    ->where('name', 'LIKE', '%' . $request->district . '%')
+                    ->where('name', 'LIKE', '%'.$request->district.'%')
                     ->first();
             }
-            if (!isset($district) || !$district) {
+            if (! isset($district) || ! $district) {
                 $district = DB::table('districts')->where('region_id', $region->id)->first();
             }
-            if (!$district) {
+            if (! $district) {
                 $district = DB::table('districts')->first();
             }
 
             // Get first ward in district
             $ward = DB::table('wards')->where('district_id', $district->id)->first();
-            if (!$ward) {
+            if (! $ward) {
                 $ward = DB::table('wards')->first();
             }
 
             // All IDs should now be resolved or created
-            if (!$departmentId || !$titleId || !$designationId || !$workstationId || !$denominationId) {
+            if (! $departmentId || ! $titleId || ! $designationId || ! $workstationId || ! $denominationId) {
                 DB::rollBack();
 
                 Log::error('Employee Registration Field Resolution Failed', [
@@ -190,21 +163,31 @@ class EmployeeController extends Controller
                 ]);
 
                 $failedFields = [];
-                if (!$departmentId) $failedFields[] = "department ('{$request->department}')";
-                if (!$titleId) $failedFields[] = "title ('{$request->title}')";
-                if (!$designationId) $failedFields[] = "designation ('{$request->designation}')";
-                if (!$workstationId) $failedFields[] = "workstation ('{$request->workstation}')";
-                if (!$denominationId) $failedFields[] = "denomination ('{$request->denomination}')";
+                if (! $departmentId) {
+                    $failedFields[] = "department ('{$request->department}')";
+                }
+                if (! $titleId) {
+                    $failedFields[] = "title ('{$request->title}')";
+                }
+                if (! $designationId) {
+                    $failedFields[] = "designation ('{$request->designation}')";
+                }
+                if (! $workstationId) {
+                    $failedFields[] = "workstation ('{$request->workstation}')";
+                }
+                if (! $denominationId) {
+                    $failedFields[] = "denomination ('{$request->denomination}')";
+                }
 
                 return response()->json([
                     'success' => false,
                     'error_code' => 'FIELD_RESOLUTION_FAILED',
                     'message' => 'Failed to resolve or create required organizational fields',
-                    'error_summary' => 'Could not find or create the following fields: ' . implode(', ', $failedFields),
+                    'error_summary' => 'Could not find or create the following fields: '.implode(', ', $failedFields),
                     'failed_fields' => $failedFields,
                     'employee_id' => $request->employee_id ?? null,
                     'employee_name' => $request->employee_name ?? null,
-                    'hint' => 'Please ensure the field names exist in the database or contact administrator'
+                    'hint' => 'Please ensure the field names exist in the database or contact administrator',
                 ], 422);
             }
 
@@ -250,8 +233,8 @@ class EmployeeController extends Controller
                 'success' => true,
                 'message' => 'Employee registered successfully',
                 'data' => [
-                    'employee' => $employee->load(['department', 'designation', 'workstation'])
-                ]
+                    'employee' => $employee->load(['department', 'designation', 'workstation']),
+                ],
             ], 201);
 
         } catch (ValidationException $e) {
@@ -261,7 +244,7 @@ class EmployeeController extends Controller
                 'employee_id' => $request->employee_id ?? 'N/A',
                 'employee_name' => $request->employee_name ?? 'N/A',
                 'exception' => $e->getMessage(),
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ]);
 
             return response()->json([
@@ -271,7 +254,7 @@ class EmployeeController extends Controller
                 'error_summary' => $e->getMessage(),
                 'detailed_errors' => $e->errors(),
                 'employee_id' => $request->employee_id ?? null,
-                'employee_name' => $request->employee_name ?? null
+                'employee_name' => $request->employee_name ?? null,
             ], 422);
 
         } catch (\Exception $e) {
@@ -281,7 +264,7 @@ class EmployeeController extends Controller
                 'employee_id' => $request->employee_id ?? 'N/A',
                 'employee_name' => $request->employee_name ?? 'N/A',
                 'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
@@ -291,43 +274,9 @@ class EmployeeController extends Controller
                 'error_summary' => $e->getMessage(),
                 'employee_id' => $request->employee_id ?? null,
                 'employee_name' => $request->employee_name ?? null,
-                'hint' => 'Please check the data format and try again, or contact administrator if the issue persists'
+                'hint' => 'Please check the data format and try again, or contact administrator if the issue persists',
             ], 500);
         }
-    }
-
-    /**
-     * Resolve or create department
-     */
-    private function resolveOrCreateDepartment(string $name, ?string $addedBy): ?string
-    {
-        // Try to find existing
-        $existing = DB::table('departments')
-            ->where('name', 'LIKE', '%' . $name . '%')
-            ->first();
-
-        if ($existing) {
-            return $existing->id;
-        }
-
-        // Get first job title for supervisor_title_id
-        $firstJobTitle = DB::table('jobtitles')->first();
-
-        // Create new department
-        $id = (string) Str::uuid();
-        DB::table('departments')->insert([
-            'id' => $id,
-            'name' => $name,
-            'description' => 'Auto-created department',
-            'supervisor_title_id' => $firstJobTitle->id ?? null,
-            'status' => 'active',
-            'added_by' => $addedBy,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Log::info("Auto-created department: {$name}", ['id' => $id]);
-        return $id;
     }
 
     /**
@@ -340,13 +289,14 @@ class EmployeeController extends Controller
             $random = DB::table('jobtitles')->inRandomOrder()->first();
             if ($random) {
                 Log::info("Using random job title: {$random->name}", ['id' => $random->id]);
+
                 return $random->id;
             }
         }
 
         // Try to find existing
         $existing = DB::table('jobtitles')
-            ->where('name', 'LIKE', '%' . $name . '%')
+            ->where('name', 'LIKE', '%'.$name.'%')
             ->first();
 
         if ($existing) {
@@ -359,7 +309,7 @@ class EmployeeController extends Controller
             DB::table('jobtitles')->insert([
                 'id' => $id,
                 'name' => $name,
-                'code' => strtoupper(substr($name, 0, 3)) . rand(100, 999),
+                'code' => strtoupper(substr($name, 0, 3)).rand(100, 999),
                 'description' => 'Auto-created job title',
                 'added_by' => $addedBy,
                 'created_at' => now(),
@@ -367,6 +317,7 @@ class EmployeeController extends Controller
             ]);
 
             Log::info("Auto-created job title: {$name}", ['id' => $id]);
+
             return $id;
         } catch (\Exception $e) {
             // If creation fails, pick random existing title
@@ -375,6 +326,7 @@ class EmployeeController extends Controller
             if ($random) {
                 return $random->id;
             }
+
             return null;
         }
     }
@@ -389,13 +341,14 @@ class EmployeeController extends Controller
             $random = DB::table('designations')->inRandomOrder()->first();
             if ($random) {
                 Log::info("Using random designation: {$random->name}", ['id' => $random->id]);
+
                 return $random->id;
             }
         }
 
         // Try to find existing
         $existing = DB::table('designations')
-            ->where('name', 'LIKE', '%' . $name . '%')
+            ->where('name', 'LIKE', '%'.$name.'%')
             ->first();
 
         if ($existing) {
@@ -405,7 +358,7 @@ class EmployeeController extends Controller
         // Try to create new designation
         try {
             $id = (string) Str::uuid();
-            $code = strtoupper(substr(str_replace(' ', '', $name), 0, 5)) . rand(10, 99);
+            $code = strtoupper(substr(str_replace(' ', '', $name), 0, 5)).rand(10, 99);
 
             DB::table('designations')->insert([
                 'id' => $id,
@@ -418,6 +371,7 @@ class EmployeeController extends Controller
             ]);
 
             Log::info("Auto-created designation: {$name}", ['id' => $id]);
+
             return $id;
         } catch (\Exception $e) {
             // If creation fails, pick random existing designation
@@ -426,67 +380,33 @@ class EmployeeController extends Controller
             if ($random) {
                 return $random->id;
             }
+
             return null;
         }
     }
 
     /**
-     * Resolve or create workstation
+     * Resolve a workstation to an existing one. Never creates a workstation:
+     * if the requested name can't be matched, fall back to an existing
+     * available workstation instead.
      */
-    private function resolveOrCreateWorkstation(string $name, ?string $addedBy): ?string
+    private function resolveWorkstation(?string $name): ?string
     {
-        // Try to find existing
-        $existing = DB::table('workstations')
-            ->where('workstation_name', 'LIKE', '%' . $name . '%')
-            ->first();
+        // Try to match the requested workstation by name.
+        if (! empty($name)) {
+            $existing = DB::table('workstations')
+                ->where('workstation_name', 'LIKE', '%'.$name.'%')
+                ->first();
 
-        if ($existing) {
-            return $existing->id;
+            if ($existing) {
+                return $existing->id;
+            }
+
+            Log::info("Workstation '{$name}' not found; falling back to an existing workstation.");
         }
 
-        // Get default location data
-        $country = DB::table('countries')->where('name', 'LIKE', '%Tanzania%')->first();
-        if (!$country) {
-            $country = DB::table('countries')->first();
-        }
-
-        $region = DB::table('regions')->where('country_id', $country->id)->first();
-        if (!$region) {
-            $region = DB::table('regions')->first();
-        }
-
-        $district = DB::table('districts')->where('region_id', $region->id)->first();
-        if (!$district) {
-            $district = DB::table('districts')->first();
-        }
-
-        $ward = DB::table('wards')->where('district_id', $district->id)->first();
-        if (!$ward) {
-            $ward = DB::table('wards')->first();
-        }
-
-        // Create new workstation
-        $id = (string) Str::uuid();
-        DB::table('workstations')->insert([
-            'id' => $id,
-            'workstation_name' => $name,
-            'location' => 'Main Office',
-            'phone_number' => '0000000000',
-            'tin_number' => null,
-            'email_address' => null,
-            'postal_code' => null,
-            'physical_address' => 'Auto-created',
-            'country_id' => $country->id,
-            'region_id' => $region->id,
-            'district_id' => $district->id,
-            'ward_id' => $ward->id,
-            'added_by' => $addedBy,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Log::info("Auto-created workstation: {$name}", ['id' => $id]);
-        return $id;
+        // No name given or no match: pick an existing available workstation.
+        return DB::table('workstations')->first()->id ?? null;
     }
 
     /**
@@ -496,7 +416,7 @@ class EmployeeController extends Controller
     {
         // Try to find existing
         $existing = DB::table('denominations')
-            ->where('name', 'LIKE', '%' . $name . '%')
+            ->where('name', 'LIKE', '%'.$name.'%')
             ->first();
 
         if ($existing) {
@@ -517,6 +437,7 @@ class EmployeeController extends Controller
         ]);
 
         Log::info("Auto-created denomination: {$name}", ['id' => $id]);
+
         return $id;
     }
 
@@ -532,14 +453,14 @@ class EmployeeController extends Controller
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if ($lastEmployee && preg_match('/STIH\/\d{4}\/(\d+)/', $lastEmployee->employee_no, $matches)) {
+        if ($lastEmployee && preg_match('/STJH\/\d{4}\/(\d+)/', $lastEmployee->employee_no, $matches)) {
             $lastNumber = intval($matches[1]);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
 
-        return 'STIH/' . $year . '/' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return 'STJH/'.$year.'/'.str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -555,14 +476,14 @@ class EmployeeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $employees
+                'data' => $employees,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch employees',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -581,19 +502,19 @@ class EmployeeController extends Controller
                 'country',
                 'region',
                 'district',
-                'ward'
+                'ward',
             ])->findOrFail($id);
 
             return response()->json([
                 'success' => true,
-                'data' => $employee
+                'data' => $employee,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Employee not found',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 404);
         }
     }

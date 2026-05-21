@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class asset extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
+
     protected $table = 'assets';
+
     protected $fillable = ['name', 'type', 'asset_class_id', 'added_by'];
 
     public function asset_class()
