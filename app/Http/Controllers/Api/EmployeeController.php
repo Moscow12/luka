@@ -63,13 +63,13 @@ class EmployeeController extends Controller
                 'gender' => 'required|in:Male,Female,Other',
                 'dob' => 'required|date|before:today',
                 'phone' => 'required|string|max:20',
-                'email' => 'required|email|max:255|unique:employees,email',
+                'email' => 'nullable|email|max:255|unique:employees,email',
 
                 // Employment info
-                'employment_type' => 'required|in:Full-time,Part-time,Contract,Temporary',
-                'hired_date' => 'required|date',
-                'education_level' => 'required|in:Primary,Diploma,Certificate,Degree,Masters,PhD',
-                'marital_status' => 'required|in:Single,Married,Divorced,Widowed,Separated,Never married,Not applicable',
+                'employment_type' => 'nullable|string',
+                'hired_date' => 'nullable|date',
+                'education_level' => 'nullable|string',
+                'marital_status' => 'nullable|string',
 
                 // Foreign keys - can be name or ID (now optional with fallbacks)
                 'department' => 'nullable|string',

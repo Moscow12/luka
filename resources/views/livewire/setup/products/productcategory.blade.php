@@ -58,7 +58,7 @@
                     <!-- Header -->
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
                         <div>
-                            <h5 class="mb-1">Product Categories</h5>
+                            <h5 class="mb-1">Product/items Categories</h5>
                             <p class="text-muted mb-0">Organize your products into meaningful categories</p>
                         </div>
                         <button class="btn btn-primary d-flex align-items-center gap-2" wire:click="openCategoryModal">
