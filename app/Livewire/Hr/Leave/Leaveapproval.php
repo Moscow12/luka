@@ -18,6 +18,8 @@ class Leaveapproval extends Component
 
     public $statusFilter = 'Awaiting';
     public $search = '';
+    public $dateFrom = '';
+    public $dateTo = '';
     public $selectedLeave = null;
     public $showModal = false;
     public $actionType = '';
@@ -28,6 +30,10 @@ class Leaveapproval extends Component
 
     public function mount()
     {
+        // Default to the current month's leave requests.
+        $this->dateFrom = now()->startOfMonth()->toDateString();
+        $this->dateTo = now()->endOfMonth()->toDateString();
+
         $this->loadUserApprovalLevels();
     }
 
@@ -38,6 +44,23 @@ class Leaveapproval extends Component
 
     public function updatingStatusFilter()
     {
+        $this->resetPage();
+    }
+
+    public function updatedDateFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateTo()
+    {
+        $this->resetPage();
+    }
+
+    public function clearDateFilter()
+    {
+        $this->dateFrom = '';
+        $this->dateTo = '';
         $this->resetPage();
     }
 
@@ -242,6 +265,14 @@ class Leaveapproval extends Component
                         ->orWhere('employee_no', 'like', $term)
                         ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$term]);
                 });
+            }
+
+            // Filter by date range — leaves whose period overlaps [dateFrom, dateTo].
+            if ($this->dateFrom) {
+                $leavesQuery->whereDate('end_date', '>=', $this->dateFrom);
+            }
+            if ($this->dateTo) {
+                $leavesQuery->whereDate('start_date', '<=', $this->dateTo);
             }
 
             // Filter by status

@@ -76,6 +76,37 @@
         </div>
     </div>
 
+    <!-- Date Range Filter -->
+    <div class="row mb-4 g-2 align-items-end">
+        <div class="col-6 col-md-3">
+            <label class="form-label small text-muted mb-1">From Date</label>
+            <div class="input-group">
+                <input class="form-control flatpickr"
+                       type="text" placeholder="Select Date" wire:model.live="dateFrom" />
+                <span class="input-group-text bg-light">
+                    <i class="fa-solid fa-calendar text-muted"></i>
+                </span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <label class="form-label small text-muted mb-1">To Date</label>
+            <div class="input-group">
+                <input class="form-control flatpickr"
+                       type="text" placeholder="Select Date" wire:model.live="dateTo" />
+                <span class="input-group-text bg-light">
+                    <i class="fa-solid fa-calendar text-muted"></i>
+                </span>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            @if($dateFrom || $dateTo)
+            <button type="button" class="btn btn-outline-secondary" wire:click="clearDateFilter">
+                <i class="fa-solid fa-rotate-left me-1"></i> Clear Dates
+            </button>
+            @endif
+        </div>
+    </div>
+
     <!-- Leave Requests Table -->
     <div class="row">
         <div class="col-12">

@@ -15,7 +15,11 @@ class Leavemanagement extends Component
 
     public $search = '';
     public $statusFilter = 'all';
+    public $leaveTypeFilter = 'all';
+    public $dateFrom = '';
+    public $dateTo = '';
     public $selectedLeave = null;
+    public $selectedLeaveBalance = ['entitled' => 0, 'used' => 0, 'balance' => 0];
     public $showModal = false;
     public $rejectionReason = '';
     public $showRejectModal = false;
@@ -31,6 +35,29 @@ class Leavemanagement extends Component
         $this->resetPage();
     }
 
+    public function updatingLeaveTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateTo()
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters()
+    {
+        $this->reset(['search', 'statusFilter', 'leaveTypeFilter', 'dateFrom', 'dateTo']);
+        $this->statusFilter = 'all';
+        $this->leaveTypeFilter = 'all';
+        $this->resetPage();
+    }
+
     public function viewLeaveDetails($leaveId)
     {
         $this->selectedLeave = Employeeleaves::with([
@@ -40,8 +67,9 @@ class Leavemanagement extends Component
             'approvalnote.approver'
         ])->findOrFail($leaveId);
 
-        // Add leave balance to selected leave
-        $this->selectedLeave->leaveBalance = $this->getLeaveBalance(
+        // Store balance in its own persisted property — a dynamic attribute on
+        // the model would not survive Livewire's re-render (e.g. on search).
+        $this->selectedLeaveBalance = $this->getLeaveBalance(
             $this->selectedLeave->employee_id,
             $this->selectedLeave->leave_id
         );
@@ -54,6 +82,7 @@ class Leavemanagement extends Component
     {
         $this->showModal = false;
         $this->selectedLeave = null;
+        $this->selectedLeaveBalance = ['entitled' => 0, 'used' => 0, 'balance' => 0];
     }
 
     public function approveLeave($leaveId)
@@ -169,6 +198,19 @@ class Leavemanagement extends Component
             $leavesQuery->where('status', $this->statusFilter);
         }
 
+        // Leave type filter
+        if ($this->leaveTypeFilter !== 'all') {
+            $leavesQuery->where('leave_id', $this->leaveTypeFilter);
+        }
+
+        // Date range filter — show leaves whose period overlaps [dateFrom, dateTo].
+        if ($this->dateFrom) {
+            $leavesQuery->whereDate('end_date', '>=', $this->dateFrom);
+        }
+        if ($this->dateTo) {
+            $leavesQuery->whereDate('start_date', '<=', $this->dateTo);
+        }
+
         $leaves = $leavesQuery->paginate(15);
 
         // Calculate leave balance for each leave
@@ -183,6 +225,7 @@ class Leavemanagement extends Component
         return view('livewire.hr.leave.leavemanagement', [
             'leaves' => $leaves,
             'canApprove' => $canApprove,
+            'leaveTypes' => Leaves::orderBy('name')->get(),
         ]);
     }
 }

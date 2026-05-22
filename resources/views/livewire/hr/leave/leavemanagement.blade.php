@@ -31,6 +31,17 @@
                             </div>
                         </div>
 
+                        <!-- Leave Type Filter -->
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Leave Type</label>
+                            <select class="form-select" wire:model.live="leaveTypeFilter">
+                                <option value="all">All Leave Types</option>
+                                @foreach($leaveTypes as $type)
+                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- Status Filter -->
                         <div class="col-md-4">
                             <label class="form-label">Filter by Status</label>
@@ -43,21 +54,53 @@
                             </select>
                         </div>
 
-                        <!-- Stats Summary -->
+                        <!-- Date From -->
                         <div class="col-md-4">
-                            <div class="d-flex gap-2 h-100 align-items-end">
-                                <div class="text-center flex-fill">
-                                    <div class="fs-4 fw-bold text-warning">{{ $leaves->where('status', 'Awaiting')->count() }}</div>
-                                    <small class="text-muted">Pending</small>
+                            <label class="form-label">From Date</label>
+                            <div class="input-group">
+                                <input class="form-control flatpickr"
+                                       type="text" placeholder="Select Date" wire:model.live="dateFrom" />
+                                <span class="input-group-text bg-light">
+                                    <i class="fa-solid fa-calendar text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Date To -->
+                        <div class="col-md-4">
+                            <label class="form-label">To Date</label>
+                            <div class="input-group">
+                                <input class="form-control flatpickr"
+                                       type="text" placeholder="Select Date" wire:model.live="dateTo" />
+                                <span class="input-group-text bg-light">
+                                    <i class="fa-solid fa-calendar text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Clear + Stats -->
+                        <div class="col-md-4">
+                            <div class="d-flex h-100 align-items-end justify-content-between gap-2">
+                                <div class="d-flex gap-2 flex-fill">
+                                    <div class="text-center flex-fill">
+                                        <div class="fs-5 fw-bold text-warning">{{ $leaves->where('status', 'Awaiting')->count() }}</div>
+                                        <small class="text-muted">Pending</small>
+                                    </div>
+                                    <div class="text-center flex-fill">
+                                        <div class="fs-5 fw-bold text-info">{{ $leaves->where('status', 'Active')->count() }}</div>
+                                        <small class="text-muted">In Progress</small>
+                                    </div>
+                                    <div class="text-center flex-fill">
+                                        <div class="fs-5 fw-bold text-success">{{ $leaves->where('status', 'Approved')->count() }}</div>
+                                        <small class="text-muted">Approved</small>
+                                    </div>
                                 </div>
-                                <div class="text-center flex-fill">
-                                    <div class="fs-4 fw-bold text-info">{{ $leaves->where('status', 'Active')->count() }}</div>
-                                    <small class="text-muted">In Progress</small>
-                                </div>
-                                <div class="text-center flex-fill">
-                                    <div class="fs-4 fw-bold text-success">{{ $leaves->where('status', 'Approved')->count() }}</div>
-                                    <small class="text-muted">Approved</small>
-                                </div>
+                                @if($search || $statusFilter !== 'all' || $leaveTypeFilter !== 'all' || $dateFrom || $dateTo)
+                                <button type="button" class="btn btn-outline-secondary btn-sm align-self-end"
+                                        wire:click="clearFilters" title="Clear filters">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -137,21 +180,26 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @if($leave->status === 'Awaiting')
+                                        @php $st = strtolower($leave->status ?? ''); @endphp
+                                        @if(in_array($st, ['awaiting', 'pending']))
                                         <span class="badge bg-warning text-dark">
                                             <i class="fa-solid fa-clock me-1"></i>Awaiting
                                         </span>
-                                        @elseif($leave->status === 'Active')
+                                        @elseif(in_array($st, ['active', 'inprogress', 'in progress']))
                                         <span class="badge bg-info">
                                             <i class="fa-solid fa-hourglass-half me-1"></i>In Progress
                                         </span>
-                                        @elseif($leave->status === 'Approved')
+                                        @elseif($st === 'approved')
                                         <span class="badge bg-success">
                                             <i class="fa-solid fa-check-circle me-1"></i>Approved
                                         </span>
-                                        @else
+                                        @elseif($st === 'rejected')
                                         <span class="badge bg-danger">
                                             <i class="fa-solid fa-times-circle me-1"></i>Rejected
+                                        </span>
+                                        @else
+                                        <span class="badge bg-secondary">
+                                            {{ ucfirst($leave->status ?? 'Unknown') }}
                                         </span>
                                         @endif
                                     </td>
@@ -292,7 +340,7 @@
                                 <div class="col-4">
                                     <div class="card bg-primary-subtle border-0">
                                         <div class="card-body text-center py-2">
-                                            <div class="fs-4 fw-bold text-primary">{{ $selectedLeave->leaveBalance['entitled'] }}</div>
+                                            <div class="fs-4 fw-bold text-primary">{{ $selectedLeaveBalance['entitled'] }}</div>
                                             <small class="text-muted">Entitled</small>
                                         </div>
                                     </div>
@@ -300,7 +348,7 @@
                                 <div class="col-4">
                                     <div class="card bg-warning-subtle border-0">
                                         <div class="card-body text-center py-2">
-                                            <div class="fs-4 fw-bold text-warning">{{ $selectedLeave->leaveBalance['used'] }}</div>
+                                            <div class="fs-4 fw-bold text-warning">{{ $selectedLeaveBalance['used'] }}</div>
                                             <small class="text-muted">Used</small>
                                         </div>
                                     </div>
@@ -308,7 +356,7 @@
                                 <div class="col-4">
                                     <div class="card bg-success-subtle border-0">
                                         <div class="card-body text-center py-2">
-                                            <div class="fs-4 fw-bold text-success">{{ $selectedLeave->leaveBalance['balance'] }}</div>
+                                            <div class="fs-4 fw-bold text-success">{{ $selectedLeaveBalance['balance'] }}</div>
                                             <small class="text-muted">Balance</small>
                                         </div>
                                     </div>
@@ -327,21 +375,24 @@
                     </div>
                     <div class="card-body">
                         <!-- Current Status -->
-                        <div class="alert alert-{{ $selectedLeave->status === 'Approved' ? 'success' : ($selectedLeave->status === 'Rejected' ? 'danger' : 'warning') }} mb-4">
+                        @php $modalStatus = strtolower($selectedLeave->status ?? ''); @endphp
+                        <div class="alert alert-{{ $modalStatus === 'approved' ? 'success' : ($modalStatus === 'rejected' ? 'danger' : 'warning') }} mb-4">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
                                     <strong>Current Status:</strong>
-                                    @if($selectedLeave->status === 'Awaiting')
+                                    @if(in_array($modalStatus, ['awaiting', 'pending']))
                                     <span class="ms-2">Awaiting Approval</span>
-                                    @elseif($selectedLeave->status === 'Active')
+                                    @elseif(in_array($modalStatus, ['active', 'inprogress', 'in progress']))
                                     <span class="ms-2">In Progress</span>
-                                    @elseif($selectedLeave->status === 'Approved')
+                                    @elseif($modalStatus === 'approved')
                                     <span class="ms-2">Fully Approved</span>
-                                    @else
+                                    @elseif($modalStatus === 'rejected')
                                     <span class="ms-2">Rejected</span>
+                                    @else
+                                    <span class="ms-2">{{ ucfirst($selectedLeave->status ?? 'Unknown') }}</span>
                                     @endif
                                 </div>
-                                <i class="fa-solid fa-{{ $selectedLeave->status === 'Approved' ? 'check-circle' : ($selectedLeave->status === 'Rejected' ? 'times-circle' : 'clock') }} fa-2x"></i>
+                                <i class="fa-solid fa-{{ $modalStatus === 'approved' ? 'check-circle' : ($modalStatus === 'rejected' ? 'times-circle' : 'clock') }} fa-2x"></i>
                             </div>
                         </div>
 
@@ -375,7 +426,7 @@
                                                         </span>
                                                     </h6>
                                                     <small class="text-muted">
-                                                        <i class="fa-solid fa-user me-1"></i>{{ $approval->approver->name ?? 'Unknown' }}
+                                                        <i class="fa-solid fa-user me-1"></i>{{ $approval->approver?->full_name ?: 'Unknown' }}
                                                     </small>
                                                 </div>
                                                 <small class="text-muted">
