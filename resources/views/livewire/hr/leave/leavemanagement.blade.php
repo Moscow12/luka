@@ -95,7 +95,7 @@
                                             </div>
                                             <div>
                                                 <div class="fw-semibold">{{ $leave->employee->getFullName() ?? 'Unknown' }}</div>
-                                                <small class="text-muted">{{ $leave->employee->employee_number }}</small>
+                                                <small class="text-muted">{{ $leave->employee->employee_no }}</small>
                                             </div>
                                         </div>
                                     </td>
@@ -244,7 +244,7 @@
                             </div>
                             <div>
                                 <h5 class="mb-0">{{ $selectedLeave->employee->getFullName() ?? 'Unknown' }}</h5>
-                                <small class="text-muted">{{ $selectedLeave->employee->employee_number }}</small>
+                                <small class="text-muted">{{ $selectedLeave->employee->employee_no }}</small>
                             </div>
                         </div>
 

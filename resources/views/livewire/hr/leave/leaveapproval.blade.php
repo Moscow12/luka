@@ -29,9 +29,9 @@
         <p class="mb-0">You do not have permission to approve leave requests. Please contact your system administrator if you believe this is an error.</p>
     </div>
     @else
-    <!-- Status Filter -->
-    <div class="row mb-4">
-        <div class="col-12">
+    <!-- Status Filter + Search -->
+    <div class="row mb-4 g-2 align-items-center">
+        <div class="col-12 col-lg-8">
             <ul class="nav nav-pills gap-2">
                 <li class="nav-item">
                     <button wire:click="$set('statusFilter', 'Awaiting')"
@@ -58,6 +58,21 @@
                     </button>
                 </li>
             </ul>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white">
+                    <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                </span>
+                <input type="search" wire:model.live.debounce.300ms="search"
+                       class="form-control"
+                       placeholder="Search by employee name or number...">
+                @if($search)
+                <button class="btn btn-outline-secondary" type="button" wire:click="$set('search', '')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -140,15 +155,10 @@
                                         @if($leave->canUserApprove && in_array(strtolower($leave->status ?? ''), ['awaiting', 'active', 'pending']))
                                         <div class="d-flex gap-2">
                                             <button type="button"
-                                                    wire:click="approveLeave('{{ $leave->id }}')"
+                                                    wire:click="openApproveModal('{{ $leave->id }}')"
                                                     wire:loading.attr="disabled"
                                                     class="btn btn-sm btn-success">
-                                                <span wire:loading.remove wire:target="approveLeave('{{ $leave->id }}')">
-                                                    <i class="fa-solid fa-check"></i> Approve
-                                                </span>
-                                                <span wire:loading wire:target="approveLeave('{{ $leave->id }}')">
-                                                    <i class="fa-solid fa-spinner fa-spin"></i>
-                                                </span>
+                                                <i class="fa-solid fa-check"></i> Approve
                                             </button>
                                             <button type="button"
                                                     wire:click="openRejectModal('{{ $leave->id }}')"
@@ -194,16 +204,17 @@
     </div>
     @endif
 
-    <!-- Rejection Modal -->
+    <!-- Approve / Reject Modal -->
     @if($showModal && $selectedLeave)
+    @php $isApprove = $actionType === 'approve'; @endphp
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <form wire:submit.prevent="rejectLeave">
+                <form wire:submit.prevent="submitDecision">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            <i class="fa-solid fa-times-circle text-danger me-2"></i>
-                            Reject Leave Request
+                            <i class="fa-solid fa-{{ $isApprove ? 'check-circle text-success' : 'times-circle text-danger' }} me-2"></i>
+                            {{ $isApprove ? 'Approve' : 'Reject' }} Leave Request
                         </h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
@@ -219,31 +230,33 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="comments" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                            <label for="comments" class="form-label">
+                                {{ $isApprove ? 'Approval Comment' : 'Rejection Reason' }} <span class="text-danger">*</span>
+                            </label>
                             <textarea
                                 wire:model="comments"
                                 class="form-control @error('comments') is-invalid @enderror"
                                 id="comments"
                                 rows="3"
-                                placeholder="Please provide a reason for rejection..."
+                                placeholder="{{ $isApprove ? 'Add a comment for this approval...' : 'Please provide a reason for rejection...' }}"
                                 required></textarea>
                             @error('comments')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <div class="alert alert-warning" role="alert">
+                        <div class="alert {{ $isApprove ? 'alert-info' : 'alert-warning' }}" role="alert">
                             <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                            Are you sure you want to reject this leave request?
+                            Are you sure you want to {{ $isApprove ? 'approve' : 'reject' }} this leave request?
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closeModal">Cancel</button>
-                        <button type="submit" class="btn btn-danger" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="rejectLeave">
-                                <i class="fa-solid fa-times me-1"></i> Reject
+                        <button type="submit" class="btn {{ $isApprove ? 'btn-success' : 'btn-danger' }}" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="submitDecision">
+                                <i class="fa-solid fa-{{ $isApprove ? 'check' : 'times' }} me-1"></i> {{ $isApprove ? 'Approve' : 'Reject' }}
                             </span>
-                            <span wire:loading wire:target="rejectLeave">
+                            <span wire:loading wire:target="submitDecision">
                                 <i class="fa-solid fa-spinner fa-spin me-1"></i> Processing...
                             </span>
                         </button>

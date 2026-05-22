@@ -17,8 +17,10 @@ class Leaveapproval extends Component
     use WithPagination;
 
     public $statusFilter = 'Awaiting';
+    public $search = '';
     public $selectedLeave = null;
     public $showModal = false;
+    public $actionType = '';
     public $comments = '';
     public $userApprovalLevels = [];
 
@@ -27,6 +29,16 @@ class Leaveapproval extends Component
     public function mount()
     {
         $this->loadUserApprovalLevels();
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
     }
 
     public function loadUserApprovalLevels()
@@ -44,53 +56,42 @@ class Leaveapproval extends Component
         }
     }
 
-    public function approveLeave($leaveId)
+    public function openApproveModal($leaveId)
     {
-        $leave = Employeeleaves::with(['employee', 'leave'])->findOrFail($leaveId);
-        $currentLevel = $this->getCurrentApprovalLevel($leave);
-
-        if (!$currentLevel) {
-            session()->flash('error', 'No approval level found or leave already processed.');
-            return;
-        }
-
-        if (!in_array($currentLevel->id, $this->userApprovalLevels)) {
-            session()->flash('error', 'You do not have permission to approve at this level.');
-            return;
-        }
-
-        // Create approval record
-        leaverequestapproval::create([
-            'leave_request_id' => $leave->id,
-            'approval_level_id' => $currentLevel->id,
-            'approver_id' => Auth::id(),
-            'status' => 'approved',
-            'comments' => 'Approved',
-            'approved_at' => now(),
-        ]);
-
-        // Update leave status
-        $newStatus = $this->determineLeaveStatus($leave, 'approved');
-        $leave->update(['status' => $newStatus]);
-
-        session()->flash('success', 'Leave request has been approved successfully!');
-        $this->dispatch('refreshNotifications');
+        $this->selectedLeave = Employeeleaves::with(['employee', 'leave'])->findOrFail($leaveId);
+        $this->actionType = 'approve';
+        $this->comments = '';
+        $this->resetValidation();
+        $this->showModal = true;
     }
 
     public function openRejectModal($leaveId)
     {
         $this->selectedLeave = Employeeleaves::with(['employee', 'leave'])->findOrFail($leaveId);
+        $this->actionType = 'reject';
         $this->comments = '';
+        $this->resetValidation();
         $this->showModal = true;
     }
 
-    public function rejectLeave()
+    /**
+     * Approve or reject the selected leave. A comment is required either way.
+     */
+    public function submitDecision()
     {
+        if (!in_array($this->actionType, ['approve', 'reject'])) {
+            session()->flash('error', 'No action selected.');
+            return;
+        }
+
+        $verb = $this->actionType === 'approve' ? 'approval' : 'rejection';
+
         $this->validate([
             'comments' => 'required|string|min:5|max:500',
         ], [
-            'comments.required' => 'Please provide a reason for rejection.',
-            'comments.min' => 'Rejection reason must be at least 5 characters.',
+            'comments.required' => "Please provide a comment for the {$verb}.",
+            'comments.min' => 'Comment must be at least 5 characters.',
+            'comments.max' => 'Comment cannot exceed 500 characters.',
         ]);
 
         if (!$this->selectedLeave) {
@@ -107,25 +108,31 @@ class Leaveapproval extends Component
         }
 
         if (!in_array($currentLevel->id, $this->userApprovalLevels)) {
-            session()->flash('error', 'You do not have permission to reject at this level.');
+            session()->flash('error', "You do not have permission to {$this->actionType} at this level.");
             $this->closeModal();
             return;
         }
 
-        // Create rejection record
+        $decision = $this->actionType === 'approve' ? 'approved' : 'rejected';
+
+        // Record the decision with the approver's comment.
         leaverequestapproval::create([
             'leave_request_id' => $this->selectedLeave->id,
             'approval_level_id' => $currentLevel->id,
             'approver_id' => Auth::id(),
-            'status' => 'rejected',
+            'status' => $decision,
             'comments' => $this->comments,
             'approved_at' => now(),
         ]);
 
-        // Update leave status to rejected
-        $this->selectedLeave->update(['status' => 'Rejected']);
+        // Update leave status.
+        $newStatus = $this->determineLeaveStatus($this->selectedLeave, $decision);
+        $this->selectedLeave->update(['status' => $newStatus]);
 
-        session()->flash('success', 'Leave request has been rejected.');
+        session()->flash('success', $this->actionType === 'approve'
+            ? 'Leave request has been approved successfully!'
+            : 'Leave request has been rejected.');
+
         $this->closeModal();
         $this->dispatch('refreshNotifications');
     }
@@ -135,7 +142,9 @@ class Leaveapproval extends Component
     {
         $this->showModal = false;
         $this->selectedLeave = null;
+        $this->actionType = '';
         $this->comments = '';
+        $this->resetValidation();
     }
 
     public function getCurrentApprovalLevel($leave)
@@ -223,6 +232,17 @@ class Leaveapproval extends Component
         if ($canApprove) {
             $leavesQuery = Employeeleaves::with(['employee', 'leave', 'approvalnote.approval_level', 'approvalnote.approver'])
                 ->orderBy('created_at', 'desc');
+
+            // Filter by employee name / number
+            if (trim($this->search) !== '') {
+                $term = '%'.trim($this->search).'%';
+                $leavesQuery->whereHas('employee', function ($q) use ($term) {
+                    $q->where('first_name', 'like', $term)
+                        ->orWhere('last_name', 'like', $term)
+                        ->orWhere('employee_no', 'like', $term)
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$term]);
+                });
+            }
 
             // Filter by status
             if ($this->statusFilter === 'Awaiting') {

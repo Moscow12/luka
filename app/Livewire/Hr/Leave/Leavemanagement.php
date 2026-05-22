@@ -154,11 +154,13 @@ class Leavemanagement extends Component
 
         // Search filter
         if ($this->search) {
-            $leavesQuery->whereHas('employee', function ($query) {
-                $query->where('first_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('middle_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('last_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('employee_number', 'like', '%' . $this->search . '%');
+            $term = '%' . $this->search . '%';
+            $leavesQuery->whereHas('employee', function ($query) use ($term) {
+                $query->where('first_name', 'like', $term)
+                    ->orWhere('middle_name', 'like', $term)
+                    ->orWhere('last_name', 'like', $term)
+                    ->orWhere('employee_no', 'like', $term)
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$term]);
             });
         }
 
