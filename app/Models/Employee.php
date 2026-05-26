@@ -27,6 +27,9 @@ class Employee extends Model
         'employment_type',
         'hired_date',
         'status',
+        'status_reason_id',
+        'status_changed_at',
+        'status_notes',
         'department_id',
         'education_level',
         'title_id',
@@ -50,6 +53,7 @@ class Employee extends Model
     protected $casts = [
         'dob' => 'date',
         'hired_date' => 'date',
+        'status_changed_at' => 'date',
     ];
 
     // Activity Logging Configuration
@@ -151,6 +155,11 @@ class Employee extends Model
     public function actingAssignmentsOnLeave()
     {
         return $this->hasMany(ActingAssignment::class, 'employee_on_leave_id');
+    }
+
+    public function statusReason()
+    {
+        return $this->belongsTo(TerminationReason::class, 'status_reason_id');
     }
 
     // ================ end relationships ================#

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\LeaveController;
 use Illuminate\Http\Request;
@@ -32,6 +33,14 @@ Route::middleware('api.token')->group(function () {
         Route::post('/sync', [LeaveController::class, 'store']);
         Route::get('/', [LeaveController::class, 'index']);
         Route::get('/{id}', [LeaveController::class, 'show']);
+    });
+
+    // Contract API endpoints (third-party sync)
+    Route::prefix('contracts')->group(function () {
+        Route::post('/register', [ContractController::class, 'store']);
+        Route::post('/sync', [ContractController::class, 'store']);
+        Route::get('/', [ContractController::class, 'index']);
+        Route::get('/{id}', [ContractController::class, 'show']);
     });
 
     // Asset API endpoints (third-party sync)

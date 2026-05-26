@@ -97,52 +97,6 @@
                 </div>
             </div>
 
-            <!-- Contact Info Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="fa-solid fa-address-book text-primary me-2"></i>Contact Information
-                    </h6>
-                </div>
-                <div class="card-body pt-0">
-                    <ul class="list-unstyled mb-0">
-                        @if($employee->email)
-                        <li class="d-flex align-items-center mb-3">
-                            <div class="icon-shape icon-sm bg-primary-subtle text-primary rounded me-3">
-                                <i class="fa-solid fa-envelope"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Email</small>
-                                <a href="mailto:{{ $employee->email }}" class="text-decoration-none">{{ $employee->email }}</a>
-                            </div>
-                        </li>
-                        @endif
-                        @if($employee->phone)
-                        <li class="d-flex align-items-center mb-3">
-                            <div class="icon-shape icon-sm bg-success-subtle text-success rounded me-3">
-                                <i class="fa-solid fa-phone"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Phone</small>
-                                <a href="tel:{{ $employee->phone }}" class="text-decoration-none">{{ $employee->phone }}</a>
-                            </div>
-                        </li>
-                        @endif
-                        @if($employee->region || $employee->district)
-                        <li class="d-flex align-items-center">
-                            <div class="icon-shape icon-sm bg-info-subtle text-info rounded me-3">
-                                <i class="fa-solid fa-location-dot"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Location</small>
-                                <span>{{ $employee->district->name ?? '' }}{{ $employee->district && $employee->region ? ', ' : '' }}{{ $employee->region->name ?? '' }}</span>
-                            </div>
-                        </li>
-                        @endif
-                    </ul>
-                </div>
-            </div>
-
             <!-- Quick Actions Card -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
@@ -164,6 +118,11 @@
                         <a href="{{ route('hr.attendance', $employee->id) }}" class="btn btn-outline-secondary btn-sm text-start">
                             <i class="fa-solid fa-clock me-2"></i>Attendance Records
                         </a>
+                        <button type="button" wire:click="openStatusModal"
+                                class="btn btn-outline-{{ $employee->status === 'active' ? 'warning' : 'success' }} btn-sm text-start">
+                            <i class="fa-solid {{ $employee->status === 'active' ? 'fa-user-slash' : 'fa-user-check' }} me-2"></i>
+                            Change Status
+                        </button>
                     </div>
                 </div>
             </div>
@@ -269,16 +228,36 @@
                         </div>
                     </div>
 
-                    <!-- Address Information -->
+                    <!-- Address & Contact Information -->
                     <div class="col-12 col-xl-6">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-white border-0 py-3">
                                 <h6 class="mb-0 fw-bold">
-                                    <i class="fa-solid fa-map-location-dot text-success me-2"></i>Address Information
+                                    <i class="fa-solid fa-map-location-dot text-success me-2"></i>Address & Contact Information
                                 </h6>
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small mb-1">Email</label>
+                                        <p class="mb-0 fw-medium">
+                                            @if($employee->email)
+                                                <a href="mailto:{{ $employee->email }}" class="text-decoration-none">{{ $employee->email }}</a>
+                                            @else
+                                                -
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small mb-1">Phone</label>
+                                        <p class="mb-0 fw-medium">
+                                            @if($employee->phone)
+                                                <a href="tel:{{ $employee->phone }}" class="text-decoration-none">{{ $employee->phone }}</a>
+                                            @else
+                                                -
+                                            @endif
+                                        </p>
+                                    </div>
                                     <div class="col-6">
                                         <label class="form-label text-muted small mb-1">Country</label>
                                         <p class="mb-0 fw-medium">{{ $employee->country->name ?? '-' }}</p>
@@ -390,12 +369,30 @@
                             </div>
                             <div class="col-md-6 col-lg-4">
                                 <label class="form-label text-muted small mb-1">Status</label>
-                                <span class="badge bg-{{ $statusColor }}">{{ $employee->status }}</span>
+                                <span class="badge bg-{{ $statusColor }}">{{ ucfirst(str_replace('_', ' ', $employee->status)) }}</span>
                             </div>
                             <div class="col-md-6 col-lg-4">
                                 <label class="form-label text-muted small mb-1">Length of Service</label>
                                 <p class="mb-0 fw-medium">{{ $serviceYears }} years, {{ $serviceMonths }} months, {{ $serviceDays }} days</p>
                             </div>
+                            @if($employee->statusReason)
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label text-muted small mb-1">Status Reason</label>
+                                <p class="mb-0 fw-medium">{{ $employee->statusReason->name }}</p>
+                            </div>
+                            @endif
+                            @if($employee->status_changed_at)
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label text-muted small mb-1">Status Effective Date</label>
+                                <p class="mb-0 fw-medium">{{ $employee->status_changed_at->format('d M Y') }}</p>
+                            </div>
+                            @endif
+                            @if($employee->status_notes)
+                            <div class="col-12">
+                                <label class="form-label text-muted small mb-1">Status Notes</label>
+                                <p class="mb-0 fw-medium">{{ $employee->status_notes }}</p>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -604,6 +601,77 @@
             </div>
         </div>
     </div>
+
+    <!-- Status Change Modal -->
+    @if($showStatusModal)
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-user-pen text-primary me-2"></i>Change Employee Status
+                    </h5>
+                    <button type="button" class="btn-close" wire:click="closeStatusModal"></button>
+                </div>
+                <form wire:submit.prevent="updateStatus">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Current Status</label>
+                            <div>
+                                <span class="badge bg-{{ $statusColor }}">{{ ucfirst($employee->status) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">New Status <span class="text-danger">*</span></label>
+                            <select wire:model.live="newStatus" class="form-select @error('newStatus') is-invalid @enderror">
+                                <option value="">-- Select Status --</option>
+                                @foreach($statusOptions as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('newStatus') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
+                        @if($newStatus && $newStatus !== 'active')
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Reason <span class="text-danger">*</span></label>
+                            <select wire:model="statusReasonId" class="form-select @error('statusReasonId') is-invalid @enderror">
+                                <option value="">-- Select Reason --</option>
+                                @foreach($terminationReasons as $reason)
+                                    <option value="{{ $reason->id }}">{{ $reason->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('statusReasonId') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Effective Date</label>
+                            <input type="date" wire:model="statusChangedAt"
+                                   class="form-control @error('statusChangedAt') is-invalid @enderror">
+                            @error('statusChangedAt') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Notes</label>
+                            <textarea wire:model="statusNotes" rows="3"
+                                      class="form-control @error('statusNotes') is-invalid @enderror"
+                                      placeholder="Optional notes about this status change..."></textarea>
+                            @error('statusNotes') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeStatusModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Update Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <style>
         .icon-shape {

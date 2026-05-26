@@ -8,6 +8,7 @@ use App\Models\Employeecontracts;
 use App\Models\Employeedependants;
 use App\Models\Employeeleaves;
 use App\Models\Employeequalifications;
+use App\Models\TerminationReason;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -36,6 +37,31 @@ class Staffdetails extends Component
 
     public $ageDays = 0;
 
+    // Status change modal
+    public $showStatusModal = false;
+
+    public $newStatus = '';
+
+    public $statusReasonId = '';
+
+    public $statusChangedAt = '';
+
+    public $statusNotes = '';
+
+    protected $statusOptions = [
+        'active' => 'Active',
+        'suspended' => 'Suspended',
+        'terminated' => 'Terminated',
+        'retired' => 'Retired',
+        'contract_ended' => 'Contract Ended',
+        'resigned' => 'Resigned',
+        'deceased' => 'Deceased',
+        'transferred' => 'Transferred',
+        'study_leave' => 'Study Leave',
+        'absconded' => 'Absconded',
+        'other' => 'Other',
+    ];
+
     public function mount($id)
     {
         $this->employee = Employee::with([
@@ -48,6 +74,7 @@ class Staffdetails extends Component
             'district',
             'ward',
             'vilstreet',
+            'statusReason',
             'activeContract.department',
             'activeContract.position',
             'contracts' => function ($q) {
@@ -116,6 +143,56 @@ class Staffdetails extends Component
         $this->activeTab = $tab;
     }
 
+    public function openStatusModal()
+    {
+        $this->newStatus = $this->employee->status;
+        $this->statusReasonId = $this->employee->status_reason_id ?? '';
+        $this->statusChangedAt = $this->employee->status_changed_at
+            ? $this->employee->status_changed_at->format('Y-m-d')
+            : now()->format('Y-m-d');
+        $this->statusNotes = $this->employee->status_notes ?? '';
+        $this->showStatusModal = true;
+    }
+
+    public function closeStatusModal()
+    {
+        $this->showStatusModal = false;
+        $this->reset(['newStatus', 'statusReasonId', 'statusChangedAt', 'statusNotes']);
+        $this->resetErrorBag();
+    }
+
+    public function updateStatus()
+    {
+        $this->validate([
+            'newStatus' => 'required|in:'.implode(',', array_keys($this->statusOptions)),
+            'statusReasonId' => 'nullable|uuid|exists:termination_reasons,id',
+            'statusChangedAt' => 'nullable|date',
+            'statusNotes' => 'nullable|string|max:1000',
+        ], [
+            'newStatus.required' => 'Please select a status.',
+            'newStatus.in' => 'Invalid status selected.',
+            'statusReasonId.exists' => 'The selected reason is invalid.',
+        ]);
+
+        if ($this->newStatus !== 'active' && empty($this->statusReasonId)) {
+            $this->addError('statusReasonId', 'A reason is required when changing to this status.');
+
+            return;
+        }
+
+        $this->employee->update([
+            'status' => $this->newStatus,
+            'status_reason_id' => $this->newStatus === 'active' ? null : $this->statusReasonId,
+            'status_changed_at' => $this->statusChangedAt ?: now()->toDateString(),
+            'status_notes' => $this->statusNotes ?: null,
+        ]);
+
+        $this->employee->refresh()->load('statusReason');
+
+        session()->flash('message', 'Employee status updated successfully.');
+        $this->closeStatusModal();
+    }
+
     public function render()
     {
         // Get additional data based on active tab
@@ -151,11 +228,17 @@ class Staffdetails extends Component
                 ->get();
         }
 
+        $terminationReasons = TerminationReason::active()
+            ->orderBy('name')
+            ->get();
+
         return view('livewire.hr.staffs.staffdetails', [
             'qualifications' => $qualifications,
             'dependants' => $dependants,
             'recentLeaves' => $recentLeaves,
             'contracts' => $contracts,
+            'terminationReasons' => $terminationReasons,
+            'statusOptions' => $this->statusOptions,
         ]);
     }
 }
