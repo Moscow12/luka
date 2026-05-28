@@ -50,7 +50,7 @@
                                                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                                       fill="none" stroke="{{ $planningStats['overall_progress'] >= 80 ? '#198754' : ($planningStats['overall_progress'] >= 50 ? '#0dcaf0' : '#ffc107') }}"
                                                       stroke-width="3" stroke-dasharray="{{ $planningStats['overall_progress'] }}, 100"/>
-                                                <text x="18" y="20.5" text-anchor="middle" font-size="8" fill="#333">{{ $planningStats['overall_progress'] }}%</text>
+                                                <text x="18" y="20.5" text-anchor="middle" font-size="8" fill="#333">{{ number_format($planningStats['overall_progress'], 1) }}%</text>
                                             </svg>
                                         </div>
                                         <small class="d-block text-muted">Overall Progress</small>
@@ -61,7 +61,7 @@
                                         <small class="text-muted">of {{ $ranking['total_employees'] }} in Dept</small>
                                         <div class="mt-1">
                                             <span class="badge bg-{{ $ranking['percentile'] >= 75 ? 'success' : ($ranking['percentile'] >= 50 ? 'info' : 'warning') }}">
-                                                Top {{ 100 - $ranking['percentile'] }}%
+                                                Top {{ number_format(100 - $ranking['percentile'], 1) }}%
                                             </span>
                                         </div>
                                     </div>
@@ -94,7 +94,7 @@
                             <small class="text-white-50">Submit a plan for evaluation</small>
                         @endif
                         <div class="mt-3">
-                            <small>Avg Score: <strong>{{ $evaluationStats['average_score'] }}%</strong> | Total: <strong>{{ $evaluationStats['total_evaluations'] }}</strong></small>
+                            <small>Avg Score: <strong>{{ number_format($evaluationStats['average_score'], 1) }}%</strong> | Total: <strong>{{ $evaluationStats['total_evaluations'] }}</strong></small>
                         </div>
                     </div>
                 </div>
@@ -163,7 +163,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted mb-2">Attendance Rate</h6>
-                                <h3 class="mb-0">{{ $attendanceStats['attendance_rate'] }}%</h3>
+                                <h3 class="mb-0">{{ number_format($attendanceStats['attendance_rate'], 1) }}%</h3>
                                 <small class="text-muted">{{ $attendanceStats['present_days'] }}/{{ $attendanceStats['total_days'] }} Days</small>
                             </div>
                             <div class="align-self-center">
@@ -194,13 +194,13 @@
                                         </div>
                                         <div class="text-end">
                                             <span class="badge bg-primary">{{ $plan->goal_count }} Goals</span>
-                                            <small class="text-muted ms-2">{{ $plan->days_active }} days</small>
+                                            <small class="text-muted ms-2">{{ $plan->days_active }} {{ Str::plural('day', $plan->days_active) }}</small>
                                         </div>
                                     </div>
                                     <div class="progress" style="height: 25px;">
                                         <div class="progress-bar {{ $plan->calculated_progress >= 100 ? 'bg-success' : ($plan->calculated_progress >= 75 ? 'bg-info' : ($plan->calculated_progress >= 50 ? 'bg-warning' : 'bg-danger')) }}"
                                              style="width: {{ $plan->calculated_progress }}%">
-                                            <span class="fw-bold">{{ $plan->calculated_progress }}%</span>
+                                            <span class="fw-bold">{{ number_format($plan->calculated_progress, 1) }}%</span>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-between mt-1">
@@ -238,7 +238,7 @@
                         @if($implementationStats['days_since_first'] > 0)
                             <div class="text-center mb-3">
                                 <div class="display-4 text-primary">{{ $implementationStats['days_since_first'] }}</div>
-                                <small class="text-muted">Days Since First Implementation</small>
+                                <small class="text-muted">{{ Str::plural('Day', $implementationStats['days_since_first']) }} Since First Implementation</small>
                             </div>
                         @endif
 
@@ -295,7 +295,7 @@
                         <div class="mb-4">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Completion Rate</span>
-                                <strong>{{ $dutiesStats['completion_rate'] }}%</strong>
+                                <strong>{{ number_format($dutiesStats['completion_rate'], 1) }}%</strong>
                             </div>
                             <div class="progress" style="height: 10px;">
                                 <div class="progress-bar bg-success" style="width: {{ $dutiesStats['completion_rate'] }}%"></div>
@@ -385,7 +385,7 @@
                                         <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                               fill="none" stroke="{{ $attendanceStats['attendance_rate'] >= 90 ? '#198754' : ($attendanceStats['attendance_rate'] >= 75 ? '#0dcaf0' : '#ffc107') }}"
                                               stroke-width="3" stroke-dasharray="{{ $attendanceStats['attendance_rate'] }}, 100"/>
-                                        <text x="18" y="20.5" text-anchor="middle" font-size="7" fill="#333" font-weight="bold">{{ $attendanceStats['attendance_rate'] }}%</text>
+                                        <text x="18" y="20.5" text-anchor="middle" font-size="7" fill="#333" font-weight="bold">{{ number_format($attendanceStats['attendance_rate'], 1) }}%</text>
                                     </svg>
                                 </div>
                                 <p class="mb-0 mt-2 text-muted">Attendance Rate</p>

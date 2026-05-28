@@ -91,7 +91,7 @@ class Myperformanceview extends Component
 
         $firstImplementation = $implementations->sortBy('implementation_date')->first();
         $daysSinceFirst = $firstImplementation
-            ? Carbon::parse($firstImplementation->implementation_date)->diffInDays(now())
+            ? (int) floor(abs(Carbon::parse($firstImplementation->implementation_date)->diffInDays(now())))
             : 0;
 
         $thisMonth = $implementations->filter(function ($impl) {
@@ -146,9 +146,8 @@ class Myperformanceview extends Component
                 $plan->goal_count = $items->count();
 
                 // Calculate days since plan started
-                $plan->days_active = $plan->assigned_at
-                    ? Carbon::parse($plan->assigned_at)->diffInDays(now())
-                    : Carbon::parse($plan->created_at)->diffInDays(now());
+                $startedAt = $plan->assigned_at ?: $plan->created_at;
+                $plan->days_active = (int) floor(abs(Carbon::parse($startedAt)->diffInDays(now())));
 
                 return $plan;
             });
@@ -360,7 +359,7 @@ class Myperformanceview extends Component
         });
 
         $rank = $rank !== false ? $rank + 1 : $totalEmployees;
-        $percentile = $totalEmployees > 0 ? round((($totalEmployees - $rank + 1) / $totalEmployees) * 100, 0) : 0;
+        $percentile = $totalEmployees > 0 ? round((($totalEmployees - $rank + 1) / $totalEmployees) * 100, 1) : 0;
 
         return [
             'rank' => $rank,

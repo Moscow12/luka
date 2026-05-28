@@ -14,7 +14,9 @@ use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature,
 
 use App\Livewire\Performance\AssignedDuties\ManageAssignedDuties;
 use App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans;
+use App\Livewire\Performance\DepartmentPlans\ManagePlanItems as ManageDepartmentPlanItems;
 use App\Livewire\Performance\EmployeePlans\ManageEmployeePlans;
+use App\Livewire\Performance\EmployeePlans\ManagePlanItems as ManageEmployeePlanItems;
 use App\Livewire\Performance\OrganizationalPlans\{ManagePlanItems, ManagePlans};
 use App\Livewire\Performance\Staffs\{Myduties, Myevaluations, Myimplimentations, Myperformanceview, Myplanning};
 
@@ -173,11 +175,11 @@ Route::prefix('performance')->middleware('auth')->group(function () {
 
     // Department Plans
     Route::get('department-plans', ManageDepartmentPlans::class)->name('performance.dept.plans');
-    Route::get('department-plans/{planId}/items', ManagePlanItems::class)->name('performance.dept.plans.items');
+    Route::get('department-plans/{planId}/items', ManageDepartmentPlanItems::class)->name('performance.dept.plans.items');
 
     // Employee Plans
     Route::get('employee-plans', ManageEmployeePlans::class)->name('performance.employee.plans');
-    Route::get('employee-plans/{planId}/items', ManagePlanItems::class)->name('performance.employee.plans.items');
+    Route::get('employee-plans/{planId}/items', ManageEmployeePlanItems::class)->name('performance.employee.plans.items');
 
     // Assigned Duties (Direct KPI Assignment)
     Route::get('assigned-duties', ManageAssignedDuties::class)->name('performance.assigned.duties');
