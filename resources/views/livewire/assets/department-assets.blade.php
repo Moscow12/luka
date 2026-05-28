@@ -250,23 +250,29 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-4" wire:key="asset-picker">
-                                    <label class="form-label">Asset <span class="text-danger">*</span></label>
-
-                                    @if($this->selectedAsset)
-                                        <div class="d-flex align-items-center justify-content-between border rounded p-2">
-                                            <span>
-                                                {{ $this->selectedAsset->name }}
-                                                @if($this->selectedAsset->type)
-                                                    <small class="text-muted">({{ $this->selectedAsset->type }})</small>
-                                                @endif
-                                            </span>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="clearAsset">
-                                                <i class="fa-solid fa-pen me-1"></i> Change
-                                            </button>
-                                        </div>
-                                    @elseif($newAssetMode)
-                                        <div class="border rounded p-2">
+                                <div class="col-md-4">
+                                    <x-forms.search-picker
+                                        name="asset_id"
+                                        label="Asset"
+                                        :required="true"
+                                        :selected="$this->selectedAsset"
+                                        :items="$this->filteredAssets"
+                                        :search-value="$assetSearch"
+                                        :show-dropdown="$showAssetDropdown"
+                                        search-prop="assetSearch"
+                                        dropdown-prop="showAssetDropdown"
+                                        :search-placeholder="$asset_class_id ? 'Search asset by name...' : 'Select an asset class first'"
+                                        empty-text="No assets found"
+                                        :disabled="!$asset_class_id"
+                                        select-method="selectAsset"
+                                        clear-method="clearAsset"
+                                        label-key="name"
+                                        sublabel-key="type"
+                                        :allow-create="true"
+                                        :create-mode="$newAssetMode"
+                                        :create-button-text="'Add new asset' . (trim($assetSearch) !== '' ? ' &quot;'.$assetSearch.'&quot;' : '')"
+                                        start-create-method="startNewAsset">
+                                        <x-slot:create>
                                             <div class="mb-2">
                                                 <input type="text"
                                                        class="form-control form-control-sm @error('newAssetName') is-invalid @enderror"
@@ -316,53 +322,8 @@
                                                     Cancel
                                                 </button>
                                             </div>
-                                        </div>
-                                    @else
-                                        <div class="position-relative">
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-white">
-                                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                                </span>
-                                                <input type="text"
-                                                       class="form-control @error('asset_id') is-invalid @enderror"
-                                                       placeholder="{{ $asset_class_id ? 'Search asset by name...' : 'Select an asset class first' }}"
-                                                       wire:model.live.debounce.300ms="assetSearch"
-                                                       wire:focus="$set('showAssetDropdown', true)"
-                                                       @if(!$asset_class_id) disabled @endif
-                                                       autocomplete="off" />
-                                            </div>
-
-                                            @if($asset_class_id && ($showAssetDropdown || strlen($assetSearch)))
-                                                <div class="border rounded mt-1 bg-white shadow-sm position-absolute w-100"
-                                                     style="z-index: 1056; max-height: 240px; overflow-y: auto;">
-                                                    @forelse($this->filteredAssets as $assetItem)
-                                                        <button type="button"
-                                                                class="dropdown-item d-flex justify-content-between px-3 py-2 text-wrap"
-                                                                wire:key="asset-{{ $assetItem->id }}"
-                                                                wire:click="selectAsset('{{ $assetItem->id }}')">
-                                                            <span>{{ $assetItem->name }}</span>
-                                                            @if($assetItem->type)
-                                                                <small class="text-muted">{{ $assetItem->type }}</small>
-                                                            @endif
-                                                        </button>
-                                                    @empty
-                                                        <div class="px-3 py-2 text-muted small">No assets found</div>
-                                                    @endforelse
-                                                    <div class="border-top px-3 py-2 bg-light">
-                                                        <button type="button" class="btn btn-sm btn-outline-primary w-100"
-                                                                wire:click="startNewAsset">
-                                                            <i class="fa-solid fa-plus me-1"></i>
-                                                            Add new asset{{ trim($assetSearch) !== '' ? ' "'.$assetSearch.'"' : '' }}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            @endif
-
-                                            @error('asset_id')
-                                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    @endif
+                                        </x-slot:create>
+                                    </x-forms.search-picker>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Department <span class="text-danger">*</span></label>
