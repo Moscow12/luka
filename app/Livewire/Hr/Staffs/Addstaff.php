@@ -133,6 +133,104 @@ class Addstaff extends Component
 
     public $hasExistingUser = false;
 
+    // Searchable picker state (country, region, district, ward, village, department, title, designation)
+    public $countrySearch = '';
+    public $showCountryDropdown = false;
+
+    public $regionSearch = '';
+    public $showRegionDropdown = false;
+
+    public $districtSearch = '';
+    public $showDistrictDropdown = false;
+
+    public $wardSearch = '';
+    public $showWardDropdown = false;
+
+    public $villageSearch = '';
+    public $showVillageDropdown = false;
+
+    public $departmentSearch = '';
+    public $showDepartmentDropdown = false;
+
+    public $titleSearch = '';
+    public $showTitleDropdown = false;
+
+    public $designationSearch = '';
+    public $showDesignationDropdown = false;
+
+    protected function filterCollection($list, string $term, array $keys = ['name'])
+    {
+        $term = trim($term);
+
+        return collect($list)->filter(function ($item) use ($term, $keys) {
+            if ($term === '') {
+                return true;
+            }
+            foreach ($keys as $key) {
+                if (str_contains(strtolower((string) data_get($item, $key)), strtolower($term))) {
+                    return true;
+                }
+            }
+            return false;
+        })->take(50)->values();
+    }
+
+    protected function findIn($list, $id)
+    {
+        if (! $id) {
+            return null;
+        }
+        return collect($list)->firstWhere('id', $id);
+    }
+
+    // Country
+    public function getFilteredCountriesProperty()    { return $this->filterCollection($this->countries, $this->countrySearch); }
+    public function getSelectedCountryProperty()      { return $this->findIn($this->countries, $this->country_id); }
+    public function selectCountry($id)                { $this->country_id = $id; $this->countrySearch = ''; $this->showCountryDropdown = false; }
+    public function clearCountry()                    { $this->country_id = null; $this->countrySearch = ''; $this->showCountryDropdown = true; }
+
+    // Region
+    public function getFilteredRegionsProperty()      { return $this->filterCollection($this->regions, $this->regionSearch); }
+    public function getSelectedRegionProperty()       { return $this->findIn($this->regions, $this->region_id); }
+    public function selectRegion($id)                 { $this->region_id = $id; $this->regionSearch = ''; $this->showRegionDropdown = false; $this->updateDistricts(); }
+    public function clearRegion()                     { $this->region_id = null; $this->regionSearch = ''; $this->showRegionDropdown = true; $this->districts = collect(); $this->district_id = null; $this->wards = collect(); $this->ward_id = null; $this->villages = collect(); $this->vilstreet_id = null; }
+
+    // District
+    public function getFilteredDistrictsProperty()    { return $this->filterCollection($this->districts, $this->districtSearch); }
+    public function getSelectedDistrictProperty()     { return $this->findIn($this->districts, $this->district_id); }
+    public function selectDistrict($id)               { $this->district_id = $id; $this->districtSearch = ''; $this->showDistrictDropdown = false; $this->updatewards(); }
+    public function clearDistrict()                   { $this->district_id = null; $this->districtSearch = ''; $this->showDistrictDropdown = true; $this->wards = collect(); $this->ward_id = null; $this->villages = collect(); $this->vilstreet_id = null; }
+
+    // Ward
+    public function getFilteredWardsProperty()        { return $this->filterCollection($this->wards, $this->wardSearch); }
+    public function getSelectedWardProperty()         { return $this->findIn($this->wards, $this->ward_id); }
+    public function selectWard($id)                   { $this->ward_id = $id; $this->wardSearch = ''; $this->showWardDropdown = false; $this->updatestreet(); }
+    public function clearWard()                       { $this->ward_id = null; $this->wardSearch = ''; $this->showWardDropdown = true; $this->villages = collect(); $this->vilstreet_id = null; }
+
+    // Village
+    public function getFilteredVillagesProperty()     { return $this->filterCollection($this->villages, $this->villageSearch); }
+    public function getSelectedVillageProperty()      { return $this->findIn($this->villages, $this->vilstreet_id); }
+    public function selectVillage($id)                { $this->vilstreet_id = $id; $this->villageSearch = ''; $this->showVillageDropdown = false; }
+    public function clearVillage()                    { $this->vilstreet_id = null; $this->villageSearch = ''; $this->showVillageDropdown = true; }
+
+    // Department
+    public function getFilteredDepartmentsProperty()  { return $this->filterCollection($this->departments, $this->departmentSearch); }
+    public function getSelectedDepartmentProperty()   { return $this->findIn($this->departments, $this->department_id); }
+    public function selectDepartment($id)             { $this->department_id = $id; $this->departmentSearch = ''; $this->showDepartmentDropdown = false; }
+    public function clearDepartment()                 { $this->department_id = null; $this->departmentSearch = ''; $this->showDepartmentDropdown = true; }
+
+    // Job Title
+    public function getFilteredTitlesProperty()       { return $this->filterCollection($this->jobtitles, $this->titleSearch); }
+    public function getSelectedTitleProperty()        { return $this->findIn($this->jobtitles, $this->title_id); }
+    public function selectTitle($id)                  { $this->title_id = $id; $this->titleSearch = ''; $this->showTitleDropdown = false; }
+    public function clearTitle()                      { $this->title_id = null; $this->titleSearch = ''; $this->showTitleDropdown = true; }
+
+    // Designation
+    public function getFilteredDesignationsProperty() { return $this->filterCollection($this->designations, $this->designationSearch); }
+    public function getSelectedDesignationProperty()  { return $this->findIn($this->designations, $this->designation_id); }
+    public function selectDesignation($id)            { $this->designation_id = $id; $this->designationSearch = ''; $this->showDesignationDropdown = false; }
+    public function clearDesignation()                { $this->designation_id = null; $this->designationSearch = ''; $this->showDesignationDropdown = true; }
+
     public function mount($id = null)
     {
         if ($id) {

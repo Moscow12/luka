@@ -269,34 +269,49 @@
                                 @error('workstation_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-medium">Department</label>
-                                <select class="form-select @error('department_id') is-invalid @enderror" wire:model="department_id">
-                                    <option value="">Select Department</option>
-                                    @foreach($departments as $department)
-                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <x-forms.search-picker
+                                    name="department_id"
+                                    label="Department"
+                                    :selected="$this->selectedDepartment"
+                                    :items="$this->filteredDepartments"
+                                    :search-value="$departmentSearch"
+                                    :show-dropdown="$showDepartmentDropdown"
+                                    search-prop="departmentSearch"
+                                    dropdown-prop="showDepartmentDropdown"
+                                    search-placeholder="Search department..."
+                                    empty-text="No departments found"
+                                    select-method="selectDepartment"
+                                    clear-method="clearDepartment" />
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-medium">Job Title</label>
-                                <select class="form-select @error('title_id') is-invalid @enderror" wire:model="title_id">
-                                    <option value="">Select Title</option>
-                                    @foreach($jobtitles as $jobtitle)
-                                        <option value="{{ $jobtitle->id }}">{{ $jobtitle->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('title_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <x-forms.search-picker
+                                    name="title_id"
+                                    label="Job Title"
+                                    :selected="$this->selectedTitle"
+                                    :items="$this->filteredTitles"
+                                    :search-value="$titleSearch"
+                                    :show-dropdown="$showTitleDropdown"
+                                    search-prop="titleSearch"
+                                    dropdown-prop="showTitleDropdown"
+                                    search-placeholder="Search job title..."
+                                    empty-text="No titles found"
+                                    select-method="selectTitle"
+                                    clear-method="clearTitle" />
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-medium">Designation</label>
-                                <select class="form-select @error('designation_id') is-invalid @enderror" wire:model="designation_id">
-                                    <option value="">Select Designation</option>
-                                    @foreach($designations as $designation)
-                                        <option value="{{ $designation->id }}">{{ $designation->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('designation_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <x-forms.search-picker
+                                    name="designation_id"
+                                    label="Designation"
+                                    :selected="$this->selectedDesignation"
+                                    :items="$this->filteredDesignations"
+                                    :search-value="$designationSearch"
+                                    :show-dropdown="$showDesignationDropdown"
+                                    search-prop="designationSearch"
+                                    dropdown-prop="showDesignationDropdown"
+                                    search-placeholder="Search designation..."
+                                    empty-text="No designations found"
+                                    select-method="selectDesignation"
+                                    clear-method="clearDesignation" />
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-medium">Employee No</label>
@@ -358,59 +373,78 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="d-flex flex-column gap-3">
-                            <div>
-                                <label class="form-label fw-medium small text-muted mb-1">Country</label>
-                                <select class="form-select form-select-sm @error('country_id') is-invalid @enderror" wire:model="country_id">
-                                    <option value="">Select Country</option>
-                                    @foreach($countries as $country)
-                                        <option value="{{ $country->id }}">{{ $country->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('country_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                            <div>
-                                <label class="form-label fw-medium small text-muted mb-1">Region</label>
-                                <select class="form-select form-select-sm @error('region_id') is-invalid @enderror"
-                                    wire:model="region_id" wire:change="updateDistricts">
-                                    <option value="">Select Region</option>
-                                    @foreach($regions as $region)
-                                        <option value="{{ $region->id }}">{{ $region->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('region_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                            <div>
-                                <label class="form-label fw-medium small text-muted mb-1">District</label>
-                                <select class="form-select form-select-sm @error('district_id') is-invalid @enderror"
-                                    wire:model="district_id" wire:change="updatewards">
-                                    <option value="">Select District</option>
-                                    @foreach($districts as $district)
-                                        <option value="{{ $district->id }}">{{ $district->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('district_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                            <div>
-                                <label class="form-label fw-medium small text-muted mb-1">Ward</label>
-                                <select class="form-select form-select-sm @error('ward_id') is-invalid @enderror"
-                                    wire:model="ward_id" wire:change="updatestreet">
-                                    <option value="">Select Ward</option>
-                                    @foreach($wards as $ward)
-                                        <option value="{{ $ward->id }}">{{ $ward->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('ward_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                            <div>
-                                <label class="form-label fw-medium small text-muted mb-1">Village</label>
-                                <select class="form-select form-select-sm @error('vilstreet_id') is-invalid @enderror" wire:model="vilstreet_id">
-                                    <option value="">Select Village</option>
-                                    @foreach($villages as $village)
-                                        <option value="{{ $village->id }}">{{ $village->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('vilstreet_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
+                            <x-forms.search-picker
+                                name="country_id"
+                                label="Country"
+                                :selected="$this->selectedCountry"
+                                :items="$this->filteredCountries"
+                                :search-value="$countrySearch"
+                                :show-dropdown="$showCountryDropdown"
+                                search-prop="countrySearch"
+                                dropdown-prop="showCountryDropdown"
+                                search-placeholder="Search country..."
+                                empty-text="No countries found"
+                                select-method="selectCountry"
+                                clear-method="clearCountry" />
+
+                            <x-forms.search-picker
+                                name="region_id"
+                                label="Region"
+                                :selected="$this->selectedRegion"
+                                :items="$this->filteredRegions"
+                                :search-value="$regionSearch"
+                                :show-dropdown="$showRegionDropdown"
+                                search-prop="regionSearch"
+                                dropdown-prop="showRegionDropdown"
+                                search-placeholder="Search region..."
+                                empty-text="No regions found"
+                                select-method="selectRegion"
+                                clear-method="clearRegion" />
+
+                            <x-forms.search-picker
+                                name="district_id"
+                                label="District"
+                                :selected="$this->selectedDistrict"
+                                :items="$this->filteredDistricts"
+                                :search-value="$districtSearch"
+                                :show-dropdown="$showDistrictDropdown"
+                                search-prop="districtSearch"
+                                dropdown-prop="showDistrictDropdown"
+                                :search-placeholder="$region_id ? 'Search district...' : 'Select a region first'"
+                                empty-text="No districts found"
+                                :disabled="!$region_id"
+                                select-method="selectDistrict"
+                                clear-method="clearDistrict" />
+
+                            <x-forms.search-picker
+                                name="ward_id"
+                                label="Ward"
+                                :selected="$this->selectedWard"
+                                :items="$this->filteredWards"
+                                :search-value="$wardSearch"
+                                :show-dropdown="$showWardDropdown"
+                                search-prop="wardSearch"
+                                dropdown-prop="showWardDropdown"
+                                :search-placeholder="$district_id ? 'Search ward...' : 'Select a district first'"
+                                empty-text="No wards found"
+                                :disabled="!$district_id"
+                                select-method="selectWard"
+                                clear-method="clearWard" />
+
+                            <x-forms.search-picker
+                                name="vilstreet_id"
+                                label="Village"
+                                :selected="$this->selectedVillage"
+                                :items="$this->filteredVillages"
+                                :search-value="$villageSearch"
+                                :show-dropdown="$showVillageDropdown"
+                                search-prop="villageSearch"
+                                dropdown-prop="showVillageDropdown"
+                                :search-placeholder="$ward_id ? 'Search village...' : 'Select a ward first'"
+                                empty-text="No villages found"
+                                :disabled="!$ward_id"
+                                select-method="selectVillage"
+                                clear-method="clearVillage" />
                         </div>
                     </div>
                 </div>
