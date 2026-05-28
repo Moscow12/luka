@@ -129,40 +129,54 @@
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <label class="form-label" for="acting_employee_id">
-                                    Acting Employee @if($actingAssignmentRequired)<span class="text-danger">*</span>@endif
-                                </label>
-                                <select class="form-select" id="acting_employee_id" wire:model.defer="acting_employee_id" @if($actingAssignmentRequired) required @endif>
-                                    <option value="">Select Employee</option>
-                                    @foreach($employeesList as $emp)
-                                        <option value="{{ $emp->id }}">
-                                            {{ $emp->first_name }} {{ $emp->last_name }} - {{ $emp->designation->name ?? 'N/A' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('acting_employee_id')
-                                    <span class="text-danger d-block mt-1">{{ $message }}</span>
-                                @enderror
+                                <x-forms.search-picker
+                                    name="acting_employee_id"
+                                    label="Acting Employee"
+                                    :required="$actingAssignmentRequired"
+                                    :selected="$this->selectedActingEmployee"
+                                    :items="$this->filteredActingEmployees"
+                                    :search-value="$actingEmployeeSearch"
+                                    :show-dropdown="$showActingEmployeeDropdown"
+                                    search-prop="actingEmployeeSearch"
+                                    dropdown-prop="showActingEmployeeDropdown"
+                                    search-placeholder="Search employee by name, number, or designation..."
+                                    empty-text="No employees found"
+                                    select-method="selectActingEmployee"
+                                    clear-method="clearActingEmployee"
+                                    label-key="name"
+                                    sublabel-key="employee_no" />
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="acting_designation_id">Acting Designation (Optional)</label>
-                                    <select class="form-select" id="acting_designation_id" wire:model.defer="acting_designation_id">
-                                        <option value="">Same as current</option>
-                                        @foreach($designationsList as $designation)
-                                            <option value="{{ $designation->id }}">{{ $designation->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-forms.search-picker
+                                        name="acting_designation_id"
+                                        label="Acting Designation (Optional)"
+                                        :selected="$this->selectedActingDesignation"
+                                        :items="$this->filteredActingDesignations"
+                                        :search-value="$actingDesignationSearch"
+                                        :show-dropdown="$showActingDesignationDropdown"
+                                        search-prop="actingDesignationSearch"
+                                        dropdown-prop="showActingDesignationDropdown"
+                                        search-placeholder="Search designation..."
+                                        empty-text="No designations found"
+                                        select-method="selectActingDesignation"
+                                        clear-method="clearActingDesignation" />
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="acting_department_id">Acting Department (Optional)</label>
-                                    <select class="form-select" id="acting_department_id" wire:model.defer="acting_department_id">
-                                        <option value="">Same as current</option>
-                                        @foreach($departmentsList as $department)
-                                            <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-forms.search-picker
+                                        name="acting_department_id"
+                                        label="Acting Department (Optional)"
+                                        :selected="$this->selectedActingDepartment"
+                                        :items="$this->filteredActingDepartments"
+                                        :search-value="$actingDepartmentSearch"
+                                        :show-dropdown="$showActingDepartmentDropdown"
+                                        search-prop="actingDepartmentSearch"
+                                        dropdown-prop="showActingDepartmentDropdown"
+                                        search-placeholder="Search department..."
+                                        empty-text="No departments found"
+                                        select-method="selectActingDepartment"
+                                        clear-method="clearActingDepartment" />
                                 </div>
                             </div>
 

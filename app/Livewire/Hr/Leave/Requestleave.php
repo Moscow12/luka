@@ -85,6 +85,19 @@ class Requestleave extends Component
 
     public $departmentsList = [];
 
+    // Searchable acting pickers
+    public $actingEmployeeSearch = '';
+
+    public $showActingEmployeeDropdown = false;
+
+    public $actingDesignationSearch = '';
+
+    public $showActingDesignationDropdown = false;
+
+    public $actingDepartmentSearch = '';
+
+    public $showActingDepartmentDropdown = false;
+
     public function mount()
     {
         // Check if logged-in user is connected to an employee record
@@ -200,6 +213,121 @@ class Requestleave extends Component
         }
     }
 
+    public function getFilteredActingEmployeesProperty()
+    {
+        $term = trim($this->actingEmployeeSearch);
+
+        return collect($this->employeesList)->filter(function ($emp) use ($term) {
+            if ($term === '') {
+                return true;
+            }
+
+            $haystack = strtolower(
+                ($emp->first_name ?? '').' '.
+                ($emp->last_name ?? '').' '.
+                ($emp->employee_no ?? '').' '.
+                ($emp->designation->name ?? '')
+            );
+
+            return str_contains($haystack, strtolower($term));
+        })->take(50)->values();
+    }
+
+    public function getSelectedActingEmployeeProperty()
+    {
+        if (! $this->acting_employee_id) {
+            return null;
+        }
+
+        return collect($this->employeesList)->firstWhere('id', $this->acting_employee_id);
+    }
+
+    public function selectActingEmployee($id)
+    {
+        $this->acting_employee_id = $id;
+        $this->showActingEmployeeDropdown = false;
+        $this->actingEmployeeSearch = '';
+    }
+
+    public function clearActingEmployee()
+    {
+        $this->acting_employee_id = null;
+        $this->actingEmployeeSearch = '';
+        $this->showActingEmployeeDropdown = true;
+    }
+
+    public function getFilteredActingDesignationsProperty()
+    {
+        $term = trim($this->actingDesignationSearch);
+
+        return collect($this->designationsList)->filter(function ($d) use ($term) {
+            if ($term === '') {
+                return true;
+            }
+
+            return str_contains(strtolower($d->name ?? ''), strtolower($term));
+        })->take(50)->values();
+    }
+
+    public function getSelectedActingDesignationProperty()
+    {
+        if (! $this->acting_designation_id) {
+            return null;
+        }
+
+        return collect($this->designationsList)->firstWhere('id', $this->acting_designation_id);
+    }
+
+    public function selectActingDesignation($id)
+    {
+        $this->acting_designation_id = $id;
+        $this->showActingDesignationDropdown = false;
+        $this->actingDesignationSearch = '';
+    }
+
+    public function clearActingDesignation()
+    {
+        $this->acting_designation_id = null;
+        $this->actingDesignationSearch = '';
+        $this->showActingDesignationDropdown = true;
+    }
+
+    public function getFilteredActingDepartmentsProperty()
+    {
+        $term = trim($this->actingDepartmentSearch);
+
+        return collect($this->departmentsList)->filter(function ($d) use ($term) {
+            if ($term === '') {
+                return true;
+            }
+
+            return str_contains(strtolower($d->name ?? ''), strtolower($term));
+        })->take(50)->values();
+    }
+
+    public function getSelectedActingDepartmentProperty()
+    {
+        if (! $this->acting_department_id) {
+            return null;
+        }
+
+        return collect($this->departmentsList)->firstWhere('id', $this->acting_department_id);
+    }
+
+    public function selectActingDepartment($id)
+    {
+        $this->acting_department_id = $id;
+        $this->showActingDepartmentDropdown = false;
+        $this->actingDepartmentSearch = '';
+    }
+
+    public function clearActingDepartment()
+    {
+        $this->acting_department_id = null;
+        $this->actingDepartmentSearch = '';
+        $this->showActingDepartmentDropdown = true;
+    }
+
     public function save()
     {
         if (! $this->hasEmployeeRecord) {
@@ -268,7 +396,9 @@ class Requestleave extends Component
         session()->flash('success', 'Leave request submitted successfully!');
         $this->showModal = false;
         $this->reset(['leave_id', 'start_date', 'end_date', 'days', 'travel_to', 'othercontact', 'comments', 'document',
-            'acting_employee_id', 'acting_designation_id', 'acting_department_id', 'acting_responsibilities', 'acting_notes']);
+            'acting_employee_id', 'acting_designation_id', 'acting_department_id', 'acting_responsibilities', 'acting_notes',
+            'actingEmployeeSearch', 'actingDesignationSearch', 'actingDepartmentSearch',
+            'showActingEmployeeDropdown', 'showActingDesignationDropdown', 'showActingDepartmentDropdown']);
         $this->listdata();
     }
 
