@@ -42,6 +42,50 @@ class ManageEmployeePlans extends Component
         'status' => 'draft',
     ];
 
+    // Searchable employee picker (modal)
+    public $planEmployeeSearch = '';
+
+    public $showPlanEmployeeDropdown = false;
+
+    public function getFilteredPlanEmployeesProperty()
+    {
+        $term = trim($this->planEmployeeSearch);
+
+        return Employee::query()
+            ->when($term !== '', function ($q) use ($term) {
+                $q->where(function ($q) use ($term) {
+                    $q->where('first_name', 'like', '%'.$term.'%')
+                        ->orWhere('last_name', 'like', '%'.$term.'%')
+                        ->orWhere('employee_no', 'like', '%'.$term.'%')
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%'.$term.'%']);
+                });
+            })
+            ->orderBy('first_name')
+            ->limit(50)
+            ->get();
+    }
+
+    public function getSelectedPlanEmployeeProperty()
+    {
+        $id = $this->planForm['employee_id'] ?? null;
+
+        return $id ? Employee::find($id) : null;
+    }
+
+    public function selectPlanEmployee($id)
+    {
+        $this->planForm['employee_id'] = $id;
+        $this->planEmployeeSearch = '';
+        $this->showPlanEmployeeDropdown = false;
+    }
+
+    public function clearPlanEmployee()
+    {
+        $this->planForm['employee_id'] = '';
+        $this->planEmployeeSearch = '';
+        $this->showPlanEmployeeDropdown = true;
+    }
+
     // Pagination reset on search/filter changes
     public function updatingSearch()
     {
@@ -170,6 +214,8 @@ class ManageEmployeePlans extends Component
     {
         $this->showModal = false;
         $this->editingPlanId = null;
+        $this->planEmployeeSearch = '';
+        $this->showPlanEmployeeDropdown = false;
         $this->resetErrorBag();
     }
 

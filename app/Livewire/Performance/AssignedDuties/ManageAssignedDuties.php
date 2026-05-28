@@ -48,6 +48,50 @@ class ManageAssignedDuties extends Component
         'scoring_criteria' => '',
     ];
 
+    // Searchable employee picker (modal)
+    public $dutyEmployeeSearch = '';
+
+    public $showDutyEmployeeDropdown = false;
+
+    public function getFilteredDutyEmployeesProperty()
+    {
+        $term = trim($this->dutyEmployeeSearch);
+
+        return Employee::query()
+            ->when($term !== '', function ($q) use ($term) {
+                $q->where(function ($q) use ($term) {
+                    $q->where('first_name', 'like', '%'.$term.'%')
+                        ->orWhere('last_name', 'like', '%'.$term.'%')
+                        ->orWhere('employee_no', 'like', '%'.$term.'%')
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%'.$term.'%']);
+                });
+            })
+            ->orderBy('first_name')
+            ->limit(50)
+            ->get();
+    }
+
+    public function getSelectedDutyEmployeeProperty()
+    {
+        $id = $this->dutyForm['employee_id'] ?? null;
+
+        return $id ? Employee::find($id) : null;
+    }
+
+    public function selectDutyEmployee($id)
+    {
+        $this->dutyForm['employee_id'] = $id;
+        $this->dutyEmployeeSearch = '';
+        $this->showDutyEmployeeDropdown = false;
+    }
+
+    public function clearDutyEmployee()
+    {
+        $this->dutyForm['employee_id'] = '';
+        $this->dutyEmployeeSearch = '';
+        $this->showDutyEmployeeDropdown = true;
+    }
+
     // Pagination reset on search/filter changes
     public function updatingSearch()
     {
@@ -198,6 +242,8 @@ class ManageAssignedDuties extends Component
     {
         $this->showModal = false;
         $this->editingDutyId = null;
+        $this->dutyEmployeeSearch = '';
+        $this->showDutyEmployeeDropdown = false;
         $this->resetErrorBag();
     }
 

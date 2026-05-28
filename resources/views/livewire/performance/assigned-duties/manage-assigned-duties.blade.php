@@ -398,16 +398,22 @@
                         <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label for="dutyEmployee" class="form-label">Employee <span class="text-danger">*</span></label>
-                                    <select wire:model="dutyForm.employee_id" class="form-select @error('dutyForm.employee_id') is-invalid @enderror" id="dutyEmployee">
-                                        <option value="">Select Employee</option>
-                                        @foreach ($employees ?? [] as $emp)
-                                            <option value="{{ $emp->id }}">{{ $emp->first_name }} {{ $emp->last_name }} ({{ $emp->employee_no ?? 'N/A' }})</option>
-                                        @endforeach
-                                    </select>
-                                    @error('dutyForm.employee_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <x-forms.search-picker
+                                        name="dutyForm.employee_id"
+                                        label="Employee"
+                                        :required="true"
+                                        :selected="$this->selectedDutyEmployee"
+                                        :items="$this->filteredDutyEmployees"
+                                        :search-value="$dutyEmployeeSearch"
+                                        :show-dropdown="$showDutyEmployeeDropdown"
+                                        search-prop="dutyEmployeeSearch"
+                                        dropdown-prop="showDutyEmployeeDropdown"
+                                        search-placeholder="Search employee by name or number..."
+                                        empty-text="No employees found"
+                                        select-method="selectDutyEmployee"
+                                        clear-method="clearDutyEmployee"
+                                        label-key="name"
+                                        sublabel-key="employee_no" />
                                 </div>
 
                                 <div class="col-md-6">
