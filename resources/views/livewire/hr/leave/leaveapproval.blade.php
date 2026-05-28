@@ -35,8 +35,11 @@
             <ul class="nav nav-pills gap-2">
                 <li class="nav-item">
                     <button wire:click="$set('statusFilter', 'Awaiting')"
-                            class="nav-link {{ $statusFilter === 'Awaiting' ? 'active' : '' }}">
+                            class="nav-link position-relative {{ $statusFilter === 'Awaiting' ? 'active' : '' }}">
                         Pending Approvals
+                        @if($myPendingCount > 0)
+                            <span class="badge bg-danger ms-1">{{ $myPendingCount }}</span>
+                        @endif
                     </button>
                 </li>
                 <li class="nav-item">
@@ -126,8 +129,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $num=1;
+                                @endphp
                                 @forelse($pendingLeaves as $leave)
                                 <tr>
+                                    <td>{{ $num++ }}</td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="avatar avatar-sm rounded-circle bg-primary-subtle text-primary-emphasis d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">

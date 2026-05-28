@@ -251,8 +251,13 @@ class Leaveapproval extends Component
     {
         $canApprove = !empty($this->userApprovalLevels);
         $pendingLeaves = collect();
+        $myPendingCount = 0;
 
         if ($canApprove) {
+            // Count leaves currently awaiting THIS user's approval level (ignores search/date filters
+            // so the badge reflects the true outstanding workload).
+            $myPendingCount = $this->countLeavesPendingForUser();
+
             $leavesQuery = Employeeleaves::with(['employee', 'leave', 'approvalnote.approval_level', 'approvalnote.approver'])
                 ->orderBy('created_at', 'desc');
 
@@ -288,24 +293,69 @@ class Leaveapproval extends Component
                 $leavesQuery->whereRaw('LOWER(status) = ?', ['rejected']);
             }
 
-            $pendingLeaves = $leavesQuery->paginate(10);
+            // For the Pending tab, restrict the visible list to leaves whose NEXT approval level
+            // is one of the user's assigned levels.
+            if ($this->statusFilter === 'Awaiting') {
+                $candidates = $leavesQuery->get()->filter(function ($leave) {
+                    $next = $this->getCurrentApprovalLevel($leave);
+                    if (! $next) {
+                        return false;
+                    }
+                    $leave->nextApprovalLevel = $next;
+                    $leave->canUserApprove = in_array($next->id, $this->userApprovalLevels);
 
-            // For each leave, determine if current user can approve
-            $pendingLeaves->getCollection()->transform(function ($leave) {
-                $leave->canUserApprove = false;
-                $leave->nextApprovalLevel = $this->getCurrentApprovalLevel($leave);
+                    return $leave->canUserApprove;
+                })->values();
 
-                if ($leave->nextApprovalLevel) {
-                    $leave->canUserApprove = in_array($leave->nextApprovalLevel->id, $this->userApprovalLevels);
-                }
+                $pendingLeaves = $this->paginateCollection($candidates, 10);
+            } else {
+                $pendingLeaves = $leavesQuery->paginate(10);
 
-                return $leave;
-            });
+                $pendingLeaves->getCollection()->transform(function ($leave) {
+                    $leave->canUserApprove = false;
+                    $leave->nextApprovalLevel = $this->getCurrentApprovalLevel($leave);
+
+                    if ($leave->nextApprovalLevel) {
+                        $leave->canUserApprove = in_array($leave->nextApprovalLevel->id, $this->userApprovalLevels);
+                    }
+
+                    return $leave;
+                });
+            }
         }
 
         return view('livewire.hr.leave.leaveapproval', [
             'pendingLeaves' => $pendingLeaves,
             'canApprove' => $canApprove,
+            'myPendingCount' => $myPendingCount,
         ]);
+    }
+
+    protected function countLeavesPendingForUser(): int
+    {
+        return Employeeleaves::whereRaw('LOWER(status) IN (?, ?, ?)', ['awaiting', 'pending', 'active'])
+            ->get()
+            ->filter(function ($leave) {
+                $next = $this->getCurrentApprovalLevel($leave);
+
+                return $next && in_array($next->id, $this->userApprovalLevels);
+            })
+            ->count();
+    }
+
+    protected function paginateCollection(\Illuminate\Support\Collection $items, int $perPage): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $page = \Illuminate\Pagination\Paginator::resolveCurrentPage('page');
+
+        return new \Illuminate\Pagination\LengthAwarePaginator(
+            $items->forPage($page, $perPage)->values(),
+            $items->count(),
+            $perPage,
+            $page,
+            [
+                'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        );
     }
 }
