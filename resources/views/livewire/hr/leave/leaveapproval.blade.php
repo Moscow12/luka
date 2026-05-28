@@ -110,30 +110,49 @@
         </div>
     </div>
 
+    @php
+        $sortIcon = function ($field) use ($sortField, $sortDirection) {
+            if ($sortField !== $field) {
+                return 'fa-sort text-muted';
+            }
+            return $sortDirection === 'asc' ? 'fa-sort-up text-primary' : 'fa-sort-down text-primary';
+        };
+    @endphp
+
     <!-- Leave Requests Table -->
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
+                                    <th style="width: 50px;">#</th>
                                     <th>Employee</th>
                                     <th>Leave Type</th>
-                                    <th>Period</th>
-                                    <th>Days</th>
-                                    <th>Status</th>
+                                    <th role="button" wire:click="sortBy('start_date')" class="user-select-none">
+                                        Period <i class="fa-solid {{ $sortIcon('start_date') }} ms-1"></i>
+                                    </th>
+                                    <th role="button" wire:click="sortBy('days')" class="user-select-none">
+                                        Days <i class="fa-solid {{ $sortIcon('days') }} ms-1"></i>
+                                    </th>
+                                    <th role="button" wire:click="sortBy('status')" class="user-select-none">
+                                        Status <i class="fa-solid {{ $sortIcon('status') }} ms-1"></i>
+                                    </th>
                                     <th>Approval Progress</th>
+                                    <th role="button" wire:click="sortBy('created_at')" class="user-select-none">
+                                        Submitted <i class="fa-solid {{ $sortIcon('created_at') }} ms-1"></i>
+                                    </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
-                                    $num=1;
+                                    $num = ($pendingLeaves->firstItem() ?? 1);
                                 @endphp
                                 @forelse($pendingLeaves as $leave)
-                                <tr>
+                                <tr wire:key="leave-{{ $leave->id }}">
                                     <td>{{ $num++ }}</td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
@@ -190,6 +209,10 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <div>{{ $leave->created_at?->format('d M Y') }}</div>
+                                        <small class="text-muted">{{ $leave->created_at?->diffForHumans() }}</small>
+                                    </td>
+                                    <td>
                                         @if($leave->canUserApprove && in_array(strtolower($leave->status ?? ''), ['awaiting', 'active', 'pending']))
                                         <div class="d-flex gap-2">
                                             <button type="button"
@@ -218,7 +241,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="9" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="fa-solid fa-inbox fa-3x mb-3"></i>
                                             <p>No {{ strtolower($statusFilter) }} leave requests found.</p>
@@ -230,12 +253,33 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
-                    @if($pendingLeaves->hasPages())
-                    <div class="mt-3">
-                        {{ $pendingLeaves->links() }}
+                    <!-- Datatable footer: results summary + per-page selector + pagination -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-3 border-top pt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label mb-0 text-nowrap small text-muted">Rows per page:</label>
+                            <select wire:model.live="perPage" class="form-select form-select-sm" style="width: auto;">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+
+                        <div class="text-muted small">
+                            @if($pendingLeaves->total() > 0)
+                                Showing {{ $pendingLeaves->firstItem() }} to {{ $pendingLeaves->lastItem() }}
+                                of {{ $pendingLeaves->total() }} results
+                            @else
+                                No results
+                            @endif
+                        </div>
+
+                        <div>
+                            @if($pendingLeaves->hasPages())
+                                {{ $pendingLeaves->links() }}
+                            @endif
+                        </div>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>

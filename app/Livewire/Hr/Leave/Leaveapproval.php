@@ -26,7 +26,41 @@ class Leaveapproval extends Component
     public $comments = '';
     public $userApprovalLevels = [];
 
+    // Datatable controls
+    public $perPage = 10;
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
+
     protected $paginationTheme = 'bootstrap';
+
+    protected array $sortable = [
+        'created_at' => 'created_at',
+        'start_date' => 'start_date',
+        'end_date' => 'end_date',
+        'days' => 'days',
+        'status' => 'status',
+    ];
+
+    public function sortBy(string $field): void
+    {
+        if (! array_key_exists($field, $this->sortable)) {
+            return;
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
 
     public function mount()
     {
@@ -258,8 +292,11 @@ class Leaveapproval extends Component
             // so the badge reflects the true outstanding workload).
             $myPendingCount = $this->countLeavesPendingForUser();
 
+            $sortColumn = $this->sortable[$this->sortField] ?? 'created_at';
+            $sortDirection = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
             $leavesQuery = Employeeleaves::with(['employee', 'leave', 'approvalnote.approval_level', 'approvalnote.approver'])
-                ->orderBy('created_at', 'desc');
+                ->orderBy($sortColumn, $sortDirection);
 
             // Filter by employee name / number
             if (trim($this->search) !== '') {
@@ -293,6 +330,8 @@ class Leaveapproval extends Component
                 $leavesQuery->whereRaw('LOWER(status) = ?', ['rejected']);
             }
 
+            $perPage = max(5, (int) $this->perPage);
+
             // For the Pending tab, restrict the visible list to leaves whose NEXT approval level
             // is one of the user's assigned levels.
             if ($this->statusFilter === 'Awaiting') {
@@ -307,9 +346,9 @@ class Leaveapproval extends Component
                     return $leave->canUserApprove;
                 })->values();
 
-                $pendingLeaves = $this->paginateCollection($candidates, 10);
+                $pendingLeaves = $this->paginateCollection($candidates, $perPage);
             } else {
-                $pendingLeaves = $leavesQuery->paginate(10);
+                $pendingLeaves = $leavesQuery->paginate($perPage);
 
                 $pendingLeaves->getCollection()->transform(function ($leave) {
                     $leave->canUserApprove = false;
