@@ -78,6 +78,20 @@ class DepartmentAssets extends Component
 
     public $filterAssetClass = '';
 
+    // Searchable asset picker (inside the modal)
+    public $assetSearch = '';
+
+    public $showAssetDropdown = false;
+
+    // Inline "create new asset" state
+    public $newAssetMode = false;
+
+    public $newAssetName = '';
+
+    public $newAssetType = '';
+
+    public $newAssetDuplicates = [];
+
     protected $paginationTheme = 'bootstrap';
 
     protected function rules()
@@ -120,6 +134,129 @@ class DepartmentAssets extends Component
     public function updatedAssetClassId($value)
     {
         $this->asset_id = '';
+        $this->assetSearch = '';
+        $this->showAssetDropdown = false;
+        $this->cancelNewAsset();
+    }
+
+    public function getFilteredAssetsProperty()
+    {
+        if (! $this->asset_class_id) {
+            return collect();
+        }
+
+        $term = trim($this->assetSearch);
+
+        return asset::where('asset_class_id', $this->asset_class_id)
+            ->when($term !== '', fn ($q) => $q->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%'.$term.'%')
+                    ->orWhere('type', 'like', '%'.$term.'%');
+            }))
+            ->orderBy('name')
+            ->limit(50)
+            ->get();
+    }
+
+    public function getSelectedAssetProperty()
+    {
+        if (! $this->asset_id) {
+            return null;
+        }
+
+        return asset::find($this->asset_id);
+    }
+
+    public function selectAsset($id)
+    {
+        $this->asset_id = $id;
+        $this->showAssetDropdown = false;
+        $this->assetSearch = '';
+        $this->cancelNewAsset();
+    }
+
+    public function clearAsset()
+    {
+        $this->asset_id = '';
+        $this->assetSearch = '';
+        $this->showAssetDropdown = true;
+    }
+
+    public function startNewAsset()
+    {
+        $this->newAssetMode = true;
+        $this->newAssetName = trim($this->assetSearch);
+        $this->newAssetType = '';
+        $this->newAssetDuplicates = [];
+        $this->checkAssetDuplicates();
+    }
+
+    public function cancelNewAsset()
+    {
+        $this->newAssetMode = false;
+        $this->newAssetName = '';
+        $this->newAssetType = '';
+        $this->newAssetDuplicates = [];
+    }
+
+    public function updatedNewAssetName()
+    {
+        $this->checkAssetDuplicates();
+    }
+
+    protected function checkAssetDuplicates()
+    {
+        $name = trim($this->newAssetName);
+
+        if ($name === '' || ! $this->asset_class_id) {
+            $this->newAssetDuplicates = [];
+
+            return;
+        }
+
+        $this->newAssetDuplicates = asset::where('asset_class_id', $this->asset_class_id)
+            ->where('name', 'like', '%'.$name.'%')
+            ->orderBy('name')
+            ->limit(5)
+            ->get()
+            ->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'type' => $a->type])
+            ->toArray();
+    }
+
+    public function createAsset()
+    {
+        $this->validate([
+            'asset_class_id' => 'required|exists:assetclasses,id',
+            'newAssetName' => 'required|string|max:255',
+            'newAssetType' => 'required|in:current,non-current,intangible,physical,operating,non-operating',
+        ], [], [
+            'newAssetName' => 'asset name',
+            'newAssetType' => 'asset type',
+        ]);
+
+        $name = trim($this->newAssetName);
+
+        $existing = asset::where('asset_class_id', $this->asset_class_id)
+            ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+            ->first();
+
+        if ($existing) {
+            $this->addError('newAssetName', 'An asset with this name already exists in the selected class.');
+            $this->asset_id = $existing->id;
+
+            return;
+        }
+
+        $asset = asset::create([
+            'name' => $name,
+            'type' => $this->newAssetType,
+            'asset_class_id' => $this->asset_class_id,
+            'added_by' => Auth::id(),
+        ]);
+
+        $this->asset_id = $asset->id;
+        $this->cancelNewAsset();
+        $this->assetSearch = '';
+        $this->showAssetDropdown = false;
     }
 
     public function openModal($id = null)
@@ -165,6 +302,9 @@ class DepartmentAssets extends Component
         $this->asset_class_id = '';
         $this->facility_location_id = '';
         $this->asset_id = '';
+        $this->assetSearch = '';
+        $this->showAssetDropdown = false;
+        $this->cancelNewAsset();
         $this->workstation_id = '';
         $this->building_id = '';
         $this->department_id = '';
@@ -314,6 +454,14 @@ class DepartmentAssets extends Component
             'depreciationMethods' => [
                 'straight_line' => 'Straight Line',
                 'reducing_balance' => 'Reducing Balance',
+            ],
+            'assetTypes' => [
+                'current' => 'Current',
+                'non-current' => 'Non-current',
+                'intangible' => 'Intangible',
+                'physical' => 'Physical',
+                'operating' => 'Operating',
+                'non-operating' => 'Non-operating',
             ],
         ]);
     }
