@@ -232,11 +232,14 @@
                                         @if($activity->causer)
                                             <div class="d-flex flex-column">
                                                 <span class="fw-semibold text-dark">
-                                                    {{ $activity->causer->name ?? 'Unknown' }}
+                                                    {{ $activity->causer->username ?? $activity->causer->full_name ?? '—' }}
                                                 </span>
-                                                <small class="text-muted">
-                                                    {{ $activity->causer->email ?? '' }}
-                                                </small>
+                                                @if(!empty($activity->causer->full_name) && !empty($activity->causer->username))
+                                                    <small class="text-muted">{{ $activity->causer->full_name }}</small>
+                                                @endif
+                                                @if(!empty($activity->causer->email))
+                                                    <small class="text-muted">{{ $activity->causer->email }}</small>
+                                                @endif
                                             </div>
                                         @else
                                             <span class="badge bg-secondary">System</span>
@@ -420,8 +423,12 @@
                                         @if($selectedActivity->causer)
                                             <div class="row g-3">
                                                 <div class="col-12">
-                                                    <small class="text-muted d-block mb-1">User Name</small>
-                                                    <strong>{{ $selectedActivity->causer->name ?? 'Unknown' }}</strong>
+                                                    <small class="text-muted d-block mb-1">Username</small>
+                                                    <strong>{{ $selectedActivity->causer->username ?? '—' }}</strong>
+                                                </div>
+                                                <div class="col-12">
+                                                    <small class="text-muted d-block mb-1">Full Name</small>
+                                                    <strong>{{ $selectedActivity->causer->full_name ?? '—' }}</strong>
                                                 </div>
                                                 <div class="col-12">
                                                     <small class="text-muted d-block mb-1">User Email</small>

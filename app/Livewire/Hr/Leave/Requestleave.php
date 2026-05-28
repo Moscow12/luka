@@ -475,6 +475,7 @@ class Requestleave extends Component
 
     public function updatedStartDate()
     {
+        $this->calculateLeaveBalance();
         $this->calculateEndDate();
     }
 
@@ -492,9 +493,17 @@ class Requestleave extends Component
             return;
         }
 
+        $year = $this->start_date
+            ? Carbon::parse($this->start_date)->year
+            : now()->year;
+
         $used = Employeeleaves::where('employee_id', $this->employee_id)
             ->where('leave_id', $this->leave_id)
-            ->where('status', '!=', 'Rejected')
+            ->where('status', 'Approved')
+            ->where(function ($q) use ($year) {
+                $q->whereYear('start_date', $year)
+                    ->orWhereYear('end_date', $year);
+            })
             ->sum('days');
 
         $this->available_days = max($leave->days - $used, 0);
