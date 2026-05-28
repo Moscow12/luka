@@ -303,7 +303,7 @@
     @endif
 
     <!-- Staff Performance -->
-    @if($isSuperAdmin || $user?->canAny(['view-performance', 'manage-performance']))
+    @if($isSuperAdmin || $user?->canAny(['manage-org-plans', 'manage-dept-plans', 'manage-employee-plans', 'assign-duties', 'set-kpis']))
     <li class="nav-item dropdown {{ request()->routeIs($performanceRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($performanceRoutes) ? 'active' : '' }}" href="{{ route('performance.org.plans') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($performanceRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -312,21 +312,27 @@
             <span class="text">Staff Performance</span>
         </a>
         <ul class="dropdown-menu flex-column {{ request()->routeIs($performanceRoutes) ? 'show' : '' }}">
-            @if($isSuperAdmin || $user?->can('view-performance'))
+            @if($isSuperAdmin || $user?->can('manage-org-plans'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.org.plans') ? 'active' : '' }}" href="{{ route('performance.org.plans') }}"><i class="fa-solid fa-building"></i> Organizational Plans</a>
             </li>
+            @endif
+            @if($isSuperAdmin || $user?->can('manage-dept-plans'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.dept.plans') ? 'active' : '' }}" href="{{ route('performance.dept.plans') }}"><i class="fa-solid fa-sitemap"></i> Department Plans</a>
             </li>
+            @endif
+            @if($isSuperAdmin || $user?->can('manage-employee-plans'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.employee.plans') ? 'active' : '' }}" href="{{ route('performance.employee.plans') }}"><i class="fa-solid fa-user-check"></i> Employee Plans</a>
             </li>
             @endif
-            @if($isSuperAdmin || $user?->can('manage-performance'))
+            @if($isSuperAdmin || $user?->can('assign-duties'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.assigned.duties') ? 'active' : '' }}" href="{{ route('performance.assigned.duties') }}"><i class="fa-solid fa-tasks"></i> Assigned Duties</a>
             </li>
+            @endif
+            @if($isSuperAdmin || $user?->can('set-kpis'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.title.kpis') ? 'active' : '' }}" href="{{ route('performance.title.kpis') }}"><i class="fa-solid fa-id-badge"></i> Job Title KPIs</a>
             </li>
