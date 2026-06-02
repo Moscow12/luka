@@ -273,8 +273,8 @@
 <body>
     <!-- Header -->
     <div class="header">
-        <h1>{{ config('app.name', 'HR MANAGEMENT SYSTEM') }}</h1>
-        <div class="subtitle">Employee Payroll Department</div>
+        <h1>{{ config('app.name', 'STAFF MANAGEMENT SYSTEM') }}</h1>
+        <div class="subtitle">HRP SYSTEM</div>
         <h2>SALARY SLIP</h2>
         <div class="period">Period: {{ \Carbon\Carbon::createFromFormat('Y-m', $payroll->period)->format('F Y') }}</div>
     </div>
