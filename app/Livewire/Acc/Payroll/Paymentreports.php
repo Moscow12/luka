@@ -133,34 +133,35 @@ class Paymentreports extends Component
     }
 
     public function downloadSalarySlipPdf($payrollId = null)
-    {
-        $id = $payrollId ?? $this->viewingPayrollId;
+{
+    $id = $payrollId ?? $this->viewingPayrollId;
 
-        if (!$id) {
-            return;
-        }
-
-        $payroll = payrolls::with([
-            'employee.department',
-            'employee.designation',
-            'employee.activeContract',
-            'contract',
-            'items.contractAllowance.allowance',
-            'items.contractDeduction.deduction',
-        ])->findOrFail($id);
-
-        $pdf = Pdf::loadView('exports.salary-slip-pdf', [
-            'payroll' => $payroll,
-        ])->setPaper('a4', 'portrait');
-
-        $filename = 'salary-slip-' . ($payroll->employee->employee_number ?? $payroll->employee->id) . '-' . $payroll->period . '.pdf';
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $filename, [
-            'Content-Type' => 'application/pdf',
-        ]);
+    if (!$id) {
+        return;
     }
+
+    $payroll = payrolls::with([
+        'employee.department',
+        'employee.designation',
+        'employee.activeContract',
+        'contract',
+        'items.contractAllowance.allowance',
+        'items.contractDeduction.deduction',
+    ])->findOrFail($id);
+
+    $pdf = Pdf::loadView('exports.salary-slip-pdf', [
+        'payroll' => $payroll,
+    ])->setPaper('a4', 'portrait');
+
+    $identifier = $payroll->employee->employee_number ?? $payroll->employee->id;
+    $filename = str_replace(['/', '\\'], '-', "salary-slip-{$identifier}.pdf");
+
+    return response()->streamDownload(function () use ($pdf) {
+        echo $pdf->output();
+    }, $filename, [
+        'Content-Type' => 'application/pdf',
+    ]);
+}
 
     public function exportExcel()
     {
