@@ -23,11 +23,55 @@
             color: #333;
         }
 
+        /* Workstation letter head */
+        .letterhead {
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+        .letterhead-banner {
+            width: 100%;
+            max-height: 120px;
+            display: block;
+        }
+
+        .letterhead-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .letterhead-logo-cell {
+            width: 90px;
+            vertical-align: middle;
+            padding-right: 12px;
+        }
+
+        .letterhead-logo {
+            max-width: 80px;
+            max-height: 80px;
+        }
+
+        .letterhead-info {
+            vertical-align: middle;
+        }
+
+        .letterhead-info .org-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin-bottom: 3px;
+        }
+
+        .letterhead-info .org-detail {
+            font-size: 10px;
+            color: #495057;
+            line-height: 1.5;
+        }
+
         .header {
             text-align: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #0d6efd;
         }
 
         .header h1 {
@@ -46,7 +90,8 @@
         .header h2 {
             font-size: 16px;
             font-weight: bold;
-            margin-top: 15px;
+            margin-top: 5px;
+            letter-spacing: 1px;
         }
 
         .header .period {
@@ -271,10 +316,75 @@
     </style>
 </head>
 <body>
+    @php
+        $workstation = $payroll->employee->workstation ?? null;
+
+        // Resolve a storage file to a base64 data URI so dompdf can embed it reliably.
+        $embedImage = function (?string $path) {
+            if (! $path) {
+                return null;
+            }
+
+            $fullPath = storage_path('app/public/' . ltrim($path, '/'));
+
+            if (! is_file($fullPath)) {
+                return null;
+            }
+
+            $mime = match (strtolower(pathinfo($fullPath, PATHINFO_EXTENSION))) {
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                'webp' => 'image/webp',
+                default => 'image/jpeg',
+            };
+
+            return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
+        };
+
+        $letterHeadImg = $workstation ? $embedImage($workstation->letter_head) : null;
+        $logoImg = $workstation ? $embedImage($workstation->logo) : null;
+    @endphp
+
+    <!-- Workstation Letter Head -->
+    <div class="letterhead">
+        @if($letterHeadImg)
+            {{-- Use the uploaded letter head banner as-is --}}
+            <img src="{{ $letterHeadImg }}" alt="Letter Head" class="letterhead-banner">
+        @elseif($workstation)
+            {{-- Build a letter head from the workstation details --}}
+            <table class="letterhead-table">
+                <tr>
+                    @if($logoImg)
+                        <td class="letterhead-logo-cell">
+                            <img src="{{ $logoImg }}" alt="Logo" class="letterhead-logo">
+                        </td>
+                    @endif
+                    <td class="letterhead-info">
+                        <div class="org-name">{{ $workstation->workstation_name }}</div>
+                        <div class="org-detail">
+                            @if($workstation->physical_address){{ $workstation->physical_address }}@endif
+                            @if($workstation->postal_code), P.O. Box {{ $workstation->postal_code }}@endif
+                            @if($workstation->location), {{ $workstation->location }}@endif
+                            <br>
+                            @if($workstation->phone_number)Tel: {{ $workstation->phone_number }}@endif
+                            @if($workstation->email_address) &nbsp;|&nbsp; Email: {{ $workstation->email_address }}@endif
+                            @if($workstation->tin_number)<br>TIN: {{ $workstation->tin_number }}@endif
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        @else
+            {{-- Fallback to application identity when no workstation is set --}}
+            <div style="text-align: center;">
+                <div class="org-name">{{ config('app.name', 'STAFF MANAGEMENT SYSTEM') }}</div>
+                <div class="org-detail">HRP SYSTEM</div>
+            </div>
+        @endif
+    </div>
+
     <!-- Header -->
     <div class="header">
-        <h1>{{ config('app.name', 'STAFF MANAGEMENT SYSTEM') }}</h1>
-        <div class="subtitle">HRP SYSTEM</div>
         <h2>SALARY SLIP</h2>
         <div class="period">Period: {{ \Carbon\Carbon::createFromFormat('Y-m', $payroll->period)->format('F Y') }}</div>
     </div>
