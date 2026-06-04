@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\AttendanceLogController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\LeaveController;
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+// Standalone fingerprint attendance log receiver (legacy device endpoint).
+// Accepts a bare JSON array of { user_id, timestamp } and skips duplicates.
+Route::post('/attendance/receive', [AttendanceLogController::class, 'receive']);
 
 // Third-party sync API endpoints — guarded by a shared-secret token.
 Route::middleware('api.token')->group(function () {
