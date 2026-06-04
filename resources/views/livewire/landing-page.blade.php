@@ -415,6 +415,9 @@
 
     @endif
 
+    {{-- Chart init. Livewire's root-element detector skips <script> tags, so
+         keeping this inline <script> inside the root <div> is safe. It runs on
+         first load and after each Livewire SPA navigation. --}}
 <script>
 function initDashboardCharts() {
     // ApexCharts is exposed globally from resources/js/app.js
@@ -650,56 +653,4 @@ function initDashboardCharts() {
 document.addEventListener('DOMContentLoaded', initDashboardCharts);
 document.addEventListener('livewire:navigated', initDashboardCharts);
 </script>
-
-    <style>
-    .avatar {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .avatar-sm {
-        width: 32px;
-        height: 32px;
-        font-size: 12px;
-    }
-
-    .avatar-initials {
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .list-group-item {
-        transition: background-color 0.2s ease;
-    }
-
-    .list-group-item:hover {
-        background-color: #f8f9fa;
-    }
-
-    @media (max-width: 768px) {
-        .card-body {
-            padding: 1rem;
-        }
-
-        .card-header {
-            padding: 0.75rem 1rem;
-        }
-
-        h4 {
-            font-size: 1.25rem;
-        }
-    }
-    </style>
 </div>
