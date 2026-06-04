@@ -246,6 +246,9 @@
                 <a class="nav-link {{ request()->routeIs('fp.attendance') ? 'active' : '' }}" href="{{ route('fp.attendance') }}"><i class="fa-solid fa-clock"></i> Staff Check In/Out</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('attendance.uploadcheckin') ? 'active' : '' }}" href="{{ route('attendance.uploadcheckin') }}"><i class="fa-solid fa-file-arrow-up"></i> Upload Check In Data</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('managefpusers') ? 'active' : '' }}" href="{{ route('managefpusers') }}"><i class="fa-solid fa-id-card"></i> Manage FP Users</a>
             </li>
             <li class="nav-item">

@@ -5,7 +5,7 @@ use App\Livewire\Audit\Auditlog;
 use App\Livewire\Chop\{ActivitiesManagement, Budgetrequests, Chopsetting, CostAnalysis, DirectorReviewDashboard, MonitoringEvaluation, ActivityReporting, DepartmentBudgetRequest};
 
 use App\Livewire\Contracts\{ContractDetails, ContractForm, ManageContracts};
-use App\Livewire\Hr\Attendance\{Fpdevices, Managefpattendance, Managefpusers};
+use App\Livewire\Hr\Attendance\{Checkindata, Fpdevices, Managefpattendance, Managefpusers};
 use App\Livewire\Hr\Leave\{ActingAssignmentManagement, ActingAssignmentSettings, Leaveapproval, Leavebalance, Leavemanagement, Requestleave};
 
 use App\Livewire\Hr\Loan\{Loanapproval, Loanbalance, Loanitems, Loanpayments, Requestloan};
@@ -101,6 +101,9 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/attendance/managefpattendance', Managefpattendance::class)->name('fp.attendance');
     Route::get('/attendance/managefpusers', Managefpusers::class)->name('managefpusers');
     Route::get('/attendance/fpdevices', Fpdevices::class)->name('fp.devices');
+    //upload checkin excel
+    Route::get('/attendance/uploadcheckin', Checkindata::class)->name('attendance.uploadcheckin');
+
 
     // leave routes
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');

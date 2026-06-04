@@ -179,6 +179,9 @@
                                                 <i class="fa-solid fa-network-wired me-1"></i>Address
                                             </th>
                                             <th class="py-3 fw-semibold text-muted">
+                                                <i class="fa-solid fa-link me-1"></i>Linked Employee
+                                            </th>
+                                            <th class="py-3 fw-semibold text-muted">
                                                 <i class="fa-solid fa-user-plus me-1"></i>Added By
                                             </th>
                                             <th class="py-3 text-center fw-semibold text-muted">
@@ -214,17 +217,35 @@
                                                     @endif
                                                 </td>
                                                 <td class="py-3">
+                                                    @if($linked->has($user->fpdevice_id))
+                                                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                                                            <i class="fa-solid fa-circle-check me-1"></i>{{ $linked->get($user->fpdevice_id) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2">
+                                                            <i class="fa-solid fa-link-slash me-1"></i>Not linked
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="py-3">
                                                     <small class="text-muted">
                                                         <i class="fa-solid fa-circle-user me-1"></i>{{ $user->addedBy?->name ?? 'System' }}
                                                     </small>
                                                 </td>
                                                 <td class="py-3 text-center">
-                                                    <button wire:click="deleteUser('{{ $user->id }}')"
-                                                            wire:confirm="Are you sure you want to delete this user?"
-                                                            class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                                            title="Delete user">
-                                                        <i class="fa-solid fa-trash-can me-1"></i>Delete
-                                                    </button>
+                                                    <div class="d-inline-flex gap-2">
+                                                        <button wire:click="openLink('{{ $user->id }}')"
+                                                                class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                                title="Link to employee">
+                                                            <i class="fa-solid fa-link me-1"></i>Link
+                                                        </button>
+                                                        <button wire:click="deleteUser('{{ $user->id }}')"
+                                                                wire:confirm="Are you sure you want to delete this user?"
+                                                                class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                                                title="Delete user">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -278,6 +299,147 @@
             </div>
         </div>
     </div>
+
+    <!-- Link to Employee Modal -->
+    @if($showLinkModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:key="link-modal">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title fw-semibold">
+                            <i class="fa-solid fa-link me-2"></i>Link Fingerprint User to Employee
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeLink"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info d-flex align-items-center gap-3 mb-4">
+                            <i class="fa-solid fa-fingerprint fa-2x"></i>
+                            <div>
+                                <div class="fw-semibold">Device User: {{ $linkingUserName }}</div>
+                                <small>
+                                    Device ID:
+                                    <span class="badge bg-info"><i class="fa-solid fa-hashtag me-1"></i>{{ $linkingDeviceId }}</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <p class="text-muted small mb-3">
+                            <i class="fa-solid fa-circle-info me-1"></i>
+                            Click <strong>Update FP ID</strong> to set an employee's fingerprint ID to
+                            <strong>{{ $linkingDeviceId }}</strong>, or <strong>Unlink</strong> to remove it.
+                            Use the search to find any employee.
+                        </p>
+
+                        <!-- Search employees inside the modal -->
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                            </span>
+                            <input type="text"
+                                   wire:model.live.debounce.300ms="modalSearch"
+                                   class="form-control border-start-0 ps-0"
+                                   placeholder="Search all employees by name or employee number...">
+                            @if($modalSearch)
+                                <button class="btn btn-outline-secondary border-start-0"
+                                        wire:click="$set('modalSearch', '')"
+                                        type="button">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            @endif
+                        </div>
+
+                        <div wire:loading.delay wire:target="modalSearch" class="text-center mb-2">
+                            <span class="spinner-border spinner-border-sm text-primary"></span>
+                            <small class="text-muted ms-1">Searching...</small>
+                        </div>
+
+                        @if(count($candidates) > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="fw-semibold text-muted">Employee</th>
+                                            <th class="fw-semibold text-muted">Emp No.</th>
+                                            <th class="fw-semibold text-muted text-center">Match</th>
+                                            <th class="fw-semibold text-muted">Current FP ID</th>
+                                            <th class="fw-semibold text-muted text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($candidates as $candidate)
+                                            <tr wire:key="cand-{{ $candidate['id'] }}">
+                                                <td class="fw-semibold">{{ $candidate['name'] }}</td>
+                                                <td><small class="text-muted">{{ $candidate['employee_no'] ?? '—' }}</small></td>
+                                                <td class="text-center">
+                                                    @if($candidate['score'] !== null)
+                                                        <span class="badge {{ $candidate['score'] >= 67 ? 'bg-success' : ($candidate['score'] >= 34 ? 'bg-warning text-dark' : 'bg-secondary') }}">
+                                                            {{ $candidate['score'] }}%
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted small">—</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($candidate['current_fpid'])
+                                                        <span class="badge bg-light text-dark border">{{ $candidate['current_fpid'] }}</span>
+                                                    @else
+                                                        <span class="text-muted small">None</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    @if($candidate['already_linked'])
+                                                        <div class="d-inline-flex align-items-center gap-2">
+                                                            <span class="badge bg-success">
+                                                                <i class="fa-solid fa-check me-1"></i>Linked
+                                                            </span>
+                                                            <button wire:click="unlinkEmployee('{{ $candidate['id'] }}')"
+                                                                    wire:confirm="Unlink this employee from device ID {{ $linkingDeviceId }}?"
+                                                                    class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                                <i class="fa-solid fa-link-slash me-1"></i>Unlink
+                                                            </button>
+                                                        </div>
+                                                    @elseif($candidate['current_fpid'])
+                                                        {{-- Linked to a DIFFERENT device id --}}
+                                                        <button wire:click="updateEmployeeFpid('{{ $candidate['id'] }}')"
+                                                                wire:confirm="This employee is already on FP ID {{ $candidate['current_fpid'] }}. Re-link to {{ $linkingDeviceId }}?"
+                                                                class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                            <i class="fa-solid fa-rotate me-1"></i>Re-link
+                                                        </button>
+                                                    @else
+                                                        <button wire:click="updateEmployeeFpid('{{ $candidate['id'] }}')"
+                                                                wire:confirm="Set this employee's fingerprint ID to {{ $linkingDeviceId }}?"
+                                                                class="btn btn-sm btn-primary rounded-pill px-3">
+                                                            <i class="fa-solid fa-link me-1"></i>Update FP ID
+                                                        </button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fa-solid fa-user-slash fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">
+                                    @if($modalSearch)
+                                        No employees found matching "<strong>{{ $modalSearch }}</strong>".
+                                    @else
+                                        No employees with a matching name were found. Use the search above to find one.
+                                    @endif
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeLink">
+                            <i class="fa-solid fa-xmark me-1"></i>Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <style>
         .avatar-circle {
