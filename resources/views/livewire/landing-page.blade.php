@@ -108,6 +108,98 @@
         </div>
     </div>
 
+    {{-- My Attendance This Month --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="fa-solid fa-user-clock text-primary me-2"></i>My Attendance &mdash; {{ now()->format('F Y') }}
+            </h6>
+            @if($hasFingerprint && $myAttendance['shift_start'])
+                <small class="text-muted">
+                    <i class="fa-solid fa-clock me-1"></i>
+                    Shift start {{ \Carbon\Carbon::parse($myAttendance['shift_start'])->format('h:i A') }}
+                    @if($myAttendance['shift_name']) &middot; {{ $myAttendance['shift_name'] }} @else &middot; Default @endif
+                </small>
+            @endif
+        </div>
+        <div class="card-body">
+            @if(! $hasFingerprint)
+                <div class="text-center text-muted py-3">
+                    <i class="fa-solid fa-fingerprint fa-2x mb-2"></i>
+                    <p class="mb-0 small">No fingerprint ID linked to your profile, so attendance can't be shown. Please ask HR to link it.</p>
+                </div>
+            @else
+                <div class="row g-3">
+                    {{-- Attendance rate --}}
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="text-muted small">Attendance Rate</span>
+                                <i class="fa-solid fa-chart-line text-primary"></i>
+                            </div>
+                            <h3 class="mb-1 fw-bold text-primary">{{ $myAttendance['attendance_rate'] }}%</h3>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" role="progressbar"
+                                     style="width: {{ $myAttendance['attendance_rate'] }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ $myAttendance['present_days'] }} day(s) present this month</small>
+                        </div>
+                    </div>
+
+                    {{-- Total hours --}}
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="text-muted small">Total Hours Worked</span>
+                                <i class="fa-solid fa-business-time text-success"></i>
+                            </div>
+                            <h3 class="mb-1 fw-bold text-success">{{ $myAttendance['total_hours'] }}<small class="fs-6 fw-normal"> hrs</small></h3>
+                            <small class="text-muted">This month so far</small>
+                        </div>
+                    </div>
+
+                    {{-- Average hours/day --}}
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="text-muted small">Avg Hours / Day</span>
+                                <i class="fa-solid fa-gauge-high text-info"></i>
+                            </div>
+                            <h3 class="mb-1 fw-bold text-info">{{ $myAttendance['avg_hours'] }}<small class="fs-6 fw-normal"> hrs</small></h3>
+                            <small class="text-muted">{{ $myAttendance['late_days'] }} late &middot; {{ $myAttendance['incomplete_days'] }} incomplete</small>
+                        </div>
+                    </div>
+
+                    {{-- Last in / out --}}
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Last Clock In / Out</span>
+                                <i class="fa-solid fa-right-left text-warning"></i>
+                            </div>
+                            @if($myAttendance['last_date'])
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                        <i class="fa-solid fa-right-to-bracket me-1"></i>
+                                        {{ $myAttendance['last_clock_in'] ? \Carbon\Carbon::parse($myAttendance['last_clock_in'])->format('h:i A') : '—' }}
+                                    </span>
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">
+                                        <i class="fa-solid fa-right-from-bracket me-1"></i>
+                                        {{ $myAttendance['last_clock_out'] ? \Carbon\Carbon::parse($myAttendance['last_clock_out'])->format('h:i A') : '—' }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($myAttendance['last_date'])->format('D, d M') }}</small>
+                            @else
+                                <h5 class="mb-0 text-muted">&mdash;</h5>
+                                <small class="text-muted">No punches this month</small>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- Charts Row 1 --}}
     <div class="row g-3 mb-4">
         {{-- Attendance Rate Chart --}}
@@ -323,13 +415,38 @@
 
     @endif
 
-    @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initDashboardCharts() {
+    // ApexCharts is exposed globally from resources/js/app.js
+    if (typeof ApexCharts === 'undefined') {
+        return;
+    }
+
+    // Render a chart once, clearing any previous instance / placeholder so the
+    // function is safe to call again after Livewire navigation.
+    const renderChart = function (selector, options) {
+        const el = document.querySelector(selector);
+        if (!el || el.dataset.chartRendered === '1') {
+            return;
+        }
+        el.innerHTML = '';
+        new ApexCharts(el, options).render();
+        el.dataset.chartRendered = '1';
+    };
+
+    const showEmpty = function (selector, icon, message) {
+        const el = document.querySelector(selector);
+        if (!el || el.dataset.chartRendered === '1') {
+            return;
+        }
+        el.innerHTML = '<div class="text-center py-5 text-muted"><i class="fa-solid ' + icon + ' fa-3x mb-3 opacity-25"></i><p>' + message + '</p></div>';
+        el.dataset.chartRendered = '1';
+    };
+
     // Attendance Rate Chart
     const attendanceData = @json($attendanceChartData);
     if (attendanceData.labels && attendanceData.labels.length > 0) {
-        new ApexCharts(document.querySelector("#attendanceChart"), {
+        renderChart("#attendanceChart", {
             series: [{
                 name: 'Attendance Rate',
                 type: 'area',
@@ -384,13 +501,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 shared: true,
                 intersect: false
             }
-        }).render();
+        });
     }
 
     // Leave Distribution Chart
     const leaveData = @json($leaveDistributionData);
     if (leaveData.typeLabels && leaveData.typeLabels.length > 0) {
-        new ApexCharts(document.querySelector("#leaveChart"), {
+        renderChart("#leaveChart", {
             series: leaveData.typeCounts,
             chart: {
                 type: 'donut',
@@ -426,15 +543,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     legend: { position: 'bottom' }
                 }
             }]
-        }).render();
+        });
     } else {
-        document.querySelector("#leaveChart").innerHTML = '<div class="text-center py-5 text-muted"><i class="fa-solid fa-chart-pie fa-3x mb-3 opacity-25"></i><p>No leave data</p></div>';
+        showEmpty("#leaveChart", 'fa-chart-pie', 'No leave data');
     }
 
     // Department Performance Chart
     const deptData = @json($departmentPerformanceData);
     if (deptData.labels && deptData.labels.length > 0) {
-        new ApexCharts(document.querySelector("#departmentChart"), {
+        renderChart("#departmentChart", {
             series: [{
                 name: 'Performance Score',
                 data: deptData.scores
@@ -476,15 +593,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             }
-        }).render();
+        });
     } else {
-        document.querySelector("#departmentChart").innerHTML = '<div class="text-center py-5 text-muted"><i class="fa-solid fa-chart-bar fa-3x mb-3 opacity-25"></i><p>No department data</p></div>';
+        showEmpty("#departmentChart", 'fa-chart-bar', 'No department data');
     }
 
     // Performance Distribution Chart
     const perfData = @json($employeePerformanceData);
     if (perfData.distribution && perfData.distribution.values.some(v => v > 0)) {
-        new ApexCharts(document.querySelector("#performanceDistChart"), {
+        renderChart("#performanceDistChart", {
             series: [{
                 name: 'Employees',
                 data: perfData.distribution.values
@@ -522,13 +639,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     formatter: function(val) { return val + ' employees'; }
                 }
             }
-        }).render();
+        });
     } else {
-        document.querySelector("#performanceDistChart").innerHTML = '<div class="text-center py-5 text-muted"><i class="fa-solid fa-chart-pie fa-3x mb-3 opacity-25"></i><p>No performance data</p></div>';
+        showEmpty("#performanceDistChart", 'fa-chart-pie', 'No performance data');
     }
-});
+}
+
+// Run on first load and after every Livewire SPA navigation. The per-element
+// guard in renderChart()/showEmpty() prevents double-rendering.
+document.addEventListener('DOMContentLoaded', initDashboardCharts);
+document.addEventListener('livewire:navigated', initDashboardCharts);
 </script>
-    @endpush
 
     <style>
     .avatar {

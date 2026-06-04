@@ -8,6 +8,7 @@ use App\Models\employeeattendances;
 use App\Models\Employeecontracts;
 use App\Models\Employeeleaves;
 use App\Models\EmployeePlanItem;
+use App\Models\employeeroster;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,23 @@ class LandingPage extends Component
     public int $deptOnLeaveToday = 0;       // my dept on approved leave today
 
     public ?int $myContractDaysRemaining = null; // days left on my active contract
+
+    // My personal attendance (this month, derived from raw fingerprint punches)
+    public bool $hasFingerprint = false;
+
+    public array $myAttendance = [
+        'present_days' => 0,
+        'late_days' => 0,
+        'incomplete_days' => 0,
+        'attendance_rate' => 0,     // present (or late) days / working days so far this month
+        'total_hours' => 0,
+        'avg_hours' => 0,
+        'last_clock_in' => null,
+        'last_clock_out' => null,
+        'last_date' => null,
+        'shift_start' => null,
+        'shift_name' => null,
+    ];
 
     // Chart data (scoped to my department)
     public array $attendanceChartData = [];
@@ -72,17 +90,192 @@ class LandingPage extends Component
         $this->employeeName = trim(($employee->first_name ?? '').' '.($employee->last_name ?? ''));
         $this->departmentName = $employee->department->name ?? 'N/A';
 
-        $this->loadDashboardData();
+        $this->loadDashboardData($employee);
     }
 
-    public function loadDashboardData(): void
+    public function loadDashboardData(?Employee $employee = null): void
     {
         $this->loadSummaryStats();
+        $this->loadMyAttendance($employee);
         $this->loadAttendanceData();
         $this->loadDepartmentPerformance();
         $this->loadEmployeePerformance();
         $this->loadLeaveData();
         $this->loadExpiringContracts();
+    }
+
+    /**
+     * Build the logged-in user's personal attendance summary for the current
+     * month from raw fingerprint punches, with shift-based late detection.
+     *
+     * Mirrors App\Livewire\Hr\Staffs\Attendance: punches are grouped per day,
+     * the earliest is the clock in and the latest the clock out; a day is Late
+     * when the clock in is after the shift start + grace.
+     */
+    protected function loadMyAttendance(?Employee $employee = null): void
+    {
+        try {
+            $employee ??= Employee::find($this->employeeId);
+
+            $fpid = $employee?->fpid;
+
+            if (! $fpid) {
+                $this->hasFingerprint = false;
+
+                return;
+            }
+
+            $this->hasFingerprint = true;
+
+            // Resolve shift (start time + grace minutes) for late detection.
+            [$shiftStart, $graceMinutes, $shiftName] = $this->resolveShift($employee);
+            $this->myAttendance['shift_start'] = $shiftStart;
+            $this->myAttendance['shift_name'] = $shiftName;
+
+            $monthStart = Carbon::now()->startOfMonth();
+            $today = Carbon::today();
+
+            $rows = employeeattendances::where('fpuser_id', $fpid)
+                ->whereDate('clockdate', '>=', $monthStart->format('Y-m-d'))
+                ->whereDate('clockdate', '<=', $today->format('Y-m-d'))
+                ->get();
+
+            $days = $rows
+                ->groupBy(fn ($row) => Carbon::parse($row->clockdate)->format('Y-m-d'))
+                ->map(function ($dayRows, $date) use ($shiftStart, $graceMinutes) {
+                    $byTime = $dayRows->sortBy(fn ($r) => $r->clocktime ?? $r->clock_in ?? '');
+                    $first = $byTime->first();
+                    $last = $byTime->last();
+
+                    $clockIn = $first->clock_in ?? $first->clocktime;
+                    $clockOut = $dayRows->count() > 1
+                        ? ($last->clock_out ?? $last->clocktime)
+                        : ($first->clock_out ?? null);
+
+                    // Single afternoon punch = checkout only.
+                    if ($dayRows->count() === 1 && empty($first->clock_in) && empty($first->clock_out) && $first->clocktime) {
+                        if ((int) Carbon::parse($first->clocktime)->format('H') >= 12) {
+                            $clockOut = $first->clocktime;
+                            $clockIn = null;
+                        }
+                    }
+
+                    $hours = ($clockIn && $clockOut)
+                        ? abs(Carbon::parse($clockIn)->floatDiffInHours(Carbon::parse($clockOut)))
+                        : 0.0;
+
+                    $status = $dayRows->pluck('clock_status')->filter()->first();
+                    if (! $status) {
+                        if ($clockIn && $clockOut) {
+                            $status = $this->isLate($clockIn, $shiftStart, $graceMinutes) ? 'Late' : 'Present';
+                        } else {
+                            $status = 'Incomplete';
+                        }
+                    }
+
+                    return [
+                        'date' => $date,
+                        'clock_in' => $clockIn,
+                        'clock_out' => $clockOut,
+                        'status' => $status,
+                        'hours' => round($hours, 2),
+                    ];
+                })
+                ->sortBy('date')
+                ->values();
+
+            $present = $days->whereIn('status', ['Present', 'Late'])->count();
+            $late = $days->where('status', 'Late')->count();
+            $incomplete = $days->where('status', 'Incomplete')->count();
+
+            $workedDays = $days->where('hours', '>', 0);
+            $totalHours = $workedDays->sum('hours');
+            $avgHours = $workedDays->count() > 0 ? $totalHours / $workedDays->count() : 0;
+
+            // Attendance rate = days present / working days (Mon–Fri) elapsed this month.
+            $workingDaysElapsed = $this->workingDaysBetween($monthStart, $today);
+            $rate = $workingDaysElapsed > 0 ? round(($present / $workingDaysElapsed) * 100, 1) : 0;
+
+            $latest = $days->last();
+
+            $this->myAttendance = array_merge($this->myAttendance, [
+                'present_days' => $present,
+                'late_days' => $late,
+                'incomplete_days' => $incomplete,
+                'attendance_rate' => min($rate, 100),
+                'total_hours' => round($totalHours, 1),
+                'avg_hours' => round($avgHours, 1),
+                'last_clock_in' => $latest['clock_in'] ?? null,
+                'last_clock_out' => $latest['clock_out'] ?? null,
+                'last_date' => $latest['date'] ?? null,
+            ]);
+        } catch (\Exception $e) {
+            // Keep defaults on any failure.
+        }
+    }
+
+    /**
+     * Resolve [shiftStart, graceMinutes, shiftName] for an employee from the
+     * most recent shift rostered for them or their department; defaults to
+     * 08:00 with a 15-minute grace when none is set.
+     */
+    protected function resolveShift(Employee $employee): array
+    {
+        $shift = employeeroster::query()
+            ->with('shift')
+            ->where(function ($q) use ($employee) {
+                $q->where('employee_id', $employee->id);
+                if ($employee->department_id) {
+                    $q->orWhere('department_id', $employee->department_id);
+                }
+            })
+            ->whereHas('shift')
+            ->latest('roster_date')
+            ->latest()
+            ->first()?->shift;
+
+        if ($shift && $shift->start_time) {
+            return [
+                Carbon::parse($shift->start_time)->format('H:i:s'),
+                (int) ($shift->count_late ?? 0),
+                $shift->name,
+            ];
+        }
+
+        return ['08:00:00', 15, null];
+    }
+
+    /**
+     * A clock-in is late when it falls after shift start + grace.
+     */
+    protected function isLate(?string $clockIn, ?string $shiftStart, int $graceMinutes): bool
+    {
+        if (! $clockIn || ! $shiftStart) {
+            return false;
+        }
+
+        $in = Carbon::parse($clockIn)->format('H:i:s');
+        $threshold = Carbon::parse($shiftStart)->addMinutes($graceMinutes)->format('H:i:s');
+
+        return $in > $threshold;
+    }
+
+    /**
+     * Count weekdays (Mon–Fri) between two dates, inclusive.
+     */
+    protected function workingDaysBetween(Carbon $start, Carbon $end): int
+    {
+        $count = 0;
+        $cursor = $start->copy();
+
+        while ($cursor->lte($end)) {
+            if (! $cursor->isWeekend()) {
+                $count++;
+            }
+            $cursor->addDay();
+        }
+
+        return $count;
     }
 
     protected function loadSummaryStats(): void

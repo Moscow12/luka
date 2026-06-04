@@ -4,6 +4,8 @@ namespace App\Livewire\Hr\Staffs;
 
 use App\Models\Employee;
 use App\Models\employeeattendances;
+use App\Models\employeeroster;
+use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -13,35 +15,71 @@ class Attendance extends Component
 
     protected $paginationTheme = 'bootstrap';
 
+    // Per-page size for the day-aggregated listing.
+    protected int $perPage = 15;
+
     // Employee info
     public $employee_id;
+
     public $fpid;
+
     public $getfullname;
+
     public $age;
+
     public $gender;
+
     public $email;
+
     public $photo;
+
     public $editUrl;
+
     public $department;
+
     public $designation;
+
     public $employeeNumber;
+
+    public $department_id;
+
+    // Shift / late-detection settings (resolved from the department's shift).
+    public ?string $shiftStart = null;      // e.g. "08:00:00"
+
+    public int $shiftGraceMinutes = 0;      // lateness grace period in minutes
+
+    public ?string $shiftName = null;       // null = using default
+
+    // Defaults used when the department has no shift assigned.
+    protected string $defaultShiftStart = '08:00:00';
+
+    protected int $defaultGraceMinutes = 15;
 
     // Form fields
     public $attendance_id;
+
     public $date;
+
     public $clock_in;
+
     public $clock_out;
+
     public $clock_status;
 
     // UI state
     public $modalMode = 'create';
+
     public $showModal = false;
+
     public $confirmingDelete = null;
 
     // Filters
     public $search = '';
+
     public $filterMonth = '';
+
     public $filterYear = '';
+
     public $filterStatus = '';
 
     protected function rules()
@@ -75,10 +113,47 @@ class Attendance extends Component
         $this->department = $staff->department?->name;
         $this->designation = $staff->designation?->name;
         $this->employeeNumber = $staff->employee_number ?? $staff->id;
+        $this->department_id = $staff->department_id;
+
+        $this->resolveShift($staff);
 
         // Default filter to current month/year
         $this->filterMonth = now()->format('m');
         $this->filterYear = now()->format('Y');
+    }
+
+    /**
+     * Determine the shift start time and lateness grace for this employee.
+     *
+     * Preference order: the most recent active shift rostered for the
+     * employee (directly or via their department), otherwise the system
+     * default. count_late is stored as a number of grace minutes.
+     */
+    protected function resolveShift(Employee $staff): void
+    {
+        $shift = employeeroster::query()
+            ->with('shift')
+            ->where(function ($q) use ($staff) {
+                $q->where('employee_id', $staff->id);
+
+                if ($staff->department_id) {
+                    $q->orWhere('department_id', $staff->department_id);
+                }
+            })
+            ->whereHas('shift')
+            ->latest('roster_date')
+            ->latest()
+            ->first()?->shift;
+
+        if ($shift && $shift->start_time) {
+            $this->shiftStart = \Carbon\Carbon::parse($shift->start_time)->format('H:i:s');
+            $this->shiftGraceMinutes = (int) ($shift->count_late ?? 0);
+            $this->shiftName = $shift->name;
+        } else {
+            $this->shiftStart = $this->defaultShiftStart;
+            $this->shiftGraceMinutes = $this->defaultGraceMinutes;
+            $this->shiftName = null;
+        }
     }
 
     public function updatingSearch()
@@ -137,9 +212,10 @@ class Attendance extends Component
     {
         $this->validate();
 
-        if (!$this->fpid) {
+        if (! $this->fpid) {
             session()->flash('error', 'Employee does not have a fingerprint ID assigned. Please assign one first.');
             $this->showModal = false;
+
             return;
         }
 
@@ -190,20 +266,116 @@ class Attendance extends Component
         $this->filterYear = now()->format('Y');
     }
 
-    public function getAttendanceStats()
+    /**
+     * Pull raw punches for this employee from employeeattendances and collapse
+     * them into one aggregated record per day.
+     *
+     * The device/import data stores one row per punch (clocktimestamp /
+     * clockdate / clocktime) with clock_in/clock_out/clock_status usually NULL,
+     * so we derive clock in (earliest punch), clock out (latest punch) and a
+     * status per day — while still honouring any manually-entered values.
+     */
+    protected function buildDailyRecords()
     {
-        if (!$this->fpid) {
-            return ['present' => 0, 'absent' => 0, 'late' => 0, 'leave' => 0, 'total' => 0];
+        if (! $this->fpid) {
+            return collect();
         }
 
         $query = employeeattendances::where('fpuser_id', $this->fpid);
 
-        if ($this->filterMonth && $this->filterYear) {
-            $query->whereMonth('clockdate', $this->filterMonth)
-                  ->whereYear('clockdate', $this->filterYear);
+        if ($this->filterMonth) {
+            $query->whereMonth('clockdate', $this->filterMonth);
         }
 
-        $records = $query->get();
+        if ($this->filterYear) {
+            $query->whereYear('clockdate', $this->filterYear);
+        }
+
+        $rows = $query->get();
+
+        return $rows
+            ->groupBy(fn ($row) => Carbon::parse($row->clockdate)->format('Y-m-d'))
+            ->map(fn ($dayRows, $date) => $this->aggregateDay($date, $dayRows))
+            ->sortByDesc('date')
+            ->values();
+    }
+
+    /**
+     * Collapse a single day's punches into one record: earliest punch is the
+     * clock in, latest is the clock out, with a derived status.
+     */
+    protected function aggregateDay(string $date, $dayRows): array
+    {
+        // Prefer explicit clock_in/out (manual entries) and fall back to the
+        // earliest/latest raw punch timestamps.
+        $byTime = $dayRows->sortBy(fn ($r) => $r->clocktime ?? $r->clock_in ?? '');
+
+        $first = $byTime->first();
+        $last = $byTime->last();
+
+        $clockIn = $first->clock_in ?? $first->clocktime;
+        $clockOut = $dayRows->count() > 1 ? ($last->clock_out ?? $last->clocktime) : ($first->clock_out ?? null);
+
+        // A single afternoon punch is treated as a checkout only.
+        if ($dayRows->count() === 1 && empty($first->clock_in) && empty($first->clock_out) && $first->clocktime) {
+            if ((int) Carbon::parse($first->clocktime)->format('H') >= 12) {
+                $clockOut = $first->clocktime;
+                $clockIn = null;
+            }
+        }
+
+        // Worked hours for this day (only when both in and out are known).
+        $hours = ($clockIn && $clockOut)
+            ? abs(Carbon::parse($clockIn)->floatDiffInHours(Carbon::parse($clockOut)))
+            : 0.0;
+
+        // Honour a manually set status, otherwise derive one.
+        $status = $dayRows->pluck('clock_status')->filter()->first();
+
+        if (! $status) {
+            if ($clockIn && $clockOut) {
+                $status = $this->isLate($clockIn) ? 'Late' : 'Present';
+            } else {
+                $status = 'Incomplete';
+            }
+        }
+
+        return [
+            'id' => $first->id,
+            'date' => $date,
+            'clock_in' => $clockIn,
+            'clock_out' => $clockOut,
+            'clock_status' => $status,
+            'punches' => $dayRows->count(),
+            'hours' => round($hours, 2),
+        ];
+    }
+
+    /**
+     * A clock-in is late when it falls after the shift start time plus the
+     * grace period.
+     */
+    protected function isLate(?string $clockIn): bool
+    {
+        if (! $clockIn || ! $this->shiftStart) {
+            return false;
+        }
+
+        $in = Carbon::parse($clockIn);
+        $threshold = Carbon::parse($this->shiftStart)->addMinutes($this->shiftGraceMinutes);
+
+        // Compare time-of-day only.
+        return $in->format('H:i:s') > $threshold->format('H:i:s');
+    }
+
+    public function getAttendanceStats($records = null)
+    {
+        $records ??= $this->buildDailyRecords();
+
+        // Days with a measurable duration (both clock in and out).
+        $workedDays = $records->where('hours', '>', 0);
+        $totalHours = $workedDays->sum('hours');
+        $avgHours = $workedDays->count() > 0 ? $totalHours / $workedDays->count() : 0;
 
         return [
             'present' => $records->where('clock_status', 'Present')->count(),
@@ -211,32 +383,32 @@ class Attendance extends Component
             'late' => $records->where('clock_status', 'Late')->count(),
             'leave' => $records->where('clock_status', 'On Leave')->count(),
             'total' => $records->count(),
+            'total_hours' => round($totalHours, 1),
+            'avg_hours' => round($avgHours, 1),
+            'worked_days' => $workedDays->count(),
         ];
     }
 
     public function render()
     {
-        $attendances = collect();
+        $records = $this->buildDailyRecords();
 
-        if ($this->fpid) {
-            $query = employeeattendances::where('fpuser_id', $this->fpid);
-
-            if ($this->filterMonth) {
-                $query->whereMonth('clockdate', $this->filterMonth);
-            }
-
-            if ($this->filterYear) {
-                $query->whereYear('clockdate', $this->filterYear);
-            }
-
-            if ($this->filterStatus) {
-                $query->where('clock_status', $this->filterStatus);
-            }
-
-            $attendances = $query->orderBy('clockdate', 'desc')->paginate(15);
+        if ($this->filterStatus) {
+            $records = $records->where('clock_status', $this->filterStatus)->values();
         }
 
-        $stats = $this->getAttendanceStats();
+        // Stats/summary reflect the current filter selection.
+        $stats = $this->getAttendanceStats($records);
+
+        // Paginate the aggregated collection manually.
+        $page = $this->getPage();
+        $attendances = new \Illuminate\Pagination\LengthAwarePaginator(
+            $records->forPage($page, $this->perPage)->values(),
+            $records->count(),
+            $this->perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
 
         return view('livewire.hr.staffs.attendance', [
             'attendances' => $attendances,

@@ -95,6 +95,51 @@
         </div>
     </div>
 
+    <!-- Work Hours Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <i class="fa-solid fa-business-time fa-2x text-primary"></i>
+                    <div>
+                        <div class="fs-4 fw-bold text-primary">{{ $stats['total_hours'] }} hrs</div>
+                        <small class="text-muted">Total Hours Worked</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <i class="fa-solid fa-gauge-high fa-2x text-primary"></i>
+                    <div>
+                        <div class="fs-4 fw-bold text-primary">{{ $stats['avg_hours'] }} hrs</div>
+                        <small class="text-muted">Avg Hours / Day ({{ $stats['worked_days'] }} days)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <i class="fa-solid fa-clock fa-2x text-secondary"></i>
+                    <div>
+                        <div class="fw-semibold">
+                            Shift Start: {{ $shiftStart ? \Carbon\Carbon::parse($shiftStart)->format('h:i A') : '—' }}
+                        </div>
+                        <small class="text-muted">
+                            @if($shiftName)
+                                {{ $shiftName }} &middot; {{ $shiftGraceMinutes }} min grace
+                            @else
+                                Default shift &middot; {{ $shiftGraceMinutes }} min grace
+                            @endif
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body py-3">
@@ -123,6 +168,7 @@
                     <select class="form-select form-select-sm" wire:model.live="filterStatus">
                         <option value="">All Status</option>
                         <option value="Present">Present</option>
+                        <option value="Incomplete">Incomplete</option>
                         <option value="Absent">Absent</option>
                         <option value="Late">Late</option>
                         <option value="Half Day">Half Day</option>
@@ -155,38 +201,38 @@
                 </thead>
                 <tbody>
                     @forelse($attendances as $index => $record)
-                        <tr wire:key="attendance-{{ $record->id }}">
+                        <tr wire:key="attendance-{{ $record['id'] }}">
                             <td class="ps-4">{{ $attendances->firstItem() + $index }}</td>
                             <td>
-                                <span class="fw-medium">{{ \Carbon\Carbon::parse($record->clockdate)->format('d M, Y') }}</span>
+                                <span class="fw-medium">{{ \Carbon\Carbon::parse($record['date'])->format('d M, Y') }}</span>
                             </td>
                             <td>
-                                <span class="text-muted">{{ \Carbon\Carbon::parse($record->clockdate)->format('l') }}</span>
+                                <span class="text-muted">{{ \Carbon\Carbon::parse($record['date'])->format('l') }}</span>
                             </td>
                             <td>
-                                @if($record->clock_in)
+                                @if($record['clock_in'])
                                     <span class="badge bg-light text-dark">
                                         <i class="fa-solid fa-right-to-bracket text-success me-1"></i>
-                                        {{ \Carbon\Carbon::parse($record->clock_in)->format('h:i A') }}
+                                        {{ \Carbon\Carbon::parse($record['clock_in'])->format('h:i A') }}
                                     </span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
-                                @if($record->clock_out)
+                                @if($record['clock_out'])
                                     <span class="badge bg-light text-dark">
                                         <i class="fa-solid fa-right-from-bracket text-danger me-1"></i>
-                                        {{ \Carbon\Carbon::parse($record->clock_out)->format('h:i A') }}
+                                        {{ \Carbon\Carbon::parse($record['clock_out'])->format('h:i A') }}
                                     </span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
-                                @if($record->clock_in && $record->clock_out)
+                                @if($record['clock_in'] && $record['clock_out'])
                                     @php
-                                        $duration = \Carbon\Carbon::parse($record->clock_in)->diff(\Carbon\Carbon::parse($record->clock_out));
+                                        $duration = \Carbon\Carbon::parse($record['clock_in'])->diff(\Carbon\Carbon::parse($record['clock_out']));
                                     @endphp
                                     <span class="text-muted">{{ $duration->format('%Hh %Im') }}</span>
                                 @else
@@ -195,16 +241,22 @@
                             </td>
                             <td>
                                 @php
-                                    $statusClass = match($record->clock_status) {
+                                    $statusClass = match($record['clock_status']) {
                                         'Present' => 'bg-success',
                                         'Absent' => 'bg-danger',
                                         'Late' => 'bg-warning',
                                         'Half Day' => 'bg-info',
                                         'On Leave' => 'bg-secondary',
+                                        'Incomplete' => 'bg-warning',
                                         default => 'bg-light text-dark'
                                     };
                                 @endphp
-                                <span class="badge {{ $statusClass }}">{{ $record->clock_status ?? 'N/A' }}</span>
+                                <span class="badge {{ $statusClass }}">{{ $record['clock_status'] ?? 'N/A' }}</span>
+                                @if(($record['punches'] ?? 0) > 0)
+                                    <span class="badge bg-light text-dark ms-1" title="Punches recorded">
+                                        <i class="fa-solid fa-fingerprint me-1"></i>{{ $record['punches'] }}
+                                    </span>
+                                @endif
                             </td>
                         </tr>
                     @empty
