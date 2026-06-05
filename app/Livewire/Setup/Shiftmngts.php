@@ -4,6 +4,7 @@ namespace App\Livewire\Setup;
 
 use App\Models\shifts;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,6 +27,8 @@ class Shiftmngts extends Component
     public $count_early;
 
     public $count_late;
+
+    public $is_default = false;
 
     public $shift_id;
 
@@ -88,6 +91,7 @@ class Shiftmngts extends Component
             $this->start_time = $shift->start_time;
             $this->end_time = $shift->end_time;
             $this->status = $shift->status;
+            $this->is_default = (bool) $shift->is_default;
             $this->count_early = $shift->count_early;
             $this->count_late = $shift->count_late;
         } else {
@@ -98,6 +102,7 @@ class Shiftmngts extends Component
                 'start_time',
                 'end_time',
                 'status',
+                'is_default',
                 'count_early',
                 'count_late',
             ]);
@@ -115,6 +120,7 @@ class Shiftmngts extends Component
             'start_time',
             'end_time',
             'status',
+            'is_default',
             'count_early',
             'count_late',
             'modalMode',
@@ -131,6 +137,7 @@ class Shiftmngts extends Component
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
             'status' => ['required', 'in:active,inactive'],
+            'is_default' => ['boolean'],
             'count_early' => ['required', 'integer', 'min:0', 'max:999'],
             'count_late' => ['required', 'integer', 'min:0', 'max:999'],
         ];
@@ -145,35 +152,44 @@ class Shiftmngts extends Component
         $this->validate($rules);
 
         try {
-            if ($this->modalMode === 'edit' && $this->shift_id) {
-                // Update existing shift
-                $shift = shifts::findOrFail($this->shift_id);
-                $shift->update([
-                    'name' => $this->name,
-                    'description' => $this->description,
-                    'start_time' => $this->start_time,
-                    'end_time' => $this->end_time,
-                    'status' => $this->status,
-                    'count_early' => $this->count_early,
-                    'count_late' => $this->count_late,
-                ]);
+            DB::transaction(function () {
+                if ($this->modalMode === 'edit' && $this->shift_id) {
+                    // Update existing shift
+                    $shift = shifts::findOrFail($this->shift_id);
+                    $shift->update([
+                        'name' => $this->name,
+                        'description' => $this->description,
+                        'start_time' => $this->start_time,
+                        'end_time' => $this->end_time,
+                        'status' => $this->status,
+                        'is_default' => (bool) $this->is_default,
+                        'count_early' => $this->count_early,
+                        'count_late' => $this->count_late,
+                    ]);
 
-                session()->flash('success', 'Shift updated successfully!');
-            } else {
-                // Create new shift
-                shifts::create([
-                    'name' => $this->name,
-                    'description' => $this->description,
-                    'start_time' => $this->start_time,
-                    'end_time' => $this->end_time,
-                    'status' => $this->status,
-                    'count_early' => $this->count_early,
-                    'count_late' => $this->count_late,
-                    'added_by' => Auth::user()->id,
-                ]);
+                    session()->flash('success', 'Shift updated successfully!');
+                } else {
+                    // Create new shift
+                    $shift = shifts::create([
+                        'name' => $this->name,
+                        'description' => $this->description,
+                        'start_time' => $this->start_time,
+                        'end_time' => $this->end_time,
+                        'status' => $this->status,
+                        'is_default' => (bool) $this->is_default,
+                        'count_early' => $this->count_early,
+                        'count_late' => $this->count_late,
+                        'added_by' => Auth::user()->id,
+                    ]);
 
-                session()->flash('success', 'Shift created successfully!');
-            }
+                    session()->flash('success', 'Shift created successfully!');
+                }
+
+                // Only one shift may be the default at a time.
+                if ($this->is_default) {
+                    shifts::where('id', '!=', $shift->id)->update(['is_default' => false]);
+                }
+            });
 
             $this->closeModal();
         } catch (\Exception $e) {
@@ -213,6 +229,20 @@ class Shiftmngts extends Component
             session()->flash('success', 'Shift status updated successfully!');
         } catch (\Exception $e) {
             session()->flash('error', 'An error occurred while updating the status.');
+        }
+    }
+
+    public function setDefault($id)
+    {
+        try {
+            DB::transaction(function () use ($id) {
+                shifts::where('is_default', true)->update(['is_default' => false]);
+                shifts::whereKey($id)->update(['is_default' => true]);
+            });
+
+            session()->flash('success', 'Default shift updated successfully!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while setting the default shift.');
         }
     }
 

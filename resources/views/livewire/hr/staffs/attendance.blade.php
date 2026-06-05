@@ -61,32 +61,40 @@
 
     <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="card border-0 bg-success bg-opacity-10">
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card border-0 bg-success bg-opacity-10 h-100">
                 <div class="card-body text-center py-3">
                     <div class="fs-3 fw-bold text-success">{{ $stats['present'] }}</div>
                     <small class="text-muted">Present</small>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 bg-danger bg-opacity-10">
-                <div class="card-body text-center py-3">
-                    <div class="fs-3 fw-bold text-danger">{{ $stats['absent'] }}</div>
-                    <small class="text-muted">Absent</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 bg-warning bg-opacity-10">
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card border-0 bg-warning bg-opacity-10 h-100">
                 <div class="card-body text-center py-3">
                     <div class="fs-3 fw-bold text-warning">{{ $stats['late'] }}</div>
                     <small class="text-muted">Late</small>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 bg-info bg-opacity-10">
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card border-0 bg-secondary bg-opacity-10 h-100">
+                <div class="card-body text-center py-3">
+                    <div class="fs-3 fw-bold text-secondary">{{ $stats['incomplete'] }}</div>
+                    <small class="text-muted">Incomplete</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card border-0 bg-danger bg-opacity-10 h-100">
+                <div class="card-body text-center py-3">
+                    <div class="fs-3 fw-bold text-danger">{{ $stats['absent'] }}</div>
+                    <small class="text-muted">Absent</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card border-0 bg-info bg-opacity-10 h-100">
                 <div class="card-body text-center py-3">
                     <div class="fs-3 fw-bold text-info">{{ $stats['leave'] }}</div>
                     <small class="text-muted">On Leave</small>
@@ -127,11 +135,22 @@
                         <div class="fw-semibold">
                             Shift Start: {{ $shiftStart ? \Carbon\Carbon::parse($shiftStart)->format('h:i A') : '—' }}
                         </div>
-                        <small class="text-muted">
-                            @if($shiftName)
-                                {{ $shiftName }} &middot; {{ $shiftGraceMinutes }} min grace
+                        <small class="text-muted d-block">
+                            {{ $shiftName ?? 'System default' }} &middot; {{ $shiftGraceMinutes }} min grace
+                        </small>
+                        <small class="d-block">
+                            @if($shiftSource === 'roster')
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="fa-solid fa-calendar-check me-1"></i>From roster
+                                </span>
+                            @elseif($shiftSource === 'default')
+                                <span class="badge bg-info-subtle text-info" title="No roster found — using the default shift">
+                                    <i class="fa-solid fa-star me-1"></i>Default shift (no roster)
+                                </span>
                             @else
-                                Default shift &middot; {{ $shiftGraceMinutes }} min grace
+                                <span class="badge bg-secondary-subtle text-secondary" title="No roster and no default shift configured">
+                                    <i class="fa-solid fa-clock me-1"></i>System default (no roster)
+                                </span>
                             @endif
                         </small>
                     </div>

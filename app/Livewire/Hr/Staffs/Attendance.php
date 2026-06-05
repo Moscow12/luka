@@ -5,6 +5,7 @@ namespace App\Livewire\Hr\Staffs;
 use App\Models\Employee;
 use App\Models\employeeattendances;
 use App\Models\employeeroster;
+use App\Models\shifts;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -43,12 +44,14 @@ class Attendance extends Component
 
     public $department_id;
 
-    // Shift / late-detection settings (resolved from the department's shift).
+    // Shift / late-detection settings used to flag late arrivals.
     public ?string $shiftStart = null;      // e.g. "08:00:00"
 
     public int $shiftGraceMinutes = 0;      // lateness grace period in minutes
 
-    public ?string $shiftName = null;       // null = using default
+    public ?string $shiftName = null;       // null = no named shift
+
+    public string $shiftSource = 'fallback'; // 'roster' | 'default' | 'fallback'
 
     // Defaults used when the department has no shift assigned.
     protected string $defaultShiftStart = '08:00:00';
@@ -115,35 +118,43 @@ class Attendance extends Component
         $this->employeeNumber = $staff->employee_number ?? $staff->id;
         $this->department_id = $staff->department_id;
 
-        $this->resolveShift($staff);
-
-        // Default filter to current month/year
+        // Default filter to current month/year (set before resolving the shift
+        // so the roster lookup is scoped to the month being viewed).
         $this->filterMonth = now()->format('m');
         $this->filterYear = now()->format('Y');
+
+        $this->resolveShift();
     }
 
     /**
-     * Determine the shift start time and lateness grace for this employee.
+     * Determine the shift start time and lateness grace used for late detection.
      *
-     * Preference order: the most recent active shift rostered for the
-     * employee (directly or via their department), otherwise the system
-     * default. count_late is stored as a number of grace minutes.
+     * Checks whether the employee has a roster within the selected month
+     * (directly or via their department). If so, that rostered shift is used;
+     * otherwise it falls back to the shift flagged as default, then to the
+     * hardcoded fallback. count_late is grace minutes.
      */
-    protected function resolveShift(Employee $staff): void
+    protected function resolveShift(): void
     {
-        $shift = employeeroster::query()
+        $rosterShift = employeeroster::query()
             ->with('shift')
-            ->where(function ($q) use ($staff) {
-                $q->where('employee_id', $staff->id);
+            ->where(function ($q) {
+                $q->where('employee_id', $this->employee_id);
 
-                if ($staff->department_id) {
-                    $q->orWhere('department_id', $staff->department_id);
+                if ($this->department_id) {
+                    $q->orWhere('department_id', $this->department_id);
                 }
             })
             ->whereHas('shift')
+            ->when($this->filterMonth, fn ($q) => $q->whereMonth('roster_date', $this->filterMonth))
+            ->when($this->filterYear, fn ($q) => $q->whereYear('roster_date', $this->filterYear))
             ->latest('roster_date')
             ->latest()
             ->first()?->shift;
+
+        // No roster in this month -> fall back to the configured default shift.
+        $shift = $rosterShift ?? shifts::default();
+        $this->shiftSource = $rosterShift ? 'roster' : ($shift ? 'default' : 'fallback');
 
         if ($shift && $shift->start_time) {
             $this->shiftStart = \Carbon\Carbon::parse($shift->start_time)->format('H:i:s');
@@ -166,9 +177,20 @@ class Attendance extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterMonth()
+    {
+        // Re-evaluate which shift applies for the newly selected month.
+        $this->resolveShift();
+    }
+
     public function updatingFilterYear()
     {
         $this->resetPage();
+    }
+
+    public function updatedFilterYear()
+    {
+        $this->resolveShift();
     }
 
     public function updatingFilterStatus()
@@ -264,6 +286,9 @@ class Attendance extends Component
         $this->reset(['search', 'filterStatus']);
         $this->filterMonth = now()->format('m');
         $this->filterYear = now()->format('Y');
+
+        // Month/year reset to "now" — re-resolve the applicable shift.
+        $this->resolveShift();
     }
 
     /**
@@ -381,6 +406,7 @@ class Attendance extends Component
             'present' => $records->where('clock_status', 'Present')->count(),
             'absent' => $records->where('clock_status', 'Absent')->count(),
             'late' => $records->where('clock_status', 'Late')->count(),
+            'incomplete' => $records->where('clock_status', 'Incomplete')->count(),
             'leave' => $records->where('clock_status', 'On Leave')->count(),
             'total' => $records->count(),
             'total_hours' => round($totalHours, 1),

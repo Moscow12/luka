@@ -174,6 +174,11 @@
                                                 <i class="fa-solid fa-clock"></i>
                                             </div>
                                             <span class="fw-semibold text-dark">{{ $shift->name }}</span>
+                                            @if($shift->is_default)
+                                                <span class="badge bg-primary ms-2" title="Used when an employee has no roster">
+                                                    <i class="fa-solid fa-star"></i> Default
+                                                </span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td>
@@ -244,6 +249,17 @@
                                                 title="{{ $shift->status === 'active' ? 'Deactivate' : 'Activate' }}">
                                                 <i class="fa-solid fa-{{ $shift->status === 'active' ? 'ban' : 'check' }}"></i>
                                             </button>
+
+                                            {{-- Set Default Button --}}
+                                            @unless($shift->is_default)
+                                                <button
+                                                    wire:click="setDefault('{{ $shift->id }}')"
+                                                    wire:confirm="Make this the default shift? It will be used for employees without a roster."
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    title="Set as default shift">
+                                                    <i class="fa-regular fa-star"></i>
+                                                </button>
+                                            @endunless
 
                                             {{-- Delete Button --}}
                                             <button
@@ -355,6 +371,20 @@
                                     @error('status')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                </div>
+
+                                {{-- Default Shift --}}
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input type="checkbox" wire:model="is_default"
+                                            class="form-check-input" id="shiftIsDefault">
+                                        <label class="form-check-label" for="shiftIsDefault">
+                                            Use as <strong>default shift</strong>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">
+                                        Applied to employees who have no roster. Only one shift can be the default.
+                                    </small>
                                 </div>
 
                                 {{-- Description --}}

@@ -9,6 +9,7 @@ use App\Models\Employeecontracts;
 use App\Models\Employeeleaves;
 use App\Models\EmployeePlanItem;
 use App\Models\employeeroster;
+use App\Models\shifts;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -216,8 +217,8 @@ class LandingPage extends Component
 
     /**
      * Resolve [shiftStart, graceMinutes, shiftName] for an employee from the
-     * most recent shift rostered for them or their department; defaults to
-     * 08:00 with a 15-minute grace when none is set.
+     * most recent shift rostered for them or their department; otherwise the
+     * shift flagged as default; otherwise 08:00 with a 15-minute grace.
      */
     protected function resolveShift(Employee $employee): array
     {
@@ -233,6 +234,9 @@ class LandingPage extends Component
             ->latest('roster_date')
             ->latest()
             ->first()?->shift;
+
+        // No roster -> fall back to the configured default shift.
+        $shift ??= shifts::default();
 
         if ($shift && $shift->start_time) {
             return [
