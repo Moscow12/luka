@@ -48,9 +48,10 @@ class LandingPage extends Component
         'present_days' => 0,
         'late_days' => 0,
         'incomplete_days' => 0,
-        'attendance_rate' => 0,     // present (or late) days / working days so far this month
+        'attendance_rate' => 0,     // (actual hours / scheduled hours) * 100
         'total_hours' => 0,
         'avg_hours' => 0,
+        'scheduled_hours' => 0,
         'last_clock_in' => null,
         'last_clock_out' => null,
         'last_date' => null,
@@ -193,9 +194,11 @@ class LandingPage extends Component
             $totalHours = $workedDays->sum('hours');
             $avgHours = $workedDays->count() > 0 ? $totalHours / $workedDays->count() : 0;
 
-            // Attendance rate = days present / working days (Mon–Fri) elapsed this month.
-            $workingDaysElapsed = $this->workingDaysBetween($monthStart, $today);
-            $rate = $workingDaysElapsed > 0 ? round(($present / $workingDaysElapsed) * 100, 1) : 0;
+            // Attendance Rate = (Actual Hours Worked / Scheduled Hours) * 100,
+            // where scheduled hours = 8h per working day (Mon–Fri) elapsed this month.
+            $hoursPerDay = 8;
+            $scheduledHours = $this->workingDaysBetween($monthStart, $today) * $hoursPerDay;
+            $rate = $scheduledHours > 0 ? round(($totalHours / $scheduledHours) * 100, 1) : 0;
 
             $latest = $days->last();
 
@@ -206,6 +209,7 @@ class LandingPage extends Component
                 'attendance_rate' => min($rate, 100),
                 'total_hours' => round($totalHours, 1),
                 'avg_hours' => round($avgHours, 1),
+                'scheduled_hours' => $scheduledHours,
                 'last_clock_in' => $latest['clock_in'] ?? null,
                 'last_clock_out' => $latest['clock_out'] ?? null,
                 'last_date' => $latest['date'] ?? null,

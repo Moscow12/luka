@@ -88,6 +88,11 @@
                                         <small class="text-muted">{{ \Carbon\Carbon::parse($date)->format('l') }}</small>
                                     </th>
                                 @endforeach
+                                <th class="sticky-col-rate text-center" style="min-width: 140px;"
+                                    title="(Actual Hours Worked / Scheduled Hours) × 100, where scheduled = 8h × {{ $dates->count() }} day(s)">
+                                    Attendance Rate
+                                    <div><small class="text-muted fw-normal">/ {{ $scheduledHours }}h scheduled</small></div>
+                                </th>
                                 <th class="sticky-col-last text-center" style="min-width: 80px;">Action</th>
                             </tr>
                         </thead>
@@ -134,9 +139,23 @@
                                             @endif
                                         </td>
                                     @endforeach
+                                    <td class="sticky-col-rate text-center bg-white">
+                                        @php
+                                            $rate = $row['attendance_rate'];
+                                            $rateColor = $rate >= 90 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
+                                        @endphp
+                                        <div class="fw-bold text-{{ $rateColor }}">{{ $rate }}%</div>
+                                        <div class="progress mx-auto" style="height: 5px; max-width: 100px;">
+                                            <div class="progress-bar bg-{{ $rateColor }}" role="progressbar"
+                                                 style="width: {{ min($rate, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ $row['actual_hours'] }}h worked</small>
+                                    </td>
                                     <td class="sticky-col-last text-center bg-white">
-                                        <button class="btn btn-sm btn-info text-white">
-                                            SCORE
+                                        <button wire:click="showScore('{{ $row['user']->fpdevice_id }}')"
+                                                wire:loading.attr="disabled"
+                                                class="btn btn-sm btn-info text-white">
+                                            <i class="fa-solid fa-chart-simple me-1"></i> SCORE
                                         </button>
                                     </td>
                                 </tr>
@@ -188,6 +207,151 @@
             @endif
         </div>
     </div>
+
+    {{-- Score / Attendance Summary Modal --}}
+    @if($showScoreModal && !empty($score))
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:key="score-modal">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-primary text-white">
+                        <div>
+                            <h5 class="modal-title fw-semibold mb-0">
+                                <i class="fa-solid fa-chart-simple me-2"></i>Attendance Summary
+                            </h5>
+                            <small class="opacity-75">
+                                {{ \Carbon\Carbon::parse($score['date_from'])->format('d M Y') }}
+                                &ndash; {{ \Carbon\Carbon::parse($score['date_to'])->format('d M Y') }}
+                            </small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeScore"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{-- Employee + shift header --}}
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                            <div>
+                                <div class="fw-bold fs-5">{{ $score['name'] }}</div>
+                                <div class="text-muted small">
+                                    <span class="badge bg-info-subtle text-info me-1">
+                                        <i class="fa-solid fa-hashtag"></i> FP {{ $score['fp_id'] }}
+                                    </span>
+                                    @if($score['employee_no'])
+                                        <span class="badge bg-secondary-subtle text-secondary">{{ $score['employee_no'] }}</span>
+                                    @endif
+                                    @unless($score['linked'])
+                                        <span class="badge bg-warning-subtle text-warning">
+                                            <i class="fa-solid fa-link-slash"></i> Not linked to employee
+                                        </span>
+                                    @endunless
+                                </div>
+                            </div>
+                            <div class="text-md-end">
+                                <div class="fw-semibold">
+                                    <i class="fa-solid fa-clock text-secondary me-1"></i>
+                                    Shift {{ $score['shift_start'] ? \Carbon\Carbon::parse($score['shift_start'])->format('h:i A') : '—' }}
+                                    <small class="text-muted">&middot; {{ $score['grace'] }} min grace</small>
+                                </div>
+                                <small>
+                                    @if($score['shift_source'] === 'roster')
+                                        <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-calendar-check me-1"></i>From roster</span>
+                                    @elseif($score['shift_source'] === 'default')
+                                        <span class="badge bg-info-subtle text-info"><i class="fa-solid fa-star me-1"></i>{{ $score['shift_name'] ?? 'Default shift' }} (no roster)</span>
+                                    @else
+                                        <span class="badge bg-secondary-subtle text-secondary"><i class="fa-solid fa-clock me-1"></i>System default</span>
+                                    @endif
+                                </small>
+                            </div>
+                        </div>
+
+                        {{-- Status breakdown --}}
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-4 col-lg">
+                                <div class="card border-0 bg-success bg-opacity-10 h-100">
+                                    <div class="card-body text-center py-3">
+                                        <div class="fs-3 fw-bold text-success">{{ $score['present'] }}</div>
+                                        <small class="text-muted">Present</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg">
+                                <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                                    <div class="card-body text-center py-3">
+                                        <div class="fs-3 fw-bold text-warning">{{ $score['late'] }}</div>
+                                        <small class="text-muted">Late</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg">
+                                <div class="card border-0 bg-secondary bg-opacity-10 h-100">
+                                    <div class="card-body text-center py-3">
+                                        <div class="fs-3 fw-bold text-secondary">{{ $score['incomplete'] }}</div>
+                                        <small class="text-muted">Incomplete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg">
+                                <div class="card border-0 bg-danger bg-opacity-10 h-100">
+                                    <div class="card-body text-center py-3">
+                                        <div class="fs-3 fw-bold text-danger">{{ $score['no_show'] }}</div>
+                                        <small class="text-muted">No Show</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg">
+                                <div class="card border-0 bg-info bg-opacity-10 h-100">
+                                    <div class="card-body text-center py-3">
+                                        <div class="fs-3 fw-bold text-info">{{ $score['leave'] }}</div>
+                                        <small class="text-muted">On Leave</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Hours summary --}}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 py-3">
+                                        <i class="fa-solid fa-business-time fa-2x text-primary"></i>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-primary">{{ $score['total_hours'] }} hrs</div>
+                                            <small class="text-muted">Total Hours Worked</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 py-3">
+                                        <i class="fa-solid fa-gauge-high fa-2x text-primary"></i>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-primary">{{ $score['avg_hours'] }} hrs</div>
+                                            <small class="text-muted">Avg Hours / Day ({{ $score['worked_days'] }} days)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 py-3">
+                                        <i class="fa-solid fa-calendar-day fa-2x text-secondary"></i>
+                                        <div>
+                                            <div class="fs-4 fw-bold">{{ $score['working_days'] }}</div>
+                                            <small class="text-muted">Working Days (Mon–Fri)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeScore">
+                            <i class="fa-solid fa-xmark me-1"></i>Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <style>
         .attendance-table-wrapper {
@@ -259,6 +423,22 @@
             background: #f8f9fa !important;
         }
 
+        /* Attendance Rate sticky column (sits left of the Action column) */
+        .sticky-col-rate {
+            position: sticky;
+            right: 80px;
+            z-index: 5;
+            background: #fff;
+            min-width: 140px;
+            max-width: 140px;
+            border-left: 2px solid #adb5bd !important;
+        }
+
+        .sticky-header .sticky-col-rate {
+            z-index: 15;
+            background: #f8f9fa !important;
+        }
+
         /* Date column styling */
         .date-col {
             background: #f8f9fa;
@@ -283,6 +463,7 @@
         }
 
         .attendance-table tbody tr:hover .sticky-col,
+        .attendance-table tbody tr:hover .sticky-col-rate,
         .attendance-table tbody tr:hover .sticky-col-last {
             background-color: rgba(0, 123, 255, 0.05) !important;
         }

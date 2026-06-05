@@ -105,7 +105,29 @@
 
     <!-- Work Hours Summary -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-6 col-lg-3">
+            @php
+                $rate = $stats['attendance_rate'];
+                $rateColor = $rate >= 90 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
+            @endphp
+            <div class="card border-0 bg-{{ $rateColor }} bg-opacity-10 h-100">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <i class="fa-solid fa-chart-line fa-2x text-{{ $rateColor }}"></i>
+                        <div>
+                            <div class="fs-4 fw-bold text-{{ $rateColor }}">{{ $rate }}%</div>
+                            <small class="text-muted">Attendance Rate</small>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-{{ $rateColor }}" role="progressbar"
+                             style="width: {{ min($rate, 100) }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ $stats['total_hours'] }}h / {{ $stats['scheduled_hours'] }}h scheduled</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
             <div class="card border-0 bg-primary bg-opacity-10 h-100">
                 <div class="card-body d-flex align-items-center gap-3 py-3">
                     <i class="fa-solid fa-business-time fa-2x text-primary"></i>
@@ -116,7 +138,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6 col-lg-3">
             <div class="card border-0 bg-primary bg-opacity-10 h-100">
                 <div class="card-body d-flex align-items-center gap-3 py-3">
                     <i class="fa-solid fa-gauge-high fa-2x text-primary"></i>
@@ -127,7 +149,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6 col-lg-3">
             <div class="card border-0 bg-light h-100">
                 <div class="card-body d-flex align-items-center gap-3 py-3">
                     <i class="fa-solid fa-clock fa-2x text-secondary"></i>

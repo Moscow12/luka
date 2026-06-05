@@ -142,7 +142,7 @@
                                 <div class="progress-bar bg-primary" role="progressbar"
                                      style="width: {{ $myAttendance['attendance_rate'] }}%"></div>
                             </div>
-                            <small class="text-muted">{{ $myAttendance['present_days'] }} day(s) present this month</small>
+                            <small class="text-muted">{{ $myAttendance['total_hours'] }}h / {{ $myAttendance['scheduled_hours'] }}h scheduled</small>
                         </div>
                     </div>
 

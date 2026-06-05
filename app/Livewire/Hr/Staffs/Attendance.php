@@ -402,6 +402,13 @@ class Attendance extends Component
         $totalHours = $workedDays->sum('hours');
         $avgHours = $workedDays->count() > 0 ? $totalHours / $workedDays->count() : 0;
 
+        // Attendance Rate = (Actual Hours Worked / Scheduled Hours) * 100,
+        // where scheduled hours = 8h per working day (Mon–Fri) in the period.
+        $scheduledHours = $this->scheduledHours();
+        $attendanceRate = $scheduledHours > 0
+            ? min(round(($totalHours / $scheduledHours) * 100, 1), 100)
+            : 0;
+
         return [
             'present' => $records->where('clock_status', 'Present')->count(),
             'absent' => $records->where('clock_status', 'Absent')->count(),
@@ -412,7 +419,49 @@ class Attendance extends Component
             'total_hours' => round($totalHours, 1),
             'avg_hours' => round($avgHours, 1),
             'worked_days' => $workedDays->count(),
+            'scheduled_hours' => $scheduledHours,
+            'attendance_rate' => $attendanceRate,
         ];
+    }
+
+    /**
+     * Scheduled hours for the selected period: 8 hours for each working day
+     * (Mon–Fri). For the current month, days are counted only up to today.
+     */
+    protected function scheduledHours(int $hoursPerDay = 8): int
+    {
+        $year = $this->filterYear ?: now()->year;
+
+        // Determine the span to count working days over.
+        if ($this->filterMonth) {
+            $start = Carbon::create((int) $year, (int) $this->filterMonth, 1)->startOfMonth();
+            $end = (clone $start)->endOfMonth();
+        } else {
+            // "All Months" -> the whole selected year.
+            $start = Carbon::create((int) $year, 1, 1)->startOfYear();
+            $end = (clone $start)->endOfYear();
+        }
+
+        // Don't count days in the future.
+        $today = now();
+        if ($end->greaterThan($today)) {
+            $end = $today->copy();
+        }
+
+        if ($start->greaterThan($end)) {
+            return 0;
+        }
+
+        $workingDays = 0;
+        $cursor = $start->copy();
+        while ($cursor->lte($end)) {
+            if (! $cursor->isWeekend()) {
+                $workingDays++;
+            }
+            $cursor->addDay();
+        }
+
+        return $workingDays * $hoursPerDay;
     }
 
     public function render()
