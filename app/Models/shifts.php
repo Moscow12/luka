@@ -36,6 +36,40 @@ class shifts extends Model
         return static::where('is_default', true)->first();
     }
 
+    /**
+     * Whether the shift spans midnight (ends on the day after it starts),
+     * e.g. a night shift running 07:31 PM -> 07:31 AM.
+     */
+    public function crossesMidnight(): bool
+    {
+        if (! $this->start_time || ! $this->end_time) {
+            return false;
+        }
+
+        return \Carbon\Carbon::parse($this->end_time)
+            ->lessThanOrEqualTo(\Carbon\Carbon::parse($this->start_time));
+    }
+
+    /**
+     * Total length of the shift in minutes, accounting for shifts that
+     * cross midnight.
+     */
+    public function durationInMinutes(): int
+    {
+        if (! $this->start_time || ! $this->end_time) {
+            return 0;
+        }
+
+        $start = \Carbon\Carbon::parse($this->start_time);
+        $end = \Carbon\Carbon::parse($this->end_time);
+
+        if ($end->lessThanOrEqualTo($start)) {
+            $end->addDay();
+        }
+
+        return (int) $start->diffInMinutes($end);
+    }
+
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');

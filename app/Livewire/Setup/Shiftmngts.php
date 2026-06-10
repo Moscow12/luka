@@ -3,8 +3,10 @@
 namespace App\Livewire\Setup;
 
 use App\Models\shifts;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -54,6 +56,27 @@ class Shiftmngts extends Component
     public function mount()
     {
         // Initialize component
+    }
+
+    /**
+     * Whether the currently entered times describe an overnight shift,
+     * i.e. the end time is on or before the start time (ends next day).
+     */
+    #[Computed]
+    public function crossesMidnight(): bool
+    {
+        if (! $this->start_time || ! $this->end_time) {
+            return false;
+        }
+
+        try {
+            $start = Carbon::createFromFormat('H:i', $this->start_time);
+            $end = Carbon::createFromFormat('H:i', $this->end_time);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return $end->lessThanOrEqualTo($start);
     }
 
     public function updatingSearch()
@@ -135,11 +158,18 @@ class Shiftmngts extends Component
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:500'],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            // End time may be earlier on the clock than the start time: that
+            // signals an overnight shift (e.g. 19:31 -> 07:31 next day). We
+            // only forbid start == end, which would be a zero-length shift.
+            'end_time' => ['required', 'date_format:H:i', 'different:start_time'],
             'status' => ['required', 'in:active,inactive'],
             'is_default' => ['boolean'],
             'count_early' => ['required', 'integer', 'min:0', 'max:999'],
             'count_late' => ['required', 'integer', 'min:0', 'max:999'],
+        ];
+
+        $messages = [
+            'end_time.different' => 'The end time must be different from the start time.',
         ];
 
         // Add unique validation for name, excluding current shift on edit
@@ -149,7 +179,7 @@ class Shiftmngts extends Component
             $rules['name'][] = 'unique:shifts,name';
         }
 
-        $this->validate($rules);
+        $this->validate($rules, $messages);
 
         try {
             DB::transaction(function () {

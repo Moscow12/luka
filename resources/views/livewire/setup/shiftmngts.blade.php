@@ -202,11 +202,14 @@
                                         </div>
                                         <small class="text-muted">
                                             @php
-                                                $start = \Carbon\Carbon::parse($shift->start_time);
-                                                $end = \Carbon\Carbon::parse($shift->end_time);
-                                                $duration = $start->diff($end);
+                                                $minutes = $shift->durationInMinutes();
                                             @endphp
-                                            ({{ $duration->h }}h {{ $duration->i }}m)
+                                            ({{ intdiv($minutes, 60) }}h {{ $minutes % 60 }}m)
+                                            @if($shift->crossesMidnight())
+                                                <span class="badge bg-info-subtle text-info ms-1">
+                                                    <i class="fa-solid fa-moon"></i> Overnight
+                                                </span>
+                                            @endif
                                         </small>
                                     </td>
                                     <td class="text-center">
@@ -404,7 +407,7 @@
                                     <label class="form-label">
                                         Start Time <span class="text-danger">*</span>
                                     </label>
-                                    <input type="time" wire:model="start_time"
+                                    <input type="time" wire:model.live="start_time"
                                         class="form-control @error('start_time') is-invalid @enderror">
                                     @error('start_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -416,11 +419,17 @@
                                     <label class="form-label">
                                         End Time <span class="text-danger">*</span>
                                     </label>
-                                    <input type="time" wire:model="end_time"
+                                    <input type="time" wire:model.live="end_time"
                                         class="form-control @error('end_time') is-invalid @enderror">
                                     @error('end_time')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    @if($this->crossesMidnight)
+                                        <small class="text-info d-block mt-1">
+                                            <i class="fa-solid fa-moon"></i>
+                                            Overnight shift — ends the next day.
+                                        </small>
+                                    @endif
                                 </div>
 
                                 {{-- Count Early (Minutes) --}}
