@@ -525,29 +525,30 @@ class Addstaff extends Component
 
             if ($errorCode === 1452) {
                 $msg = $e->getMessage();
-                $fieldMap = [
-                    'department_id'    => 'Department',
-                    'designation_id'   => 'Designation',
-                    'workstation_id'   => 'Workstation',
-                    'title_id'         => 'Job Title',
-                    'ward_id'          => 'Ward',
-                    'district_id'      => 'District',
-                    'region_id'        => 'Region',
-                    'country_id'       => 'Country',
-                    'vilstreet_id'     => 'Village/Street',
-                    'denomination_id'  => 'Denomination',
-                    'user_id'          => 'Linked User',
-                ];
+                // MySQL 1452 message contains: FOREIGN KEY (`column_name`) REFERENCES `table`
+                // Match the column name from backticks after "FOREIGN KEY"
                 $detected = null;
-                foreach ($fieldMap as $column => $label) {
-                    if (str_contains($msg, $column)) {
-                        $detected = $label;
-                        break;
-                    }
+                if (preg_match('/FOREIGN KEY \(`([^`]+)`\)/', $msg, $matches)) {
+                    $columnName = $matches[1];
+                    $fieldMap = [
+                        'department_id'   => 'Department',
+                        'designation_id'  => 'Designation',
+                        'workstation_id'  => 'Workstation',
+                        'title_id'        => 'Job Title',
+                        'ward_id'         => 'Ward',
+                        'district_id'     => 'District',
+                        'region_id'       => 'Region',
+                        'country_id'      => 'Country',
+                        'vilstreet_id'    => 'Village/Street',
+                        'denomination_id' => 'Denomination',
+                        'user_id'         => 'Linked User',
+                        'added_by'        => 'Current user (session)',
+                    ];
+                    $detected = $fieldMap[$columnName] ?? ucwords(str_replace('_id', '', str_replace('_', ' ', $columnName)));
                 }
                 $errorMessage = $detected
-                    ? "Invalid selection for \"{$detected}\". The selected value no longer exists — please re-select it and try again."
-                    : 'An invalid reference was selected. Please review all dropdown selections and try again.';
+                    ? "Save failed: the selected \"{$detected}\" is invalid or does not exist. Please re-select it and try again."
+                    : 'Save failed: an invalid reference was selected. Please review all dropdown selections and try again.';
             } else {
                 $errorMessage = match ($errorCode) {
                     1406 => 'One or more fields contain data that is too long. Please check your input and try again.',
