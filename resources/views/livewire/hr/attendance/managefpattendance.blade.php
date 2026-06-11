@@ -11,33 +11,22 @@
     <div class="card card-lg mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                {{-- Date Range --}}
                 <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold small text-muted">FROM DATE</label>
-                    <input type="date"
-                           wire:model.live="dateFrom"
-                           class="form-control"
-                           max="{{ now()->format('Y-m-d') }}">
+                    <input type="date" wire:model.live="dateFrom" class="form-control" max="{{ now()->format('Y-m-d') }}">
                 </div>
                 <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold small text-muted">TO DATE</label>
-                    <input type="date"
-                           wire:model.live="dateTo"
-                           class="form-control"
-                           max="{{ now()->format('Y-m-d') }}">
+                    <input type="date" wire:model.live="dateTo" class="form-control" max="{{ now()->format('Y-m-d') }}">
                 </div>
-
-                {{-- Search --}}
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold small text-muted">SEARCH EMPLOYEE</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white">
                             <i class="fa-solid fa-magnifying-glass text-muted"></i>
                         </span>
-                        <input type="text"
-                               wire:model.live.debounce.300ms="search"
-                               class="form-control"
-                               placeholder="Search by name or FP ID...">
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                               class="form-control" placeholder="Search by name or FP ID...">
                         @if($search)
                             <button wire:click="$set('search', '')" class="btn btn-outline-secondary" type="button">
                                 <i class="fa-solid fa-times"></i>
@@ -45,12 +34,36 @@
                         @endif
                     </div>
                 </div>
-
-                {{-- Clear Filters --}}
-                <div class="col-12 col-md-2">
-                    <button wire:click="clearFilters" class="btn btn-outline-secondary w-100">
-                        <i class="fa-solid fa-rotate-left me-1"></i> Reset
-                    </button>
+                <div class="col-12 col-md-3">
+                    <div class="d-flex gap-2">
+                        <button wire:click="clearFilters" class="btn btn-outline-secondary flex-fill">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    wire:loading.attr="disabled">
+                                <i class="fa-solid fa-download me-1"></i> Export
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <button class="dropdown-item" wire:click="exportExcel"
+                                            wire:loading.attr="disabled" wire:target="exportExcel">
+                                        <i class="fa-solid fa-file-excel text-success me-2"></i>
+                                        Export Excel
+                                        <span wire:loading wire:target="exportExcel" class="spinner-border spinner-border-sm ms-1"></span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" wire:click="exportPdf"
+                                            wire:loading.attr="disabled" wire:target="exportPdf">
+                                        <i class="fa-solid fa-file-pdf text-danger me-2"></i>
+                                        Export PDF
+                                        <span wire:loading wire:target="exportPdf" class="spinner-border spinner-border-sm ms-1"></span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,10 +78,11 @@
                     Attendance Calendar
                     <span class="badge bg-primary-subtle text-primary ms-2">{{ $totalUsers }} Employees</span>
                 </h5>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-success"><i class="fa-solid fa-sign-in-alt me-1"></i> IN</span>
-                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-sign-out-alt me-1"></i> OUT</span>
-                    <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i> NO SHOW</span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> Present</span>
+                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Late</span>
+                    <span class="badge bg-secondary"><i class="fa-solid fa-circle-half-stroke me-1"></i> Incomplete</span>
+                    <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i> No Show</span>
                 </div>
             </div>
         </div>
@@ -79,21 +93,21 @@
                     <table class="table table-bordered table-hover mb-0 attendance-table">
                         <thead class="sticky-header">
                             <tr class="bg-light">
-                                <th class="sticky-col sticky-col-1 text-center" style="min-width: 50px;">#</th>
-                                <th class="sticky-col sticky-col-2 text-center" style="min-width: 80px;">FP ID</th>
-                                <th class="sticky-col sticky-col-3" style="min-width: 180px;">Employee Name</th>
+                                <th class="sticky-col sticky-col-1 text-center" style="min-width:50px;">#</th>
+                                <th class="sticky-col sticky-col-2 text-center" style="min-width:80px;">FP ID</th>
+                                <th class="sticky-col sticky-col-3" style="min-width:180px;">Employee Name</th>
                                 @foreach($dates as $date)
-                                    <th class="text-center date-col" style="min-width: 220px;">
+                                    <th class="text-center date-col" style="min-width:200px;">
                                         <div class="fw-bold">{{ \Carbon\Carbon::parse($date)->format('Y-m-d') }}</div>
                                         <small class="text-muted">{{ \Carbon\Carbon::parse($date)->format('l') }}</small>
                                     </th>
                                 @endforeach
-                                <th class="sticky-col-rate text-center" style="min-width: 140px;"
+                                <th class="sticky-col-rate text-center" style="min-width:140px;"
                                     title="(Actual Hours Worked / Scheduled Hours) × 100, where scheduled = 8h × {{ $dates->count() }} day(s)">
                                     Attendance Rate
                                     <div><small class="text-muted fw-normal">/ {{ $scheduledHours }}h scheduled</small></div>
                                 </th>
-                                <th class="sticky-col-last text-center" style="min-width: 80px;">Action</th>
+                                <th class="sticky-col-last text-center" style="min-width:80px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,46 +122,66 @@
                                     <td class="sticky-col sticky-col-3 bg-white">
                                         <span class="fw-semibold">{{ $row['user']->name }}</span>
                                     </td>
+
                                     @foreach($row['dates'] as $date => $attendance)
-                                        <td class="text-center attendance-cell">
+                                        <td class="text-center attendance-cell
+                                            @if($attendance['status'] === 'no_show') cell-no-show
+                                            @elseif($attendance['attendance_status'] === 'Late') cell-late
+                                            @elseif($attendance['attendance_status'] === 'Incomplete') cell-incomplete
+                                            @else cell-present
+                                            @endif">
+
                                             @if($attendance['status'] === 'no_show')
-                                                <span class="badge bg-danger px-3 py-2">NO SHOW</span>
+                                                <span class="badge bg-danger px-2 py-1">NO SHOW</span>
+
                                             @else
+                                                {{-- Status badge --}}
+                                                @if($attendance['attendance_status'] === 'Late')
+                                                    <span class="badge bg-warning text-dark mb-1">LATE</span>
+                                                @elseif($attendance['attendance_status'] === 'Incomplete')
+                                                    <span class="badge bg-secondary mb-1">INCOMPLETE</span>
+                                                @else
+                                                    <span class="badge bg-success mb-1">PRESENT</span>
+                                                @endif
+
+                                                {{-- Time in / out --}}
                                                 <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
                                                     @if($attendance['clock_in'])
-                                                        <span class="badge bg-success">
-                                                            IN {{ \Carbon\Carbon::parse($attendance['clock_in'])->format('H:i:s') }}
+                                                        <span class="time-badge time-in">
+                                                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                                            {{ \Carbon\Carbon::parse($attendance['clock_in'])->format('H:i') }}
                                                         </span>
-                                                    @endif
-
-                                                    @if($attendance['clock_in'] && ($attendance['clock_out'] || !$attendance['has_checkout']))
-                                                        <span class="text-muted">~~</span>
                                                     @endif
 
                                                     @if($attendance['clock_out'] && $attendance['has_checkout'])
-                                                        <span class="badge bg-warning text-dark">
-                                                            OUT {{ \Carbon\Carbon::parse($attendance['clock_out'])->format('H:i:s') }}
+                                                        <span class="time-badge time-out">
+                                                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                                            {{ \Carbon\Carbon::parse($attendance['clock_out'])->format('H:i') }}
                                                         </span>
-                                                    @elseif($attendance['clock_in'] && !$attendance['has_checkout'])
-                                                        <span class="badge bg-secondary">No Checkout</span>
-                                                    @elseif($attendance['clock_out'] && !$attendance['clock_in'])
-                                                        <span class="badge bg-warning text-dark">
-                                                            OUT {{ \Carbon\Carbon::parse($attendance['clock_out'])->format('H:i:s') }}
+                                                    @elseif($attendance['clock_in'] && !$attendance['has_checkout'] && $attendance['attendance_status'] !== 'Incomplete')
+                                                        <span class="time-badge time-missing">
+                                                            <i class="fa-solid fa-minus"></i> No OUT
+                                                        </span>
+                                                    @elseif(!$attendance['clock_in'] && $attendance['clock_out'])
+                                                        <span class="time-badge time-out">
+                                                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                                            {{ \Carbon\Carbon::parse($attendance['clock_out'])->format('H:i') }}
                                                         </span>
                                                     @endif
                                                 </div>
                                             @endif
                                         </td>
                                     @endforeach
+
                                     <td class="sticky-col-rate text-center bg-white">
                                         @php
-                                            $rate = $row['attendance_rate'];
+                                            $rate      = $row['attendance_rate'];
                                             $rateColor = $rate >= 90 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
                                         @endphp
                                         <div class="fw-bold text-{{ $rateColor }}">{{ $rate }}%</div>
-                                        <div class="progress mx-auto" style="height: 5px; max-width: 100px;">
+                                        <div class="progress mx-auto" style="height:5px;max-width:100px;">
                                             <div class="progress-bar bg-{{ $rateColor }}" role="progressbar"
-                                                 style="width: {{ min($rate, 100) }}%"></div>
+                                                 style="width:{{ min($rate, 100) }}%"></div>
                                         </div>
                                         <small class="text-muted">{{ $row['actual_hours'] }}h worked</small>
                                     </td>
@@ -168,25 +202,26 @@
                 <div class="card-footer bg-white border-top">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                         <div class="text-muted">
-                            Showing {{ ($currentPage - 1) * $perPage + 1 }} to {{ min($currentPage * $perPage, $totalUsers) }} of {{ $totalUsers }} employees
+                            Showing {{ ($currentPage - 1) * $perPage + 1 }}
+                            to {{ min($currentPage * $perPage, $totalUsers) }}
+                            of {{ $totalUsers }} employees
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <button wire:click="previousPage"
-                                    class="btn btn-outline-primary btn-sm"
+                            <button wire:click="previousPage" class="btn btn-outline-primary btn-sm"
                                     {{ $currentPage <= 1 ? 'disabled' : '' }}>
                                 <i class="fa-solid fa-chevron-left me-1"></i> Previous
                             </button>
                             <span class="badge bg-primary px-3 py-2">
                                 Page {{ $currentPage }} of {{ max($totalPages, 1) }}
                             </span>
-                            <button wire:click="nextPage"
-                                    class="btn btn-outline-primary btn-sm"
+                            <button wire:click="nextPage" class="btn btn-outline-primary btn-sm"
                                     {{ $currentPage >= $totalPages ? 'disabled' : '' }}>
                                 Next <i class="fa-solid fa-chevron-right ms-1"></i>
                             </button>
                         </div>
                     </div>
                 </div>
+
             @else
                 <div class="text-center py-5">
                     <i class="fa-solid fa-calendar-xmark fa-3x text-muted mb-3"></i>
@@ -210,7 +245,7 @@
 
     {{-- Score / Attendance Summary Modal --}}
     @if($showScoreModal && !empty($score))
-        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:key="score-modal">
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);" wire:key="score-modal">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-primary text-white">
@@ -226,7 +261,6 @@
                         <button type="button" class="btn-close btn-close-white" wire:click="closeScore"></button>
                     </div>
                     <div class="modal-body">
-                        {{-- Employee + shift header --}}
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
                             <div>
                                 <div class="fw-bold fs-5">{{ $score['name'] }}</div>
@@ -262,7 +296,6 @@
                             </div>
                         </div>
 
-                        {{-- Status breakdown --}}
                         <div class="row g-3 mb-4">
                             <div class="col-6 col-md-4 col-lg">
                                 <div class="card border-0 bg-success bg-opacity-10 h-100">
@@ -306,7 +339,6 @@
                             </div>
                         </div>
 
-                        {{-- Hours summary --}}
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <div class="card border-0 bg-primary bg-opacity-10 h-100">
@@ -359,154 +391,69 @@
             max-height: 70vh;
             position: relative;
         }
-
-        .attendance-table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
+        .attendance-table { border-collapse: separate; border-spacing: 0; }
         .attendance-table th,
-        .attendance-table td {
-            vertical-align: middle;
-            white-space: nowrap;
-            border: 1px solid #dee2e6;
-        }
+        .attendance-table td { vertical-align: middle; white-space: nowrap; border: 1px solid #dee2e6; }
 
         /* Sticky header */
-        .sticky-header th {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: #f8f9fa !important;
-        }
+        .sticky-header th { position: sticky; top: 0; z-index: 10; background: #f8f9fa !important; }
 
         /* Sticky columns */
-        .sticky-col {
-            position: sticky;
-            z-index: 5;
-        }
-
-        .sticky-col-1 {
-            left: 0;
-            min-width: 50px;
-            max-width: 50px;
-        }
-
-        .sticky-col-2 {
-            left: 50px;
-            min-width: 80px;
-            max-width: 80px;
-        }
-
-        .sticky-col-3 {
-            left: 130px;
-            min-width: 180px;
-            max-width: 180px;
-            border-right: 2px solid #adb5bd !important;
-        }
-
-        /* Sticky header + column intersection */
-        .sticky-header .sticky-col {
-            z-index: 15;
-        }
+        .sticky-col { position: sticky; z-index: 5; }
+        .sticky-col-1 { left: 0;     min-width: 50px;  max-width: 50px; }
+        .sticky-col-2 { left: 50px;  min-width: 80px;  max-width: 80px; }
+        .sticky-col-3 { left: 130px; min-width: 180px; max-width: 180px; border-right: 2px solid #adb5bd !important; }
+        .sticky-header .sticky-col { z-index: 15; }
 
         .sticky-col-last {
-            position: sticky;
-            right: 0;
-            z-index: 5;
-            background: #fff;
+            position: sticky; right: 0; z-index: 5; background: #fff;
             border-left: 2px solid #adb5bd !important;
         }
+        .sticky-header .sticky-col-last { z-index: 15; background: #f8f9fa !important; }
 
-        .sticky-header .sticky-col-last {
-            z-index: 15;
-            background: #f8f9fa !important;
-        }
-
-        /* Attendance Rate sticky column (sits left of the Action column) */
         .sticky-col-rate {
-            position: sticky;
-            right: 80px;
-            z-index: 5;
-            background: #fff;
-            min-width: 140px;
-            max-width: 140px;
-            border-left: 2px solid #adb5bd !important;
+            position: sticky; right: 80px; z-index: 5; background: #fff;
+            min-width: 140px; max-width: 140px; border-left: 2px solid #adb5bd !important;
         }
+        .sticky-header .sticky-col-rate { z-index: 15; background: #f8f9fa !important; }
 
-        .sticky-header .sticky-col-rate {
-            z-index: 15;
-            background: #f8f9fa !important;
-        }
-
-        /* Date column styling */
-        .date-col {
-            background: #f8f9fa;
-        }
+        .date-col { background: #f8f9fa; }
 
         /* Attendance cell */
-        .attendance-cell {
-            padding: 8px 12px !important;
-            min-width: 220px;
-        }
+        .attendance-cell { padding: 6px 8px !important; min-width: 200px; }
 
-        /* Badge styling */
-        .attendance-cell .badge {
-            font-size: 11px;
-            font-weight: 500;
-            padding: 5px 8px;
-        }
+        /* Cell status backgrounds */
+        .cell-present    { background-color: rgba(25,135,84,.06)  !important; }
+        .cell-late       { background-color: rgba(255,193,7,.10)  !important; }
+        .cell-incomplete { background-color: rgba(108,117,125,.08) !important; }
+        .cell-no-show    { background-color: rgba(220,53,69,.06)  !important; }
 
-        /* Hover effect */
-        .attendance-table tbody tr:hover td {
-            background-color: rgba(0, 123, 255, 0.05) !important;
-        }
+        /* Time badges */
+        .time-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+        .time-in      { background: rgba(25,135,84,.15);  color: #0a3622; }
+        .time-out     { background: rgba(255,193,7,.2);   color: #664d03; }
+        .time-missing { background: rgba(108,117,125,.15); color: #495057; }
 
+        /* Hover */
+        .attendance-table tbody tr:hover td { background-color: rgba(0,123,255,.05) !important; }
         .attendance-table tbody tr:hover .sticky-col,
         .attendance-table tbody tr:hover .sticky-col-rate,
-        .attendance-table tbody tr:hover .sticky-col-last {
-            background-color: rgba(0, 123, 255, 0.05) !important;
-        }
+        .attendance-table tbody tr:hover .sticky-col-last { background-color: rgba(0,123,255,.05) !important; }
 
-        /* Scrollbar styling */
-        .attendance-table-wrapper::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
+        /* Scrollbar */
+        .attendance-table-wrapper::-webkit-scrollbar { width: 10px; height: 10px; }
+        .attendance-table-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
+        .attendance-table-wrapper::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 5px; }
+        .attendance-table-wrapper::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
-        .attendance-table-wrapper::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 5px;
-        }
-
-        .attendance-table-wrapper::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 5px;
-        }
-
-        .attendance-table-wrapper::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-        }
-
-        /* Shadow for sticky columns */
+        /* Shadow dividers */
         .sticky-col-3::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: -5px;
-            bottom: 0;
-            width: 5px;
-            background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+            content: ''; position: absolute; top: 0; right: -5px; bottom: 0; width: 5px;
+            background: linear-gradient(to right, rgba(0,0,0,.1), transparent);
         }
-
         .sticky-col-last::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -5px;
-            bottom: 0;
-            width: 5px;
-            background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+            content: ''; position: absolute; top: 0; left: -5px; bottom: 0; width: 5px;
+            background: linear-gradient(to left, rgba(0,0,0,.1), transparent);
         }
     </style>
 </div>
