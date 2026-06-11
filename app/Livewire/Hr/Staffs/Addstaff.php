@@ -521,15 +521,41 @@ class Addstaff extends Component
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
 
-            // Handle specific database errors with user-friendly messages
             $errorCode = $e->errorInfo[1] ?? null;
-            $errorMessage = match ($errorCode) {
-                1406 => 'One or more fields contain data that is too long. Please check your input and try again.',
-                1062 => 'A record with this information already exists. Please check for duplicates.',
-                1364 => 'A required field is missing. Please fill in all required fields.',
-                1452 => 'Invalid reference selected. Please ensure all selections are valid.',
-                default => 'A database error occurred. Please try again or contact support.',
-            };
+
+            if ($errorCode === 1452) {
+                $msg = $e->getMessage();
+                $fieldMap = [
+                    'department_id'    => 'Department',
+                    'designation_id'   => 'Designation',
+                    'workstation_id'   => 'Workstation',
+                    'title_id'         => 'Job Title',
+                    'ward_id'          => 'Ward',
+                    'district_id'      => 'District',
+                    'region_id'        => 'Region',
+                    'country_id'       => 'Country',
+                    'vilstreet_id'     => 'Village/Street',
+                    'denomination_id'  => 'Denomination',
+                    'user_id'          => 'Linked User',
+                ];
+                $detected = null;
+                foreach ($fieldMap as $column => $label) {
+                    if (str_contains($msg, $column)) {
+                        $detected = $label;
+                        break;
+                    }
+                }
+                $errorMessage = $detected
+                    ? "Invalid selection for \"{$detected}\". The selected value no longer exists — please re-select it and try again."
+                    : 'An invalid reference was selected. Please review all dropdown selections and try again.';
+            } else {
+                $errorMessage = match ($errorCode) {
+                    1406 => 'One or more fields contain data that is too long. Please check your input and try again.',
+                    1062 => 'A record with this information already exists. Please check for duplicates.',
+                    1364 => 'A required field is missing. Please fill in all required fields.',
+                    default => 'A database error occurred. Please try again or contact support.',
+                };
+            }
 
             session()->flash('error', $errorMessage);
 
