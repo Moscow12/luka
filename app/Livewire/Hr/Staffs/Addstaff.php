@@ -392,18 +392,34 @@ class Addstaff extends Component
         try {
             // Create user account if requested
             if ($this->createUserAccount) {
-                $createdUser = User::create([
-                    'first_name' => $this->first_name,
-                    'middle_name' => $this->middle_name,
-                    'surname' => $this->last_name,
-                    'gender' => $this->gender,
-                    'dob' => $this->dob,
-                    'email' => $this->email,
-                    'phone_number' => $this->phone,
-                    'username' => $this->username,
-                    'password' => Hash::make($this->user_password),
-                    'profile_picture' => $this->photo,
-                ]);
+                try {
+                    $createdUser = User::create([
+                        'first_name' => $this->first_name,
+                        'middle_name' => $this->middle_name,
+                        'surname' => $this->last_name,
+                        'gender' => $this->gender,
+                        'dob' => $this->dob,
+                        'email' => $this->email,
+                        'phone_number' => $this->phone,
+                        'username' => $this->username,
+                        'password' => Hash::make($this->user_password),
+                        'profile_picture' => $this->photo,
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    DB::rollBack();
+                    $errorCode = $e->errorInfo[1] ?? null;
+                    $userErrorMessage = match ($errorCode) {
+                        1062 => 'Failed to create user account: a user with this email, username, or phone number already exists.',
+                        1406 => 'Failed to create user account: one or more fields contain data that is too long.',
+                        default => 'Failed to create user account. Please verify the username, email, and phone number are not already in use.',
+                    };
+                    session()->flash('error', $userErrorMessage);
+                    return;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    session()->flash('error', 'Failed to create user account: '.$e->getMessage());
+                    return;
+                }
 
                 $this->user_id = $createdUser->id;
             }
