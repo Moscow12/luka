@@ -97,7 +97,7 @@ class Addstaff extends Component
 
     public $hired_date;
 
-    public $status = 'Active';
+    public $status = 'active';
 
     public $education_level;
 
