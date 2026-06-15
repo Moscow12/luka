@@ -188,31 +188,39 @@
                 <div class="card-body p-0">
                     <div data-simplebar style="max-height: 400px;">
                         @forelse($expiringContracts as $contract)
+                            @php
+                                $expiry = \Carbon\Carbon::parse($contract->expire_date)->endOfDay();
+                                $now    = \Carbon\Carbon::now();
+                                $diff   = $now->diff($expiry);
+                                $totalDays = (int) $now->diffInDays($expiry);
+                                $badgeClass = $totalDays < 30
+                                    ? 'bg-danger-subtle text-danger'
+                                    : ($totalDays < 60 ? 'bg-warning-subtle text-warning' : 'bg-info-subtle text-info');
+                                $employeeName = trim(
+                                    ($contract->employee->first_name ?? '') . ' ' .
+                                    ($contract->employee->last_name ?? '')
+                                ) ?: 'N/A';
+                            @endphp
                             <div class="d-flex align-items-center justify-content-between gap-3 border-bottom border-dashed p-3 hover-bg-light">
                                 <div class="d-flex align-items-center gap-3">
                                     <div>
                                         <img src="{{ asset('images/avatar/avatar-1.jpg') }}" class="avatar avatar-md rounded-circle" alt="avatar" />
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">{{ $contract->employee->user->name ?? 'N/A' }}</h6>
+                                        <h6 class="mb-0">{{ $employeeName }}</h6>
                                         <div class="d-flex align-items-center gap-3 text-muted small">
-                                            <span><i class="fa-solid fa-briefcase me-1"></i>{{ $contract->contracttype->type_name ?? 'N/A' }}</span>
-                                            <span><i class="fa-solid fa-calendar me-1"></i>{{ \Carbon\Carbon::parse($contract->end_date)->format('M d, Y') }}</span>
-                                            <span class="text-warning">
-                                                <i class="fa-solid fa-clock me-1"></i>
-                                                {{ \Carbon\Carbon::parse($contract->end_date)->diffForHumans() }}
-                                            </span>
+                                            <span><i class="fa-solid fa-briefcase me-1"></i>{{ ucfirst($contract->contract_type ?? 'N/A') }}</span>
+                                            <span><i class="fa-solid fa-calendar me-1"></i>{{ $expiry->format('M d, Y') }}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div>
-                                    @php
-                                        $daysLeft = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($contract->end_date), false);
-                                        $badgeClass = $daysLeft < 30 ? 'bg-danger-subtle text-danger' : ($daysLeft < 60 ? 'bg-warning-subtle text-warning' : 'bg-info-subtle text-info');
-                                    @endphp
-                                    <span class="badge {{ $badgeClass }}">
-                                        {{ abs($daysLeft) }} days
+                                <div class="text-end">
+                                    <span class="badge {{ $badgeClass }} mb-1">
+                                        @if($diff->m > 0){{ $diff->m }}mo @endif
+                                        @if($diff->d > 0){{ $diff->d }}d @endif
+                                        {{ $diff->h }}h
                                     </span>
+                                    <div class="text-muted" style="font-size: 0.7rem;">remaining</div>
                                 </div>
                             </div>
                         @empty

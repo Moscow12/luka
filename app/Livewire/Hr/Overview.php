@@ -83,7 +83,7 @@ class Overview extends Component
     {
         $threeMonthsFromNow = Carbon::now()->addMonths(3);
 
-        return Employeecontracts::with(['employee.user', 'position'])
+        return Employeecontracts::with(['employee'])
             ->where('expire_date', '<=', $threeMonthsFromNow)
             ->where('expire_date', '>=', Carbon::now())
             ->where('status', 'active')
