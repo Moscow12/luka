@@ -14,7 +14,6 @@ use App\Models\Role;
 use App\Models\SmsApiSetting;
 use App\Models\street;
 use App\Models\User;
-use App\Models\villages;
 use App\Models\wards;
 use App\Models\workstations;
 use Illuminate\Support\Facades\Auth;
@@ -27,23 +26,7 @@ class Addstaff extends Component
 {
     use WithFileUploads;
 
-    public $countries = [];
-
-    public $regions = [];
-
-    public $districts = [];
-
-    public $wards = [];
-
-    public $villages = [];
-
     public $workstations = [];
-
-    public $departments = [];
-
-    public $jobtitles = [];
-
-    public $designations = [];
 
     public $users = [];
 
@@ -158,76 +141,63 @@ class Addstaff extends Component
     public $designationSearch = '';
     public $showDesignationDropdown = false;
 
-    protected function filterCollection($list, string $term, array $keys = ['name'])
+    protected function dbSearch($model, string $term, ?string $scope = null, ?string $scopeValue = null, string $column = 'name')
     {
-        $term = trim($term);
-
-        return collect($list)->filter(function ($item) use ($term, $keys) {
-            if ($term === '') {
-                return true;
-            }
-            foreach ($keys as $key) {
-                if (str_contains(strtolower((string) data_get($item, $key)), strtolower($term))) {
-                    return true;
-                }
-            }
-            return false;
-        })->take(50)->values();
-    }
-
-    protected function findIn($list, $id)
-    {
-        if (! $id) {
-            return null;
+        $query = $model::query()->select('id', $column . ' as name');
+        if ($scope && $scopeValue) {
+            $query->where($scope, $scopeValue);
         }
-        return collect($list)->firstWhere('id', $id);
+        if (trim($term) !== '') {
+            $query->where($column, 'like', '%' . trim($term) . '%');
+        }
+        return $query->orderBy($column)->limit(50)->get();
     }
 
     // Country
-    public function getFilteredCountriesProperty()    { return $this->filterCollection($this->countries, $this->countrySearch); }
-    public function getSelectedCountryProperty()      { return $this->findIn($this->countries, $this->country_id); }
+    public function getFilteredCountriesProperty()    { return $this->dbSearch(countries::class, $this->countrySearch); }
+    public function getSelectedCountryProperty()      { return $this->country_id ? countries::select('id', 'name')->find($this->country_id) : null; }
     public function selectCountry($id)                { $this->country_id = $id; $this->countrySearch = ''; $this->showCountryDropdown = false; }
     public function clearCountry()                    { $this->country_id = null; $this->countrySearch = ''; $this->showCountryDropdown = true; }
 
     // Region
-    public function getFilteredRegionsProperty()      { return $this->filterCollection($this->regions, $this->regionSearch); }
-    public function getSelectedRegionProperty()       { return $this->findIn($this->regions, $this->region_id); }
-    public function selectRegion($id)                 { $this->region_id = $id; $this->regionSearch = ''; $this->showRegionDropdown = false; $this->updateDistricts(); }
-    public function clearRegion()                     { $this->region_id = null; $this->regionSearch = ''; $this->showRegionDropdown = true; $this->districts = collect(); $this->district_id = null; $this->wards = collect(); $this->ward_id = null; $this->villages = collect(); $this->vilstreet_id = null; }
+    public function getFilteredRegionsProperty()      { return $this->dbSearch(regions::class, $this->regionSearch); }
+    public function getSelectedRegionProperty()       { return $this->region_id ? regions::select('id', 'name')->find($this->region_id) : null; }
+    public function selectRegion($id)                 { $this->region_id = $id; $this->regionSearch = ''; $this->showRegionDropdown = false; $this->district_id = null; $this->ward_id = null; $this->vilstreet_id = null; }
+    public function clearRegion()                     { $this->region_id = null; $this->regionSearch = ''; $this->showRegionDropdown = true; $this->district_id = null; $this->districtSearch = ''; $this->ward_id = null; $this->wardSearch = ''; $this->vilstreet_id = null; $this->villageSearch = ''; }
 
-    // District
-    public function getFilteredDistrictsProperty()    { return $this->filterCollection($this->districts, $this->districtSearch); }
-    public function getSelectedDistrictProperty()     { return $this->findIn($this->districts, $this->district_id); }
-    public function selectDistrict($id)               { $this->district_id = $id; $this->districtSearch = ''; $this->showDistrictDropdown = false; $this->updatewards(); }
-    public function clearDistrict()                   { $this->district_id = null; $this->districtSearch = ''; $this->showDistrictDropdown = true; $this->wards = collect(); $this->ward_id = null; $this->villages = collect(); $this->vilstreet_id = null; }
+    // District — scoped to selected region
+    public function getFilteredDistrictsProperty()    { return $this->dbSearch(districts::class, $this->districtSearch, 'region_id', $this->region_id); }
+    public function getSelectedDistrictProperty()     { return $this->district_id ? districts::select('id', 'name')->find($this->district_id) : null; }
+    public function selectDistrict($id)               { $this->district_id = $id; $this->districtSearch = ''; $this->showDistrictDropdown = false; $this->ward_id = null; $this->vilstreet_id = null; }
+    public function clearDistrict()                   { $this->district_id = null; $this->districtSearch = ''; $this->showDistrictDropdown = true; $this->ward_id = null; $this->wardSearch = ''; $this->vilstreet_id = null; $this->villageSearch = ''; }
 
-    // Ward
-    public function getFilteredWardsProperty()        { return $this->filterCollection($this->wards, $this->wardSearch); }
-    public function getSelectedWardProperty()         { return $this->findIn($this->wards, $this->ward_id); }
-    public function selectWard($id)                   { $this->ward_id = $id; $this->wardSearch = ''; $this->showWardDropdown = false; $this->updatestreet(); }
-    public function clearWard()                       { $this->ward_id = null; $this->wardSearch = ''; $this->showWardDropdown = true; $this->villages = collect(); $this->vilstreet_id = null; }
+    // Ward — scoped to selected district
+    public function getFilteredWardsProperty()        { return $this->dbSearch(wards::class, $this->wardSearch, 'district_id', $this->district_id); }
+    public function getSelectedWardProperty()         { return $this->ward_id ? wards::select('id', 'name')->find($this->ward_id) : null; }
+    public function selectWard($id)                   { $this->ward_id = $id; $this->wardSearch = ''; $this->showWardDropdown = false; $this->vilstreet_id = null; }
+    public function clearWard()                       { $this->ward_id = null; $this->wardSearch = ''; $this->showWardDropdown = true; $this->vilstreet_id = null; $this->villageSearch = ''; }
 
-    // Village
-    public function getFilteredVillagesProperty()     { return $this->filterCollection($this->villages, $this->villageSearch); }
-    public function getSelectedVillageProperty()      { return $this->findIn($this->villages, $this->vilstreet_id); }
+    // Village/Street — scoped to selected ward
+    public function getFilteredVillagesProperty()     { return $this->dbSearch(street::class, $this->villageSearch, 'ward_id', $this->ward_id); }
+    public function getSelectedVillageProperty()      { return $this->vilstreet_id ? street::select('id', 'name')->find($this->vilstreet_id) : null; }
     public function selectVillage($id)                { $this->vilstreet_id = $id; $this->villageSearch = ''; $this->showVillageDropdown = false; }
     public function clearVillage()                    { $this->vilstreet_id = null; $this->villageSearch = ''; $this->showVillageDropdown = true; }
 
     // Department
-    public function getFilteredDepartmentsProperty()  { return $this->filterCollection($this->departments, $this->departmentSearch); }
-    public function getSelectedDepartmentProperty()   { return $this->findIn($this->departments, $this->department_id); }
+    public function getFilteredDepartmentsProperty()  { return $this->dbSearch(departments::class, $this->departmentSearch); }
+    public function getSelectedDepartmentProperty()   { return $this->department_id ? departments::select('id', 'name')->find($this->department_id) : null; }
     public function selectDepartment($id)             { $this->department_id = $id; $this->departmentSearch = ''; $this->showDepartmentDropdown = false; }
     public function clearDepartment()                 { $this->department_id = null; $this->departmentSearch = ''; $this->showDepartmentDropdown = true; }
 
     // Job Title
-    public function getFilteredTitlesProperty()       { return $this->filterCollection($this->jobtitles, $this->titleSearch); }
-    public function getSelectedTitleProperty()        { return $this->findIn($this->jobtitles, $this->title_id); }
+    public function getFilteredTitlesProperty()       { return $this->dbSearch(Jobtitle::class, $this->titleSearch); }
+    public function getSelectedTitleProperty()        { return $this->title_id ? Jobtitle::select('id', 'name')->find($this->title_id) : null; }
     public function selectTitle($id)                  { $this->title_id = $id; $this->titleSearch = ''; $this->showTitleDropdown = false; }
     public function clearTitle()                      { $this->title_id = null; $this->titleSearch = ''; $this->showTitleDropdown = true; }
 
     // Designation
-    public function getFilteredDesignationsProperty() { return $this->filterCollection($this->designations, $this->designationSearch); }
-    public function getSelectedDesignationProperty()  { return $this->findIn($this->designations, $this->designation_id); }
+    public function getFilteredDesignationsProperty() { return $this->dbSearch(designations::class, $this->designationSearch); }
+    public function getSelectedDesignationProperty()  { return $this->designation_id ? designations::select('id', 'name')->find($this->designation_id) : null; }
     public function selectDesignation($id)            { $this->designation_id = $id; $this->designationSearch = ''; $this->showDesignationDropdown = false; }
     public function clearDesignation()                { $this->designation_id = null; $this->designationSearch = ''; $this->showDesignationDropdown = true; }
 
@@ -278,18 +248,10 @@ class Addstaff extends Component
 
     public function listdata()
     {
-        $this->countries = countries::all();
-        $this->regions = regions::all();
-        $this->districts = districts::all();
-        $this->wards = wards::all();
-        $this->villages = villages::all();
-        $this->workstations = workstations::all();
-        $this->departments = departments::all();
-        $this->jobtitles = Jobtitle::all();
-        $this->designations = designations::all();
-        $this->denominations = denominations::all();
-        $this->users = User::all();
-        $this->roles = Role::all();
+        $this->workstations = workstations::orderBy('workstation_name')->get();
+        $this->denominations = denominations::orderBy('name')->get();
+        $this->users = User::orderBy('first_name')->get();
+        $this->roles = Role::orderBy('name')->get();
     }
 
     public function getDenominations()
@@ -571,34 +533,6 @@ class Addstaff extends Component
         $this->showModal = false;
 
         return redirect()->route('hr.stafflist');
-    }
-
-    public function updateDistricts()
-    {
-        if ($this->region_id) {
-            $this->districts = districts::where('region_id', $this->region_id)->get();
-        } else {
-            $this->districts = collect(); // Clear districts if no region is selected
-        }
-    }
-
-    public function updatewards()
-    {
-        if ($this->district_id) {
-            $this->wards = wards::where('district_id', $this->district_id)->get();
-        } else {
-            $this->wards = collect(); // Clear wards if no district is selected
-        }
-    }
-
-    // When a ward is selected
-    public function updatestreet()
-    {
-        if ($this->ward_id) {
-            $this->villages = street::where('ward_id', $this->ward_id)->orderBy('name')->get();
-        } else {
-            $this->villages = collect(); // Clear streets if no district is selected
-        }
     }
 
     /**

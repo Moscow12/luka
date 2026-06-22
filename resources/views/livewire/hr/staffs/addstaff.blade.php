@@ -413,6 +413,7 @@
                                 :search-placeholder="$region_id ? 'Search district...' : 'Select a region first'"
                                 empty-text="No districts found"
                                 :disabled="!$region_id"
+                                disabled-text="Select a region first"
                                 select-method="selectDistrict"
                                 clear-method="clearDistrict" />
 
@@ -428,6 +429,7 @@
                                 :search-placeholder="$district_id ? 'Search ward...' : 'Select a district first'"
                                 empty-text="No wards found"
                                 :disabled="!$district_id"
+                                disabled-text="Select a district first"
                                 select-method="selectWard"
                                 clear-method="clearWard" />
 
@@ -443,6 +445,7 @@
                                 :search-placeholder="$ward_id ? 'Search village...' : 'Select a ward first'"
                                 empty-text="No villages found"
                                 :disabled="!$ward_id"
+                                disabled-text="Select a ward first"
                                 select-method="selectVillage"
                                 clear-method="clearVillage" />
                         </div>
