@@ -250,7 +250,7 @@ class Leave extends Component
 
         $used = EmployeeLeaves::where('employee_id', $this->employee_id)
             ->where('leave_id', $this->leave_id)
-            ->sum('days_used');
+            ->sum('days');
 
         $this->available_days = max($leave->days - $used, 0);
     }
