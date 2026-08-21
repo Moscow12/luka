@@ -30,9 +30,6 @@
                             <span class="spinner-border spinner-border-sm"></span> Generating...
                         </span>
                     </button>
-                    <button class="btn btn-outline-secondary" onclick="window.print()">
-                        <i class="fa-solid fa-print"></i> Print
-                    </button>
                 </div>
             </div>
         </div>
@@ -286,9 +283,9 @@
                 <span class="badge bg-dark">{{ $assets->total() }} records</span>
             </div>
         </div>
-        <div class="table-responsive">
+        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
             <table class="table table-hover table-striped mb-0 small">
-                <thead class="table-dark">
+                <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
                     <tr>
                         <th class="ps-3" style="width: 40px;">#</th>
                         <th style="cursor: pointer;" wire:click="sortBy('codeno')">
@@ -439,11 +436,31 @@
                 @endif
             </table>
         </div>
-        @if($assets->hasPages())
         <div class="card-footer border-top bg-transparent">
-            {{ $assets->links() }}
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <!-- Results Info -->
+                <div class="text-muted">
+                    @if ($assets->total() > 0)
+                        Showing {{ $assets->firstItem() }} to {{ $assets->lastItem() }} of
+                        {{ $assets->total() }} assets
+                    @else
+                        No assets found
+                    @endif
+                </div>
+
+                <!-- Rows Per Page Only -->
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 text-nowrap small">Rows per page:</label>
+                    <select wire:model.live="perPage" class="form-select form-select-sm"
+                        style="width: auto;">
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                        <option value="999999">All</option>
+                    </select>
+                </div>
+            </div>
         </div>
-        @endif
     </div>
 
     <!-- Report Footer -->

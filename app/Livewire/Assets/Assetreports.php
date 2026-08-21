@@ -19,13 +19,21 @@ class Assetreports extends Component
 
     // Filters
     public $filterDepartment = '';
+
     public $filterAssetClass = '';
+
     public $filterWorkstation = '';
+
     public $filterBuilding = '';
+
     public $filterStatus = '';
+
     public $filterCondition = '';
+
     public $filterDateFrom = '';
+
     public $filterDateTo = '';
+
     public $search = '';
 
     // Report type
@@ -33,7 +41,10 @@ class Assetreports extends Component
 
     // Sorting
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
+
+    public $perPage = 50;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -62,6 +73,11 @@ class Assetreports extends Component
     }
 
     public function updatingReportType()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage()
     {
         $this->resetPage();
     }
@@ -95,20 +111,20 @@ class Assetreports extends Component
     protected function getBaseQuery()
     {
         return assetregistry::with(['asset', 'assetClass', 'building', 'facilityLocation', 'department', 'workstation', 'addedBy'])
-            ->when($this->search, fn($q) => $q->where(function($query) {
-                $query->where('serial_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('codeno', 'like', '%' . $this->search . '%')
-                    ->orWhere('model', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('asset', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
+            ->when($this->search, fn ($q) => $q->where(function ($query) {
+                $query->where('serial_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('codeno', 'like', '%'.$this->search.'%')
+                    ->orWhere('model', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('asset', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
             }))
-            ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
-            ->when($this->filterAssetClass, fn($q) => $q->where('asset_class_id', $this->filterAssetClass))
-            ->when($this->filterWorkstation, fn($q) => $q->where('workstation_id', $this->filterWorkstation))
-            ->when($this->filterBuilding, fn($q) => $q->where('building_id', $this->filterBuilding))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterCondition, fn($q) => $q->where('condition', $this->filterCondition))
-            ->when($this->filterDateFrom, fn($q) => $q->whereDate('purchase_date', '>=', $this->filterDateFrom))
-            ->when($this->filterDateTo, fn($q) => $q->whereDate('purchase_date', '<=', $this->filterDateTo))
+            ->when($this->filterDepartment, fn ($q) => $q->where('department_id', $this->filterDepartment))
+            ->when($this->filterAssetClass, fn ($q) => $q->where('asset_class_id', $this->filterAssetClass))
+            ->when($this->filterWorkstation, fn ($q) => $q->where('workstation_id', $this->filterWorkstation))
+            ->when($this->filterBuilding, fn ($q) => $q->where('building_id', $this->filterBuilding))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition))
+            ->when($this->filterDateFrom, fn ($q) => $q->whereDate('purchase_date', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn ($q) => $q->whereDate('purchase_date', '<=', $this->filterDateTo))
             ->orderBy($this->sortField, $this->sortDirection);
     }
 
@@ -144,13 +160,13 @@ class Assetreports extends Component
 
     protected function getDepartmentSummary()
     {
-        return departments::withCount(['assetregistries' => function($q) {
-                $this->applyFilters($q);
-            }])
-            ->withSum(['assetregistries' => function($q) {
+        return departments::withCount(['assetregistries' => function ($q) {
+            $this->applyFilters($q);
+        }])
+            ->withSum(['assetregistries' => function ($q) {
                 $this->applyFilters($q);
             }], 'purchase_cost')
-            ->withSum(['assetregistries' => function($q) {
+            ->withSum(['assetregistries' => function ($q) {
                 $this->applyFilters($q);
             }], 'depreciation')
             ->having('assetregistries_count', '>', 0)
@@ -160,24 +176,24 @@ class Assetreports extends Component
 
     protected function getClassSummary()
     {
-        return assetclass::withCount(['assets as registry_count' => function($q) {
-                $q->whereHas('assetregistries', function($sub) {
-                    $this->applyFilters($sub);
-                });
-            }])
+        return assetclass::withCount(['assets as registry_count' => function ($q) {
+            $q->whereHas('assetregistries', function ($sub) {
+                $this->applyFilters($sub);
+            });
+        }])
             ->get()
-            ->filter(fn($class) => $class->registry_count > 0);
+            ->filter(fn ($class) => $class->registry_count > 0);
     }
 
     protected function applyFilters($query)
     {
         return $query
-            ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
-            ->when($this->filterAssetClass, fn($q) => $q->where('asset_class_id', $this->filterAssetClass))
-            ->when($this->filterWorkstation, fn($q) => $q->where('workstation_id', $this->filterWorkstation))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterDateFrom, fn($q) => $q->whereDate('purchase_date', '>=', $this->filterDateFrom))
-            ->when($this->filterDateTo, fn($q) => $q->whereDate('purchase_date', '<=', $this->filterDateTo));
+            ->when($this->filterDepartment, fn ($q) => $q->where('department_id', $this->filterDepartment))
+            ->when($this->filterAssetClass, fn ($q) => $q->where('asset_class_id', $this->filterAssetClass))
+            ->when($this->filterWorkstation, fn ($q) => $q->where('workstation_id', $this->filterWorkstation))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterDateFrom, fn ($q) => $q->whereDate('purchase_date', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn ($q) => $q->whereDate('purchase_date', '<=', $this->filterDateTo));
     }
 
     /**
@@ -194,7 +210,7 @@ class Assetreports extends Component
         $purchaseCost = $asset->purchase_cost ?? 0;
         $purchaseDate = $asset->purchase_date;
 
-        if (!$purchaseDate || !$purchaseCost || $purchaseCost <= 0) {
+        if (! $purchaseDate || ! $purchaseCost || $purchaseCost <= 0) {
             return 0;
         }
 
@@ -259,11 +275,12 @@ class Assetreports extends Component
         $assets = $this->getBaseQuery()->get();
 
         // Calculate depreciation for each asset
-        $assetsWithDepreciation = $assets->map(function($asset) {
+        $assetsWithDepreciation = $assets->map(function ($asset) {
             $asset->calculated_depreciation = $this->calculateDepreciation($asset);
             $asset->effective_method = $this->getEffectiveDepreciationMethod($asset);
             $asset->effective_life = $this->getEffectiveUsefulLife($asset);
             $asset->has_override = $asset->depreciation_method !== null || $asset->useful_life_years !== null;
+
             return $asset;
         });
 
@@ -279,8 +296,8 @@ class Assetreports extends Component
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(
-            fn() => print($pdf->output()),
-            'fixed-asset-report-' . now()->format('Y-m-d-His') . '.pdf'
+            fn () => print ($pdf->output()),
+            'fixed-asset-report-'.now()->format('Y-m-d-His').'.pdf'
         );
     }
 
@@ -345,14 +362,14 @@ class Assetreports extends Component
             ];
         }
 
-        $filename = 'fixed-asset-report-' . now()->format('Y-m-d-His') . '.csv';
+        $filename = 'fixed-asset-report-'.now()->format('Y-m-d-His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
 
-        $callback = function() use ($csvData) {
+        $callback = function () use ($csvData) {
             $file = fopen('php://output', 'w');
             foreach ($csvData as $row) {
                 fputcsv($file, $row);
@@ -397,7 +414,7 @@ class Assetreports extends Component
 
     public function render()
     {
-        $assets = $this->getBaseQuery()->paginate(20);
+        $assets = $this->getBaseQuery()->paginate($this->perPage);
         $statistics = $this->getStatistics();
 
         return view('livewire.assets.assetreports', [
