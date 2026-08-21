@@ -178,7 +178,7 @@
                                 @error('fpid') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-medium">Denomination</label>
+                                <label class="form-label fw-medium">Denomination <span class="text-danger">*</span></label>
                                 <select class="form-select @error('denomination_id') is-invalid @enderror"
                                     wire:model="denomination_id" wire:change="getDenominations()">
                                     <option value="">Select Denomination</option>
@@ -259,7 +259,7 @@
                                 </h6>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-medium">Workstation</label>
+                                <label class="form-label fw-medium">Workstation <span class="text-danger">*</span></label>
                                 <select class="form-select @error('workstation_id') is-invalid @enderror" wire:model="workstation_id">
                                     <option value="">Select Workstation</option>
                                     @foreach($workstations as $workstation)
@@ -272,6 +272,7 @@
                                 <x-forms.search-picker
                                     name="department_id"
                                     label="Department"
+                                    :required="true"
                                     :selected="$this->selectedDepartment"
                                     :items="$this->filteredDepartments"
                                     :search-value="$departmentSearch"
@@ -287,6 +288,7 @@
                                 <x-forms.search-picker
                                     name="title_id"
                                     label="Job Title"
+                                    :required="true"
                                     :selected="$this->selectedTitle"
                                     :items="$this->filteredTitles"
                                     :search-value="$titleSearch"
@@ -302,6 +304,7 @@
                                 <x-forms.search-picker
                                     name="designation_id"
                                     label="Designation"
+                                    :required="true"
                                     :selected="$this->selectedDesignation"
                                     :items="$this->filteredDesignations"
                                     :search-value="$designationSearch"
@@ -376,6 +379,7 @@
                             <x-forms.search-picker
                                 name="country_id"
                                 label="Country"
+                                :required="true"
                                 :selected="$this->selectedCountry"
                                 :items="$this->filteredCountries"
                                 :search-value="$countrySearch"
@@ -390,6 +394,7 @@
                             <x-forms.search-picker
                                 name="region_id"
                                 label="Region"
+                                :required="true"
                                 :selected="$this->selectedRegion"
                                 :items="$this->filteredRegions"
                                 :search-value="$regionSearch"
@@ -404,6 +409,7 @@
                             <x-forms.search-picker
                                 name="district_id"
                                 label="District"
+                                :required="true"
                                 :selected="$this->selectedDistrict"
                                 :items="$this->filteredDistricts"
                                 :search-value="$districtSearch"
@@ -420,6 +426,7 @@
                             <x-forms.search-picker
                                 name="ward_id"
                                 label="Ward"
+                                :required="true"
                                 :selected="$this->selectedWard"
                                 :items="$this->filteredWards"
                                 :search-value="$wardSearch"

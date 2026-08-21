@@ -118,88 +118,267 @@ class Addstaff extends Component
 
     // Searchable picker state (country, region, district, ward, village, department, title, designation)
     public $countrySearch = '';
+
     public $showCountryDropdown = false;
 
     public $regionSearch = '';
+
     public $showRegionDropdown = false;
 
     public $districtSearch = '';
+
     public $showDistrictDropdown = false;
 
     public $wardSearch = '';
+
     public $showWardDropdown = false;
 
     public $villageSearch = '';
+
     public $showVillageDropdown = false;
 
     public $departmentSearch = '';
+
     public $showDepartmentDropdown = false;
 
     public $titleSearch = '';
+
     public $showTitleDropdown = false;
 
     public $designationSearch = '';
+
     public $showDesignationDropdown = false;
 
     protected function dbSearch($model, string $term, ?string $scope = null, ?string $scopeValue = null, string $column = 'name')
     {
-        $query = $model::query()->select('id', $column . ' as name');
+        $query = $model::query()->select('id', $column.' as name');
         if ($scope && $scopeValue) {
             $query->where($scope, $scopeValue);
         }
         if (trim($term) !== '') {
-            $query->where($column, 'like', '%' . trim($term) . '%');
+            $query->where($column, 'like', '%'.trim($term).'%');
         }
+
         return $query->orderBy($column)->limit(50)->get();
     }
 
     // Country
-    public function getFilteredCountriesProperty()    { return $this->dbSearch(countries::class, $this->countrySearch); }
-    public function getSelectedCountryProperty()      { return $this->country_id ? countries::select('id', 'name')->find($this->country_id) : null; }
-    public function selectCountry($id)                { $this->country_id = $id; $this->countrySearch = ''; $this->showCountryDropdown = false; }
-    public function clearCountry()                    { $this->country_id = null; $this->countrySearch = ''; $this->showCountryDropdown = true; }
+    public function getFilteredCountriesProperty()
+    {
+        return $this->dbSearch(countries::class, $this->countrySearch);
+    }
+
+    public function getSelectedCountryProperty()
+    {
+        return $this->country_id ? countries::select('id', 'name')->find($this->country_id) : null;
+    }
+
+    public function selectCountry($id)
+    {
+        $this->country_id = $id;
+        $this->countrySearch = '';
+        $this->showCountryDropdown = false;
+    }
+
+    public function clearCountry()
+    {
+        $this->country_id = null;
+        $this->countrySearch = '';
+        $this->showCountryDropdown = true;
+    }
 
     // Region
-    public function getFilteredRegionsProperty()      { return $this->dbSearch(regions::class, $this->regionSearch); }
-    public function getSelectedRegionProperty()       { return $this->region_id ? regions::select('id', 'name')->find($this->region_id) : null; }
-    public function selectRegion($id)                 { $this->region_id = $id; $this->regionSearch = ''; $this->showRegionDropdown = false; $this->district_id = null; $this->ward_id = null; $this->vilstreet_id = null; }
-    public function clearRegion()                     { $this->region_id = null; $this->regionSearch = ''; $this->showRegionDropdown = true; $this->district_id = null; $this->districtSearch = ''; $this->ward_id = null; $this->wardSearch = ''; $this->vilstreet_id = null; $this->villageSearch = ''; }
+    public function getFilteredRegionsProperty()
+    {
+        return $this->dbSearch(regions::class, $this->regionSearch);
+    }
+
+    public function getSelectedRegionProperty()
+    {
+        return $this->region_id ? regions::select('id', 'name')->find($this->region_id) : null;
+    }
+
+    public function selectRegion($id)
+    {
+        $this->region_id = $id;
+        $this->regionSearch = '';
+        $this->showRegionDropdown = false;
+        $this->district_id = null;
+        $this->ward_id = null;
+        $this->vilstreet_id = null;
+    }
+
+    public function clearRegion()
+    {
+        $this->region_id = null;
+        $this->regionSearch = '';
+        $this->showRegionDropdown = true;
+        $this->district_id = null;
+        $this->districtSearch = '';
+        $this->ward_id = null;
+        $this->wardSearch = '';
+        $this->vilstreet_id = null;
+        $this->villageSearch = '';
+    }
 
     // District — scoped to selected region
-    public function getFilteredDistrictsProperty()    { return $this->dbSearch(districts::class, $this->districtSearch, 'region_id', $this->region_id); }
-    public function getSelectedDistrictProperty()     { return $this->district_id ? districts::select('id', 'name')->find($this->district_id) : null; }
-    public function selectDistrict($id)               { $this->district_id = $id; $this->districtSearch = ''; $this->showDistrictDropdown = false; $this->ward_id = null; $this->vilstreet_id = null; }
-    public function clearDistrict()                   { $this->district_id = null; $this->districtSearch = ''; $this->showDistrictDropdown = true; $this->ward_id = null; $this->wardSearch = ''; $this->vilstreet_id = null; $this->villageSearch = ''; }
+    public function getFilteredDistrictsProperty()
+    {
+        return $this->dbSearch(districts::class, $this->districtSearch, 'region_id', $this->region_id);
+    }
+
+    public function getSelectedDistrictProperty()
+    {
+        return $this->district_id ? districts::select('id', 'name')->find($this->district_id) : null;
+    }
+
+    public function selectDistrict($id)
+    {
+        $this->district_id = $id;
+        $this->districtSearch = '';
+        $this->showDistrictDropdown = false;
+        $this->ward_id = null;
+        $this->vilstreet_id = null;
+    }
+
+    public function clearDistrict()
+    {
+        $this->district_id = null;
+        $this->districtSearch = '';
+        $this->showDistrictDropdown = true;
+        $this->ward_id = null;
+        $this->wardSearch = '';
+        $this->vilstreet_id = null;
+        $this->villageSearch = '';
+    }
 
     // Ward — scoped to selected district
-    public function getFilteredWardsProperty()        { return $this->dbSearch(wards::class, $this->wardSearch, 'district_id', $this->district_id); }
-    public function getSelectedWardProperty()         { return $this->ward_id ? wards::select('id', 'name')->find($this->ward_id) : null; }
-    public function selectWard($id)                   { $this->ward_id = $id; $this->wardSearch = ''; $this->showWardDropdown = false; $this->vilstreet_id = null; }
-    public function clearWard()                       { $this->ward_id = null; $this->wardSearch = ''; $this->showWardDropdown = true; $this->vilstreet_id = null; $this->villageSearch = ''; }
+    public function getFilteredWardsProperty()
+    {
+        return $this->dbSearch(wards::class, $this->wardSearch, 'district_id', $this->district_id);
+    }
+
+    public function getSelectedWardProperty()
+    {
+        return $this->ward_id ? wards::select('id', 'name')->find($this->ward_id) : null;
+    }
+
+    public function selectWard($id)
+    {
+        $this->ward_id = $id;
+        $this->wardSearch = '';
+        $this->showWardDropdown = false;
+        $this->vilstreet_id = null;
+    }
+
+    public function clearWard()
+    {
+        $this->ward_id = null;
+        $this->wardSearch = '';
+        $this->showWardDropdown = true;
+        $this->vilstreet_id = null;
+        $this->villageSearch = '';
+    }
 
     // Village/Street — scoped to selected ward
-    public function getFilteredVillagesProperty()     { return $this->dbSearch(street::class, $this->villageSearch, 'ward_id', $this->ward_id); }
-    public function getSelectedVillageProperty()      { return $this->vilstreet_id ? street::select('id', 'name')->find($this->vilstreet_id) : null; }
-    public function selectVillage($id)                { $this->vilstreet_id = $id; $this->villageSearch = ''; $this->showVillageDropdown = false; }
-    public function clearVillage()                    { $this->vilstreet_id = null; $this->villageSearch = ''; $this->showVillageDropdown = true; }
+    public function getFilteredVillagesProperty()
+    {
+        return $this->dbSearch(street::class, $this->villageSearch, 'ward_id', $this->ward_id);
+    }
+
+    public function getSelectedVillageProperty()
+    {
+        return $this->vilstreet_id ? street::select('id', 'name')->find($this->vilstreet_id) : null;
+    }
+
+    public function selectVillage($id)
+    {
+        $this->vilstreet_id = $id;
+        $this->villageSearch = '';
+        $this->showVillageDropdown = false;
+    }
+
+    public function clearVillage()
+    {
+        $this->vilstreet_id = null;
+        $this->villageSearch = '';
+        $this->showVillageDropdown = true;
+    }
 
     // Department
-    public function getFilteredDepartmentsProperty()  { return $this->dbSearch(departments::class, $this->departmentSearch); }
-    public function getSelectedDepartmentProperty()   { return $this->department_id ? departments::select('id', 'name')->find($this->department_id) : null; }
-    public function selectDepartment($id)             { $this->department_id = $id; $this->departmentSearch = ''; $this->showDepartmentDropdown = false; }
-    public function clearDepartment()                 { $this->department_id = null; $this->departmentSearch = ''; $this->showDepartmentDropdown = true; }
+    public function getFilteredDepartmentsProperty()
+    {
+        return $this->dbSearch(departments::class, $this->departmentSearch);
+    }
+
+    public function getSelectedDepartmentProperty()
+    {
+        return $this->department_id ? departments::select('id', 'name')->find($this->department_id) : null;
+    }
+
+    public function selectDepartment($id)
+    {
+        $this->department_id = $id;
+        $this->departmentSearch = '';
+        $this->showDepartmentDropdown = false;
+    }
+
+    public function clearDepartment()
+    {
+        $this->department_id = null;
+        $this->departmentSearch = '';
+        $this->showDepartmentDropdown = true;
+    }
 
     // Job Title
-    public function getFilteredTitlesProperty()       { return $this->dbSearch(Jobtitle::class, $this->titleSearch); }
-    public function getSelectedTitleProperty()        { return $this->title_id ? Jobtitle::select('id', 'name')->find($this->title_id) : null; }
-    public function selectTitle($id)                  { $this->title_id = $id; $this->titleSearch = ''; $this->showTitleDropdown = false; }
-    public function clearTitle()                      { $this->title_id = null; $this->titleSearch = ''; $this->showTitleDropdown = true; }
+    public function getFilteredTitlesProperty()
+    {
+        return $this->dbSearch(Jobtitle::class, $this->titleSearch);
+    }
+
+    public function getSelectedTitleProperty()
+    {
+        return $this->title_id ? Jobtitle::select('id', 'name')->find($this->title_id) : null;
+    }
+
+    public function selectTitle($id)
+    {
+        $this->title_id = $id;
+        $this->titleSearch = '';
+        $this->showTitleDropdown = false;
+    }
+
+    public function clearTitle()
+    {
+        $this->title_id = null;
+        $this->titleSearch = '';
+        $this->showTitleDropdown = true;
+    }
 
     // Designation
-    public function getFilteredDesignationsProperty() { return $this->dbSearch(designations::class, $this->designationSearch); }
-    public function getSelectedDesignationProperty()  { return $this->designation_id ? designations::select('id', 'name')->find($this->designation_id) : null; }
-    public function selectDesignation($id)            { $this->designation_id = $id; $this->designationSearch = ''; $this->showDesignationDropdown = false; }
-    public function clearDesignation()                { $this->designation_id = null; $this->designationSearch = ''; $this->showDesignationDropdown = true; }
+    public function getFilteredDesignationsProperty()
+    {
+        return $this->dbSearch(designations::class, $this->designationSearch);
+    }
+
+    public function getSelectedDesignationProperty()
+    {
+        return $this->designation_id ? designations::select('id', 'name')->find($this->designation_id) : null;
+    }
+
+    public function selectDesignation($id)
+    {
+        $this->designation_id = $id;
+        $this->designationSearch = '';
+        $this->showDesignationDropdown = false;
+    }
+
+    public function clearDesignation()
+    {
+        $this->designation_id = null;
+        $this->designationSearch = '';
+        $this->showDesignationDropdown = true;
+    }
 
     public function mount($id = null)
     {
@@ -259,6 +438,29 @@ class Addstaff extends Component
         $this->denominations = denominations::where('id', $this->denomination_id)->get();
     }
 
+    /**
+     * Map a database column name to a human-readable field label for error messages.
+     */
+    private function humanFieldName(string $columnName): string
+    {
+        $fieldMap = [
+            'department_id' => 'Department',
+            'designation_id' => 'Designation',
+            'workstation_id' => 'Workstation',
+            'title_id' => 'Job Title',
+            'ward_id' => 'Ward',
+            'district_id' => 'District',
+            'region_id' => 'Region',
+            'country_id' => 'Country',
+            'vilstreet_id' => 'Village/Street',
+            'denomination_id' => 'Denomination',
+            'user_id' => 'Linked User',
+            'added_by' => 'Current user (session)',
+        ];
+
+        return $fieldMap[$columnName] ?? ucwords(str_replace('_id', '', str_replace('_', ' ', $columnName)));
+    }
+
     public function save()
     {
         $rules = [
@@ -279,6 +481,15 @@ class Addstaff extends Component
             'employee_no' => ['nullable', 'string', 'max:50', 'unique:employees,employee_no,'.$this->employee_id],
             'tin_number' => ['nullable', 'string', 'max:50'],
             'fpid' => ['nullable', 'string', 'max:50'],
+            'department_id' => ['required', 'exists:departments,id'],
+            'title_id' => ['required', 'exists:jobtitles,id'],
+            'designation_id' => ['required', 'exists:designations,id'],
+            'workstation_id' => ['required', 'exists:workstations,id'],
+            'denomination_id' => ['required', 'exists:denominations,id'],
+            'country_id' => ['required', 'exists:countries,id'],
+            'region_id' => ['required', 'exists:regions,id'],
+            'district_id' => ['required', 'exists:districts,id'],
+            'ward_id' => ['required', 'exists:wards,id'],
         ];
 
         $messages = [
@@ -307,6 +518,24 @@ class Addstaff extends Component
             'employee_no.unique' => 'This employee number is already in use.',
             'tin_number.max' => 'TIN number cannot exceed 50 characters.',
             'fpid.max' => 'Fingerprint ID cannot exceed 50 characters.',
+            'department_id.required' => 'Please select a department.',
+            'department_id.exists' => 'The selected department is invalid. Please re-select it.',
+            'title_id.required' => 'Please select a job title.',
+            'title_id.exists' => 'The selected job title is invalid. Please re-select it.',
+            'designation_id.required' => 'Please select a designation.',
+            'designation_id.exists' => 'The selected designation is invalid. Please re-select it.',
+            'workstation_id.required' => 'Please select a workstation.',
+            'workstation_id.exists' => 'The selected workstation is invalid. Please re-select it.',
+            'denomination_id.required' => 'Please select a denomination.',
+            'denomination_id.exists' => 'The selected denomination is invalid. Please re-select it.',
+            'country_id.required' => 'Please select a country.',
+            'country_id.exists' => 'The selected country is invalid. Please re-select it.',
+            'region_id.required' => 'Please select a region.',
+            'region_id.exists' => 'The selected region is invalid. Please re-select it.',
+            'district_id.required' => 'Please select a district.',
+            'district_id.exists' => 'The selected district is invalid. Please re-select it.',
+            'ward_id.required' => 'Please select a ward.',
+            'ward_id.exists' => 'The selected ward is invalid. Please re-select it.',
         ];
 
         // Add validation rules for user creation if enabled
@@ -376,10 +605,12 @@ class Addstaff extends Component
                         default => 'Failed to create user account. Please verify the username, email, and phone number are not already in use.',
                     };
                     session()->flash('error', $userErrorMessage);
+
                     return;
                 } catch (\Exception $e) {
                     DB::rollBack();
                     session()->flash('error', 'Failed to create user account: '.$e->getMessage());
+
                     return;
                 }
 
@@ -491,26 +722,21 @@ class Addstaff extends Component
                 // Match the column name from backticks after "FOREIGN KEY"
                 $detected = null;
                 if (preg_match('/FOREIGN KEY \(`([^`]+)`\)/', $msg, $matches)) {
-                    $columnName = $matches[1];
-                    $fieldMap = [
-                        'department_id'   => 'Department',
-                        'designation_id'  => 'Designation',
-                        'workstation_id'  => 'Workstation',
-                        'title_id'        => 'Job Title',
-                        'ward_id'         => 'Ward',
-                        'district_id'     => 'District',
-                        'region_id'       => 'Region',
-                        'country_id'      => 'Country',
-                        'vilstreet_id'    => 'Village/Street',
-                        'denomination_id' => 'Denomination',
-                        'user_id'         => 'Linked User',
-                        'added_by'        => 'Current user (session)',
-                    ];
-                    $detected = $fieldMap[$columnName] ?? ucwords(str_replace('_id', '', str_replace('_', ' ', $columnName)));
+                    $detected = $this->humanFieldName($matches[1]);
                 }
                 $errorMessage = $detected
                     ? "Save failed: the selected \"{$detected}\" is invalid or does not exist. Please re-select it and try again."
                     : 'Save failed: an invalid reference was selected. Please review all dropdown selections and try again.';
+            } elseif ($errorCode === 1048) {
+                $msg = $e->getMessage();
+                // MySQL 1048 message contains: Column 'column_name' cannot be null
+                $detected = null;
+                if (preg_match("/Column '([^']+)' cannot be null/", $msg, $matches)) {
+                    $detected = $this->humanFieldName($matches[1]);
+                }
+                $errorMessage = $detected
+                    ? "Save failed: \"{$detected}\" is required but was left empty. Please fill it in and try again."
+                    : 'Save failed: a required field was left empty. Please review the form and fill in all required fields.';
             } else {
                 $errorMessage = match ($errorCode) {
                     1406 => 'One or more fields contain data that is too long. Please check your input and try again.',
