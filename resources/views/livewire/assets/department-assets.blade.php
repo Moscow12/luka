@@ -168,11 +168,13 @@
                                     title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
+                                @can('delete-asset')
                                 <button class="btn btn-sm btn-outline-danger"
                                     wire:click="confirmDelete('{{ $registry->id }}')"
                                     title="Delete">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                @endcan
                             </div>
                         </td>
                     </tr>
@@ -591,9 +593,11 @@
                     <button type="button" class="btn btn-light" wire:click="cancelDelete">
                         Cancel
                     </button>
-                    <button type="button" class="btn btn-danger" wire:click="delete">
-                        <i class="fa-solid fa-trash me-1"></i> Delete
-                    </button>
+                    @can('delete-asset')
+                        <button type="button" class="btn btn-danger" wire:click="delete">
+                            <i class="fa-solid fa-trash me-1"></i> Delete
+                        </button>
+                    @endcan
                 </div>
             </div>
         </div>

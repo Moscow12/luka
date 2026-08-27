@@ -35,6 +35,7 @@ class PermissionSeeder extends Seeder
             ],
             'Asset Management' => [
                 ['name' => 'manage-assets', 'description' => 'Manage department assets and asset reports'],
+                ['name' => 'delete-asset', 'description' => 'Delete department assets'],
             ],
             'Staff Management' => [
                 ['name' => 'view-staff', 'description' => 'View staff list and details'],

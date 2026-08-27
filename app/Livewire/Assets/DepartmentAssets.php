@@ -387,7 +387,7 @@ class DepartmentAssets extends Component
     {
         $user = Auth::user();
 
-        if (! $user->can('manage-assets') && ! $user->isSuperAdmin()) {
+        if (! $user->can('delete-asset') && ! $user->isSuperAdmin()) {
             session()->flash('error', 'You do not have permission to delete assets.');
             $this->cancelDelete();
 

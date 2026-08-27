@@ -966,9 +966,11 @@
                     <button type="button" class="btn btn-light" wire:click="cancelDelete">
                         Cancel
                     </button>
-                    <button type="button" class="btn btn-danger" wire:click="delete">
-                        <i class="fa-solid fa-trash me-1"></i> Delete
-                    </button>
+                    @can('delete-asset')
+                        <button type="button" class="btn btn-danger" wire:click="delete">
+                            <i class="fa-solid fa-trash me-1"></i> Delete
+                        </button>
+                    @endcan
                 </div>
             </div>
         </div>
