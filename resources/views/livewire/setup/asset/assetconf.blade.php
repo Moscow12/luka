@@ -26,6 +26,15 @@
     </div>
     @endif
 
+    <!-- Error Message -->
+    @if (session()->has('error'))
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
     <!-- Tabs Navigation -->
     <div class="row">
         <div class="col-12">

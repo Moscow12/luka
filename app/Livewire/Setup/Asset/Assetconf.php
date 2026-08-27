@@ -7,6 +7,7 @@ use App\Models\assetclass;
 use App\Models\building;
 use App\Models\facilitylocation;
 use App\Models\workstations;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -105,6 +106,18 @@ class Assetconf extends Component
         ];
     }
 
+    /**
+     * Translate a database integrity error into a message safe to show the user.
+     */
+    protected function friendlyDbErrorMessage(QueryException $e): string
+    {
+        if (str_contains($e->getMessage(), 'Duplicate entry')) {
+            return 'This record already exists. Please use a different name.';
+        }
+
+        return 'A database error occurred while saving. Please try again or contact support if the problem persists.';
+    }
+
     public function updatedActiveTab()
     {
         $this->resetPage();
@@ -164,12 +177,18 @@ class Assetconf extends Component
             'added_by' => Auth::id(),
         ];
 
-        if ($this->editingBuildingId) {
-            building::findOrFail($this->editingBuildingId)->update($data);
-            session()->flash('success', 'Building updated successfully.');
-        } else {
-            building::create($data);
-            session()->flash('success', 'Building created successfully.');
+        try {
+            if ($this->editingBuildingId) {
+                building::findOrFail($this->editingBuildingId)->update($data);
+                session()->flash('success', 'Building updated successfully.');
+            } else {
+                building::create($data);
+                session()->flash('success', 'Building created successfully.');
+            }
+        } catch (QueryException $e) {
+            session()->flash('error', $this->friendlyDbErrorMessage($e));
+
+            return;
         }
 
         $this->showBuildingModal = false;
@@ -214,12 +233,18 @@ class Assetconf extends Component
             'added_by' => Auth::id(),
         ];
 
-        if ($this->editingLocationId) {
-            facilitylocation::findOrFail($this->editingLocationId)->update($data);
-            session()->flash('success', 'Facility location updated successfully.');
-        } else {
-            facilitylocation::create($data);
-            session()->flash('success', 'Facility location created successfully.');
+        try {
+            if ($this->editingLocationId) {
+                facilitylocation::findOrFail($this->editingLocationId)->update($data);
+                session()->flash('success', 'Facility location updated successfully.');
+            } else {
+                facilitylocation::create($data);
+                session()->flash('success', 'Facility location created successfully.');
+            }
+        } catch (QueryException $e) {
+            session()->flash('error', $this->friendlyDbErrorMessage($e));
+
+            return;
         }
 
         $this->showLocationModal = false;
@@ -272,12 +297,18 @@ class Assetconf extends Component
             'added_by' => Auth::id(),
         ];
 
-        if ($this->editingClassId) {
-            assetclass::findOrFail($this->editingClassId)->update($data);
-            session()->flash('success', 'Asset class updated successfully.');
-        } else {
-            assetclass::create($data);
-            session()->flash('success', 'Asset class created successfully.');
+        try {
+            if ($this->editingClassId) {
+                assetclass::findOrFail($this->editingClassId)->update($data);
+                session()->flash('success', 'Asset class updated successfully.');
+            } else {
+                assetclass::create($data);
+                session()->flash('success', 'Asset class created successfully.');
+            }
+        } catch (QueryException $e) {
+            session()->flash('error', $this->friendlyDbErrorMessage($e));
+
+            return;
         }
 
         $this->showClassModal = false;
@@ -322,12 +353,18 @@ class Assetconf extends Component
             'added_by' => Auth::id(),
         ];
 
-        if ($this->editingAssetId) {
-            asset::findOrFail($this->editingAssetId)->update($data);
-            session()->flash('success', 'Asset updated successfully.');
-        } else {
-            asset::create($data);
-            session()->flash('success', 'Asset created successfully.');
+        try {
+            if ($this->editingAssetId) {
+                asset::findOrFail($this->editingAssetId)->update($data);
+                session()->flash('success', 'Asset updated successfully.');
+            } else {
+                asset::create($data);
+                session()->flash('success', 'Asset created successfully.');
+            }
+        } catch (QueryException $e) {
+            session()->flash('error', $this->friendlyDbErrorMessage($e));
+
+            return;
         }
 
         $this->showAssetModal = false;
@@ -360,23 +397,29 @@ class Assetconf extends Component
             return;
         }
 
-        switch ($this->deleteType) {
-            case 'building':
-                building::findOrFail($this->deleteId)->delete();
-                session()->flash('success', 'Building deleted successfully.');
-                break;
-            case 'location':
-                facilitylocation::findOrFail($this->deleteId)->delete();
-                session()->flash('success', 'Facility location deleted successfully.');
-                break;
-            case 'class':
-                assetclass::findOrFail($this->deleteId)->delete();
-                session()->flash('success', 'Asset class deleted successfully.');
-                break;
-            case 'asset':
-                asset::findOrFail($this->deleteId)->delete();
-                session()->flash('success', 'Asset deleted successfully.');
-                break;
+        try {
+            switch ($this->deleteType) {
+                case 'building':
+                    building::findOrFail($this->deleteId)->delete();
+                    session()->flash('success', 'Building deleted successfully.');
+                    break;
+                case 'location':
+                    facilitylocation::findOrFail($this->deleteId)->delete();
+                    session()->flash('success', 'Facility location deleted successfully.');
+                    break;
+                case 'class':
+                    assetclass::findOrFail($this->deleteId)->delete();
+                    session()->flash('success', 'Asset class deleted successfully.');
+                    break;
+                case 'asset':
+                    asset::findOrFail($this->deleteId)->delete();
+                    session()->flash('success', 'Asset deleted successfully.');
+                    break;
+            }
+        } catch (QueryException $e) {
+            session()->flash('error', str_contains($e->getMessage(), 'foreign key constraint')
+                ? 'This item cannot be deleted because it is still in use elsewhere.'
+                : $this->friendlyDbErrorMessage($e));
         }
 
         $this->cancelDelete();

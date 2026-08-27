@@ -38,6 +38,7 @@
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title"> name</th>
                                     <th class="listjs-sorter" data-sort="task_type">Description</th>
+                                    <th>Supervisor (Approval Level)</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -52,6 +53,13 @@
                                         </td>
                                         <td class="name">{{ $dept->name }}</td>
                                         <td class="task_type">{{ $dept->description }}</td>
+                                        <td>
+                                            @if($dept->approval_level)
+                                                <span class="badge bg-primary-subtle text-primary-emphasis">{{ $dept->approval_level->name }}</span>
+                                            @else
+                                                <span class="text-muted">Not assigned</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $dept->id }}')">Edit</button>
                                             <button class="btn btn-sm btn-danger" wire:click="delete('{{ $dept->id }}')" 
@@ -112,7 +120,18 @@
                         <div class="mb-3">
                             <label>Department Description</label>
                             <input type="text" class="form-control" wire:model="description" placeholder="Enter Department Description">
-                            @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                            @error('description') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label>Supervisor (Approval Level)</label>
+                            <select class="form-select" wire:model="approval_level_id">
+                                <option value="">-- None --</option>
+                                @foreach($approvalLevels as $level)
+                                    <option value="{{ $level->id }}">{{ $level->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">The employee(s) assigned to this approval level (Setup &gt; Approval Configurations) act as the department's supervisor.</small>
+                            @error('approval_level_id') <small class="text-danger d-block">{{ $message }}</small> @enderror
                         </div>
                     </div>
 
