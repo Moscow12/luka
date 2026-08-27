@@ -14,16 +14,33 @@ class Leavemanagement extends Component
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'all';
+
     public $leaveTypeFilter = 'all';
+
     public $dateFrom = '';
+
     public $dateTo = '';
+
     public $selectedLeave = null;
+
     public $selectedLeaveBalance = ['entitled' => 0, 'used' => 0, 'balance' => 0];
+
     public $showModal = false;
+
     public $rejectionReason = '';
+
     public $showRejectModal = false;
+
     public $leaveToReject = null;
+
+    public function mount()
+    {
+        // Default to the current month's leave requests.
+        $this->dateFrom = now()->startOfMonth()->toDateString();
+        $this->dateTo = now()->endOfMonth()->toDateString();
+    }
 
     public function updatingSearch()
     {
@@ -55,6 +72,8 @@ class Leavemanagement extends Component
         $this->reset(['search', 'statusFilter', 'leaveTypeFilter', 'dateFrom', 'dateTo']);
         $this->statusFilter = 'all';
         $this->leaveTypeFilter = 'all';
+        $this->dateFrom = now()->startOfMonth()->toDateString();
+        $this->dateTo = now()->endOfMonth()->toDateString();
         $this->resetPage();
     }
 
@@ -64,7 +83,7 @@ class Leavemanagement extends Component
             'employee',
             'leave',
             'approvalnote.approval_level',
-            'approvalnote.approver'
+            'approvalnote.approver',
         ])->findOrFail($leaveId);
 
         // Store balance in its own persisted property — a dynamic attribute on
@@ -148,11 +167,11 @@ class Leavemanagement extends Component
         $employee = Employee::find($employeeId);
         $leave = Leaves::find($leaveId);
 
-        if (!$employee || !$leave) {
+        if (! $employee || ! $leave) {
             return [
                 'entitled' => 0,
                 'used' => 0,
-                'balance' => 0
+                'balance' => 0,
             ];
         }
 
@@ -168,7 +187,7 @@ class Leavemanagement extends Component
         return [
             'entitled' => $entitled,
             'used' => $usedDays,
-            'balance' => max(0, $balance)
+            'balance' => max(0, $balance),
         ];
     }
 
@@ -177,13 +196,13 @@ class Leavemanagement extends Component
         $leavesQuery = Employeeleaves::with([
             'employee',
             'leave',
-            'approvalnote.approval_level'
+            'approvalnote.approval_level',
         ])
             ->orderBy('created_at', 'desc');
 
         // Search filter
         if ($this->search) {
-            $term = '%' . $this->search . '%';
+            $term = '%'.$this->search.'%';
             $leavesQuery->whereHas('employee', function ($query) use ($term) {
                 $query->where('first_name', 'like', $term)
                     ->orWhere('middle_name', 'like', $term)
@@ -216,6 +235,7 @@ class Leavemanagement extends Component
         // Calculate leave balance for each leave
         $leaves->getCollection()->transform(function ($leave) {
             $leave->leaveBalance = $this->getLeaveBalance($leave->employee_id, $leave->leave_id);
+
             return $leave;
         });
 

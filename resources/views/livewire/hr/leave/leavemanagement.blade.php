@@ -95,7 +95,11 @@
                                         <small class="text-muted">Approved</small>
                                     </div>
                                 </div>
-                                @if($search || $statusFilter !== 'all' || $leaveTypeFilter !== 'all' || $dateFrom || $dateTo)
+                                @php
+                                    $isDefaultDateRange = $dateFrom === now()->startOfMonth()->toDateString()
+                                        && $dateTo === now()->endOfMonth()->toDateString();
+                                @endphp
+                                @if($search || $statusFilter !== 'all' || $leaveTypeFilter !== 'all' || ! $isDefaultDateRange)
                                 <button type="button" class="btn btn-outline-secondary btn-sm align-self-end"
                                         wire:click="clearFilters" title="Clear filters">
                                     <i class="fa-solid fa-rotate-left"></i>

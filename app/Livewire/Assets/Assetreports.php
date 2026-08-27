@@ -6,6 +6,7 @@ use App\Models\assetclass;
 use App\Models\assetregistry;
 use App\Models\building;
 use App\Models\departments;
+use App\Models\facilitylocation;
 use App\Models\workstations;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -25,6 +26,8 @@ class Assetreports extends Component
     public $filterWorkstation = '';
 
     public $filterBuilding = '';
+
+    public $filterFacilityLocation = '';
 
     public $filterStatus = '';
 
@@ -52,6 +55,7 @@ class Assetreports extends Component
         'filterDepartment' => ['except' => ''],
         'filterAssetClass' => ['except' => ''],
         'filterWorkstation' => ['except' => ''],
+        'filterFacilityLocation' => ['except' => ''],
         'filterStatus' => ['except' => ''],
         'search' => ['except' => ''],
         'reportType' => ['except' => 'registry'],
@@ -68,6 +72,11 @@ class Assetreports extends Component
     }
 
     public function updatingFilterAssetClass()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterFacilityLocation()
     {
         $this->resetPage();
     }
@@ -99,6 +108,7 @@ class Assetreports extends Component
             'filterAssetClass',
             'filterWorkstation',
             'filterBuilding',
+            'filterFacilityLocation',
             'filterStatus',
             'filterCondition',
             'filterDateFrom',
@@ -121,6 +131,7 @@ class Assetreports extends Component
             ->when($this->filterAssetClass, fn ($q) => $q->where('asset_class_id', $this->filterAssetClass))
             ->when($this->filterWorkstation, fn ($q) => $q->where('workstation_id', $this->filterWorkstation))
             ->when($this->filterBuilding, fn ($q) => $q->where('building_id', $this->filterBuilding))
+            ->when($this->filterFacilityLocation, fn ($q) => $q->where('facility_location_id', $this->filterFacilityLocation))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterCondition, fn ($q) => $q->where('condition', $this->filterCondition))
             ->when($this->filterDateFrom, fn ($q) => $q->whereDate('purchase_date', '>=', $this->filterDateFrom))
@@ -191,6 +202,7 @@ class Assetreports extends Component
             ->when($this->filterDepartment, fn ($q) => $q->where('department_id', $this->filterDepartment))
             ->when($this->filterAssetClass, fn ($q) => $q->where('asset_class_id', $this->filterAssetClass))
             ->when($this->filterWorkstation, fn ($q) => $q->where('workstation_id', $this->filterWorkstation))
+            ->when($this->filterFacilityLocation, fn ($q) => $q->where('facility_location_id', $this->filterFacilityLocation))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterDateFrom, fn ($q) => $q->whereDate('purchase_date', '>=', $this->filterDateFrom))
             ->when($this->filterDateTo, fn ($q) => $q->whereDate('purchase_date', '<=', $this->filterDateTo));
@@ -396,6 +408,14 @@ class Assetreports extends Component
             $ws = workstations::find($this->filterWorkstation);
             $filters['Workstation'] = $ws?->workstation_name ?? 'Unknown';
         }
+        if ($this->filterBuilding) {
+            $bldg = building::find($this->filterBuilding);
+            $filters['Building'] = $bldg?->name ?? 'Unknown';
+        }
+        if ($this->filterFacilityLocation) {
+            $location = facilitylocation::find($this->filterFacilityLocation);
+            $filters['Location'] = $location?->name ?? 'Unknown';
+        }
         if ($this->filterStatus) {
             $filters['Status'] = ucfirst($this->filterStatus);
         }
@@ -424,6 +444,7 @@ class Assetreports extends Component
             'assetClasses' => assetclass::orderBy('name')->get(),
             'workstations' => workstations::orderBy('workstation_name')->get(),
             'buildings' => building::orderBy('name')->get(),
+            'facilityLocations' => facilitylocation::orderBy('name')->get(),
             'statuses' => [
                 'active' => 'Active',
                 'inactive' => 'Inactive',

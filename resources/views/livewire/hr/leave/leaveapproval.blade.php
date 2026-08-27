@@ -130,10 +130,7 @@
                                 <tr>
                                     <th style="width: 50px;">#</th>
                                     <th>Employee</th>
-                                    <th>Leave Type</th>
-                                    <th role="button" wire:click="sortBy('start_date')" class="user-select-none">
-                                        Period <i class="fa-solid {{ $sortIcon('start_date') }} ms-1"></i>
-                                    </th>
+                                    
                                     <th role="button" wire:click="sortBy('days')" class="user-select-none">
                                         Days <i class="fa-solid {{ $sortIcon('days') }} ms-1"></i>
                                     </th>
@@ -165,15 +162,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <span class="badge bg-info-subtle text-info-emphasis">
-                                            {{ $leave->leave->name ?? 'N/A' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div>{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</div>
-                                        <small class="text-muted">to {{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</small>
-                                    </td>
+                                   
                                     <td>{{ $leave->days ?? 0 }} {{ Str::plural('day', $leave->days ?? 0) }}</td>
                                     <td>
                                         @php
@@ -196,7 +185,7 @@
                                                 <small>
                                                     <i class="fa-solid fa-{{ $approval->status === 'approved' ? 'check text-success' : 'times text-danger' }}"></i>
                                                     {{ $approval->approval_level->name ?? 'N/A' }}
-                                                    <span class="text-muted">({{ $approval->approver->name ?? 'Unknown' }})</span>
+                                                    <span class="text-muted">({{ $approval->approver?->full_name ?: 'Unknown' }}, {{ $approval->approved_at?->diffForHumans() }})</span>
                                                 </small>
                                                 @endforeach
                                             @endif
@@ -213,8 +202,13 @@
                                         <small class="text-muted">{{ $leave->created_at?->diffForHumans() }}</small>
                                     </td>
                                     <td>
-                                        @if($leave->canUserApprove && in_array(strtolower($leave->status ?? ''), ['awaiting', 'active', 'pending']))
                                         <div class="d-flex gap-2">
+                                            <button type="button"
+                                                    wire:click="viewApprovalHistory('{{ $leave->id }}')"
+                                                    class="btn btn-sm btn-outline-secondary" title="View Approval History">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            @if($leave->canUserApprove && in_array(strtolower($leave->status ?? ''), ['awaiting', 'active', 'pending']))
                                             <button type="button"
                                                     wire:click="openApproveModal('{{ $leave->id }}')"
                                                     wire:loading.attr="disabled"
@@ -227,16 +221,16 @@
                                                     class="btn btn-sm btn-danger">
                                                 <i class="fa-solid fa-times"></i> Reject
                                             </button>
-                                        </div>
-                                        @else
-                                        <span class="text-muted small">
-                                            @if(!$leave->nextApprovalLevel)
-                                                Fully processed
                                             @else
-                                                Awaiting other approver
+                                            <span class="text-muted small align-self-center">
+                                                @if(!$leave->nextApprovalLevel)
+                                                    Fully processed
+                                                @else
+                                                    Awaiting other approver
+                                                @endif
+                                            </span>
                                             @endif
-                                        </span>
-                                        @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -344,6 +338,107 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Approval History Modal -->
+    @if($showHistoryModal && $viewedLeave)
+    @php $historyStatus = strtolower($viewedLeave->status ?? ''); @endphp
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title mb-0"><i class="fa-solid fa-list-check me-2"></i>Approval History</h5>
+                    <button type="button" class="btn-close btn-close-white" wire:click="closeHistoryModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <p class="mb-1"><strong>Employee:</strong> {{ $viewedLeave->employee->first_name ?? '' }} {{ $viewedLeave->employee->last_name ?? '' }}</p>
+                                <p class="mb-1"><strong>Leave Type:</strong> {{ $viewedLeave->leave->name ?? 'N/A' }}</p>
+                                <p class="mb-0"><strong>Period:</strong> {{ \Carbon\Carbon::parse($viewedLeave->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($viewedLeave->end_date)->format('d M Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-{{ $historyStatus === 'approved' ? 'success' : ($historyStatus === 'rejected' ? 'danger' : 'warning') }} mb-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <strong>Current Status:</strong>
+                                @if(in_array($historyStatus, ['awaiting', 'pending']))
+                                <span class="ms-2">Awaiting Approval</span>
+                                @elseif(in_array($historyStatus, ['active', 'inprogress', 'in progress']))
+                                <span class="ms-2">In Progress</span>
+                                @elseif($historyStatus === 'approved')
+                                <span class="ms-2">Fully Approved</span>
+                                @elseif($historyStatus === 'rejected')
+                                <span class="ms-2">Rejected</span>
+                                @else
+                                <span class="ms-2">{{ ucfirst($viewedLeave->status ?? 'Unknown') }}</span>
+                                @endif
+                            </div>
+                            <i class="fa-solid fa-{{ $historyStatus === 'approved' ? 'check-circle' : ($historyStatus === 'rejected' ? 'times-circle' : 'clock') }} fa-2x"></i>
+                        </div>
+                    </div>
+
+                    @if($viewedLeave->approvalnote->count() > 0)
+                    <div class="position-relative">
+                        @foreach($viewedLeave->approvalnote as $approval)
+                        <div class="d-flex gap-3 mb-4 position-relative">
+                            @if(!$loop->last)
+                            <div class="position-absolute" style="left: 18px; top: 40px; bottom: -20px; width: 2px; background: #dee2e6;"></div>
+                            @endif
+
+                            <div class="flex-shrink-0">
+                                <div class="avatar avatar-md rounded-circle bg-{{ $approval->status === 'approved' ? 'success' : 'danger' }} text-white d-flex align-items-center justify-content-center" style="z-index: 1; position: relative;">
+                                    <i class="fa-solid fa-{{ $approval->status === 'approved' ? 'check' : 'times' }}"></i>
+                                </div>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="card border-{{ $approval->status === 'approved' ? 'success' : 'danger' }}">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1">
+                                                    {{ $approval->approval_level->name ?? 'N/A' }}
+                                                    <span class="badge bg-{{ $approval->status === 'approved' ? 'success' : 'danger' }}-subtle text-{{ $approval->status === 'approved' ? 'success' : 'danger' }}-emphasis ms-2">
+                                                        {{ ucfirst($approval->status) }}
+                                                    </span>
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <i class="fa-solid fa-user me-1"></i>{{ $approval->approver?->full_name ?: 'Unknown' }}
+                                                </small>
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="fa-solid fa-clock me-1"></i>{{ $approval->approved_at?->diffForHumans() }}
+                                            </small>
+                                        </div>
+                                        @if($approval->comments)
+                                        <div class="border-top pt-2 mt-2">
+                                            <small class="text-muted d-block mb-1"><i class="fa-solid fa-comment me-1"></i>Comments:</small>
+                                            <p class="mb-0 small">{{ $approval->comments }}</p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-hourglass-half fa-3x mb-3"></i>
+                        <p>No approval actions recorded yet.</p>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="closeHistoryModal">Close</button>
+                </div>
             </div>
         </div>
     </div>

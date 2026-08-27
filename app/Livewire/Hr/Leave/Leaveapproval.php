@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Hr\Leave;
 
-use App\Models\approvalleveltoemployee;
 use App\Models\approvalleveltodocument;
+use App\Models\approvalleveltoemployee;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\leaverequestapproval;
@@ -17,18 +17,32 @@ class Leaveapproval extends Component
     use WithPagination;
 
     public $statusFilter = 'Awaiting';
+
     public $search = '';
+
     public $dateFrom = '';
+
     public $dateTo = '';
+
     public $selectedLeave = null;
+
     public $showModal = false;
+
     public $actionType = '';
+
     public $comments = '';
+
     public $userApprovalLevels = [];
+
+    public $viewedLeave = null;
+
+    public $showHistoryModal = false;
 
     // Datatable controls
     public $perPage = 10;
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
 
     protected $paginationTheme = 'bootstrap';
@@ -131,13 +145,31 @@ class Leaveapproval extends Component
         $this->showModal = true;
     }
 
+    public function viewApprovalHistory($leaveId)
+    {
+        $this->viewedLeave = Employeeleaves::with([
+            'employee',
+            'leave',
+            'approvalnote.approval_level',
+            'approvalnote.approver',
+        ])->findOrFail($leaveId);
+        $this->showHistoryModal = true;
+    }
+
+    public function closeHistoryModal()
+    {
+        $this->showHistoryModal = false;
+        $this->viewedLeave = null;
+    }
+
     /**
      * Approve or reject the selected leave. A comment is required either way.
      */
     public function submitDecision()
     {
-        if (!in_array($this->actionType, ['approve', 'reject'])) {
+        if (! in_array($this->actionType, ['approve', 'reject'])) {
             session()->flash('error', 'No action selected.');
+
             return;
         }
 
@@ -151,22 +183,25 @@ class Leaveapproval extends Component
             'comments.max' => 'Comment cannot exceed 500 characters.',
         ]);
 
-        if (!$this->selectedLeave) {
+        if (! $this->selectedLeave) {
             session()->flash('error', 'No leave request selected.');
+
             return;
         }
 
         $currentLevel = $this->getCurrentApprovalLevel($this->selectedLeave);
 
-        if (!$currentLevel) {
+        if (! $currentLevel) {
             session()->flash('error', 'No approval level found or leave already processed.');
             $this->closeModal();
+
             return;
         }
 
-        if (!in_array($currentLevel->id, $this->userApprovalLevels)) {
+        if (! in_array($currentLevel->id, $this->userApprovalLevels)) {
             session()->flash('error', "You do not have permission to {$this->actionType} at this level.");
             $this->closeModal();
+
             return;
         }
 
@@ -236,7 +271,7 @@ class Leaveapproval extends Component
                 ->where('status', 'approved')
                 ->isNotEmpty();
 
-            if (!$alreadyApproved) {
+            if (! $alreadyApproved) {
                 return $level;
             }
         }
@@ -283,7 +318,7 @@ class Leaveapproval extends Component
 
     public function render()
     {
-        $canApprove = !empty($this->userApprovalLevels);
+        $canApprove = ! empty($this->userApprovalLevels);
         $pendingLeaves = collect();
         $myPendingCount = 0;
 

@@ -251,6 +251,15 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label small text-muted">Facility Location</label>
+                    <select class="form-select" wire:model.live="filterFacilityLocation">
+                        <option value="">All Locations</option>
+                        @foreach($facilityLocations as $location)
+                            <option value="{{ $location->id }}">{{ $location->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label class="form-label small text-muted">Purchase Date From</label>
                     <input type="date" class="form-control" wire:model.live="filterDateFrom">
                 </div>

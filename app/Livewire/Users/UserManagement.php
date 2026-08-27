@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Users;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Role;
 
 class UserManagement extends Component
 {
@@ -251,14 +251,6 @@ class UserManagement extends Component
         $user = User::withTrashed()->findOrFail($userId);
         $user->restore();
         session()->flash('message', 'User enabled successfully.');
-    }
-
-    // Permanently delete user
-    public function deleteUserPermanently($userId)
-    {
-        $user = User::withTrashed()->findOrFail($userId);
-        $user->forceDelete();
-        session()->flash('message', 'User permanently deleted.');
     }
 
     // Close modal and reset form

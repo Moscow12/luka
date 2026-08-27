@@ -211,12 +211,6 @@
                                             <i class="fa-solid fa-ban"></i>
                                         </button>
                                     @endif
-
-                                    <button wire:click="deleteUserPermanently('{{ $user->id }}')"
-                                        wire:confirm="Are you sure you want to permanently delete this user? This action cannot be undone!"
-                                        class="btn btn-sm btn-ghost-danger rounded-circle" title="Delete Permanently">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
