@@ -256,6 +256,7 @@
                                                 'created' => 'success',
                                                 'updated' => 'primary',
                                                 'deleted' => 'danger',
+                                                'viewed' => 'info',
                                                 'login' => 'info',
                                                 'logout' => 'warning',
                                                 default => 'secondary'

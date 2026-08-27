@@ -10,6 +10,7 @@ use App\Models\Employeeleaves;
 use App\Models\Employeequalifications;
 use App\Models\TerminationReason;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Staffdetails extends Component
@@ -81,6 +82,12 @@ class Staffdetails extends Component
                 $q->orderBy('start_date', 'desc')->limit(5);
             },
         ])->findOrFail($id);
+
+        activity('employee')
+            ->causedBy(Auth::user())
+            ->performedOn($this->employee)
+            ->event('viewed')
+            ->log('Employee viewed');
 
         $this->loadStats();
     }

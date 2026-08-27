@@ -60,11 +60,11 @@ class Employee extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['first_name', 'last_name', 'employment_status', 'department_id'])
+            ->useLogName('employee')
+            ->logFillable()
             ->logOnlyDirty()
             ->setDescriptionForEvent(fn (string $eventName) => "Employee {$eventName}")
-            ->useLogName('employee')
-            ->dontLogIfAttributesChangedOnly(['updated_at']);
+            ->dontSubmitEmptyLogs();
     }
 
     /* ====================
