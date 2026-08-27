@@ -5,23 +5,30 @@ namespace App\Livewire\Audit;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Activitylog\Models\Activity;
-use Illuminate\Support\Facades\DB;
 
 class Auditlog extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $log_name = '';
+
     public $event = '';
+
     public $causer_type = '';
+
     public $subject_type = '';
+
     public $date_from = '';
+
     public $date_to = '';
+
     public $perPage = 25;
 
     // Modal properties
     public $showDetailsModal = false;
+
     public $selectedActivity = null;
 
     // Filter visibility
@@ -38,6 +45,13 @@ class Auditlog extends Component
         'date_from' => ['except' => ''],
         'date_to' => ['except' => ''],
     ];
+
+    public function mount()
+    {
+        // Default to today's activity.
+        $this->date_from = now()->toDateString();
+        $this->date_to = now()->toDateString();
+    }
 
     public function updatingSearch()
     {
@@ -82,9 +96,9 @@ class Auditlog extends Component
             'event',
             'causer_type',
             'subject_type',
-            'date_from',
-            'date_to',
         ]);
+        $this->date_from = now()->toDateString();
+        $this->date_to = now()->toDateString();
         $this->resetPage();
     }
 
@@ -102,7 +116,7 @@ class Auditlog extends Component
 
     public function toggleFilters()
     {
-        $this->showFilters = !$this->showFilters;
+        $this->showFilters = ! $this->showFilters;
     }
 
     public function getActivitiesProperty()
@@ -110,21 +124,21 @@ class Auditlog extends Component
         $query = Activity::with(['causer', 'subject'])
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
-                    $query->where('description', 'like', '%' . $this->search . '%')
-                        ->orWhere('log_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('event', 'like', '%' . $this->search . '%')
+                    $query->where('description', 'like', '%'.$this->search.'%')
+                        ->orWhere('log_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('event', 'like', '%'.$this->search.'%')
                         ->orWhereHas('causer', function ($q) {
-                            $q->where('name', 'like', '%' . $this->search . '%')
-                                ->orWhere('email', 'like', '%' . $this->search . '%');
+                            $q->where('name', 'like', '%'.$this->search.'%')
+                                ->orWhere('email', 'like', '%'.$this->search.'%');
                         });
                 });
             })
-            ->when($this->log_name, fn($q) => $q->where('log_name', $this->log_name))
-            ->when($this->event, fn($q) => $q->where('event', $this->event))
-            ->when($this->causer_type, fn($q) => $q->where('causer_type', $this->causer_type))
-            ->when($this->subject_type, fn($q) => $q->where('subject_type', $this->subject_type))
-            ->when($this->date_from, fn($q) => $q->whereDate('created_at', '>=', $this->date_from))
-            ->when($this->date_to, fn($q) => $q->whereDate('created_at', '<=', $this->date_to))
+            ->when($this->log_name, fn ($q) => $q->where('log_name', $this->log_name))
+            ->when($this->event, fn ($q) => $q->where('event', $this->event))
+            ->when($this->causer_type, fn ($q) => $q->where('causer_type', $this->causer_type))
+            ->when($this->subject_type, fn ($q) => $q->where('subject_type', $this->subject_type))
+            ->when($this->date_from, fn ($q) => $q->whereDate('created_at', '>=', $this->date_from))
+            ->when($this->date_to, fn ($q) => $q->whereDate('created_at', '<=', $this->date_to))
             ->latest()
             ->paginate($this->perPage);
 

@@ -139,7 +139,10 @@
                                 </button>
 
                                 <!-- Reset Filters -->
-                                @if($search || $log_name || $event || $causer_type || $subject_type || $date_from || $date_to)
+                                @php
+                                    $isDefaultDateRange = $date_from === now()->toDateString() && $date_to === now()->toDateString();
+                                @endphp
+                                @if($search || $log_name || $event || $causer_type || $subject_type || ! $isDefaultDateRange)
                                     <button wire:click="resetFilters" type="button" class="btn btn-outline-secondary">
                                         <i class="fa-solid fa-rotate-left me-1"></i> Reset
                                     </button>
