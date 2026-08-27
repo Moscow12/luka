@@ -37,6 +37,8 @@
                                     <th>Quantity</th>
                                     <th>Price</th>
                                     <th>Status</th>
+                                    <th>Asset</th>
+                                    <th>Stocked</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -79,16 +81,26 @@
                                         @endif
                                     </td>
                                     <td>
+                                        @if($item->is_asset)
+                                            <span class="badge bg-info">Asset</span>
+                                        @else
+                                            <span class="badge bg-secondary">No</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->can_be_stocked)
+                                            <span class="badge bg-success">Yes</span>
+                                        @else
+                                            <span class="badge bg-secondary">No</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $item->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $item->id }}')"
-                                            onclick="return confirm('Delete this item?')">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center py-4">
+                                    <td colspan="11" class="text-center py-4">
                                         <div class="text-muted">
                                             <i class="fa-solid fa-inbox fa-3x mb-3"></i>
                                             <p>No chop items found</p>
@@ -117,7 +129,8 @@
     <x-pages.model :title="$modalMode === 'edit' ? 'Edit Chop Item' : 'Add Chop Item'"
                    :formaction="$modalMode === 'edit' ? 'update' : 'save'"
                    :modalMode="$modalMode"
-                   :showModal="$showModal">
+                   :showModal="$showModal"
+                   :size="'lg'">
         <div class="row">
             <div class="col-md-8">
                 <x-forms.input type="text" name="name" label="Item Name" placeholder="Enter Item Name" required />
@@ -151,10 +164,24 @@
 
         <x-forms.input type="textarea" name="description" label="Description" placeholder="Enter Description" rows="3" />
 
-        <div class="mb-3">
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" wire:model="is_active" id="is_active_item">
-                <label class="form-check-label" for="is_active_item">Active</label>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" wire:model="is_active" id="is_active_item" role="switch">
+                    <label class="form-check-label" for="is_active_item">Active</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" wire:model="is_asset" id="is_asset_item" role="switch">
+                    <label class="form-check-label" for="is_asset_item">Is Asset</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" wire:model="can_be_stocked" id="can_be_stocked_item" role="switch">
+                    <label class="form-check-label" for="can_be_stocked_item">Can Be Stocked</label>
+                </div>
             </div>
         </div>
     </x-pages.model>

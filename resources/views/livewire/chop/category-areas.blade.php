@@ -59,10 +59,7 @@
                                     <td>{{ Str::limit($category->description, 40) }}</td>
                                     <td>
                                         <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $category->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $category->id }}')"
-                                            onclick="return confirm('Delete this category? This will fail if there are items in this category.')">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                        
                                     </td>
                                 </tr>
                                 @empty

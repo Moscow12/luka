@@ -15,6 +15,8 @@ class chopitems extends Model
         'name',
         'slug',
         'is_active',
+        'is_asset',
+        'can_be_stocked',
         'gfc_code',
         'unit',
         'quantity',
@@ -26,6 +28,8 @@ class chopitems extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_asset' => 'boolean',
+        'can_be_stocked' => 'boolean',
         'price' => 'decimal:2',
         'quantity' => 'integer',
     ];

@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Chop;
 
-use App\Models\chopitems;
 use App\Models\chopcategoryarea;
+use App\Models\chopitems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -14,10 +14,34 @@ class ItemsManagement extends Component
     use WithPagination;
 
     public $search = '';
+
     public $item_id;
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    public $name, $slug, $is_active = true, $gfc_code, $unit, $quantity, $price, $description, $category_id;
+
+    public $name;
+
+    public $slug;
+
+    public $is_active = true;
+
+    public $is_asset = false;
+
+    public $can_be_stocked = true;
+
+    public $gfc_code;
+
+    public $unit;
+
+    public $quantity;
+
+    public $price;
+
+    public $description;
+
+    public $category_id;
 
     public function updatedName()
     {
@@ -37,6 +61,8 @@ class ItemsManagement extends Component
             $this->name = $item->name;
             $this->slug = $item->slug;
             $this->is_active = $item->is_active;
+            $this->is_asset = $item->is_asset;
+            $this->can_be_stocked = $item->can_be_stocked;
             $this->gfc_code = $item->gfc_code;
             $this->unit = $item->unit;
             $this->quantity = $item->quantity;
@@ -44,17 +70,21 @@ class ItemsManagement extends Component
             $this->description = $item->description;
             $this->category_id = $item->category_id;
         } else {
-            $this->reset(['item_id', 'name', 'slug', 'is_active', 'gfc_code', 'unit', 'quantity', 'price', 'description', 'category_id']);
+            $this->reset(['item_id', 'name', 'slug', 'is_active', 'is_asset', 'can_be_stocked', 'gfc_code', 'unit', 'quantity', 'price', 'description', 'category_id']);
             $this->is_active = true;
+            $this->is_asset = false;
+            $this->can_be_stocked = true;
         }
     }
 
     public function save()
     {
         $this->validate([
-            'name' => ['required', 'string', 'max:255', $this->modalMode === 'create' ? 'unique:chopitems,name' : 'unique:chopitems,name,' . $this->item_id],
+            'name' => ['required', 'string', 'max:255', $this->modalMode === 'create' ? 'unique:chopitems,name' : 'unique:chopitems,name,'.$this->item_id],
             'slug' => ['required', 'string', 'max:255'],
             'is_active' => ['boolean'],
+            'is_asset' => ['boolean'],
+            'can_be_stocked' => ['boolean'],
             'gfc_code' => ['nullable', 'string', 'max:255'],
             'unit' => ['nullable', 'string', 'max:255'],
             'quantity' => ['nullable', 'integer', 'min:0'],
@@ -69,6 +99,8 @@ class ItemsManagement extends Component
                 'name' => $this->name,
                 'slug' => $this->slug,
                 'is_active' => $this->is_active,
+                'is_asset' => $this->is_asset,
+                'can_be_stocked' => $this->can_be_stocked,
                 'gfc_code' => $this->gfc_code,
                 'unit' => $this->unit,
                 'quantity' => $this->quantity,
@@ -82,6 +114,8 @@ class ItemsManagement extends Component
                 'name' => $this->name,
                 'slug' => $this->slug,
                 'is_active' => $this->is_active,
+                'is_asset' => $this->is_asset,
+                'can_be_stocked' => $this->can_be_stocked,
                 'gfc_code' => $this->gfc_code,
                 'unit' => $this->unit,
                 'quantity' => $this->quantity,
@@ -94,19 +128,12 @@ class ItemsManagement extends Component
         }
 
         $this->showModal = false;
-        $this->reset(['item_id', 'name', 'slug', 'is_active', 'gfc_code', 'unit', 'quantity', 'price', 'description', 'category_id']);
+        $this->reset(['item_id', 'name', 'slug', 'is_active', 'is_asset', 'can_be_stocked', 'gfc_code', 'unit', 'quantity', 'price', 'description', 'category_id']);
     }
 
     public function update()
     {
         $this->save();
-    }
-
-    public function delete($id)
-    {
-        $item = chopitems::findOrFail($id);
-        $item->delete();
-        session()->flash('success', 'Chop Item deleted successfully!');
     }
 
     public function mount()
@@ -118,7 +145,7 @@ class ItemsManagement extends Component
     {
         $items = chopitems::query()
             ->with('category')
-            ->where('name', 'like', '%' . $this->search . '%')
+            ->where('name', 'like', '%'.$this->search.'%')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -126,7 +153,7 @@ class ItemsManagement extends Component
 
         return view('livewire.chop.items-management', [
             'items' => $items,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 }
