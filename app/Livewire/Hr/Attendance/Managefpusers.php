@@ -34,6 +34,15 @@ class Managefpusers extends Component
     // Search inside the link modal (searches all employees, not just matches).
     public string $modalSearch = '';
 
+    // Add user modal state
+    public bool $showAddModal = false;
+
+    public string $newName = '';
+
+    public string $newFpdeviceId = '';
+
+    public string $newFpdeviceAddress = '';
+
     protected $paginationTheme = 'bootstrap';
 
     protected $rules = [
@@ -112,6 +121,47 @@ class Managefpusers extends Component
                 'message' => 'Error deleting user',
             ]);
         }
+    }
+
+    public function openAddModal()
+    {
+        $this->reset(['newName', 'newFpdeviceId', 'newFpdeviceAddress']);
+        $this->resetValidation();
+        $this->showAddModal = true;
+    }
+
+    public function closeAddModal()
+    {
+        $this->reset(['newName', 'newFpdeviceId', 'newFpdeviceAddress', 'showAddModal']);
+        $this->resetValidation();
+    }
+
+    public function addUser()
+    {
+        $validated = $this->validate([
+            'newName' => 'required|string|max:255',
+            'newFpdeviceId' => 'required|string|max:255|unique:fpusers,fpdevice_id',
+            'newFpdeviceAddress' => 'nullable|string|max:255',
+        ], [
+            'newName.required' => 'Please enter the user\'s name.',
+            'newFpdeviceId.required' => 'Please enter the fingerprint device ID.',
+            'newFpdeviceId.unique' => 'This fingerprint device ID is already registered.',
+        ]);
+
+        fpusers::create([
+            'name' => $validated['newName'],
+            'fpdevice_id' => $validated['newFpdeviceId'],
+            'fpdevice_address' => $validated['newFpdeviceAddress'] ?: null,
+            'added_by' => Auth::id(),
+        ]);
+
+        $this->dispatch('toaster', [
+            'type' => 'success',
+            'message' => 'Fingerprint user added successfully',
+        ]);
+
+        $this->closeAddModal();
+        $this->resetPage();
     }
 
     /**

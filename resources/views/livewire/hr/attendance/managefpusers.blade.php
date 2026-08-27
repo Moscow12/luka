@@ -8,10 +8,13 @@
                 </h4>
                 <p class="text-muted mb-0">Upload and manage fingerprint device users</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
                     <i class="fa-solid fa-users me-1"></i>{{ $users->total() }} Users
                 </span>
+                <button type="button" class="btn btn-primary" wire:click="openAddModal">
+                    <i class="fa-solid fa-plus me-1"></i>Add User
+                </button>
             </div>
         </div>
 
@@ -299,6 +302,78 @@
             </div>
         </div>
     </div>
+
+    <!-- Add User Modal -->
+    @if($showAddModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:key="add-modal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <form wire:submit.prevent="addUser">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title fw-semibold">
+                                <i class="fa-solid fa-user-plus me-2"></i>Add Fingerprint User
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" wire:click="closeAddModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       wire:model="newName"
+                                       class="form-control @error('newName') is-invalid @enderror"
+                                       placeholder="Enter user's name">
+                                @error('newName')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Fingerprint Device ID <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       wire:model="newFpdeviceId"
+                                       class="form-control @error('newFpdeviceId') is-invalid @enderror"
+                                       placeholder="Enter fingerprint device ID">
+                                @error('newFpdeviceId')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label fw-semibold">
+                                    Device Address <small class="text-muted fw-normal">(Optional)</small>
+                                </label>
+                                <input type="text"
+                                       wire:model="newFpdeviceAddress"
+                                       class="form-control @error('newFpdeviceAddress') is-invalid @enderror"
+                                       placeholder="Enter device address">
+                                @error('newFpdeviceAddress')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeAddModal">
+                                <i class="fa-solid fa-xmark me-1"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="addUser">
+                                <span wire:loading.remove wire:target="addUser">
+                                    <i class="fa-solid fa-check me-1"></i>Add User
+                                </span>
+                                <span wire:loading wire:target="addUser">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Saving...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Link to Employee Modal -->
     @if($showLinkModal)
