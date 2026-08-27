@@ -94,6 +94,7 @@ class User extends Authenticatable
         return LogOptions::defaults()
             ->useLogName('user')
             ->logFillable()
+            ->logExcept(['password', 'remember_token'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

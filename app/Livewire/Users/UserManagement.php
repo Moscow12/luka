@@ -230,7 +230,17 @@ class UserManagement extends Component
         // Assign the selected role
         $role = Role::find($this->selectedRole);
         if ($role) {
+            $previousRoleNames = $user->getRoleNames()->implode(', ') ?: 'none';
             $user->syncRoles([$role]);
+
+            if ($previousRoleNames !== $role->name) {
+                activity('user')
+                    ->causedBy(auth()->user())
+                    ->performedOn($user)
+                    ->event('updated')
+                    ->withProperties(['old' => ['role' => $previousRoleNames], 'attributes' => ['role' => $role->name]])
+                    ->log("User role changed from {$previousRoleNames} to {$role->name}");
+            }
         }
 
         $this->closeModal();

@@ -16,6 +16,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Spatie\Activitylog\Facades\CauserResolver;
 
 class ResetPassword extends Component
 {
@@ -96,7 +97,11 @@ class ResetPassword extends Component
             return null;
         }
 
-        // Update password
+        // Update password. The causer is set explicitly since the user isn't
+        // authenticated yet at this point in the reset flow (Auth::user() is null,
+        // which is what LogsActivity's auto-logging would otherwise use).
+        CauserResolver::setCauser($user);
+
         $user->update([
             'password' => Hash::make($this->password),
         ]);
