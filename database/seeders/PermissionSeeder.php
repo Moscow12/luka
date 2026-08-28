@@ -37,6 +37,12 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-assets', 'description' => 'Manage department assets and asset reports'],
                 ['name' => 'delete-asset', 'description' => 'Delete department assets'],
             ],
+            'procurement' => [
+                ['name' => 'view-procurement', 'description' => 'View procurement orders and reports'],
+                ['name' => 'create-procurement', 'description' => 'Create new procurement orders'],
+                ['name' => 'edit-procurement', 'description' => 'Edit existing procurement orders'],
+                ['name' => 'manage-procurement', 'description' => 'Manage and delete procurement orders'],
+            ],
             'Staff Management' => [
                 ['name' => 'view-staff', 'description' => 'View staff list and details'],
                 ['name' => 'manage-staff', 'description' => 'Add, edit, and manage staff records'],

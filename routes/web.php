@@ -1,30 +1,65 @@
 <?php
 
-use App\Livewire\Acc\Payroll\{Allowancepayment, Paymentreports, Payrollgeneration};
+use App\Livewire\Acc\Payroll\Allowancepayment;
+use App\Livewire\Acc\Payroll\Paymentreports;
+use App\Livewire\Acc\Payroll\Payrollgeneration;
 use App\Livewire\Audit\Auditlog;
-use App\Livewire\Chop\{ActivitiesManagement, Budgetrequests, Chopsetting, CostAnalysis, DirectorReviewDashboard, MonitoringEvaluation, ActivityReporting, DepartmentBudgetRequest};
-
-use App\Livewire\Contracts\{ContractDetails, ContractForm, ManageContracts};
-use App\Livewire\Hr\Attendance\{Checkindata, Fpdevices, Managefpattendance, Managefpusers};
-use App\Livewire\Hr\Leave\{ActingAssignmentManagement, ActingAssignmentSettings, Leaveapproval, Leavebalance, Leavemanagement, Requestleave};
-
-use App\Livewire\Hr\Loan\{Loanapproval, Loanbalance, Loanitems, Loanpayments, Requestloan};
-use App\Livewire\Hr\Roster\{Editroster, Generateroster, Viewroster};
-use App\Livewire\Hr\Staffs\{Attendance, Contracts, Dependants, Digitalsignature, Disciplinary, Importstaffs, Leave, Otherdocuments, Promotions, Qualifications, Salary};
-
+use App\Livewire\Chop\ActivitiesManagement;
+use App\Livewire\Chop\ActivityReporting;
+use App\Livewire\Chop\Chopsetting;
+use App\Livewire\Chop\CostAnalysis;
+use App\Livewire\Chop\DepartmentBudgetRequest;
+use App\Livewire\Chop\DirectorReviewDashboard;
+use App\Livewire\Chop\MonitoringEvaluation;
+use App\Livewire\Contracts\ContractDetails;
+use App\Livewire\Contracts\ContractForm;
+use App\Livewire\Contracts\ManageContracts;
+use App\Livewire\Hr\Attendance\Checkindata;
+use App\Livewire\Hr\Attendance\Fpdevices;
+use App\Livewire\Hr\Attendance\Managefpattendance;
+use App\Livewire\Hr\Attendance\Managefpusers;
+use App\Livewire\Hr\Leave\ActingAssignmentManagement;
+use App\Livewire\Hr\Leave\ActingAssignmentSettings;
+use App\Livewire\Hr\Leave\Leaveapproval;
+use App\Livewire\Hr\Leave\Leavebalance;
+use App\Livewire\Hr\Leave\Leavemanagement;
+use App\Livewire\Hr\Leave\Requestleave;
+use App\Livewire\Hr\Loan\Loanapproval;
+use App\Livewire\Hr\Loan\Loanbalance;
+use App\Livewire\Hr\Loan\Loanitems;
+use App\Livewire\Hr\Loan\Loanpayments;
+use App\Livewire\Hr\Loan\Requestloan;
+use App\Livewire\Hr\Roster\Editroster;
+use App\Livewire\Hr\Roster\Generateroster;
+use App\Livewire\Hr\Roster\Viewroster;
+use App\Livewire\Hr\Staffs\Attendance;
+use App\Livewire\Hr\Staffs\Contracts;
+use App\Livewire\Hr\Staffs\Dependants;
+use App\Livewire\Hr\Staffs\Digitalsignature;
+use App\Livewire\Hr\Staffs\Disciplinary;
+use App\Livewire\Hr\Staffs\Importstaffs;
+use App\Livewire\Hr\Staffs\Leave;
+use App\Livewire\Hr\Staffs\Otherdocuments;
+use App\Livewire\Hr\Staffs\Promotions;
+use App\Livewire\Hr\Staffs\Qualifications;
+use App\Livewire\Hr\Staffs\Salary;
 use App\Livewire\Performance\AssignedDuties\ManageAssignedDuties;
 use App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans;
 use App\Livewire\Performance\DepartmentPlans\ManagePlanItems as ManageDepartmentPlanItems;
 use App\Livewire\Performance\EmployeePlans\ManageEmployeePlans;
 use App\Livewire\Performance\EmployeePlans\ManagePlanItems as ManageEmployeePlanItems;
-use App\Livewire\Performance\OrganizationalPlans\{ManagePlanItems, ManagePlans};
-use App\Livewire\Performance\Staffs\{Myduties, Myevaluations, Myimplimentations, Myperformanceview, Myplanning};
-
+use App\Livewire\Performance\OrganizationalPlans\ManagePlanItems;
+use App\Livewire\Performance\OrganizationalPlans\ManagePlans;
+use App\Livewire\Performance\Staffs\Myduties;
+use App\Livewire\Performance\Staffs\Myevaluations;
+use App\Livewire\Performance\Staffs\Myimplimentations;
+use App\Livewire\Performance\Staffs\Myperformanceview;
+use App\Livewire\Performance\Staffs\Myplanning;
 use App\Livewire\Performance\Supervisor\ApproveEvaluations;
 use App\Livewire\Performance\TitleKpis\ManageTitleKpis;
+use App\Livewire\Procurement\Orders;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
-use App\Models\loanrequests;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', App\Livewire\LandingPage::class)->name('dashboard')->middleware('auth');
@@ -101,9 +136,8 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/attendance/managefpattendance', Managefpattendance::class)->name('fp.attendance');
     Route::get('/attendance/managefpusers', Managefpusers::class)->name('managefpusers');
     Route::get('/attendance/fpdevices', Fpdevices::class)->name('fp.devices');
-    //upload checkin excel
+    // upload checkin excel
     Route::get('/attendance/uploadcheckin', Checkindata::class)->name('attendance.uploadcheckin');
-
 
     // leave routes
     Route::get('leave/leaverequest', Requestleave::class)->name('leave.requestleave');
@@ -171,6 +205,11 @@ Route::prefix('chop')->middleware('auth')->group(function () {
     Route::get('activity-reporting', ActivityReporting::class)->name('chop.reporting');
 });
 
+Route::prefix('procurement')->middleware('auth')->group(function () {
+    // Store Orders
+    Route::get('orders', Orders::class)->name('procurement.orders');
+});
+
 Route::prefix('performance')->middleware('auth')->group(function () {
     // Organizational Plans
     Route::get('organizational-plans', ManagePlans::class)->name('performance.org.plans');
@@ -200,4 +239,3 @@ Route::prefix('supply')->middleware('auth')->group(function () {
     // Route::get('stock-management', App\Livewire\Supply\StockManagement::class)->name('supply.stock.management');
     // Route::get('inventory-reports', App\Livewire\Supply\InventoryReports::class)->name('supply.inventory.reports');
 });
-

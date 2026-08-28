@@ -2,198 +2,228 @@
 
 namespace App\Livewire\Procurement;
 
-use App\Models\{StoreOrder, StoreOrderItem, PurchaseRequisition, PurchaseRequisitionItem, Supplier};
-use Livewire\{Component, WithPagination};
+use App\Models\chopcategoryarea;
+use App\Models\chopitems;
+use App\Models\Employee;
+use App\Models\StoreOrder;
+use App\Models\StoreOrderItem;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use stdClass;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class Orders extends Component
 {
     use WithPagination;
 
-    public $selectedOrder = null;
-    public $showItemsModal = false;
     public $search = '';
-    public $filter_status = 'approved';
-    public $itemSuppliers = []; // Array to store supplier_id for each item
-    public $suppliers = [];
-    public $groupedItems = []; // Items grouped by supplier for preview
 
-    protected $paginationTheme = 'bootstrap';
+    public $order_id;
 
-    public function render()
+    public $modalMode = 'create';
+
+    public $showModal = false;
+
+    // View modal
+    public $showViewModal = false;
+
+    public $viewingOrder = null;
+
+    // Order fields
+    public $order_description;
+
+    public $status = 'draft';
+
+    // Item management
+    public $selectedItems = [];
+
+    public $itemSearch = '';
+
+    public $showItemSelector = false;
+
+    public $filterCategory = '';
+
+    public function openModal($mode = 'create', $id = null)
     {
-        $orders = StoreOrder::with(['dept_ordering', 'requester', 'approver'])
-            ->when($this->filter_status !== 'all', function($query) {
-                $query->where('status', $this->filter_status);
-            })
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->whereHas('dept_ordering', fn($sq) => $sq->where('name', 'like', "%{$this->search}%"))
-                      ->orWhereHas('requester', fn($sq) => $sq->where('name', 'like', "%{$this->search}%"))
-                      ->orWhere('id', 'like', "%{$this->search}%")
-                      ->orWhere('order_description', 'like', "%{$this->search}%")
-                      ->orWhere('supplier', 'like', "%{$this->search}%");
-                });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->modalMode = $mode;
+        $this->showModal = true;
 
-        return view('livewire.procurement.orders', [
-            'orders' => $orders,
-        ]);
-    }
+        if ($mode === 'edit' && $id) {
+            $order = StoreOrder::with('items.item.category')->findOrFail($id);
 
-    public function viewOrderItems($id)
-    {
-        $this->selectedOrder = StoreOrder::with([
-            'order_items.item',
-            'dept_ordering',
-            'requester',
-            'approver'
-        ])->find($id);
+            if ($order->requested_by !== Auth::id() || ! $order->canEdit()) {
+                session()->flash('error', 'You cannot edit this order.');
+                $this->showModal = false;
 
-        if ($this->selectedOrder) {
-            // Load suppliers
-            $this->suppliers = Supplier::where('active', true)->orderBy('name')->get();
-
-            // Initialize itemSuppliers array
-            $this->itemSuppliers = [];
-            foreach ($this->selectedOrder->order_items as $item) {
-                $this->itemSuppliers[$item->id] = null;
+                return;
             }
 
-            $this->showItemsModal = true;
-            $this->dispatch('modal-show', 'viewOrderItemsModal');
+            $this->order_id = $id;
+            $this->order_description = $order->order_description;
+            $this->status = $order->status;
+
+            $this->selectedItems = $order->items->map(function ($orderItem) {
+                return [
+                    'item_id' => $orderItem->item_id,
+                    'category_id' => $orderItem->item->category_id,
+                    'name' => $orderItem->item->name,
+                    'category_name' => $orderItem->item->category->name ?? 'Uncategorized',
+                    'unit' => $orderItem->item->unit,
+                    'quantity' => $orderItem->quantity,
+                    'remarks' => $orderItem->remarks,
+                ];
+            })->toArray();
         } else {
-            $this->dispatch('error', 'Order not found.');
+            $this->resetForm();
         }
     }
 
-    public function closeModal()
+    public function resetForm()
     {
-        $this->showItemsModal = false;
-        $this->selectedOrder = null;
-        $this->itemSuppliers = [];
-        $this->dispatch('modal-hide', 'viewOrderItemsModal');
+        $this->reset(['order_id', 'order_description', 'selectedItems']);
+        $this->status = 'draft';
     }
 
-    public function resetFields()
+    public function addItem($itemId, $itemName, $categoryId, $categoryName, $unit)
     {
-        $this->showItemsModal = false;
-        $this->selectedOrder = null;
-        $this->itemSuppliers = [];
+        $exists = collect($this->selectedItems)->firstWhere('item_id', $itemId);
+        if (! $exists) {
+            $this->selectedItems[] = [
+                'item_id' => $itemId,
+                'category_id' => $categoryId,
+                'name' => $itemName,
+                'category_name' => $categoryName,
+                'unit' => $unit,
+                'quantity' => 1,
+                'remarks' => '',
+            ];
+        }
+        $this->showItemSelector = false;
+        $this->itemSearch = '';
+        $this->filterCategory = '';
     }
 
-    public function submitRequisition()
+    public function removeItem($index)
     {
-        if (!$this->selectedOrder) {
-            return $this->dispatch('error', 'No order selected.');
+        unset($this->selectedItems[$index]);
+        $this->selectedItems = array_values($this->selectedItems);
+    }
+
+    protected function currentDepartmentId()
+    {
+        return Employee::where('user_id', Auth::id())->value('department_id');
+    }
+
+    public function save()
+    {
+        $this->validate([
+            'order_description' => ['nullable', 'string'],
+            'selectedItems' => ['required', 'array', 'min:1'],
+        ]);
+
+        $departmentId = $this->currentDepartmentId();
+
+        if (! $departmentId) {
+            session()->flash('error', 'You must be assigned to a department to raise an order.');
+
+            return;
         }
 
-        if ($this->selectedOrder->status !== 'approved') {
-            return $this->dispatch('error', 'Only approved orders can be submitted for purchase requisition.');
-        }
+        DB::transaction(function () use ($departmentId) {
+            if ($this->modalMode === 'edit' && $this->order_id) {
+                $order = StoreOrder::findOrFail($this->order_id);
 
-        // Filter out items without suppliers
-        $itemsWithSuppliers = array_filter($this->itemSuppliers, function($supplierId) {
-            return $supplierId !== null && $supplierId !== '';
-        });
-
-        if (empty($itemsWithSuppliers)) {
-            return $this->dispatch('error', 'Please select at least one item with a supplier.');
-        }
-
-        // Group items by supplier
-        $groupedBySupplier = [];
-        foreach ($itemsWithSuppliers as $itemId => $supplierId) {
-            if (!isset($groupedBySupplier[$supplierId])) {
-                $groupedBySupplier[$supplierId] = [];
-            }
-            $groupedBySupplier[$supplierId][] = $itemId;
-        }
-
-        DB::beginTransaction();
-        try {
-            $createdPRs = [];
-
-            // Create a separate PR for each supplier
-            foreach ($groupedBySupplier as $supplierId => $itemIds) {
-                $purchaseRequisition = PurchaseRequisition::create([
-                    'store_order_id' => $this->selectedOrder->id,
-                    'store_requesting_id' => $this->selectedOrder->dept_ordering_id,
-                    'supplier_id' => $supplierId,
-                    'requisition_description' => $this->selectedOrder->order_description ?? '',
-                    'status' => 'pending',
-                    'current_approval_level' => 1,
-                    'created_by' => auth()->id(),
-                ]);
-
-                // Add items for this supplier
-                $selectedOrderItems = $this->selectedOrder->order_items()
-                    ->whereIn('id', $itemIds)
-                    ->get();
-
-                foreach ($selectedOrderItems as $orderItem) {
-                    PurchaseRequisitionItem::create([
-                        'purchase_requisition_id' => $purchaseRequisition->id,
-                        'item_id' => $orderItem->item_id,
-                        'units' => $orderItem->units,
-                        'itemperunit' => $orderItem->itemperunit,
-                        'quantity' => $orderItem->units * $orderItem->itemperunit,
-                        'buying_price' => 0,
-                        'subtotal' => 0,
-                        'remarks' => $orderItem->remarks,
-                    ]);
+                if ($order->requested_by !== Auth::id() || ! $order->canEdit()) {
+                    throw new \Exception('Unauthorized');
                 }
 
-                $createdPRs[] = $purchaseRequisition->id;
-            }
+                $order->update([
+                    'order_description' => $this->order_description,
+                ]);
 
-            DB::commit();
-
-            $this->closeModal();
-
-            $prCount = count($createdPRs);
-            $message = $prCount === 1
-                ? 'Purchase requisition created successfully!'
-                : "{$prCount} purchase requisitions created successfully!";
-
-            $this->dispatch('success', $message);
-
-            // Redirect to purchase requisitions list or first PR
-            if ($prCount === 1) {
-                return redirect()->route('purchaserequisitions.view', ['id' => $createdPRs[0]]);
+                $order->items()->delete();
             } else {
-                return redirect()->route('purchaserequisitions');
+                $order = StoreOrder::create([
+                    'order_number' => StoreOrder::generateOrderNumber(),
+                    'department_id' => $departmentId,
+                    'status' => 'draft',
+                    'order_description' => $this->order_description,
+                    'requested_by' => Auth::id(),
+                ]);
             }
 
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            $this->dispatch('error', 'Failed to create purchase requisition: ' . $th->getMessage());
-        }
+            foreach ($this->selectedItems as $item) {
+                StoreOrderItem::create([
+                    'store_order_id' => $order->id,
+                    'item_id' => $item['item_id'],
+                    'quantity' => $item['quantity'],
+                    'remarks' => $item['remarks'],
+                ]);
+            }
+        });
+
+        session()->flash('success', $this->modalMode === 'edit' ? 'Order updated successfully!' : 'Order raised successfully!');
+        $this->showModal = false;
+        $this->resetForm();
     }
 
-    public function getOrderItems()
+    public function submit($id)
     {
-        if (!$this->selectedOrder) {
-            return [];
+        $order = StoreOrder::findOrFail($id);
+
+        if ($order->requested_by !== Auth::id() || ! $order->canSubmit()) {
+            session()->flash('error', 'Cannot submit this order.');
+
+            return;
         }
 
-        $items = [];
-        foreach ($this->selectedOrder->order_items as $itm) {
-            $sel = new stdClass;
-            $sel->id = $itm->id;
-            $sel->item_name = $itm->item->name ?? 'Unknown';
-            $sel->item_code = $itm->item->code ?? '';
-            $sel->unit = $itm->item->unit ?? '';
-            $sel->units = $itm->units;
-            $sel->per_unit = $itm->itemperunit;
-            $sel->quantity = $itm->units * $itm->itemperunit;
-            $sel->remarks = $itm->remarks;
-            $items[] = $sel;
+        $order->update([
+            'status' => 'submitted',
+            'submitted_at' => now(),
+        ]);
+
+        session()->flash('success', 'Order submitted successfully!');
+    }
+
+    public function delete($id)
+    {
+        $order = StoreOrder::findOrFail($id);
+
+        if ($order->requested_by !== Auth::id() || ! $order->isDraft()) {
+            session()->flash('error', 'Cannot delete this order.');
+
+            return;
         }
-        return $items;
+
+        $order->delete();
+        session()->flash('success', 'Order deleted successfully!');
+    }
+
+    public function openViewModal($id)
+    {
+        $this->viewingOrder = StoreOrder::with([
+            'items.item.category',
+            'department',
+            'requestedBy',
+            'approvedBy',
+        ])->findOrFail($id);
+
+        if ($this->viewingOrder->requested_by !== Auth::id()) {
+            session()->flash('error', 'You cannot view this order.');
+            $this->viewingOrder = null;
+
+            return;
+        }
+
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->viewingOrder = null;
     }
 
     public function updatingSearch()
@@ -201,32 +231,41 @@ class Orders extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterStatus()
+    public function render()
     {
-        $this->resetPage();
-    }
+        $departmentId = $this->currentDepartmentId();
 
-    public function getSelectedItemsCount()
-    {
-        return count(array_filter($this->itemSuppliers, function($supplierId) {
-            return $supplierId !== null && $supplierId !== '';
-        }));
-    }
+        $orders = StoreOrder::query()
+            ->with(['department', 'items'])
+            ->when($departmentId, fn ($q) => $q->where('department_id', $departmentId))
+            ->where('requested_by', Auth::id())
+            ->when($this->search, function ($query) {
+                $query->where('order_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('order_description', 'like', '%'.$this->search.'%');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-    public function getGroupedBySupplier()
-    {
-        $grouped = [];
-        foreach ($this->itemSuppliers as $itemId => $supplierId) {
-            if ($supplierId !== null && $supplierId !== '') {
-                if (!isset($grouped[$supplierId])) {
-                    $grouped[$supplierId] = [
-                        'supplier' => $this->suppliers->firstWhere('id', $supplierId),
-                        'items' => []
-                    ];
-                }
-                $grouped[$supplierId]['items'][] = $itemId;
-            }
-        }
-        return $grouped;
+        $categories = chopcategoryarea::orderBy('name')->get();
+
+        $availableItems = chopitems::query()
+            ->with('category')
+            ->where('is_active', true)
+            ->where('can_be_stocked', true)
+            ->when($this->itemSearch, function ($query) {
+                $query->where('name', 'like', '%'.$this->itemSearch.'%');
+            })
+            ->when($this->filterCategory, function ($query) {
+                $query->where('category_id', $this->filterCategory);
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return view('livewire.procurement.orders', [
+            'orders' => $orders,
+            'categories' => $categories,
+            'availableItems' => $availableItems,
+        ]);
     }
 }

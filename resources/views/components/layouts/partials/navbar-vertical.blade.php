@@ -33,6 +33,7 @@
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.termination-reasons', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
     $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
+    $procurementRoutes = ['procurement.orders', 'procurement.*'];
     $auditRoutes = ['audit-logs'];
 @endphp
 
@@ -158,6 +159,23 @@
                 <a class="nav-link {{ request()->routeIs('assets.reports') ? 'active' : '' }}" href="{{ route('assets.reports') }}"><i class="fa-solid fa-chart-bar"></i> Asset Reports</a>
             </li>
             @endif
+        </ul>
+    </li>
+    @endif
+
+    <!-- Procurement - visible to users with access to procurement -->
+    @if($isSuperAdmin || $user?->can('view-procurement'))
+    <li class="nav-item dropdown {{ request()->routeIs($procurementRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($procurementRoutes) ? 'active' : '' }}" href="{{ route('procurement.orders') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($procurementRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </span>
+            <span class="text">Procurement</span>
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($procurementRoutes) ? 'show' : '' }}">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('procurement.orders') ? 'active' : '' }}" href="{{ route('procurement.orders') }}"><i class="fa-solid fa-cart-shopping"></i> Orders</a>
+            </li>
         </ul>
     </li>
     @endif
