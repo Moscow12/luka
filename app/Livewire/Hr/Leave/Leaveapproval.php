@@ -344,12 +344,12 @@ class Leaveapproval extends Component
                 });
             }
 
-            // Filter by date range — leaves whose period overlaps [dateFrom, dateTo].
+            // Filter by date range — when the leave request was submitted (created_at).
             if ($this->dateFrom) {
-                $leavesQuery->whereDate('end_date', '>=', $this->dateFrom);
+                $leavesQuery->whereDate('created_at', '>=', $this->dateFrom);
             }
             if ($this->dateTo) {
-                $leavesQuery->whereDate('start_date', '<=', $this->dateTo);
+                $leavesQuery->whereDate('created_at', '<=', $this->dateTo);
             }
 
             // Filter by status

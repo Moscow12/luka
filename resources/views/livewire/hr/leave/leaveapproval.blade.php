@@ -82,7 +82,7 @@
     <!-- Date Range Filter -->
     <div class="row mb-4 g-2 align-items-end">
         <div class="col-6 col-md-3">
-            <label class="form-label small text-muted mb-1">From Date</label>
+            <label class="form-label small text-muted mb-1">Requested From</label>
             <div class="input-group">
                 <input class="form-control flatpickr"
                        type="text" placeholder="Select Date" wire:model.live="dateFrom" />
@@ -92,7 +92,7 @@
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <label class="form-label small text-muted mb-1">To Date</label>
+            <label class="form-label small text-muted mb-1">Requested To</label>
             <div class="input-group">
                 <input class="form-control flatpickr"
                        type="text" placeholder="Select Date" wire:model.live="dateTo" />
@@ -347,7 +347,7 @@
     @if($showHistoryModal && $viewedLeave)
     @php $historyStatus = strtolower($viewedLeave->status ?? ''); @endphp
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title mb-0"><i class="fa-solid fa-list-check me-2"></i>Approval History</h5>
@@ -359,7 +359,10 @@
                             <div class="card-body py-2">
                                 <p class="mb-1"><strong>Employee:</strong> {{ $viewedLeave->employee->first_name ?? '' }} {{ $viewedLeave->employee->last_name ?? '' }}</p>
                                 <p class="mb-1"><strong>Leave Type:</strong> {{ $viewedLeave->leave->name ?? 'N/A' }}</p>
-                                <p class="mb-0"><strong>Period:</strong> {{ \Carbon\Carbon::parse($viewedLeave->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($viewedLeave->end_date)->format('d M Y') }}</p>
+                                <p class="{{ $viewedLeave->comments ? 'mb-1' : 'mb-0' }}"><strong>Period:</strong> {{ \Carbon\Carbon::parse($viewedLeave->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($viewedLeave->end_date)->format('d M Y') }}</p>
+                                @if($viewedLeave->comments)
+                                <p class="mb-0"><strong>Requester's Comment:</strong> {{ $viewedLeave->comments }}</p>
+                                @endif
                             </div>
                         </div>
                     </div>
