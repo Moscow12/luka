@@ -117,14 +117,44 @@ class Leaveapproval extends Component
         $employee = Employee::where('user_id', Auth::id())->first();
 
         if ($employee) {
+            // Each mapping grants a level plus the set of departments it covers.
+            // An empty department set means the mapping applies company-wide
+            // (e.g. level 3/4 approvers who sign off for every department).
             $this->userApprovalLevels = approvalleveltoemployee::where('employee_id', $employee->id)
                 ->where('is_active', true)
-                ->with('approval_level')
+                ->with('departments:id')
                 ->get()
-                ->pluck('approval_level.id')
-                ->filter()
+                ->map(fn ($mapping) => [
+                    'approval_level_id' => $mapping->approval_level_id,
+                    'department_ids' => $mapping->departments->pluck('id')->toArray(),
+                ])
                 ->toArray();
         }
+    }
+
+    /**
+     * Whether the current user is allowed to act on the given approval level for a leave
+     * request raised by someone in $departmentId. A mapping with no departments picked
+     * applies company-wide (level 3/4); otherwise it only covers its listed departments
+     * (level 1 = one department, level 2 = several).
+     */
+    protected function userCanApproveLevel(?string $levelId, ?string $departmentId): bool
+    {
+        if (! $levelId) {
+            return false;
+        }
+
+        foreach ($this->userApprovalLevels as $mapping) {
+            if ($mapping['approval_level_id'] !== $levelId) {
+                continue;
+            }
+
+            if (empty($mapping['department_ids']) || in_array($departmentId, $mapping['department_ids'], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function openApproveModal($leaveId)
@@ -198,7 +228,7 @@ class Leaveapproval extends Component
             return;
         }
 
-        if (! in_array($currentLevel->id, $this->userApprovalLevels)) {
+        if (! $this->userCanApproveLevel($currentLevel->id, $this->selectedLeave->employee->department_id ?? null)) {
             session()->flash('error', "You do not have permission to {$this->actionType} at this level.");
             $this->closeModal();
 
@@ -239,10 +269,12 @@ class Leaveapproval extends Component
         $this->resetValidation();
     }
 
-    public function getCurrentApprovalLevel($leave)
+    /**
+     * The ordered chain of approval levels (level 1, 2, 3, 4...) configured for Leave.
+     */
+    protected function getApprovalLevelsForLeave(): \Illuminate\Support\Collection
     {
-        // Get all approval levels for Leave document type, ordered by level_order
-        $approvalLevels = approvalleveltodocument::where('document_type', 'Leave')
+        return approvalleveltodocument::where('document_type', 'Leave')
             ->where('is_active', true)
             ->with('approval_level')
             ->get()
@@ -250,22 +282,30 @@ class Leaveapproval extends Component
             ->filter()
             ->sortBy('level_order')
             ->values();
+    }
+
+    /**
+     * The next level in the chain awaiting a decision, walking level 1 -> 2 -> 3 -> 4...
+     * in order. Returns null once the leave is rejected or every level has approved.
+     */
+    public function getCurrentApprovalLevel(Employeeleaves $leave)
+    {
+        $approvalLevels = $this->getApprovalLevelsForLeave();
 
         if ($approvalLevels->isEmpty()) {
             return null;
         }
 
-        // Get existing approvals for this leave
         $existingApprovals = leaverequestapproval::where('leave_request_id', $leave->id)
             ->with('approval_level')
             ->get();
 
-        // If any approval was rejected, return null (already rejected)
+        // If any level rejected, the chain stops (already rejected).
         if ($existingApprovals->where('status', 'rejected')->isNotEmpty()) {
             return null;
         }
 
-        // Find the next level that needs approval
+        // Walk the chain in order; the first level without an approval is next up.
         foreach ($approvalLevels as $level) {
             $alreadyApproved = $existingApprovals->where('approval_level_id', $level->id)
                 ->where('status', 'approved')
@@ -279,41 +319,32 @@ class Leaveapproval extends Component
         return null; // All levels approved
     }
 
-    public function determineLeaveStatus($leave, $approvalStatus)
+    /**
+     * Move the leave to the next stage once a level decides. Approving a level advances
+     * the leave to whichever level comes next in the chain (or fully "approved" once the
+     * last configured level signs off); rejecting at any level stops the chain.
+     */
+    public function determineLeaveStatus(Employeeleaves $leave, string $approvalStatus): string
     {
         if ($approvalStatus === 'rejected') {
             return 'Rejected';
         }
 
-        // Get all approval levels for Leave document type
-        $approvalLevels = approvalleveltodocument::where('document_type', 'Leave')
-            ->where('is_active', true)
-            ->with('approval_level')
-            ->get()
-            ->pluck('approval_level')
-            ->filter()
-            ->sortBy('level_order')
-            ->values();
+        $approvalLevels = $this->getApprovalLevelsForLeave();
 
         if ($approvalLevels->isEmpty()) {
             return 'approved';
         }
 
-        // Get current approvals count (including the one just created)
-        $approvedCount = leaverequestapproval::where('leave_request_id', $leave->id)
-            ->where('status', 'approved')
-            ->count();
+        // Re-evaluate the chain now that the latest decision has been recorded: if there's
+        // still a next level waiting, the leave is Active/Awaiting; otherwise it's fully approved.
+        $nextLevel = $this->getCurrentApprovalLevel($leave);
 
-        $totalLevels = $approvalLevels->count();
-
-        // Determine status based on level
-        if ($approvedCount >= $totalLevels) {
+        if (! $nextLevel) {
             return 'approved';
-        } elseif ($approvedCount === 1) {
-            return 'Active';
-        } else {
-            return 'Awaiting';
         }
+
+        return $nextLevel->id === $approvalLevels->first()->id ? 'Awaiting' : 'Active';
     }
 
     public function render()
@@ -376,7 +407,7 @@ class Leaveapproval extends Component
                         return false;
                     }
                     $leave->nextApprovalLevel = $next;
-                    $leave->canUserApprove = in_array($next->id, $this->userApprovalLevels);
+                    $leave->canUserApprove = $this->userCanApproveLevel($next->id, $leave->employee->department_id ?? null);
 
                     return $leave->canUserApprove;
                 })->values();
@@ -390,7 +421,7 @@ class Leaveapproval extends Component
                     $leave->nextApprovalLevel = $this->getCurrentApprovalLevel($leave);
 
                     if ($leave->nextApprovalLevel) {
-                        $leave->canUserApprove = in_array($leave->nextApprovalLevel->id, $this->userApprovalLevels);
+                        $leave->canUserApprove = $this->userCanApproveLevel($leave->nextApprovalLevel->id, $leave->employee->department_id ?? null);
                     }
 
                     return $leave;
@@ -408,11 +439,12 @@ class Leaveapproval extends Component
     protected function countLeavesPendingForUser(): int
     {
         return Employeeleaves::whereRaw('LOWER(status) IN (?, ?, ?)', ['awaiting', 'pending', 'active'])
+            ->with('employee')
             ->get()
             ->filter(function ($leave) {
                 $next = $this->getCurrentApprovalLevel($leave);
 
-                return $next && in_array($next->id, $this->userApprovalLevels);
+                return $next && $this->userCanApproveLevel($next->id, $leave->employee->department_id ?? null);
             })
             ->count();
     }

@@ -36,6 +36,7 @@
                                     <th>Document Type</th>
                                     <th>Employee</th>
                                     <th>Employee No</th>
+                                    <th>Department</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -71,6 +72,17 @@
                                     <td class="name">{{ $mapping->employee->getFullName() ?? 'N/A' }}</td>
                                     <td>{{ $mapping->employee->employee_no ?? '-' }}</td>
                                     <td>
+                                        @if($mapping->departments->isNotEmpty())
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach($mapping->departments as $dept)
+                                                    <span class="badge bg-secondary-subtle text-secondary">{{ $dept->name }}</span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-muted">All departments</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if($mapping->is_active)
                                             <span class="badge bg-success">Active</span>
                                         @else
@@ -78,11 +90,13 @@
                                         @endif
                                     </td>
                                     <td>
+                                        <div class="d-flex gap-2">
                                         <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $mapping->id }}')" />
                                         <button class="btn btn-sm btn-danger" wire:click="delete('{{ $mapping->id }}')"
                                             onclick="return confirm('Delete this employee mapping?')">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -108,8 +122,25 @@
                    :formaction="$modalMode === 'edit' ? 'update' : 'save'"
                    :modalMode="$modalMode"
                    :showModal="$showModal">
-        <x-forms.input type="select" name="approval_level_id" label="Approval Level" 
+        <x-forms.input type="select" name="approval_level_id" label="Approval Level"
                        :options="$approvallevels->pluck('name', 'id')" required />
+
+        <div class="mb-3" wire:key="department-picker">
+            <label class="form-label">Departments</label>
+            <div class="form-text mb-2">Leave all unchecked to apply this mapping to every department (e.g. level 3/4 company-wide approvers).</div>
+            <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
+                @foreach($departments as $dept)
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="dept-{{ $dept->id }}"
+                               value="{{ $dept->id }}" wire:model="department_ids">
+                        <label class="form-check-label" for="dept-{{ $dept->id }}">{{ $dept->name }}</label>
+                    </div>
+                @endforeach
+            </div>
+            @error('department_ids')
+                <small class="text-danger d-block mt-1">{{ $message }}</small>
+            @enderror
+        </div>
         {{-- Searchable employee picker --}}
         <div class="mb-3" wire:key="employee-picker">
             <label class="form-label">Employee <span class="text-danger">*</span></label>

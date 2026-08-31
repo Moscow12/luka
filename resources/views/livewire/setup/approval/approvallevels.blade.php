@@ -53,19 +53,21 @@
                                         <span class="badge bg-primary">Level {{ $level->level_order }}</span>
                                     </td>
                                     <td>{{ Str::limit($level->description, 40) }}</td>
-                                    <td>
+                                    <td style="width: 10%">
                                         @if($level->is_active)
                                             <span class="badge bg-success">Active</span>
                                         @else
                                             <span class="badge bg-danger">Inactive</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td style="width: 20%" class="text-center">
+                                        <div class="d-flex gap-2">
                                         <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $level->id }}')" />
                                         <button class="btn btn-sm btn-danger" wire:click="delete('{{ $level->id }}')"
                                             onclick="return confirm('Delete this approval level?')">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach

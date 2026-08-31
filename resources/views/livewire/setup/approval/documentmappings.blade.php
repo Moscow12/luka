@@ -63,11 +63,13 @@
                                         @endif
                                     </td>
                                     <td>
+                                        <div class="d-flex gap-2">
                                         <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $doc->id }}')" />
                                         <button class="btn btn-sm btn-danger" wire:click="delete('{{ $doc->id }}')"
                                             onclick="return confirm('Delete this document mapping?')">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
