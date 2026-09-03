@@ -153,13 +153,13 @@
                                             title="View Activity">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
-                                    @can(edit-activity)
+                                    @can('manage-chop')
                                     <button class="btn btn-outline-primary" wire:click="openModal('edit', '{{ $activity->id }}')"
                                             title="Edit Activity">
                                         <i class="fa-solid fa-pencil"></i>
                                     </button>
                                     @endcan
-                                    @can(delete-activity)
+                                    @can('manage-chop')
                                     <button class="btn btn-outline-danger" wire:click="delete('{{ $activity->id }}')"
                                             onclick="return confirm('Delete this activity and all its items/personnel?')"
                                             title="Delete Activity">
