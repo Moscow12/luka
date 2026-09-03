@@ -44,6 +44,14 @@
         </div>
     @endif
 
+    {{-- Error Message --}}
+    @if(session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     {{-- Activities Table --}}
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
@@ -141,15 +149,23 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
+                                    <button class="btn btn-outline-secondary" wire:click="openModal('view', '{{ $activity->id }}')"
+                                            title="View Activity">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    @can(edit-activity)
                                     <button class="btn btn-outline-primary" wire:click="openModal('edit', '{{ $activity->id }}')"
                                             title="Edit Activity">
                                         <i class="fa-solid fa-pencil"></i>
                                     </button>
+                                    @endcan
+                                    @can(delete-activity)
                                     <button class="btn btn-outline-danger" wire:click="delete('{{ $activity->id }}')"
                                             onclick="return confirm('Delete this activity and all its items/personnel?')"
                                             title="Delete Activity">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -181,21 +197,24 @@
     <div class="modal fade show d-block" style="background: rgba(0,0,0,0.7);" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-gradient bg-primary text-white">
+                <div class="modal-header bg-gradient bg-{{ $modalMode === 'view' ? 'secondary' : 'primary' }} text-white">
                     <h5 class="modal-title">
-                        <i class="fa-solid fa-{{ $modalMode === 'edit' ? 'pencil' : 'plus-circle' }}"></i>
-                        {{ $modalMode === 'edit' ? 'Edit Activity' : 'Create New Activity' }}
+                        <i class="fa-solid fa-{{ $modalMode === 'view' ? 'eye' : ($modalMode === 'edit' ? 'pencil' : 'plus-circle') }}"></i>
+                        {{ $modalMode === 'view' ? 'View Activity' : ($modalMode === 'edit' ? 'Edit Activity' : 'Create New Activity') }}
                     </h5>
                     <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
                 </div>
 
                 <form wire:submit.prevent="save">
+                    <fieldset @if($modalMode === 'view') disabled @endif>
                     <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                         {{-- Info Alert --}}
+                        @if($modalMode !== 'view')
                         <div class="alert alert-info border-0 shadow-sm mb-4">
                             <i class="fa-solid fa-info-circle"></i>
                             Fields marked with <span class="text-danger fw-bold">*</span> are required
                         </div>
+                        @endif
 
                         {{-- Basic Information Card --}}
                         <div class="card border-0 shadow-sm mb-4">
@@ -278,10 +297,12 @@
                                     <h6 class="mb-0 text-success">
                                         <i class="fa-solid fa-box"></i> Activity Items & Budget
                                     </h6>
+                                    @if($modalMode !== 'view')
                                     <button type="button" class="btn btn-sm btn-success shadow-sm" wire:click="$toggle('showItemSelector')">
                                         <i class="fa-solid fa-{{ $showItemSelector ? 'times' : 'plus' }}"></i>
                                         {{ $showItemSelector ? 'Close' : 'Add Item' }}
                                     </button>
+                                    @endif
                                 </div>
                             </div>
                             <div class="card-body">
@@ -326,7 +347,9 @@
                                                     <th style="width: 120px;">Quantity</th>
                                                     <th style="width: 150px;">Unit Price</th>
                                                     <th style="width: 150px;">Total</th>
+                                                    @if($modalMode !== 'view')
                                                     <th style="width: 80px;">Action</th>
+                                                    @endif
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -350,12 +373,14 @@
                                                                 {{ number_format(($item['quantity'] ?? 0) * ($item['price'] ?? 0), 2) }}
                                                             </strong>
                                                         </td>
+                                                        @if($modalMode !== 'view')
                                                         <td class="text-center">
                                                             <button type="button" class="btn btn-sm btn-danger"
                                                                     wire:click="removeItem({{ $index }})" title="Remove">
                                                                 <i class="fa-solid fa-trash"></i>
                                                             </button>
                                                         </td>
+                                                        @endif
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -402,10 +427,12 @@
                                     <h6 class="mb-0 text-info">
                                         <i class="fa-solid fa-users"></i> Responsible Personnel
                                     </h6>
+                                    @if($modalMode !== 'view')
                                     <button type="button" class="btn btn-sm btn-info shadow-sm" wire:click="$toggle('showPersonnelSelector')">
                                         <i class="fa-solid fa-{{ $showPersonnelSelector ? 'times' : 'user-plus' }}"></i>
                                         {{ $showPersonnelSelector ? 'Close' : 'Assign Personnel' }}
                                     </button>
+                                    @endif
                                 </div>
                             </div>
                             <div class="card-body">
@@ -469,13 +496,13 @@
                                         <label class="form-label fw-semibold">Expected Outcome Date</label>
                                         <input type="date" class="form-control" wire:model="expected_outcome_date">
 
-                                        <label class="form-label fw-semibold mt-3">Activity Type</label>
-                                        <select class="form-select" wire:model="activity_type">
-                                            <option value="">Select Type</option>
+                                        <label class="form-label fw-semibold mt-3">Activity Type <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('activity_type') is-invalid @enderror" wire:model="activity_type">
                                             @foreach($activityTypes as $key => $type)
                                                 <option value="{{ $key }}">{{ $type }}</option>
                                             @endforeach
                                         </select>
+                                        @error('activity_type') <span class="text-danger small">{{ $message }}</span> @enderror
 
                                         <label class="form-label fw-semibold mt-3">Monitoring Frequency</label>
                                         <select class="form-select" wire:model="frequence_monitoring">
@@ -523,14 +550,17 @@
                             </div>
                         </div>
                     </div>
+                    </fieldset>
 
                     <div class="modal-footer bg-light">
                         <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">
-                            <i class="fa-solid fa-times"></i> Cancel
+                            <i class="fa-solid fa-times"></i> {{ $modalMode === 'view' ? 'Close' : 'Cancel' }}
                         </button>
+                        @if($modalMode !== 'view')
                         <button type="submit" class="btn btn-primary btn-lg shadow-sm">
                             <i class="fa-solid fa-save"></i> {{ $modalMode === 'edit' ? 'Update Activity' : 'Save Activity' }}
                         </button>
+                        @endif
                     </div>
                 </form>
             </div>

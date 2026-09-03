@@ -37,7 +37,7 @@ class ActivitiesManagement extends Component
     public $is_approved = false;
     public $expected_outcome;
     public $expected_outcome_date;
-    public $activity_type;
+    public $activity_type = 'expenditure';
     public $frequence_monitoring;
     public $source_id;
     public $category_id;
@@ -68,7 +68,7 @@ class ActivitiesManagement extends Component
         $this->modalMode = $mode;
         $this->showModal = true;
 
-        if ($mode === 'edit' && $id) {
+        if (in_array($mode, ['edit', 'view']) && $id) {
             $activity = chopactivities::with(['items.item', 'personels.title'])->findOrFail($id);
             $this->activity_id = $id;
             $this->planned_activity = $activity->planned_activity;
@@ -163,9 +163,28 @@ class ActivitiesManagement extends Component
 
     public function calculateActualAmount()
     {
+        $this->selectedItems = collect($this->selectedItems)->map(function ($item) {
+            $item['quantity'] = $this->sanitizeAmount($item['quantity'] ?? 0);
+            $item['price'] = $this->sanitizeAmount($item['price'] ?? 0);
+
+            return $item;
+        })->toArray();
+
         $this->actual_amount = collect($this->selectedItems)->sum(function ($item) {
-            return ($item['quantity'] ?? 0) * ($item['price'] ?? 0);
+            return $item['quantity'] * $item['price'];
         });
+    }
+
+    public function updatedPlannedAmount($value)
+    {
+        $this->planned_amount = $this->sanitizeAmount($value);
+    }
+
+    protected function sanitizeAmount($value): float
+    {
+        $clean = preg_replace('/[^0-9.]/', '', (string) $value);
+
+        return $clean === '' ? 0 : (float) $clean;
     }
 
     public function togglePersonnel($titleId)
@@ -180,70 +199,84 @@ class ActivitiesManagement extends Component
 
     public function save()
     {
+        if ($this->modalMode === 'view') {
+            return;
+        }
+
+        $this->planned_amount = $this->sanitizeAmount($this->planned_amount);
+
         $this->validate([
             'planned_activity' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', 'in:pending,in_progress,completed,cancelled'],
-            'planned_amount' => ['required', 'numeric', 'min:0'],
+            'planned_amount' => ['required', 'numeric', 'min:0', 'max:9999999999999999.99'],
             'source_id' => ['required', 'exists:sourceoffunds,id'],
             'category_id' => ['required', 'exists:chopcategoryareas,id'],
             'financial_year_id' => ['required', 'exists:financial_years,id'],
             'expected_outcome_date' => ['nullable', 'date'],
+            'activity_type' => ['required', 'in:expenditure,revenue'],
+            'frequence_monitoring' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () {
-            $activityData = [
-                'planned_activity' => $this->planned_activity,
-                'actual_activity' => $this->actual_activity,
-                'description' => $this->description,
-                'status' => $this->status,
-                'planned_amount' => $this->planned_amount,
-                'actual_amount' => $this->actual_amount ?? 0,
-                'percentage' => $this->percentage ?? 0,
-                'is_active' => $this->is_active,
-                'is_planned' => $this->is_planned,
-                'is_approved' => $this->is_approved,
-                'expected_outcome' => $this->expected_outcome,
-                'expected_outcome_date' => $this->expected_outcome_date,
-                'activity_type' => $this->activity_type,
-                'frequence_monitoring' => $this->frequence_monitoring,
-                'source_id' => $this->source_id,
-                'category_id' => $this->category_id,
-                'financial_year_id' => $this->financial_year_id,
-            ];
+        try {
+            DB::transaction(function () {
+                $activityData = [
+                    'planned_activity' => $this->planned_activity,
+                    'actual_activity' => $this->actual_activity,
+                    'description' => $this->description,
+                    'status' => $this->status,
+                    'planned_amount' => $this->planned_amount,
+                    'actual_amount' => $this->actual_amount ?? 0,
+                    'percentage' => $this->percentage ?? 0,
+                    'is_active' => $this->is_active,
+                    'is_planned' => $this->is_planned,
+                    'is_approved' => $this->is_approved,
+                    'expected_outcome' => $this->expected_outcome,
+                    'expected_outcome_date' => $this->expected_outcome_date,
+                    'activity_type' => $this->activity_type,
+                    'frequence_monitoring' => $this->frequence_monitoring,
+                    'source_id' => $this->source_id,
+                    'category_id' => $this->category_id,
+                    'financial_year_id' => $this->financial_year_id,
+                ];
 
-            if ($this->modalMode === 'edit' && $this->activity_id) {
-                $activity = chopactivities::findOrFail($this->activity_id);
-                $activity->update($activityData);
+                if ($this->modalMode === 'edit' && $this->activity_id) {
+                    $activity = chopactivities::findOrFail($this->activity_id);
+                    $activity->update($activityData);
 
-                // Delete existing items and personnel
-                $activity->items()->delete();
-                $activity->personels()->delete();
-            } else {
-                $activityData['added_by'] = Auth::id();
-                $activity = chopactivities::create($activityData);
-            }
+                    // Delete existing items and personnel
+                    $activity->items()->delete();
+                    $activity->personels()->delete();
+                } else {
+                    $activityData['added_by'] = Auth::id();
+                    $activity = chopactivities::create($activityData);
+                }
 
-            // Add items
-            foreach ($this->selectedItems as $item) {
-                activityitems::create([
-                    'activity_id' => $activity->id,
-                    'item_id' => $item['item_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'added_by' => Auth::id(),
-                ]);
-            }
+                // Add items
+                foreach ($this->selectedItems as $item) {
+                    activityitems::create([
+                        'activity_id' => $activity->id,
+                        'item_id' => $item['item_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'added_by' => Auth::id(),
+                    ]);
+                }
 
-            // Add personnel
-            foreach ($this->selectedPersonnel as $titleId) {
-                activitypersonel::create([
-                    'activity_id' => $activity->id,
-                    'title_id' => $titleId,
-                    'added_by' => Auth::id(),
-                ]);
-            }
-        });
+                // Add personnel
+                foreach ($this->selectedPersonnel as $titleId) {
+                    activitypersonel::create([
+                        'activity_id' => $activity->id,
+                        'title_id' => $titleId,
+                        'added_by' => Auth::id(),
+                    ]);
+                }
+            });
+        } catch (\Throwable $th) {
+            report($th);
+            session()->flash('error', 'Failed to save activity. Please try again or contact support if the problem persists.');
+            return;
+        }
 
         session()->flash('success', $this->modalMode === 'edit' ? 'Activity updated successfully!' : 'Activity created successfully!');
         $this->showModal = false;
@@ -252,12 +285,18 @@ class ActivitiesManagement extends Component
 
     public function delete($id)
     {
-        DB::transaction(function () use ($id) {
-            $activity = chopactivities::findOrFail($id);
-            $activity->items()->delete();
-            $activity->personels()->delete();
-            $activity->delete();
-        });
+        try {
+            DB::transaction(function () use ($id) {
+                $activity = chopactivities::findOrFail($id);
+                $activity->items()->delete();
+                $activity->personels()->delete();
+                $activity->delete();
+            });
+        } catch (\Throwable $th) {
+            report($th);
+            session()->flash('error', 'Failed to delete activity. Please try again or contact support if the problem persists.');
+            return;
+        }
 
         session()->flash('success', 'Activity deleted successfully!');
     }
