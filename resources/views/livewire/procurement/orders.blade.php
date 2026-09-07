@@ -33,13 +33,45 @@
         </div>
     @endif
 
-    <!-- Search -->
+    <!-- Search & Filters -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-12">
-                    <input type="text" wire:model.live="search" class="form-control"
+                <div class="col-md-{{ $isSuperAdmin ? '3' : '4' }}">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control"
                            placeholder="Search by order number or description...">
+                </div>
+                @if($isSuperAdmin)
+                    <div class="col-md-2">
+                        <select wire:model.live="filterDepartment" class="form-select">
+                            <option value="">All Departments</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="col-md-2">
+                    <select wire:model.live="filterStatus" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="draft">Draft</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <x-forms.input type="date" name="filterDateFrom" label="From Date"
+                    colMd="2" max="{{ $filterDateTo ?: now()->toDateString() }}"
+                    wire:model.live="filterDateFrom" />
+
+                <x-forms.input type="date" name="filterDateTo" label="To Date"
+                    colMd="2" min="{{ $filterDateFrom }}" max="{{ now()->toDateString() }}"
+                    wire:model.live="filterDateTo" />
+
+                <div class="col-md-1 d-flex align-items-start">
+                    <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters" title="Clear filters">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -48,39 +80,50 @@
     <!-- Orders Table -->
     <div class="card shadow-sm">
         <div class="card-header bg-white">
-            <h5 class="mb-0">My Store Orders</h5>
+            <h5 class="mb-0">{{ $isSuperAdmin ? 'All Store Orders' : 'Department Store Orders' }}</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th>#</th>
                             <th>Order Number</th>
                             <th>Department</th>
+                            <th>Requested By</th>
                             <th>Status</th>
                             <th>Items</th>
+                            <th>Ordered</th>
                             <th>Submitted</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $num=1;
+                        @endphp
                         @forelse ($orders as $order)
                             <tr>
+                                <td>{{ $num++ }}</td>
                                 <td class="fw-bold">{{ $order->order_number }}</td>
                                 <td>{{ $order->department->name ?? '-' }}</td>
+                                <td>{{ $order->requestedBy->full_name ?? '-' }}</td>
                                 <td>
                                     @php
                                         $statusColors = [
                                             'draft' => 'secondary',
                                             'submitted' => 'primary',
+                                            'review' => 'warning',
                                             'approved' => 'success',
                                             'rejected' => 'danger',
+                                            'issued' => 'dark',
                                         ];
                                         $color = $statusColors[$order->status] ?? 'secondary';
                                     @endphp
                                     <span class="badge bg-{{ $color }}">{{ ucfirst($order->status) }}</span>
                                 </td>
                                 <td>{{ $order->items->count() }}</td>
+                                <td>{{ $order->created_at->format('M d, Y H:i') }}</td>
                                 <td>{{ $order->submitted_at ? $order->submitted_at->format('M d, Y') : '-' }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
@@ -89,34 +132,36 @@
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
 
-                                        @if($order->canEdit())
-                                            <button wire:click="openModal('edit', '{{ $order->id }}')"
-                                                    class="btn btn-outline-primary" title="Edit">
-                                                <i class="fa-solid fa-edit"></i>
-                                            </button>
-                                        @endif
+                                        @if($order->requested_by === auth()->id())
+                                            @if($order->canEdit())
+                                                <button wire:click="openModal('edit', '{{ $order->id }}')"
+                                                        class="btn btn-outline-primary" title="Edit">
+                                                    <i class="fa-solid fa-edit"></i>
+                                                </button>
+                                            @endif
 
-                                        @if($order->canSubmit())
-                                            <button wire:click="submit('{{ $order->id }}')"
-                                                    class="btn btn-outline-success" title="Submit"
-                                                    onclick="return confirm('Submit this order for approval?')">
-                                                <i class="fa-solid fa-paper-plane"></i>
-                                            </button>
-                                        @endif
+                                            @if($order->canSubmit())
+                                                <button wire:click="submit('{{ $order->id }}')"
+                                                        class="btn btn-outline-success" title="Submit"
+                                                        onclick="return confirm('Submit this order for approval?')">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                </button>
+                                            @endif
 
-                                        @if($order->isDraft())
-                                            <button wire:click="delete('{{ $order->id }}')"
-                                                    class="btn btn-outline-danger" title="Delete"
-                                                    onclick="return confirm('Are you sure you want to delete this order?')">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
+                                            @if($order->isDraft())
+                                                <button wire:click="delete('{{ $order->id }}')"
+                                                        class="btn btn-outline-danger" title="Delete"
+                                                        onclick="return confirm('Are you sure you want to delete this order?')">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
+                                <td colspan="8" class="text-center py-4 text-muted">
                                     <i class="fa-solid fa-inbox fa-3x mb-3 d-block"></i>
                                     No store orders found. Click "New Order" to raise one.
                                 </td>
@@ -303,6 +348,83 @@
                         <button type="button" class="btn-close btn-close-white" wire:click="closeViewModal"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Progress Trace -->
+                        <div class="card border-secondary mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0"><i class="fa-solid fa-timeline me-2"></i>Progress</h6>
+                            </div>
+                            <div class="card-body">
+                                @php
+                                    $steps = [
+                                        [
+                                            'label' => 'Raised',
+                                            'done' => true,
+                                            'by' => $viewingOrder->requestedBy->full_name ?? null,
+                                            'at' => $viewingOrder->created_at,
+                                            'icon' => 'fa-file-circle-plus',
+                                        ],
+                                        [
+                                            'label' => 'Submitted',
+                                            'done' => (bool) $viewingOrder->submitted_at,
+                                            'by' => $viewingOrder->submitted_at ? ($viewingOrder->requestedBy->full_name ?? null) : null,
+                                            'at' => $viewingOrder->submitted_at,
+                                            'icon' => 'fa-paper-plane',
+                                        ],
+                                        [
+                                            'label' => 'Review',
+                                            'done' => in_array($viewingOrder->status, ['review', 'approved', 'issued']),
+                                            'by' => $viewingOrder->status === 'review' ? ($viewingOrder->approvedBy->full_name ?? null) : null,
+                                            'at' => $viewingOrder->status === 'review' ? $viewingOrder->approved_at : null,
+                                            'icon' => 'fa-magnifying-glass',
+                                            'variant' => 'warning',
+                                        ],
+                                        [
+                                            'label' => $viewingOrder->status === 'rejected' ? 'Rejected' : 'Approved',
+                                            'done' => in_array($viewingOrder->status, ['approved', 'rejected', 'issued']),
+                                            'by' => in_array($viewingOrder->status, ['approved', 'rejected', 'issued']) ? ($viewingOrder->approvedBy->full_name ?? null) : null,
+                                            'at' => in_array($viewingOrder->status, ['approved', 'rejected', 'issued']) ? $viewingOrder->approved_at : null,
+                                            'icon' => $viewingOrder->status === 'rejected' ? 'fa-xmark' : 'fa-check',
+                                            'variant' => $viewingOrder->status === 'rejected' ? 'danger' : 'success',
+                                        ],
+                                    ];
+                                @endphp
+                                <div class="d-flex flex-column flex-md-row justify-content-between">
+                                    @foreach($steps as $index => $step)
+                                        <div class="d-flex flex-md-column align-items-center text-center flex-fill position-relative mb-3 mb-md-0">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center mb-2 me-3 me-md-0
+                                                {{ $step['done'] ? 'bg-'.($step['variant'] ?? 'success').' text-white' : 'bg-light text-muted border' }}"
+                                                 style="width: 40px; height: 40px; flex-shrink: 0;">
+                                                <i class="fa-solid {{ $step['icon'] }}"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold {{ $step['done'] ? '' : 'text-muted' }}">{{ $step['label'] }}</div>
+                                                @if($step['done'] && $step['at'])
+                                                    <small class="text-muted d-block">{{ $step['at']->format('M d, Y H:i') }}</small>
+                                                @endif
+                                                @if($step['done'] && $step['by'])
+                                                    <small class="text-muted d-block">by {{ $step['by'] }}</small>
+                                                @endif
+                                                @if(!$step['done'])
+                                                    <small class="text-muted d-block">Pending</small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @if($index < count($steps) - 1)
+                                            <div class="d-none d-md-flex align-items-center flex-fill px-2" style="margin-top: 18px;">
+                                                <div class="w-100" style="height: 2px; background-color: {{ $steps[$index + 1]['done'] ? '#198754' : '#dee2e6' }};"></div>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+
+                                @if($viewingOrder->status === 'rejected' && $viewingOrder->rejection_reason)
+                                    <div class="alert alert-danger mt-3 mb-0">
+                                        <strong>Rejection Reason:</strong> {{ $viewingOrder->rejection_reason }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
                         <!-- Order Information -->
                         <div class="card border-info mb-4">
                             <div class="card-header bg-info text-white">
@@ -313,7 +435,8 @@
                                     <div class="col-md-6">
                                         <p><strong>Order Number:</strong> {{ $viewingOrder->order_number }}</p>
                                         <p><strong>Department:</strong> {{ $viewingOrder->department->name ?? '-' }}</p>
-                                        <p><strong>Requested By:</strong> {{ $viewingOrder->requestedBy->name }}</p>
+                                        <p><strong>Requested By:</strong> {{ $viewingOrder->requestedBy->full_name }}</p>
+                                        <p><strong>Ordered On:</strong> {{ $viewingOrder->created_at->format('M d, Y H:i') }}</p>
                                     </div>
                                     <div class="col-md-6">
                                         <p><strong>Status:</strong>
@@ -330,7 +453,7 @@
                                         </p>
                                         <p><strong>Submitted:</strong> {{ $viewingOrder->submitted_at ? $viewingOrder->submitted_at->format('M d, Y H:i') : 'Not submitted' }}</p>
                                         @if($viewingOrder->approvedBy)
-                                            <p><strong>Approved By:</strong> {{ $viewingOrder->approvedBy->name }}</p>
+                                            <p><strong>{{ $viewingOrder->status === 'rejected' ? 'Rejected By' : 'Approved By' }}:</strong> {{ $viewingOrder->approvedBy->full_name }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -377,6 +500,42 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Assigned For Remarks -->
+                        @if($viewingOrder->assignedDuties->count())
+                            <div class="card border-secondary mb-0">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">Assigned For Remarks</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Priority</th>
+                                                <th>Status</th>
+                                                <th>Due Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($viewingOrder->assignedDuties as $duty)
+                                                <tr>
+                                                    <td>{{ $duty->employee?->getFullName() ?? '-' }}</td>
+                                                    <td><span class="badge bg-info text-dark">{{ ucfirst($duty->priority) }}</span></td>
+                                                    <td>
+                                                        @php
+                                                            $dutyStatusColors = ['assigned' => 'warning', 'in_progress' => 'info', 'completed' => 'success', 'cancelled' => 'secondary'];
+                                                        @endphp
+                                                        <span class="badge bg-{{ $dutyStatusColors[$duty->status] ?? 'secondary' }}">{{ ucfirst(str_replace('_', ' ', $duty->status)) }}</span>
+                                                    </td>
+                                                    <td>{{ $duty->end_date ? $duty->end_date->format('M d, Y') : '-' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" wire:click="closeViewModal">Close</button>

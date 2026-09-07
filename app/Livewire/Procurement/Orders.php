@@ -4,6 +4,7 @@ namespace App\Livewire\Procurement;
 
 use App\Models\chopcategoryarea;
 use App\Models\chopitems;
+use App\Models\departments as Department;
 use App\Models\Employee;
 use App\Models\StoreOrder;
 use App\Models\StoreOrderItem;
@@ -42,6 +43,21 @@ class Orders extends Component
     public $showItemSelector = false;
 
     public $filterCategory = '';
+
+    // Order list filters
+    public $filterDepartment = '';
+
+    public $filterStatus = '';
+
+    public $filterDateFrom = '';
+
+    public $filterDateTo = '';
+
+    public function mount()
+    {
+        $this->filterDateFrom = now()->startOfMonth()->toDateString();
+        $this->filterDateTo = now()->endOfMonth()->toDateString();
+    }
 
     public function openModal($mode = 'create', $id = null)
     {
@@ -114,6 +130,15 @@ class Orders extends Component
     protected function currentDepartmentId()
     {
         return Employee::where('user_id', Auth::id())->value('department_id');
+    }
+
+    protected function canViewOrder(StoreOrder $order): bool
+    {
+        if (Auth::user()->isSuperAdmin()) {
+            return true;
+        }
+
+        return $order->department_id === $this->currentDepartmentId();
     }
 
     public function save()
@@ -208,9 +233,10 @@ class Orders extends Component
             'department',
             'requestedBy',
             'approvedBy',
+            'assignedDuties.employee',
         ])->findOrFail($id);
 
-        if ($this->viewingOrder->requested_by !== Auth::id()) {
+        if (! $this->canViewOrder($this->viewingOrder)) {
             session()->flash('error', 'You cannot view this order.');
             $this->viewingOrder = null;
 
@@ -231,20 +257,54 @@ class Orders extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterDepartment()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterStatus()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDateFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDateTo()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters()
+    {
+        $this->reset(['search', 'filterDepartment', 'filterStatus']);
+        $this->filterDateFrom = now()->startOfMonth()->toDateString();
+        $this->filterDateTo = now()->endOfMonth()->toDateString();
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $isSuperAdmin = Auth::user()->isSuperAdmin();
         $departmentId = $this->currentDepartmentId();
 
         $orders = StoreOrder::query()
-            ->with(['department', 'items'])
-            ->when($departmentId, fn ($q) => $q->where('department_id', $departmentId))
-            ->where('requested_by', Auth::id())
+            ->with(['department', 'items', 'requestedBy'])
+            ->when(! $isSuperAdmin, fn ($q) => $q->where('department_id', $departmentId))
+            ->when($isSuperAdmin && $this->filterDepartment, fn ($q) => $q->where('department_id', $this->filterDepartment))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterDateFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn ($q) => $q->whereDate('created_at', '<=', $this->filterDateTo))
             ->when($this->search, function ($query) {
                 $query->where('order_number', 'like', '%'.$this->search.'%')
                     ->orWhere('order_description', 'like', '%'.$this->search.'%');
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
+        $departments = $isSuperAdmin ? Department::orderBy('name')->get() : collect();
 
         $categories = chopcategoryarea::orderBy('name')->get();
 
@@ -266,6 +326,8 @@ class Orders extends Component
             'orders' => $orders,
             'categories' => $categories,
             'availableItems' => $availableItems,
+            'departments' => $departments,
+            'isSuperAdmin' => $isSuperAdmin,
         ]);
     }
 }

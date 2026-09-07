@@ -57,6 +57,7 @@ use App\Livewire\Performance\Staffs\Myperformanceview;
 use App\Livewire\Performance\Staffs\Myplanning;
 use App\Livewire\Performance\Supervisor\ApproveEvaluations;
 use App\Livewire\Performance\TitleKpis\ManageTitleKpis;
+use App\Livewire\Procurement\ApproveOrders;
 use App\Livewire\Procurement\Orders;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
@@ -209,6 +210,7 @@ Route::prefix('chop')->middleware('auth')->group(function () {
 Route::prefix('procurement')->middleware('auth')->group(function () {
     // Store Orders
     Route::get('orders', Orders::class)->name('procurement.orders');
+    Route::get('orders/approve', ApproveOrders::class)->name('procurement.orders.approve');
 });
 
 Route::prefix('performance')->middleware('auth')->group(function () {

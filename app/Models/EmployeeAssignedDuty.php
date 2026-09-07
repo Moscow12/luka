@@ -14,6 +14,7 @@ class EmployeeAssignedDuty extends Model
 
     protected $fillable = [
         'employee_id',
+        'store_order_id',
         'duty_name',
         'description',
         'kpi_type',
@@ -57,6 +58,11 @@ class EmployeeAssignedDuty extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function storeOrder(): BelongsTo
+    {
+        return $this->belongsTo(StoreOrder::class);
     }
 
     public function assignedBy(): BelongsTo

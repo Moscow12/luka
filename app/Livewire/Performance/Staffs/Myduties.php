@@ -4,6 +4,7 @@ namespace App\Livewire\Performance\Staffs;
 
 use App\Models\Employee;
 use App\Models\EmployeeAssignedDuty;
+use App\Models\StoreOrderItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -16,14 +17,17 @@ class Myduties extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $employee;
+
     public $hasEmployeeRecord = false;
 
     // Filters
     public $filterStatus = '';
+
     public $filterPriority = '';
 
     // Modal states
     public $showDetailModal = false;
+
     public $showUpdateModal = false;
 
     // Selected duty for viewing/updating
@@ -31,8 +35,13 @@ class Myduties extends Component
 
     // Update form fields
     public $actual_achievement;
+
     public $achievement_notes;
+
     public $update_status;
+
+    // Order item remarks (for duties linked to a store order)
+    public $itemRemarks = [];
 
     public function mount()
     {
@@ -57,7 +66,7 @@ class Myduties extends Component
     {
         $this->selectedDuty = EmployeeAssignedDuty::where('id', $dutyId)
             ->where('employee_id', $this->employee->id)
-            ->with(['assignedBy', 'reviewedBy'])
+            ->with(['assignedBy', 'reviewedBy', 'storeOrder.items.item', 'storeOrder.department'])
             ->firstOrFail();
 
         $this->showDetailModal = true;
@@ -74,11 +83,20 @@ class Myduties extends Component
         $this->resetErrorBag();
         $this->selectedDuty = EmployeeAssignedDuty::where('id', $dutyId)
             ->where('employee_id', $this->employee->id)
+            ->with(['storeOrder.items.item'])
             ->firstOrFail();
 
         $this->actual_achievement = $this->selectedDuty->actual_achievement;
         $this->achievement_notes = $this->selectedDuty->achievement_notes;
         $this->update_status = $this->selectedDuty->status;
+
+        if ($this->selectedDuty->store_order_id && $this->selectedDuty->storeOrder) {
+            $this->itemRemarks = $this->selectedDuty->storeOrder->items
+                ->mapWithKeys(fn ($item) => [$item->id => $item->remarks])
+                ->toArray();
+        } else {
+            $this->itemRemarks = [];
+        }
 
         $this->showUpdateModal = true;
     }
@@ -87,11 +105,22 @@ class Myduties extends Component
     {
         $this->showUpdateModal = false;
         $this->selectedDuty = null;
+        $this->itemRemarks = [];
         $this->reset(['actual_achievement', 'achievement_notes', 'update_status']);
     }
 
     public function updateProgress()
     {
+        $duty = EmployeeAssignedDuty::where('id', $this->selectedDuty->id)
+            ->where('employee_id', $this->employee->id)
+            ->firstOrFail();
+
+        if ($duty->store_order_id) {
+            $this->saveItemRemarks($duty);
+
+            return;
+        }
+
         $this->validate([
             'actual_achievement' => ['nullable', 'numeric', 'min:0'],
             'achievement_notes' => ['nullable', 'string'],
@@ -100,10 +129,6 @@ class Myduties extends Component
 
         try {
             DB::beginTransaction();
-
-            $duty = EmployeeAssignedDuty::where('id', $this->selectedDuty->id)
-                ->where('employee_id', $this->employee->id)
-                ->firstOrFail();
 
             // Calculate score based on target and achievement
             $score = null;
@@ -124,13 +149,44 @@ class Myduties extends Component
             $this->closeUpdateModal();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
+        }
+    }
+
+    protected function saveItemRemarks(EmployeeAssignedDuty $duty)
+    {
+        $this->validate([
+            'itemRemarks' => ['array'],
+            'itemRemarks.*' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($this->itemRemarks as $itemId => $remarks) {
+                StoreOrderItem::where('id', $itemId)
+                    ->where('store_order_id', $duty->store_order_id)
+                    ->update(['remarks' => $remarks]);
+            }
+
+            $duty->update([
+                'status' => 'completed',
+                'achievement_notes' => $this->achievement_notes,
+            ]);
+
+            DB::commit();
+
+            session()->flash('success', 'Remarks saved successfully!');
+            $this->closeUpdateModal();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
         }
     }
 
     public function getStatistics()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return [
                 'total' => 0,
                 'assigned' => 0,

@@ -359,7 +359,7 @@
                                                 @if($selectedDuty->assignedBy)
                                                     <tr>
                                                         <td class="text-muted">Assigned By:</td>
-                                                        <td><strong>{{ $selectedDuty->assignedBy->name }}</strong></td>
+                                                        <td><strong>{{ $selectedDuty->assignedBy->full_name }}</strong></td>
                                                     </tr>
                                                 @endif
                                                 @if($selectedDuty->assigned_at)
@@ -373,6 +373,34 @@
                                     </div>
                                 </div>
                             </div>
+
+                            @if($selectedDuty->store_order_id && $selectedDuty->storeOrder)
+                                <div class="card mt-3 border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fa-solid fa-cart-shopping me-2"></i>Store Order - {{ $selectedDuty->storeOrder->order_number }}</h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <table class="table table-sm mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th class="text-center">Quantity</th>
+                                                    <th>Remarks</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($selectedDuty->storeOrder->items as $orderItem)
+                                                    <tr>
+                                                        <td>{{ $orderItem->item->name ?? '-' }}</td>
+                                                        <td class="text-center">{{ $orderItem->quantity }}</td>
+                                                        <td>{{ $orderItem->remarks ?: '-' }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
 
                             @if($selectedDuty->scoring_criteria)
                                 <div class="card mt-3">
@@ -405,7 +433,7 @@
                                         <p>{{ $selectedDuty->review_comments }}</p>
                                         @if($selectedDuty->reviewedBy)
                                             <small class="text-muted">
-                                                Reviewed by {{ $selectedDuty->reviewedBy->name }}
+                                                Reviewed by {{ $selectedDuty->reviewedBy->full_name }}
                                                 @if($selectedDuty->reviewed_at)
                                                     on {{ $selectedDuty->reviewed_at->format('d M Y H:i') }}
                                                 @endif
@@ -435,7 +463,8 @@
                     <div class="modal-content">
                         <div class="modal-header bg-success text-white">
                             <h5 class="modal-title">
-                                <i class="fa-solid fa-edit me-2"></i>Update Progress
+                                <i class="fa-solid fa-edit me-2"></i>
+                                {{ $selectedDuty->store_order_id ? 'Add Remarks' : 'Update Progress' }}
                             </h5>
                             <button type="button" class="btn-close btn-close-white" wire:click="closeUpdateModal"></button>
                         </div>
@@ -448,46 +477,91 @@
                                     @endif
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">Actual Achievement</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" class="form-control @error('actual_achievement') is-invalid @enderror"
-                                               wire:model="actual_achievement" placeholder="Enter achievement value">
-                                        @if($selectedDuty->target_unit)
-                                            <span class="input-group-text">{{ $selectedDuty->target_unit }}</span>
-                                        @endif
+                                @if($selectedDuty->store_order_id && $selectedDuty->storeOrder)
+                                    {{-- Order items remarks --}}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th class="text-center">Quantity</th>
+                                                    <th>Remarks</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($selectedDuty->storeOrder->items as $orderItem)
+                                                    <tr>
+                                                        <td>{{ $orderItem->item->name ?? '-' }}</td>
+                                                        <td class="text-center">{{ $orderItem->quantity }}</td>
+                                                        <td>
+                                                            <input type="text" class="form-control form-control-sm @error('itemRemarks.'.$orderItem->id) is-invalid @enderror"
+                                                                   wire:model="itemRemarks.{{ $orderItem->id }}" placeholder="Add remarks...">
+                                                            @error('itemRemarks.'.$orderItem->id)
+                                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                            @enderror
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    @error('actual_achievement')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">Status</label>
-                                    <select class="form-select @error('update_status') is-invalid @enderror" wire:model="update_status">
-                                        <option value="assigned">Assigned</option>
-                                        <option value="in_progress">In Progress</option>
-                                        <option value="completed">Completed</option>
-                                    </select>
-                                    @error('update_status')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Notes (Optional)</label>
+                                        <textarea class="form-control @error('achievement_notes') is-invalid @enderror"
+                                                  wire:model="achievement_notes" rows="2"
+                                                  placeholder="Any additional notes..."></textarea>
+                                        @error('achievement_notes')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">Notes (Optional)</label>
-                                    <textarea class="form-control @error('achievement_notes') is-invalid @enderror"
-                                              wire:model="achievement_notes" rows="3"
-                                              placeholder="Add notes about your progress..."></textarea>
-                                    @error('achievement_notes')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                    <div class="alert alert-secondary mb-0">
+                                        <i class="fa-solid fa-circle-info me-1"></i>
+                                        Saving will mark this duty as <strong>completed</strong>.
+                                    </div>
+                                @else
+                                    <div class="mb-3">
+                                        <label class="form-label">Actual Achievement</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.01" class="form-control @error('actual_achievement') is-invalid @enderror"
+                                                   wire:model="actual_achievement" placeholder="Enter achievement value">
+                                            @if($selectedDuty->target_unit)
+                                                <span class="input-group-text">{{ $selectedDuty->target_unit }}</span>
+                                            @endif
+                                        </div>
+                                        @error('actual_achievement')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select @error('update_status') is-invalid @enderror" wire:model="update_status">
+                                            <option value="assigned">Assigned</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                        @error('update_status')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Notes (Optional)</label>
+                                        <textarea class="form-control @error('achievement_notes') is-invalid @enderror"
+                                                  wire:model="achievement_notes" rows="3"
+                                                  placeholder="Add notes about your progress..."></textarea>
+                                        @error('achievement_notes')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                @endif
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" wire:click="closeUpdateModal">Cancel</button>
                                 <button type="submit" class="btn btn-success">
-                                    <i class="fa-solid fa-save me-1"></i>Save Progress
+                                    <i class="fa-solid fa-save me-1"></i>{{ $selectedDuty->store_order_id ? 'Save Remarks' : 'Save Progress' }}
                                 </button>
                             </div>
                         </form>

@@ -35,6 +35,12 @@
     $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
     $procurementRoutes = ['procurement.orders', 'procurement.*', 'supply.physical.count', 'supply.*'];
     $auditRoutes = ['audit-logs'];
+
+    // Pending store orders count, only computed for users who can approve them
+    $canApproveProcurement = $isSuperAdmin || ($user?->can('approve-procurement') ?? false);
+    $pendingOrdersCount = $canApproveProcurement
+        ? \App\Models\StoreOrder::where('status', \App\Models\StoreOrder::STATUS_SUBMITTED)->count()
+        : 0;
 @endphp
 
 <ul class="navbar-nav flex-column">
@@ -179,6 +185,16 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('supply.physical.count') ? 'active' : '' }}" href="{{ route('supply.physical.count') }}"><i class="fa-solid fa-clipboard-list"></i> Physical Stock Count</a>
             </li>
+            @if($isSuperAdmin || $user?->can('approve-procurement'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('procurement.orders.approve') ? 'active' : '' }}" href="{{ route('procurement.orders.approve') }}">
+                    <i class="fa-solid fa-check-double"></i> Approve Orders
+                    @if($pendingOrdersCount > 0)
+                        <span class="badge bg-danger ms-1">{{ $pendingOrdersCount }}</span>
+                    @endif
+                </a>
+            </li>
+            @endif
         </ul>
     </li>
     @endif

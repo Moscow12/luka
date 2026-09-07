@@ -23,6 +23,7 @@ class Documentmappings extends Component
         'Allowances' => 'Allowances',
         'Loan' => 'Loan',
         'Performance' => 'Performance',
+        'Purchase' => 'Purchase',
     ];
 
     public function openModal($mode = 'create', $id = null)
