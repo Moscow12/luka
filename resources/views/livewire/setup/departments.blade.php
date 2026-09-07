@@ -7,7 +7,7 @@
             <div class="d-flex flex-row gap-3 align-items-center">
                 <div>
                     <form>
-                        <input class="form-control" type="search" value="" placeholder="Search" />
+                        <input class="form-control" type="search" wire:model.live.debounce.300ms="search" placeholder="Search" />
                     </form>
                 </div>
                 <a href="#!" class="text-inherit">

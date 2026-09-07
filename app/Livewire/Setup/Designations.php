@@ -10,6 +10,7 @@ class Designations extends Component
 {
     
     public $designations;
+    public $search = '';
     public $name;
     public $code;
     public $designation;
@@ -40,7 +41,19 @@ class Designations extends Component
 
     public function listdata()
     {
-        $this->designations = ModelsDesignations::with('added_by')->get();
+        $this->designations = ModelsDesignations::with('added_by')
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('code', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->listdata();
     }
 
     public function save()

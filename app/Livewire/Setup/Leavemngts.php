@@ -10,6 +10,8 @@ class Leavemngts extends Component
 {
     public $leavetypes;
 
+    public $search = '';
+
     public $leavetype;
 
     public $days;
@@ -59,7 +61,19 @@ class Leavemngts extends Component
 
     public function listdata()
     {
-        $this->leavetypes = leaves::all();
+        $this->leavetypes = leaves::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->listdata();
     }
 
     public function save()

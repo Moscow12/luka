@@ -10,6 +10,7 @@ class ViolationManagemet extends Component
 {
     
     public $violations;
+    public $search = '';
     public $violation_type;
     public $description;
     public $violation;
@@ -39,7 +40,19 @@ class ViolationManagemet extends Component
 
     public function listdata()
     {
-        $this->violations = violations::all();
+        $this->violations = violations::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('violation_type', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->listdata();
     }
 
     public function save()

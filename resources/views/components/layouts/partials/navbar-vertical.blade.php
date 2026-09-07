@@ -170,7 +170,7 @@
             <span class="nav-icon">
                 <i class="fa-solid fa-cart-shopping"></i>
             </span>
-            <span class="text">Procurement</span>
+            <span class="text">Requests & Orders</span>
         </a>
         <ul class="dropdown-menu flex-column {{ request()->routeIs($procurementRoutes) ? 'show' : '' }}">
             <li class="nav-item">

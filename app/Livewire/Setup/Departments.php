@@ -13,6 +13,8 @@ class Departments extends Component
 
     public $approvalLevels;
 
+    public $search = '';
+
     public $name;
 
     public $description;
@@ -53,7 +55,19 @@ class Departments extends Component
 
     public function listdata()
     {
-        $this->departments = ModelsDepartments::with(['added_by', 'approval_level'])->get();
+        $this->departments = ModelsDepartments::with(['added_by', 'approval_level'])
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->listdata();
     }
 
     public function save()

@@ -9,6 +9,7 @@ use Livewire\Component;
 class Jobtitles extends Component
 {
     public $jobtitles;
+    public $search = '';
     public $name;
     public $description;
     public $jobtitle;
@@ -39,7 +40,19 @@ class Jobtitles extends Component
 
     public function listdata()
     {
-        $this->jobtitles = Jobtitle::all();
+        $this->jobtitles = Jobtitle::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->listdata();
     }
 
     public function save()

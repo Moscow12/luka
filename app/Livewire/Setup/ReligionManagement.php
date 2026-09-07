@@ -10,6 +10,7 @@ use Livewire\Component;
 class ReligionManagement extends Component
 {
     public $religions;
+    public $search = '';
     public $name;
     public $description;
     public $religion;
@@ -39,7 +40,19 @@ class ReligionManagement extends Component
 
     public function listdata()
     {
-        $this->religions = religions::all();
+        $this->religions = religions::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->listdata();
     }
 
     public function save()
