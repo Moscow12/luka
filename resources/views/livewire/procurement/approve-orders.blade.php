@@ -13,6 +13,9 @@
             <h2 class="mb-1">Approve Store Orders</h2>
             <p class="text-muted">Review and action store orders submitted across all departments</p>
         </div>
+        <a href="{{ route('procurement.requisitions') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-file-invoice me-1"></i>View Purchase Requisitions
+        </a>
     </div>
 
     <!-- Flash Messages -->
@@ -97,15 +100,25 @@
     @if($activeTab === 'requisition')
         <!-- Purchase Requisition: flat item list across all orders in review -->
         <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h6 class="mb-0">Requested Items Under Review</h6>
-                <small class="text-muted">All items across orders awaiting final approval</small>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-0">Requested Items Under Review</h6>
+                    <small class="text-muted">All items across orders awaiting final approval</small>
+                </div>
+                @if($isSuperAdmin || auth()->user()?->can('create-requisition'))
+                    <button type="button" class="btn btn-sm btn-primary" wire:click="openCreateRequisitionModal" @disabled(count($selectedItemIds) === 0)>
+                        <i class="fa-solid fa-file-invoice me-1"></i>Create Purchase Requisition ({{ count($selectedItemIds) }})
+                    </button>
+                @endif
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th style="width: 3%">
+                                    <input type="checkbox" class="form-check-input" wire:model.live="selectAllItems">
+                                </th>
                                 <th>#</th>
                                 <th>Order Number</th>
                                 <th>Item</th>
@@ -122,6 +135,15 @@
                             @endphp
                             @forelse ($items as $orderItem)
                                 <tr>
+                                    <td>
+                                        @if(($orderItem->purchase_requisition_items_count ?? 0) > 0)
+                                            <span class="badge bg-secondary" title="Already requisitioned">
+                                                <i class="fa-solid fa-check"></i>
+                                            </span>
+                                        @else
+                                            <input type="checkbox" class="form-check-input" wire:model.live="selectedItemIds" value="{{ $orderItem->id }}">
+                                        @endif
+                                    </td>
                                     <td>{{ $itemNum++ }}</td>
                                     <td class="fw-bold">{{ $orderItem->storeOrder->order_number ?? '-' }}</td>
                                     <td>{{ $orderItem->item->name ?? '-' }}</td>
@@ -138,7 +160,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4 text-muted">
+                                    <td colspan="9" class="text-center py-4 text-muted">
                                         <i class="fa-solid fa-inbox fa-3x mb-3 d-block"></i>
                                         No items currently under review.
                                     </td>
@@ -337,6 +359,40 @@
                             <button type="button" class="btn btn-secondary" wire:click="closeAssignModal">Cancel</button>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fa-solid fa-user-plus me-2"></i>Assign
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Create Purchase Requisition Modal -->
+    @if($showCreateRequisitionModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form wire:submit.prevent="createRequisition">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-file-invoice me-2"></i>Create Purchase Requisition
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" wire:click="closeCreateRequisitionModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>You are about to create a purchase requisition for
+                                <strong>{{ count($selectedItemIds) }}</strong> selected item(s).</p>
+                            <div class="mb-3">
+                                <label class="form-label">Notes (optional)</label>
+                                <textarea class="form-control" wire:model="requisitionNotes" rows="3"
+                                          placeholder="Any additional notes for this requisition..."></textarea>
+                                @error('requisitionNotes') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeCreateRequisitionModal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-file-invoice me-2"></i>Create Requisition
                             </button>
                         </div>
                     </form>

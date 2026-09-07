@@ -41,6 +41,15 @@
     $pendingOrdersCount = $canApproveProcurement
         ? \App\Models\StoreOrder::where('status', \App\Models\StoreOrder::STATUS_SUBMITTED)->count()
         : 0;
+
+    // Draft purchase requisitions count, only computed for users who can approve/manage them
+    $canManageRequisitions = $isSuperAdmin
+        || ($user?->can('create-requisition') ?? false)
+        || ($user?->can('approve-requisition') ?? false)
+        || ($user?->can('manage-requisition') ?? false);
+    $draftRequisitionsCount = $canManageRequisitions
+        ? \App\Models\PurchaseRequisition::where('status', \App\Models\PurchaseRequisition::STATUS_DRAFT)->count()
+        : 0;
 @endphp
 
 <ul class="navbar-nav flex-column">
@@ -191,6 +200,16 @@
                     <i class="fa-solid fa-check-double"></i> Approve Orders
                     @if($pendingOrdersCount > 0)
                         <span class="badge bg-danger ms-1">{{ $pendingOrdersCount }}</span>
+                    @endif
+                </a>
+            </li>
+            @endif
+            @if($canManageRequisitions)
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('procurement.requisitions') ? 'active' : '' }}" href="{{ route('procurement.requisitions') }}">
+                    <i class="fa-solid fa-file-invoice"></i> Purchase Requisitions
+                    @if($draftRequisitionsCount > 0)
+                        <span class="badge bg-warning text-dark ms-1">{{ $draftRequisitionsCount }}</span>
                     @endif
                 </a>
             </li>

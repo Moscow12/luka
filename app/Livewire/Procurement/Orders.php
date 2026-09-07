@@ -53,12 +53,6 @@ class Orders extends Component
 
     public $filterDateTo = '';
 
-    public function mount()
-    {
-        $this->filterDateFrom = now()->startOfMonth()->toDateString();
-        $this->filterDateTo = now()->endOfMonth()->toDateString();
-    }
-
     public function openModal($mode = 'create', $id = null)
     {
         $this->resetErrorBag();
@@ -230,6 +224,8 @@ class Orders extends Component
     {
         $this->viewingOrder = StoreOrder::with([
             'items.item.category',
+            'items.purchaseRequisitionItems.purchaseRequisition',
+            'items.purchaseRequisitionItems.localPurchaseOrderItem.localPurchaseOrder',
             'department',
             'requestedBy',
             'approvedBy',
@@ -279,9 +275,7 @@ class Orders extends Component
 
     public function resetFilters()
     {
-        $this->reset(['search', 'filterDepartment', 'filterStatus']);
-        $this->filterDateFrom = now()->startOfMonth()->toDateString();
-        $this->filterDateTo = now()->endOfMonth()->toDateString();
+        $this->reset(['search', 'filterDepartment', 'filterStatus', 'filterDateFrom', 'filterDateTo']);
         $this->resetPage();
     }
 

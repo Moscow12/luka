@@ -8,9 +8,12 @@ use App\Models\approvalleveltoemployee;
 use App\Models\departments as Department;
 use App\Models\Employee;
 use App\Models\EmployeeAssignedDuty;
+use App\Models\PurchaseRequisition;
+use App\Models\PurchaseRequisitionItem;
 use App\Models\StoreOrder;
 use App\Models\StoreOrderItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -57,6 +60,15 @@ class ApproveOrders extends Component
     public $assignDueDate = '';
 
     public $assignNotes = '';
+
+    // Purchase requisition item selection (Purchase Requisition tab)
+    public $selectedItemIds = [];
+
+    public $selectAllItems = false;
+
+    public $showCreateRequisitionModal = false;
+
+    public $requisitionNotes = '';
 
     public function mount()
     {
@@ -338,6 +350,93 @@ class ApproveOrders extends Component
         $this->closeAssignModal();
     }
 
+    public function updatedSelectAllItems($value)
+    {
+        if (! $value) {
+            $this->selectedItemIds = [];
+
+            return;
+        }
+
+        $this->selectedItemIds = $this->itemsQuery()
+            ->whereDoesntHave('purchaseRequisitionItems')
+            ->pluck('store_order_items.id')
+            ->map(fn ($id) => (string) $id)
+            ->toArray();
+    }
+
+    public function openCreateRequisitionModal()
+    {
+        if (empty($this->selectedItemIds)) {
+            session()->flash('error', 'Select at least one item to create a purchase requisition.');
+
+            return;
+        }
+
+        $this->requisitionNotes = '';
+        $this->resetErrorBag();
+        $this->showCreateRequisitionModal = true;
+    }
+
+    public function closeCreateRequisitionModal()
+    {
+        $this->showCreateRequisitionModal = false;
+        $this->requisitionNotes = '';
+        $this->selectedItemIds = [];
+        $this->selectAllItems = false;
+    }
+
+    public function createRequisition()
+    {
+        abort_unless(Auth::user()->isSuperAdmin() || Auth::user()->can('create-requisition'), 403);
+
+        if (empty($this->selectedItemIds)) {
+            session()->flash('error', 'Select at least one item to create a purchase requisition.');
+            $this->showCreateRequisitionModal = false;
+
+            return;
+        }
+
+        $this->validate([
+            'requisitionNotes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $items = StoreOrderItem::whereIn('id', $this->selectedItemIds)
+            ->whereDoesntHave('purchaseRequisitionItems')
+            ->get();
+
+        if ($items->isEmpty()) {
+            session()->flash('error', 'The selected items have already been requisitioned.');
+            $this->closeCreateRequisitionModal();
+
+            return;
+        }
+
+        $requisition = DB::transaction(function () use ($items) {
+            $requisition = PurchaseRequisition::create([
+                'requisition_number' => PurchaseRequisition::generateRequisitionNumber(),
+                'status' => PurchaseRequisition::STATUS_DRAFT,
+                'created_by' => Auth::id(),
+                'notes' => $this->requisitionNotes,
+            ]);
+
+            foreach ($items as $item) {
+                PurchaseRequisitionItem::create([
+                    'purchase_requisition_id' => $requisition->id,
+                    'store_order_item_id' => $item->id,
+                    'store_order_id' => $item->store_order_id,
+                    'quantity' => $item->quantity,
+                    'status' => PurchaseRequisitionItem::STATUS_ACTIVE,
+                ]);
+            }
+
+            return $requisition;
+        });
+
+        session()->flash('success', 'Purchase requisition '.$requisition->requisition_number.' created successfully!');
+        $this->closeCreateRequisitionModal();
+    }
+
     protected function baseQuery()
     {
         return StoreOrder::query()
@@ -370,12 +469,14 @@ class ApproveOrders extends Component
     public function render()
     {
         $departments = Department::orderBy('name')->get();
+        $isSuperAdmin = Auth::user()->isSuperAdmin();
 
         if ($this->activeTab === 'requisition') {
             $items = $this->itemsQuery()
                 ->join('store_orders', 'store_orders.id', '=', 'store_order_items.store_order_id')
                 ->orderBy('store_orders.created_at', 'desc')
                 ->select('store_order_items.*')
+                ->withCount('purchaseRequisitionItems')
                 ->paginate(15);
 
             return view('livewire.procurement.approve-orders', [
@@ -384,6 +485,7 @@ class ApproveOrders extends Component
                 'departments' => $departments,
                 'pendingCount' => $this->pendingCount(),
                 'reviewCount' => $this->reviewCount(),
+                'isSuperAdmin' => $isSuperAdmin,
             ]);
         }
 
@@ -404,6 +506,7 @@ class ApproveOrders extends Component
             'departments' => $departments,
             'pendingCount' => $this->pendingCount(),
             'reviewCount' => $this->reviewCount(),
+            'isSuperAdmin' => $isSuperAdmin,
         ]);
     }
 

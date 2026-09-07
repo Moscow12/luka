@@ -56,8 +56,10 @@
                         <option value="">All Statuses</option>
                         <option value="draft">Draft</option>
                         <option value="submitted">Submitted</option>
+                        <option value="review">Review</option>
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
+                        <option value="issued">Issued</option>
                     </select>
                 </div>
                 <x-forms.input type="date" name="filterDateFrom" label="From Date"
@@ -444,8 +446,10 @@
                                                 $statusColors = [
                                                     'draft' => 'secondary',
                                                     'submitted' => 'primary',
+                                                    'review' => 'warning',
                                                     'approved' => 'success',
                                                     'rejected' => 'danger',
+                                                    'issued' => 'dark',
                                                 ];
                                                 $color = $statusColors[$viewingOrder->status] ?? 'secondary';
                                             @endphp
@@ -477,15 +481,22 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 5%">#</th>
-                                                <th style="width: 30%">Item</th>
-                                                <th style="width: 20%">Category</th>
-                                                <th style="width: 10%">Unit</th>
-                                                <th style="width: 10%">Quantity</th>
-                                                <th>Remarks</th>
+                                                <th style="width: 22%">Item</th>
+                                                <th style="width: 14%">Category</th>
+                                                <th style="width: 8%">Unit</th>
+                                                <th style="width: 8%">Quantity</th>
+                                                <th style="width: 18%">Remarks</th>
+                                                <th>Procurement Requisition</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @php
+                                                $prItemStatusColors = ['pending' => 'secondary', 'approved' => 'success', 'active' => 'info', 'rejected' => 'danger'];
+                                            @endphp
                                             @foreach($viewingOrder->items as $index => $orderItem)
+                                                @php
+                                                    $prItem = $orderItem->purchaseRequisitionItems->first();
+                                                @endphp
                                                 <tr>
                                                     <td>{{ $index + 1 }}</td>
                                                     <td><strong>{{ $orderItem->item->name }}</strong></td>
@@ -493,6 +504,28 @@
                                                     <td>{{ $orderItem->item->unit ?? '-' }}</td>
                                                     <td class="text-center">{{ $orderItem->quantity }}</td>
                                                     <td><small>{{ $orderItem->remarks ?? '-' }}</small></td>
+                                                    <td>
+                                                        @if(! $prItem)
+                                                            <span class="badge bg-light text-muted border">Not yet requisitioned</span>
+                                                        @else
+                                                            <div class="d-flex flex-column gap-1">
+                                                                <div>
+                                                                    <small class="text-muted d-block">{{ $prItem->purchaseRequisition->requisition_number ?? '-' }}</small>
+                                                                    <span class="badge bg-{{ $prItemStatusColors[$prItem->status] ?? 'secondary' }}">
+                                                                        {{ ucfirst($prItem->status) }}
+                                                                    </span>
+                                                                </div>
+                                                                @if($prItem->remarks)
+                                                                    <small class="text-muted">{{ $prItem->remarks }}</small>
+                                                                @endif
+                                                                @if($prItem->localPurchaseOrderItem)
+                                                                    <span class="badge bg-dark">
+                                                                        <i class="fa-solid fa-file-contract me-1"></i>{{ $prItem->localPurchaseOrderItem->localPurchaseOrder->lpo_number ?? '-' }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>

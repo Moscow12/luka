@@ -44,6 +44,11 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-procurement', 'description' => 'Manage and delete procurement orders'],
                 ['name' => 'approve-procurement', 'description' => 'Approve or reject submitted procurement orders'],
             ],
+            'Purchase Requisitions' => [
+                ['name' => 'create-requisition', 'description' => 'Select order items and create purchase requisitions'],
+                ['name' => 'approve-requisition', 'description' => 'Approve draft purchase requisitions'],
+                ['name' => 'manage-requisition', 'description' => 'Fill supplier quotations, pricing, and generate local purchase orders'],
+            ],
             'Staff Management' => [
                 ['name' => 'view-staff', 'description' => 'View staff list and details'],
                 ['name' => 'manage-staff', 'description' => 'Add, edit, and manage staff records'],

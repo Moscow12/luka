@@ -30,4 +30,9 @@ class StoreOrderItem extends Model
     {
         return $this->belongsTo(chopitems::class, 'item_id');
     }
+
+    public function purchaseRequisitionItems()
+    {
+        return $this->hasMany(PurchaseRequisitionItem::class, 'store_order_item_id');
+    }
 }
