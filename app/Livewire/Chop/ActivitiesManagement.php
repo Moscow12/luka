@@ -206,10 +206,10 @@ class ActivitiesManagement extends Component
         $this->planned_amount = $this->sanitizeAmount($this->planned_amount);
 
         $this->validate([
-            'planned_activity' => ['required', 'string', 'max:255'],
+            'planned_activity' => ['required', 'string'],
             'description' => ['nullable', 'string'],
             'status' => ['required', 'in:pending,in_progress,completed,cancelled'],
-            'planned_amount' => ['required', 'numeric', 'min:0', 'max:9999999999999999.99'],
+            'planned_amount' => ['required', 'numeric', 'min:0'],
             'source_id' => ['required', 'exists:sourceoffunds,id'],
             'category_id' => ['required', 'exists:chopcategoryareas,id'],
             'financial_year_id' => ['required', 'exists:financial_years,id'],

@@ -60,6 +60,7 @@ use App\Livewire\Performance\TitleKpis\ManageTitleKpis;
 use App\Livewire\Procurement\Orders;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
+use App\Livewire\StorageAndSupply\PhysicalCount;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', App\Livewire\LandingPage::class)->name('dashboard')->middleware('auth');
@@ -236,6 +237,6 @@ Route::prefix('performance')->middleware('auth')->group(function () {
 // storage and supply and procurement routes
 Route::prefix('supply')->middleware('auth')->group(function () {
     // Route::get('purchase-orders', App\Livewire\Supply\PurchaseOrders::class)->name('supply.purchase.orders');
-    // Route::get('stock-management', App\Livewire\Supply\StockManagement::class)->name('supply.stock.management');
+    Route::get('physical-count', PhysicalCount::class)->name('supply.physical.count');
     // Route::get('inventory-reports', App\Livewire\Supply\InventoryReports::class)->name('supply.inventory.reports');
 });

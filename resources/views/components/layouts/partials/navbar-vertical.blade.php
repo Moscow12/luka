@@ -33,7 +33,7 @@
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.termination-reasons', 'setup.*'];
     $aclRoutes = ['user.management', 'acl.index', 'acl.permissions', 'acl.*'];
     $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
-    $procurementRoutes = ['procurement.orders', 'procurement.*'];
+    $procurementRoutes = ['procurement.orders', 'procurement.*', 'supply.physical.count', 'supply.*'];
     $auditRoutes = ['audit-logs'];
 @endphp
 
@@ -175,6 +175,9 @@
         <ul class="dropdown-menu flex-column {{ request()->routeIs($procurementRoutes) ? 'show' : '' }}">
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('procurement.orders') ? 'active' : '' }}" href="{{ route('procurement.orders') }}"><i class="fa-solid fa-cart-shopping"></i> Orders</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('supply.physical.count') ? 'active' : '' }}" href="{{ route('supply.physical.count') }}"><i class="fa-solid fa-clipboard-list"></i> Physical Stock Count</a>
             </li>
         </ul>
     </li>
