@@ -77,6 +77,12 @@
                         Financial Years
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link py-2" id="stores-tab" data-bs-toggle="pill" href="#stores" role="tab" aria-controls="stores" aria-selected="false">
+                        <i class="fa-solid fa-store"></i>
+                        Stores
+                    </a>
+                </li>
             </ul>
 
             <div class="tab-content" id="tabContent">
@@ -107,6 +113,9 @@
                 </div>
                 <div class="tab-pane fade" id="financial-years" role="tabpanel" aria-labelledby="financial-years-tab">
                     <livewire:setup.financial-year-management />
+                </div>
+                <div class="tab-pane fade" id="stores" role="tabpanel" aria-labelledby="stores-tab">
+                    <livewire:setup.store-management />
                 </div>
             </div>
         </div>
