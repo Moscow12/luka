@@ -293,6 +293,16 @@
                                                 <i class="fa-solid fa-file-pdf" wire:loading.remove wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"></i>
                                                 <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"></i>
                                             </button>
+                                            <button
+                                                wire:click="regeneratePayroll('{{ $payroll->id }}')"
+                                                wire:confirm="{{ $payroll->status === 'paid' ? 'This payroll is already marked as PAID. Regenerating will recalculate and overwrite its figures using the current contract, allowances and deductions. Continue?' : 'Regenerate this payroll for '.$payroll->employee->first_name.' '.$payroll->employee->last_name.' ('.$payroll->period.')? This will recalculate and overwrite the current figures.' }}"
+                                                wire:loading.attr="disabled"
+                                                wire:target="regeneratePayroll('{{ $payroll->id }}')"
+                                                class="btn btn-sm btn-warning"
+                                                title="Regenerate Salary">
+                                                <i class="fa-solid fa-rotate" wire:loading.remove wire:target="regeneratePayroll('{{ $payroll->id }}')"></i>
+                                                <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="regeneratePayroll('{{ $payroll->id }}')"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

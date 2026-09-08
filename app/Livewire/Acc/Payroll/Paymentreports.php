@@ -4,9 +4,16 @@ namespace App\Livewire\Acc\Payroll;
 
 use App\Exports\PaymentReportsExport;
 use App\Models\allowances;
+use App\Models\ContractAllowance;
+use App\Models\ContractDeduction;
 use App\Models\departments;
+use App\Models\payroll_items;
 use App\Models\payrolls;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Devrabiul\ToastMagic\Facades\ToastMagic;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -164,6 +171,146 @@ class Paymentreports extends Component
         'Content-Type' => 'application/pdf',
     ]);
 }
+
+    public function regeneratePayroll($payrollId)
+    {
+        try {
+            $payroll = payrolls::with('employee.activeContract')->find($payrollId);
+
+            if (! $payroll) {
+                ToastMagic::error('Payroll record not found');
+
+                return;
+            }
+
+            $employee = $payroll->employee;
+            $contract = $payroll->contract_id
+                ? \App\Models\Employeecontracts::find($payroll->contract_id)
+                : $employee?->activeContract;
+
+            if (! $employee || ! $contract) {
+                ToastMagic::error('Cannot regenerate: employee or contract no longer exists');
+
+                return;
+            }
+
+            DB::transaction(function () use ($payroll, $employee, $contract) {
+                $basicSalary = $contract->base_salary;
+
+                $contractAllowances = ContractAllowance::where('contract_id', $contract->id)
+                    ->where('is_active', true)
+                    ->with('allowance')
+                    ->get();
+
+                $contractDeductions = ContractDeduction::where('contract_id', $contract->id)
+                    ->where('is_active', true)
+                    ->with('deduction')
+                    ->get();
+
+                $totalAllowances = $contractAllowances->sum(function ($item) use ($basicSalary) {
+                    return $item->calculateAmount($basicSalary);
+                });
+
+                $mafaoDeductions = $contractDeductions->filter(function ($item) {
+                    return $item->deduction && $item->deduction->deduction_type === 'mafao';
+                });
+
+                $totalMafaoDeduction = $mafaoDeductions->sum(function ($item) use ($basicSalary) {
+                    return $item->calculateAmount($basicSalary, $basicSalary);
+                });
+
+                $taxableSalary = $basicSalary - $totalMafaoDeduction;
+
+                $payeCalculation = calculate_paye($taxableSalary);
+                $paye = $payeCalculation['tax_amount'];
+
+                $grossSalary = $basicSalary + $totalAllowances;
+
+                $nonMafaoDeductions = $contractDeductions->filter(function ($item) {
+                    return ! $item->deduction || $item->deduction->deduction_type !== 'mafao';
+                });
+
+                $otherDeductions = $nonMafaoDeductions->sum(function ($item) use ($basicSalary, $grossSalary) {
+                    return $item->calculateAmount($basicSalary, $grossSalary);
+                });
+
+                $totalDeductions = $paye + $totalMafaoDeduction + $otherDeductions;
+                $netSalary = $grossSalary - $totalDeductions;
+
+                // Remove old payroll items before recreating them
+                payroll_items::where('payroll_id', $payroll->id)->delete();
+
+                $payroll->update([
+                    'contract_id' => $contract->id,
+                    'basic_salary' => $basicSalary,
+                    'gross_salary' => $grossSalary,
+                    'taxable_salary' => $taxableSalary,
+                    'mafao_deductions' => $totalMafaoDeduction,
+                    'paye_tax' => $paye,
+                    'total_allowances' => $totalAllowances,
+                    'total_deductions' => $totalDeductions,
+                    'net_salary' => $netSalary,
+                ]);
+
+                foreach ($contractAllowances as $allowance) {
+                    $calculatedAmount = $allowance->calculateAmount($basicSalary);
+                    payroll_items::create([
+                        'payroll_id' => $payroll->id,
+                        'contract_allowance_id' => $allowance->id,
+                        'name' => $allowance->allowance->name ?? 'Allowance',
+                        'type' => 'allowance',
+                        'amount' => $calculatedAmount,
+                        'added_by' => Auth::user()->id,
+                    ]);
+                }
+
+                payroll_items::create([
+                    'payroll_id' => $payroll->id,
+                    'name' => 'PAYE Tax',
+                    'type' => 'deduction',
+                    'amount' => $paye,
+                    'added_by' => Auth::user()->id,
+                ]);
+
+                foreach ($mafaoDeductions as $deduction) {
+                    $calculatedAmount = $deduction->calculateAmount($basicSalary, $basicSalary);
+                    payroll_items::create([
+                        'payroll_id' => $payroll->id,
+                        'contract_deduction_id' => $deduction->id,
+                        'name' => $deduction->deduction->name ?? 'Mafao Deduction',
+                        'type' => 'deduction',
+                        'amount' => $calculatedAmount,
+                        'added_by' => Auth::user()->id,
+                    ]);
+                }
+
+                foreach ($nonMafaoDeductions as $deduction) {
+                    $calculatedAmount = $deduction->calculateAmount($basicSalary, $grossSalary);
+                    payroll_items::create([
+                        'payroll_id' => $payroll->id,
+                        'contract_deduction_id' => $deduction->id,
+                        'name' => $deduction->deduction->name ?? 'Deduction',
+                        'type' => 'deduction',
+                        'amount' => $calculatedAmount,
+                        'added_by' => Auth::user()->id,
+                    ]);
+                }
+            });
+
+            ToastMagic::success("Payroll for {$employee->first_name} {$employee->last_name} ({$payroll->period}) has been regenerated");
+
+            // Refresh the salary slip view if it's currently open for this payroll
+            if ($this->viewingPayrollId === $payrollId) {
+                $this->viewSalarySlip($payrollId);
+            }
+        } catch (\Exception $e) {
+            ToastMagic::error('Failed to regenerate payroll: '.$e->getMessage());
+            Log::error("Payroll regeneration error for payroll {$payrollId}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
 
     public function exportExcel()
     {
