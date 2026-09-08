@@ -43,6 +43,19 @@ class Myduties extends Component
     // Order item remarks (for duties linked to a store order)
     public $itemRemarks = [];
 
+    // Self-assign duty modal
+    public $showSelfAssignModal = false;
+
+    public $selfAssignForm = [
+        'duty_name' => '',
+        'description' => '',
+        'target_value' => '',
+        'target_unit' => '',
+        'start_date' => '',
+        'end_date' => '',
+        'priority' => 'medium',
+    ];
+
     public function mount()
     {
         $this->employee = Employee::where('user_id', Auth::id())->first();
@@ -76,6 +89,69 @@ class Myduties extends Component
     {
         $this->showDetailModal = false;
         $this->selectedDuty = null;
+    }
+
+    public function openSelfAssignModal()
+    {
+        if (! $this->hasEmployeeRecord) {
+            return;
+        }
+
+        $this->resetErrorBag();
+        $this->selfAssignForm = [
+            'duty_name' => '',
+            'description' => '',
+            'target_value' => '',
+            'target_unit' => '',
+            'start_date' => now()->toDateString(),
+            'end_date' => '',
+            'priority' => 'medium',
+        ];
+        $this->showSelfAssignModal = true;
+    }
+
+    public function closeSelfAssignModal()
+    {
+        $this->showSelfAssignModal = false;
+    }
+
+    public function saveSelfAssignedDuty()
+    {
+        if (! $this->hasEmployeeRecord) {
+            return;
+        }
+
+        $this->validate([
+            'selfAssignForm.duty_name' => ['required', 'string', 'max:255'],
+            'selfAssignForm.description' => ['nullable', 'string'],
+            'selfAssignForm.target_value' => ['nullable', 'numeric'],
+            'selfAssignForm.target_unit' => ['nullable', 'string', 'max:100'],
+            'selfAssignForm.start_date' => ['nullable', 'date'],
+            'selfAssignForm.end_date' => ['nullable', 'date', 'after_or_equal:selfAssignForm.start_date'],
+            'selfAssignForm.priority' => ['required', 'in:low,medium,high,urgent'],
+        ]);
+
+        EmployeeAssignedDuty::create([
+            'employee_id' => $this->employee->id,
+            'store_order_id' => null,
+            'duty_name' => $this->selfAssignForm['duty_name'],
+            'description' => $this->selfAssignForm['description'],
+            'kpi_type' => 'qualitative',
+            'measurement_type' => $this->selfAssignForm['target_value'] !== '' ? 'numeric' : 'boolean',
+            'target_value' => $this->selfAssignForm['target_value'] !== '' ? $this->selfAssignForm['target_value'] : null,
+            'target_unit' => $this->selfAssignForm['target_unit'] ?: null,
+            'scoring_criteria' => null,
+            'start_date' => $this->selfAssignForm['start_date'] ?: now()->toDateString(),
+            'end_date' => $this->selfAssignForm['end_date'] ?: null,
+            'priority' => $this->selfAssignForm['priority'],
+            'status' => 'assigned',
+            'assigned_by' => Auth::id(),
+            'assigned_at' => now(),
+            'is_active' => true,
+        ]);
+
+        session()->flash('success', 'Duty added to your list successfully!');
+        $this->closeSelfAssignModal();
     }
 
     public function openUpdateModal($dutyId)

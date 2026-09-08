@@ -37,6 +37,7 @@ class EmployeeAssignedDuty extends Model
         'assigned_at',
         'reviewed_by',
         'reviewed_at',
+        'approval_score',
         'review_comments',
         'is_active',
     ];

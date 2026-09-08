@@ -6,6 +6,11 @@
                     <h4 class="mb-1">My Assigned Duties</h4>
                     <p class="text-muted mb-0">View and track your assigned duties and KPIs</p>
                 </div>
+                @if($hasEmployeeRecord)
+                    <button type="button" class="btn btn-primary" wire:click="openSelfAssignModal">
+                        <i class="fa-solid fa-plus me-1"></i>Self-Assign Duty
+                    </button>
+                @endif
             </div>
         </div>
     </div>
@@ -131,6 +136,7 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
+                                    <th>#</th>
                                     <th>Duty Name</th>
                                     <th class="text-center">Priority</th>
                                     <th class="text-center">Target</th>
@@ -142,8 +148,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $num=1;
+                                @endphp
                                 @foreach($duties as $duty)
                                     <tr>
+                                        <td>{{ $num++ }}</td>
                                         <td>
                                             <strong>{{ $duty->duty_name }}</strong>
                                             @if($duty->description)
@@ -204,6 +214,14 @@
                                             <span class="badge bg-{{ $statusColors[$duty->status] ?? 'secondary' }}">
                                                 {{ ucfirst(str_replace('_', ' ', $duty->status)) }}
                                             </span>
+                                            @if($duty->reviewed_at)
+                                                <span class="badge bg-info-subtle text-info d-block mt-1" title="Reviewed by supervisor">
+                                                    <i class="fa-solid fa-circle-check me-1"></i>Reviewed
+                                                    @if($duty->approval_score)
+                                                        &middot; {{ $duty->approval_score }}/10
+                                                    @endif
+                                                </span>
+                                            @endif
                                         </td>
                                         <td>
                                             @if($duty->end_date)
@@ -424,21 +442,26 @@
                                 </div>
                             @endif
 
-                            @if($selectedDuty->review_comments)
+                            @if($selectedDuty->reviewed_at)
                                 <div class="card mt-3 border-info">
-                                    <div class="card-header bg-info text-white">
+                                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0"><i class="fa-solid fa-comment me-2"></i>Supervisor Review</h6>
+                                        @if($selectedDuty->approval_score)
+                                            <span class="badge bg-white text-info">
+                                                <i class="fa-solid fa-star me-1"></i>{{ $selectedDuty->approval_score }}/10
+                                            </span>
+                                        @endif
                                     </div>
                                     <div class="card-body">
-                                        <p>{{ $selectedDuty->review_comments }}</p>
-                                        @if($selectedDuty->reviewedBy)
-                                            <small class="text-muted">
-                                                Reviewed by {{ $selectedDuty->reviewedBy->full_name }}
-                                                @if($selectedDuty->reviewed_at)
-                                                    on {{ $selectedDuty->reviewed_at->format('d M Y H:i') }}
-                                                @endif
-                                            </small>
+                                        @if($selectedDuty->review_comments)
+                                            <p class="mb-2">{{ $selectedDuty->review_comments }}</p>
+                                        @else
+                                            <p class="mb-2 text-muted fst-italic">No comments left.</p>
                                         @endif
+                                        <small class="text-muted">
+                                            Reviewed by {{ $selectedDuty->reviewedBy->full_name ?? 'N/A' }}
+                                            on {{ $selectedDuty->reviewed_at->format('d M Y H:i') }}
+                                        </small>
                                     </div>
                                 </div>
                             @endif
@@ -562,6 +585,101 @@
                                 <button type="button" class="btn btn-secondary" wire:click="closeUpdateModal">Cancel</button>
                                 <button type="submit" class="btn btn-success">
                                     <i class="fa-solid fa-save me-1"></i>{{ $selectedDuty->store_order_id ? 'Save Remarks' : 'Save Progress' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Self-Assign Duty Modal --}}
+        @if($showSelfAssignModal)
+            <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-plus me-2"></i>Self-Assign a Duty
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" wire:click="closeSelfAssignModal"></button>
+                        </div>
+                        <form wire:submit="saveSelfAssignedDuty">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Duty Name</label>
+                                    <input type="text" class="form-control @error('selfAssignForm.duty_name') is-invalid @enderror"
+                                           wire:model="selfAssignForm.duty_name" placeholder="e.g. Prepare monthly report">
+                                    @error('selfAssignForm.duty_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Description (Optional)</label>
+                                    <textarea class="form-control @error('selfAssignForm.description') is-invalid @enderror"
+                                              wire:model="selfAssignForm.description" rows="2"
+                                              placeholder="Describe what this duty involves..."></textarea>
+                                    @error('selfAssignForm.description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Target Value (Optional)</label>
+                                        <input type="number" step="0.01" class="form-control @error('selfAssignForm.target_value') is-invalid @enderror"
+                                               wire:model="selfAssignForm.target_value">
+                                        @error('selfAssignForm.target_value')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Target Unit (Optional)</label>
+                                        <input type="text" class="form-control @error('selfAssignForm.target_unit') is-invalid @enderror"
+                                               wire:model="selfAssignForm.target_unit" placeholder="e.g. reports, calls">
+                                        @error('selfAssignForm.target_unit')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control @error('selfAssignForm.start_date') is-invalid @enderror"
+                                               wire:model="selfAssignForm.start_date">
+                                        @error('selfAssignForm.start_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">End Date (Optional)</label>
+                                        <input type="date" class="form-control @error('selfAssignForm.end_date') is-invalid @enderror"
+                                               wire:model="selfAssignForm.end_date" min="{{ $selfAssignForm['start_date'] }}">
+                                        @error('selfAssignForm.end_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Priority</label>
+                                    <select class="form-select @error('selfAssignForm.priority') is-invalid @enderror" wire:model="selfAssignForm.priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                    @error('selfAssignForm.priority')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" wire:click="closeSelfAssignModal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-plus me-1"></i>Add to My Duties
                                 </button>
                             </div>
                         </form>

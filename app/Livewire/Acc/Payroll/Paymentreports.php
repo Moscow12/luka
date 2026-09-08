@@ -231,9 +231,11 @@ class Paymentreports extends Component
             })
             ->when($this->search, function ($query) {
                 $query->whereHas('employee', function ($q) {
-                    $q->where('first_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('last_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('employee_number', 'like', '%'.$this->search.'%');
+                    $q->where(function ($q) {
+                        $q->where('first_name', 'like', '%'.$this->search.'%')
+                            ->orWhere('last_name', 'like', '%'.$this->search.'%')
+                            ->orWhere('employee_no', 'like', '%'.$this->search.'%');
+                    });
                 });
             })
             ->when($this->allowance, function ($query) {

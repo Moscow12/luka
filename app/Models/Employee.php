@@ -87,6 +87,11 @@ class Employee extends Model
         return $this->belongsTo(departments::class, 'department_id');
     }
 
+    public function assignedDuties()
+    {
+        return $this->hasMany(EmployeeAssignedDuty::class, 'employee_id');
+    }
+
     public function position()
     {
         return $this->belongsTo(Jobtitle::class, 'title_id');

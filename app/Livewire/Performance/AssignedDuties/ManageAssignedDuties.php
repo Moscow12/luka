@@ -16,13 +16,27 @@ class ManageAssignedDuties extends Component
     // Search and Filters
     public $search = '';
 
-    public $employeeFilter = '';
-
     public $priorityFilter = '';
 
     public $statusFilter = '';
 
     public $perPage = 10;
+
+    // Employee Tasks Modal (date-filtered view of one employee's duties)
+    public $showEmployeeTasksModal = false;
+
+    public $viewingEmployeeId = null;
+
+    public $employeeTaskFilterDateFrom = '';
+
+    public $employeeTaskFilterDateTo = '';
+
+    // Approve task (score + comment)
+    public $approvingDutyId = null;
+
+    public $approval_score = '';
+
+    public $approval_comments = '';
 
     // Modal States
     public $showModal = false;
@@ -98,11 +112,6 @@ class ManageAssignedDuties extends Component
         $this->resetPage();
     }
 
-    public function updatingEmployeeFilter()
-    {
-        $this->resetPage();
-    }
-
     public function updatingPriorityFilter()
     {
         $this->resetPage();
@@ -115,7 +124,7 @@ class ManageAssignedDuties extends Component
 
     public function resetFilters()
     {
-        $this->reset(['search', 'employeeFilter', 'priorityFilter', 'statusFilter']);
+        $this->reset(['search', 'priorityFilter', 'statusFilter']);
         $this->resetPage();
     }
 
@@ -208,7 +217,7 @@ class ManageAssignedDuties extends Component
                 'description' => $this->dutyForm['description'],
                 'kpi_type' => $this->dutyForm['kpi_type'],
                 'measurement_type' => $this->dutyForm['measurement_type'],
-                'weight' => $this->dutyForm['weight'] ?: null,
+                'weight' => $this->dutyForm['weight'] !== '' ? $this->dutyForm['weight'] : 0,
                 'target_value' => $this->dutyForm['target_value'] ?: null,
                 'target_unit' => $this->dutyForm['target_unit'],
                 'start_date' => $this->dutyForm['start_date'] ?: null,
@@ -292,45 +301,132 @@ class ManageAssignedDuties extends Component
         }
     }
 
+    public function openEmployeeTasksModal($employeeId)
+    {
+        $this->viewingEmployeeId = $employeeId;
+        $this->employeeTaskFilterDateFrom = '';
+        $this->employeeTaskFilterDateTo = '';
+        $this->showEmployeeTasksModal = true;
+    }
+
+    public function closeEmployeeTasksModal()
+    {
+        $this->showEmployeeTasksModal = false;
+        $this->viewingEmployeeId = null;
+        $this->employeeTaskFilterDateFrom = '';
+        $this->employeeTaskFilterDateTo = '';
+    }
+
+    public function getViewingEmployeeTasksProperty()
+    {
+        if (! $this->viewingEmployeeId) {
+            return collect();
+        }
+
+        return EmployeeAssignedDuty::where('employee_id', $this->viewingEmployeeId)
+            ->when($this->employeeTaskFilterDateFrom, fn ($q) => $q->whereDate('start_date', '>=', $this->employeeTaskFilterDateFrom))
+            ->when($this->employeeTaskFilterDateTo, fn ($q) => $q->whereDate('start_date', '<=', $this->employeeTaskFilterDateTo))
+            ->with('reviewedBy')
+            ->orderByRaw("FIELD(priority, 'urgent', 'high', 'medium', 'low')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getViewingEmployeeProperty()
+    {
+        return $this->viewingEmployeeId ? Employee::find($this->viewingEmployeeId) : null;
+    }
+
+    public function openApproveModal($dutyId)
+    {
+        $duty = EmployeeAssignedDuty::findOrFail($dutyId);
+
+        if ($duty->status !== 'completed') {
+            session()->flash('error', 'Only completed tasks can be approved.');
+
+            return;
+        }
+
+        if ($duty->reviewed_at !== null) {
+            session()->flash('error', 'This task has already been approved.');
+
+            return;
+        }
+
+        $this->resetErrorBag();
+        $this->approvingDutyId = $dutyId;
+        $this->approval_score = '';
+        $this->approval_comments = '';
+    }
+
+    public function closeApproveModal()
+    {
+        $this->approvingDutyId = null;
+        $this->approval_score = '';
+        $this->approval_comments = '';
+        $this->resetErrorBag();
+    }
+
+    public function submitApproval()
+    {
+        $this->validate([
+            'approval_score' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'approval_comments' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $duty = EmployeeAssignedDuty::findOrFail($this->approvingDutyId);
+
+        if ($duty->status !== 'completed') {
+            session()->flash('error', 'Only completed tasks can be approved.');
+            $this->closeApproveModal();
+
+            return;
+        }
+
+        if ($duty->reviewed_at !== null) {
+            session()->flash('error', 'This task has already been approved.');
+            $this->closeApproveModal();
+
+            return;
+        }
+
+        $duty->update([
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+            'approval_score' => $this->approval_score !== '' ? $this->approval_score : null,
+            'review_comments' => $this->approval_comments !== '' ? $this->approval_comments : null,
+        ]);
+
+        session()->flash('success', 'Task approved successfully!');
+        $this->closeApproveModal();
+    }
+
     public function render()
     {
-        // Build query with eager loading
-        $dutiesQuery = EmployeeAssignedDuty::query()
-            ->with(['employee', 'assignedBy']);
+        // Build the employee-grouped duty summary, scoped by the active priority/status filters
+        // so the counts and progress bar reflect what's actually being filtered for.
+        $dutyFilter = function ($q) {
+            $q->when($this->priorityFilter, fn ($sq) => $sq->where('priority', $this->priorityFilter))
+                ->when($this->statusFilter, fn ($sq) => $sq->where('status', $this->statusFilter));
+        };
 
-        // Apply search filter
-        if ($this->search) {
-            $dutiesQuery->where(function ($query) {
-                $query->where('duty_name', 'like', '%'.$this->search.'%')
-                    ->orWhere('description', 'like', '%'.$this->search.'%')
-                    ->orWhereHas('employee', function ($q) {
-                        $q->where('first_name', 'like', '%'.$this->search.'%')
-                            ->orWhere('last_name', 'like', '%'.$this->search.'%');
-                    });
-            });
-        }
-
-        // Apply employee filter
-        if ($this->employeeFilter) {
-            $dutiesQuery->where('employee_id', $this->employeeFilter);
-        }
-
-        // Apply priority filter
-        if ($this->priorityFilter) {
-            $dutiesQuery->where('priority', $this->priorityFilter);
-        }
-
-        // Apply status filter
-        if ($this->statusFilter) {
-            $dutiesQuery->where('status', $this->statusFilter);
-        }
-
-        // Order by priority and latest
-        $dutiesQuery->orderByRaw("FIELD(priority, 'urgent', 'high', 'medium', 'low')")
-            ->orderBy('created_at', 'desc');
-
-        // Paginate
-        $duties = $dutiesQuery->paginate($this->perPage);
+        $employeeSummaries = Employee::query()
+            ->withCount([
+                'assignedDuties as total_tasks' => $dutyFilter,
+                'assignedDuties as completed_tasks' => function ($q) use ($dutyFilter) {
+                    $dutyFilter($q);
+                    $q->where('status', 'completed');
+                },
+            ])
+            ->having('total_tasks', '>', 0)
+            ->when($this->search, function ($q) {
+                $q->where(function ($sq) {
+                    $sq->where('first_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('last_name', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->orderBy('first_name')
+            ->paginate($this->perPage);
 
         // Calculate statistics
         $totalDuties = EmployeeAssignedDuty::count();
@@ -338,16 +434,12 @@ class ManageAssignedDuties extends Component
         $highPriorityDuties = EmployeeAssignedDuty::whereIn('priority', ['high', 'urgent'])->count();
         $completedDuties = EmployeeAssignedDuty::where('status', 'completed')->count();
 
-        // Get employees for filters
-        $employees = Employee::orderBy('first_name')->get();
-
         return view('livewire.performance.assigned-duties.manage-assigned-duties', [
-            'duties' => $duties,
+            'employeeSummaries' => $employeeSummaries,
             'totalDuties' => $totalDuties,
             'inProgressDuties' => $inProgressDuties,
             'highPriorityDuties' => $highPriorityDuties,
             'completedDuties' => $completedDuties,
-            'employees' => $employees,
         ]);
     }
 }
