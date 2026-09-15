@@ -291,7 +291,11 @@ class Leaveapproval extends Component
     }
 
     /**
-     * The ordered chain of approval levels (level 1, 2, 3, 4...) configured for Leave.
+     * The ordered chain of approval levels (level 1, 2, 3, 4...) configured for Leave,
+     * grouped by level_order. Several distinct levels/titles can share the same order
+     * (e.g. Matron / Health Secretary / Head Of Clinical Service are all order 2), each
+     * one scoped to its own set of departments via approval_mapping_departments — they
+     * are alternatives for that order, not a tie to break by name or position.
      */
     protected function getApprovalLevelsForLeave(): \Illuminate\Support\Collection
     {
@@ -301,21 +305,39 @@ class Leaveapproval extends Component
             ->get()
             ->pluck('approval_level')
             ->filter()
-            ->sortBy('level_order')
+            ->groupBy('level_order')
+            ->sortKeys()
             ->values();
     }
 
     /**
+     * Among the levels sharing one level_order, the one(s) whose approver mapping
+     * actually covers $departmentId. Only these are relevant for this leave — a level
+     * at this order mapped to a different department entirely doesn't apply here.
+     */
+    protected function levelsForDepartment(\Illuminate\Support\Collection $levelGroup, ?string $departmentId): \Illuminate\Support\Collection
+    {
+        return $levelGroup->filter(
+            fn ($level) => $this->resolveApproversForLevel($level->id, $departmentId)->isNotEmpty()
+        )->values();
+    }
+
+    /**
      * The next level in the chain awaiting a decision, walking level 1 -> 2 -> 3 -> 4...
-     * in order. Returns null once the leave is rejected or every level has approved.
+     * in order. At each order, only the level(s) whose department mapping covers the
+     * requester's department are considered; if none match, the leave is stuck there
+     * (surfaced as "Unassigned" in the UI) rather than guessing among the alternatives.
+     * Returns null once the leave is rejected or every level has approved.
      */
     public function getCurrentApprovalLevel(Employeeleaves $leave)
     {
-        $approvalLevels = $this->getApprovalLevelsForLeave();
+        $levelGroups = $this->getApprovalLevelsForLeave();
 
-        if ($approvalLevels->isEmpty()) {
+        if ($levelGroups->isEmpty()) {
             return null;
         }
+
+        $departmentId = $leave->employee->department_id ?? null;
 
         $existingApprovals = leaverequestapproval::where('leave_request_id', $leave->id)
             ->with('approval_level')
@@ -326,14 +348,24 @@ class Leaveapproval extends Component
             return null;
         }
 
-        // Walk the chain in order; the first level without an approval is next up.
-        foreach ($approvalLevels as $level) {
-            $alreadyApproved = $existingApprovals->where('approval_level_id', $level->id)
-                ->where('status', 'approved')
-                ->isNotEmpty();
+        $approvedLevelIds = $existingApprovals->where('status', 'approved')->pluck('approval_level_id');
+
+        // Walk the chain in order; the first order without a recorded approval is next up.
+        foreach ($levelGroups as $levelGroup) {
+            $applicableLevels = $this->levelsForDepartment($levelGroup, $departmentId);
+
+            // No level at this order covers the requester's department: stuck here,
+            // report the first configured title at this order so it reads as "Unassigned".
+            if ($applicableLevels->isEmpty()) {
+                $alreadyApproved = $levelGroup->contains(fn ($level) => $approvedLevelIds->contains($level->id));
+
+                return $alreadyApproved ? null : $levelGroup->first();
+            }
+
+            $alreadyApproved = $applicableLevels->contains(fn ($level) => $approvedLevelIds->contains($level->id));
 
             if (! $alreadyApproved) {
-                return $level;
+                return $applicableLevels->first();
             }
         }
 
@@ -351,9 +383,9 @@ class Leaveapproval extends Component
             return 'Rejected';
         }
 
-        $approvalLevels = $this->getApprovalLevelsForLeave();
+        $levelGroups = $this->getApprovalLevelsForLeave();
 
-        if ($approvalLevels->isEmpty()) {
+        if ($levelGroups->isEmpty()) {
             return 'approved';
         }
 
@@ -365,7 +397,10 @@ class Leaveapproval extends Component
             return 'approved';
         }
 
-        return $nextLevel->id === $approvalLevels->first()->id ? 'Awaiting' : 'Active';
+        $firstTier = $levelGroups->first();
+        $isFirstTier = $firstTier->contains(fn ($level) => $level->id === $nextLevel->id);
+
+        return $isFirstTier ? 'Awaiting' : 'Active';
     }
 
     public function render()
