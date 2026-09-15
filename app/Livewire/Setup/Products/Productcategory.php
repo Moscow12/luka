@@ -16,41 +16,65 @@ class Productcategory extends Component
 
     // Category fields
     public $category_name;
+
     public $category_code;
+
     public $category_description;
+
     public $category_type = 'mixed';
+
     public $category_status = 'active';
+
     public $editingCategoryId = null;
 
     // Product fields
     public $product_name;
+
     public $product_code;
+
     public $product_barcode;
+
     public $product_category_id;
+
     public $product_type = 'mixed';
-    public $product_cost_price = 0;
-    public $product_selling_price = 0;
+
+    public $product_cost_price = '';
+
+    public $product_selling_price = '';
+
     public $product_track_stock = false;
+
     public $product_is_serialized = false;
+
     public $product_requires_approval = false;
+
     public $product_reorder_level = 0;
+
     public $product_useful_life = 0;
+
     public $product_unit;
+
     public $product_status = 'active';
+
     public $product_description;
+
     public $editingProductId = null;
 
     // Search
     public $searchCategory = '';
+
     public $searchProduct = '';
 
     // Modal states
     public $showCategoryModal = false;
+
     public $showProductModal = false;
 
     // Delete confirmation
     public $confirmingDelete = false;
+
     public $deleteType = '';
+
     public $deleteId = '';
 
     protected $paginationTheme = 'bootstrap';
@@ -101,7 +125,7 @@ class Productcategory extends Component
     {
         $this->validate([
             'category_name' => 'required|string|max:255',
-            'category_code' => 'nullable|string|max:100|unique:productcategories,code,' . $this->editingCategoryId,
+            'category_code' => 'nullable|string|max:100|unique:productcategories,code,'.$this->editingCategoryId,
             'category_description' => 'nullable|string|max:500',
             'category_type' => 'required|in:good,asset,service,work,mixed',
             'category_status' => 'required|in:active,inactive',
@@ -162,8 +186,8 @@ class Productcategory extends Component
         $this->product_barcode = '';
         $this->product_category_id = '';
         $this->product_type = 'mixed';
-        $this->product_cost_price = 0;
-        $this->product_selling_price = 0;
+        $this->product_cost_price = '';
+        $this->product_selling_price = '';
         $this->product_track_stock = false;
         $this->product_is_serialized = false;
         $this->product_requires_approval = false;
@@ -176,7 +200,7 @@ class Productcategory extends Component
             'product_name', 'product_code', 'product_barcode', 'product_category_id',
             'product_type', 'product_cost_price', 'product_selling_price',
             'product_reorder_level', 'product_useful_life', 'product_unit',
-            'product_status', 'product_description'
+            'product_status', 'product_description',
         ]);
     }
 
@@ -184,12 +208,12 @@ class Productcategory extends Component
     {
         $this->validate([
             'product_name' => 'required|string|max:255',
-            'product_code' => 'nullable|string|max:100|unique:products,code,' . $this->editingProductId,
+            'product_code' => 'nullable|string|max:100|unique:products,code,'.$this->editingProductId,
             'product_barcode' => 'nullable|string|max:255',
             'product_category_id' => 'required|exists:productcategories,id',
             'product_type' => 'required|in:good,asset,service,work,mixed',
-            'product_cost_price' => 'required|numeric|min:0',
-            'product_selling_price' => 'required|numeric|min:0',
+            'product_cost_price' => 'nullable|numeric|min:0',
+            'product_selling_price' => 'nullable|numeric|min:0',
             'product_reorder_level' => 'nullable|integer|min:0',
             'product_useful_life' => 'nullable|integer|min:0',
             'product_unit' => 'nullable|string|max:50',
@@ -203,8 +227,8 @@ class Productcategory extends Component
             'barcode' => $this->product_barcode,
             'product_category_id' => $this->product_category_id,
             'type' => $this->product_type,
-            'cost_price' => $this->product_cost_price,
-            'selling_price' => $this->product_selling_price,
+            'cost_price' => $this->product_cost_price !== '' ? $this->product_cost_price : null,
+            'selling_price' => $this->product_selling_price !== '' ? $this->product_selling_price : null,
             'track_stock' => $this->product_track_stock,
             'is_serialized' => $this->product_is_serialized,
             'requires_approval' => $this->product_requires_approval,
@@ -271,12 +295,12 @@ class Productcategory extends Component
     public function render()
     {
         $categories = ProductCategoryModel::withCount('products')
-            ->when($this->searchCategory, fn($q) => $q->where('name', 'like', '%' . $this->searchCategory . '%'))
+            ->when($this->searchCategory, fn ($q) => $q->where('name', 'like', '%'.$this->searchCategory.'%'))
             ->latest()
             ->paginate(10, ['*'], 'categoriesPage');
 
         $products = ProductModel::with('category')
-            ->when($this->searchProduct, fn($q) => $q->where('name', 'like', '%' . $this->searchProduct . '%'))
+            ->when($this->searchProduct, fn ($q) => $q->where('name', 'like', '%'.$this->searchProduct.'%'))
             ->latest()
             ->paginate(10, ['*'], 'productsPage');
 

@@ -312,7 +312,7 @@
                                 @endphp
                                 <button type="button"
                                         class="list-group-item list-group-item-action {{ $alreadySelected ? 'disabled' : '' }}"
-                                        wire:click="addItem('{{ $item->id }}', '{{ $item->name }}', '{{ $item->category_id }}', '{{ $item->category->name ?? 'Uncategorized' }}', '{{ $item->unit }}')"
+                                        wire:click="addItem('{{ $item->id }}', '{{ $item->name }}', '{{ $item->product_category_id }}', '{{ $item->category->name ?? 'Uncategorized' }}', '{{ $item->unit }}')"
                                         {{ $alreadySelected ? 'disabled' : '' }}>
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">{{ $item->name }}</h6>

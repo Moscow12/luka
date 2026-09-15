@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Procurement;
 
-use App\Models\chopcategoryarea;
-use App\Models\chopitems;
 use App\Models\departments as Department;
 use App\Models\Employee;
+use App\Models\productcategory as ProductCategory;
+use App\Models\products as Product;
 use App\Models\StoreOrder;
 use App\Models\StoreOrderItem;
 use Illuminate\Support\Facades\Auth;
@@ -77,7 +77,7 @@ class Orders extends Component
             $this->selectedItems = $order->items->map(function ($orderItem) {
                 return [
                     'item_id' => $orderItem->item_id,
-                    'category_id' => $orderItem->item->category_id,
+                    'category_id' => $orderItem->item->product_category_id,
                     'name' => $orderItem->item->name,
                     'category_name' => $orderItem->item->category->name ?? 'Uncategorized',
                     'unit' => $orderItem->item->unit,
@@ -300,17 +300,17 @@ class Orders extends Component
 
         $departments = $isSuperAdmin ? Department::orderBy('name')->get() : collect();
 
-        $categories = chopcategoryarea::orderBy('name')->get();
+        $categories = ProductCategory::orderBy('name')->get();
 
-        $availableItems = chopitems::query()
+        $availableItems = Product::query()
             ->with('category')
-            ->where('is_active', true)
-            ->where('can_be_stocked', true)
+            ->where('status', 'active')
+            ->where('track_stock', true)
             ->when($this->itemSearch, function ($query) {
                 $query->where('name', 'like', '%'.$this->itemSearch.'%');
             })
             ->when($this->filterCategory, function ($query) {
-                $query->where('category_id', $this->filterCategory);
+                $query->where('product_category_id', $this->filterCategory);
             })
             ->orderBy('name')
             ->limit(20)

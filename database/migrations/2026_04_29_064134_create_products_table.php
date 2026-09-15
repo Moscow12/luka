@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('code', 100)->unique()->nullable();
             $table->string('barcode')->nullable();
-            $table->decimal('cost_price', 15, 2)->default(0);
-            $table->decimal('selling_price', 15, 2)->default(0);
+            $table->decimal('cost_price', 15, 2)->nullable(0);
+            $table->decimal('selling_price', 15, 2)->nullable(0);
             $table->boolean('track_stock')->default(false);
             $table->boolean('is_serialized')->default(false);
             $table->boolean('requires_approval')->default(false);

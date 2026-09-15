@@ -190,9 +190,14 @@
                                                 @endforeach
                                             @endif
                                             @if($leave->nextApprovalLevel)
-                                                <small class="text-primary">
+                                                <small class="{{ $leave->nextApprovers->isEmpty() ? 'text-danger' : 'text-primary' }}">
                                                     <i class="fa-solid fa-clock"></i>
                                                     Next: {{ $leave->nextApprovalLevel->name }}
+                                                    @if($leave->nextApprovers->isNotEmpty())
+                                                        ({{ $leave->nextApprovers->map(fn($e) => $e->getFullName())->join(', ') }})
+                                                    @else
+                                                        (Unassigned)
+                                                    @endif
                                                 </small>
                                             @endif
                                         </div>
@@ -225,6 +230,8 @@
                                             <span class="text-muted small align-self-center">
                                                 @if(!$leave->nextApprovalLevel)
                                                     Fully processed
+                                                @elseif($leave->nextApprovers->isEmpty())
+                                                    <span class="text-danger">No approver configured</span>
                                                 @else
                                                     Awaiting other approver
                                                 @endif

@@ -294,8 +294,8 @@
                                         </td>
                                         <td>
                                             <div class="text-nowrap">
-                                                <small class="text-muted d-block">Cost: {{ number_format($product->cost_price, 2) }}</small>
-                                                <small class="fw-semibold">Sell: {{ number_format($product->selling_price, 2) }}</small>
+                                                <small class="text-muted d-block">Cost: {{ $product->cost_price !== null ? number_format($product->cost_price, 2) : '-' }}</small>
+                                                <small class="fw-semibold">Sell: {{ $product->selling_price !== null ? number_format($product->selling_price, 2) : '-' }}</small>
                                             </div>
                                         </td>
                                         <td>
@@ -551,7 +551,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">Cost Price <span class="text-danger">*</span></label>
+                                <label class="form-label">Cost Price</label>
                                 <input type="number" step="0.01" class="form-control @error('product_cost_price') is-invalid @enderror"
                                     wire:model="product_cost_price"
                                     placeholder="0.00">
@@ -561,7 +561,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">Selling Price <span class="text-danger">*</span></label>
+                                <label class="form-label">Selling Price</label>
                                 <input type="number" step="0.01" class="form-control @error('product_selling_price') is-invalid @enderror"
                                     wire:model="product_selling_price"
                                     placeholder="0.00">

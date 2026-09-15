@@ -157,6 +157,27 @@ class Leaveapproval extends Component
         return false;
     }
 
+    /**
+     * The employee(s) assigned to a given approval level whose department coverage
+     * matches $departmentId (an empty department set on a mapping means it applies
+     * company-wide). Used to show who specifically is next up to approve.
+     */
+    protected function resolveApproversForLevel(?string $levelId, ?string $departmentId): \Illuminate\Support\Collection
+    {
+        if (! $levelId) {
+            return collect();
+        }
+
+        return approvalleveltoemployee::where('approval_level_id', $levelId)
+            ->where('is_active', true)
+            ->with(['employee', 'departments:id'])
+            ->get()
+            ->filter(fn ($mapping) => $mapping->appliesToDepartment($departmentId))
+            ->map(fn ($mapping) => $mapping->employee)
+            ->filter()
+            ->values();
+    }
+
     public function openApproveModal($leaveId)
     {
         $this->selectedLeave = Employeeleaves::with(['employee', 'leave'])->findOrFail($leaveId);
@@ -406,8 +427,10 @@ class Leaveapproval extends Component
                     if (! $next) {
                         return false;
                     }
+                    $departmentId = $leave->employee->department_id ?? null;
                     $leave->nextApprovalLevel = $next;
-                    $leave->canUserApprove = $this->userCanApproveLevel($next->id, $leave->employee->department_id ?? null);
+                    $leave->nextApprovers = $this->resolveApproversForLevel($next->id, $departmentId);
+                    $leave->canUserApprove = $this->userCanApproveLevel($next->id, $departmentId);
 
                     return $leave->canUserApprove;
                 })->values();
@@ -418,10 +441,13 @@ class Leaveapproval extends Component
 
                 $pendingLeaves->getCollection()->transform(function ($leave) {
                     $leave->canUserApprove = false;
+                    $leave->nextApprovers = collect();
                     $leave->nextApprovalLevel = $this->getCurrentApprovalLevel($leave);
 
                     if ($leave->nextApprovalLevel) {
-                        $leave->canUserApprove = $this->userCanApproveLevel($leave->nextApprovalLevel->id, $leave->employee->department_id ?? null);
+                        $departmentId = $leave->employee->department_id ?? null;
+                        $leave->nextApprovers = $this->resolveApproversForLevel($leave->nextApprovalLevel->id, $departmentId);
+                        $leave->canUserApprove = $this->userCanApproveLevel($leave->nextApprovalLevel->id, $departmentId);
                     }
 
                     return $leave;

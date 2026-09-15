@@ -2,10 +2,10 @@
 
 namespace App\Livewire\StorageAndSupply;
 
-use App\Models\chopitems as ChopItem;
 use App\Models\DepartmentStore;
 use App\Models\PhysicalCount as ModelsPhysicalCount;
 use App\Models\PhysicalCountItem;
+use App\Models\products as Product;
 use App\Models\StockLedgerControl;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -76,8 +76,8 @@ class PhysicalCount extends Component
             'department_store_id' => ['required', 'exists:department_stores,id'],
         ]);
 
-        $items = ChopItem::where('is_active', true)
-            ->where('can_be_stocked', true)
+        $items = Product::where('status', 'active')
+            ->where('track_stock', true)
             ->orderBy('name')
             ->get();
 

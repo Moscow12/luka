@@ -33,7 +33,7 @@ class StockLedgerControl extends Model
 
     public function item()
     {
-        return $this->belongsTo(chopitems::class, 'item_id');
+        return $this->belongsTo(products::class, 'item_id');
     }
 
     public function departmentStore()
