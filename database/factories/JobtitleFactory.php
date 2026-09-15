@@ -31,6 +31,9 @@ class JobtitleFactory extends Factory
 
         return [
             'name' => $this->faker->randomElement($jobtitles),
+            'code' => $this->faker->unique()->bothify('JT-###??'),
+            'description' => $this->faker->sentence(),
+            'added_by' => \App\Models\User::inRandomOrder()->first()?->id,
         ];
     }
 }

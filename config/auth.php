@@ -4,6 +4,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Two-Factor Authentication
+    |--------------------------------------------------------------------------
+    |
+    | This option controls whether two-factor authentication is enabled for
+    | the application. When enabled, users logging in from untrusted devices
+    | will be required to verify their identity via email code. When disabled,
+    | users will be logged in directly after providing valid credentials.
+    |
+    */
+
+    'two_factor_enabled' => env('TWO_FACTOR_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication Defaults
     |--------------------------------------------------------------------------
     |

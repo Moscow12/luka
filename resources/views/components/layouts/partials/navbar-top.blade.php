@@ -59,60 +59,46 @@
       <li>
         <x-ui.theme-switcher iconLibrary="ti" buttonClass="btn-ghost" :withWrapper="false" />
       </li>
-      <!-- Bell icon -->
+      <!-- Notifications -->
       <li>
-        <a class="position-relative btn-icon btn-ghost btn rounded-circle" data-bs-toggle="offcanvas" href="#offcanvasNotification" role="button" aria-controls="offcanvasNotification">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="icon icon-tabler icons-tabler-outline icon-tabler-bell"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
-            <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
-          </svg>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger mt-2 ms-n2">
-            2
-            <span class="visually-hidden">unread messages</span>
-          </span>
-        </a>
+        @livewire('common.notifications')
       </li>
       <!-- Dropdown -->
       <li class="ms-3 dropdown">
+        @php
+            $user = auth()->user();
+            $userPhoto = $user->profile_picture;
+            $userName = $user->full_name ?: ($user->first_name ?? $user->email);
+            $userInitial = strtoupper(substr($user->first_name ?? $user->email, 0, 1));
+        @endphp
         <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="{{ asset('images/avatar/avatar-1.jpg') }}" alt="" class="avatar avatar-sm rounded-circle" />
+          @if($userPhoto)
+            <img src="{{ asset('storage/' . $userPhoto) }}" alt="{{ $userName }}" class="avatar avatar-sm rounded-circle" style="object-fit: cover;" />
+          @else
+            <div class="avatar avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+              {{ $userInitial }}
+            </div>
+          @endif
         </a>
         <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-0">
           <div>
             <div class="d-flex gap-3 align-items-center border-dashed border-bottom px-4 py-4">
-              <img src="{{ asset('images/avatar/avatar-1.jpg') }}" alt="" class="avatar avatar-md rounded-circle" />
+              @if($userPhoto)
+                <img src="{{ asset('storage/' . $userPhoto) }}" alt="{{ $userName }}" class="avatar avatar-md rounded-circle" style="object-fit: cover;" />
+              @else
+                <div class="avatar avatar-md rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-4">
+                  {{ $userInitial }}
+                </div>
+              @endif
               <div>
-                <h4 class="mb-0 fs-5">Jitu Chauhan</h4>
-                <p class="mb-0 text-secondar small">@imjituchauhan</p>
+                <h4 class="mb-0 fs-5">{{ $userName }}</h4>
+                <p class="mb-0 text-secondary small">{{ $user->email }}</p>
               </div>
             </div>
             <div class="p-3 d-flex flex-column gap-1">
               <a href="{{ route('dashboard') }}" class="dropdown-item d-flex align-items-center gap-2">
-                <span
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-home-2"
-                  >
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-home-2">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                     <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
                     <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
@@ -121,94 +107,28 @@
                 </span>
                 <span>Home</span>
               </a>
-              <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                <span
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-inbox"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                    <path d="M4 13h3l3 3h4l3 -3h3" />
-                  </svg>
-                </span>
-                <span> Inbox</span>
-              </a>
-              <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                <span
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-message"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M8 9h8" />
-                    <path d="M8 13h6" />
-                    <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" />
-                  </svg>
-                </span>
-                <span> Chat</span>
-              </a>
-              <a href="#!" class="dropdown-item d-flex align-items-center gap-2">
-                <span
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-activity"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M3 12h4l3 8l4 -16l3 8h4" />
-                  </svg>
-                </span>
-                <span> Activity</span>
-              </a>
               <a href="{{ route('user.profile') }}" class="dropdown-item d-flex align-items-center gap-2">
-                <span
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-settings"
-                  >
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-                    />
+                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
                     <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                   </svg>
                 </span>
-                <span> Account Settings</span>
+                <span>Account Settings</span>
+              </a>
+              <a href="{{ route('user.change-password') }}" class="dropdown-item d-flex align-items-center gap-2">
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-key">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0z" />
+                    <path d="M15 9h.01" />
+                  </svg>
+                </span>
+                <span>Change Password</span>
               </a>
             </div>
-            
+
             <livewire:auth.logout />
           </div>
         </div>
@@ -217,737 +137,38 @@
   </div>
 </div>
 
-<!--Offcanvas notification-->
+<!-- Notification Offcanvas -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNotification" aria-labelledby="offcanvasNotificationLabel">
     <div class="sticky-top bg-white">
-    <div class="offcanvas-header gap-4">
-        <div class="d-flex justify-content-between w-100">
-        <h5 class="mb-0" id="offcanvasNotificationLabel">Notifications</h5>
-        <div class="d-flex gap-3 align-items-center">
-            <a href="#" class="link-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Mark all as read">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-checks"
-            >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M7 12l5 5l10 -10" />
-                <path d="M2 12l5 5m5 -5l5 -5" />
-            </svg>
-            </a>
-            <a href="#" class="text-inherit">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-settings"
-            >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-                />
-                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-            </svg>
-            </a>
+        <div class="offcanvas-header gap-4">
+            <div class="d-flex justify-content-between w-100">
+                <h5 class="mb-0" id="offcanvasNotificationLabel">Pending Approvals</h5>
+                <div class="d-flex gap-3 align-items-center">
+                    <a href="#" class="link-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Refresh" onclick="Livewire.dispatch('refreshNotifications')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="mt-2">
-        <ul class="nav nav-line-bottom" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active px-4 py-2" id="pills-all-tab" data-bs-toggle="pill" data-bs-target="#pills-all" type="button" role="tab" aria-controls="pills-all" aria-selected="true">
-            All
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button
-            class="nav-link px-4 py-2"
-            id="pills-following-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-following"
-            type="button"
-            role="tab"
-            aria-controls="pills-following"
-            aria-selected="false"
-            >
-            Following
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2" id="pills-archive-tab" data-bs-toggle="pill" data-bs-target="#pills-archive" type="button" role="tab" aria-controls="pills-archive" aria-selected="false">
-            Archive
-            </button>
-        </li>
-        </ul>
-    </div>
     </div>
 
-    <div class="tab-content" id="pills-tabContent">
-    <div class="tab-pane fade show active" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab" tabindex="0">
+    <div class="offcanvas-body p-0">
         <div data-simplebar="" style="height: 800px">
-        <div class="list-group list-group-flush">
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex flex-column gap-1">
-                <div>New message from John Doe</div>
-                <small class="text-secondary"> 2 minutes ago</small>
-                </div>
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
+            <div class="list-group list-group-flush">
+                @livewire('common.notifications-list')
             </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex flex-column gap-1">
-                <div>Your password will expire soon.</div>
-                <small class="text-secondary"> 2 minutes ago</small>
-                </div>
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-1.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Alice uploaded a new profile picture.</div>
-                    <small class="text-secondary"> 1 hour ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-2.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Mike sent you a friend request.</div>
-                    <small class="text-secondary"> 5 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            <div class="d-flex gap-2 align-items-center mt-4">
-                <button type="button" class="btn btn-primary btn-sm">Accept</button>
-                <button type="button" class="btn btn-white btn-sm">Decline</button>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-3.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Sophia commented on your post.</div>
-                    <small class="text-secondary"> 20 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-primary-subtle text-primary-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-settings"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path
-                        d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-                    />
-                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>A system update has been installed.</div>
-                    <small class="text-secondary"> 30 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-info-subtle text-info-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                    <path d="M16 3v4" />
-                    <path d="M8 3v4" />
-                    <path d="M4 11h16" />
-                    <path d="M7 14h.013" />
-                    <path d="M10.01 14h.005" />
-                    <path d="M13.01 14h.005" />
-                    <path d="M16.015 14h.005" />
-                    <path d="M13.015 17h.005" />
-                    <path d="M7.01 17h.005" />
-                    <path d="M10.01 17h.005" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Reminder: Team meeting at 3:00 PM.</div>
-                    <small class="text-secondary"> 1 hour ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-danger-subtle text-danger-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-shopping-cart"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 17h-11v-14h-2" />
-                    <path d="M6 5l14 1l-1 7h-13" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Your order has been shipped!</div>
-                    <small class="text-secondary"> 2 hours ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-3.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Sophia commented on your post.</div>
-                    <small class="text-secondary"> 20 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-primary-subtle text-primary-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-settings"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path
-                        d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-                    />
-                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>A system update has been installed.</div>
-                    <small class="text-secondary"> 30 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-info-subtle text-info-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                    <path d="M16 3v4" />
-                    <path d="M8 3v4" />
-                    <path d="M4 11h16" />
-                    <path d="M7 14h.013" />
-                    <path d="M10.01 14h.005" />
-                    <path d="M13.01 14h.005" />
-                    <path d="M16.015 14h.005" />
-                    <path d="M13.015 17h.005" />
-                    <path d="M7.01 17h.005" />
-                    <path d="M10.01 17h.005" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Reminder: Team meeting at 3:00 PM.</div>
-                    <small class="text-secondary"> 1 hour ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-danger-subtle text-danger-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-shopping-cart"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 17h-11v-14h-2" />
-                    <path d="M6 5l14 1l-1 7h-13" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Your order has been shipped!</div>
-                    <small class="text-secondary"> 2 hours ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
         </div>
-        </div>
-    </div>
-    <div class="tab-pane fade" id="pills-following" role="tabpanel" aria-labelledby="pills-following-tab" tabindex="0">
-        <div data-simplebar="" style="height: 800px">
-        <div class="list-group list-group-flush">
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-info-subtle text-info-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                    <path d="M16 3v4" />
-                    <path d="M8 3v4" />
-                    <path d="M4 11h16" />
-                    <path d="M7 14h.013" />
-                    <path d="M10.01 14h.005" />
-                    <path d="M13.01 14h.005" />
-                    <path d="M16.015 14h.005" />
-                    <path d="M13.015 17h.005" />
-                    <path d="M7.01 17h.005" />
-                    <path d="M10.01 17h.005" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Reminder: Team meeting at 3:00 PM.</div>
-                    <small class="text-secondary"> 1 hour ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-danger-subtle text-danger-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-shopping-cart"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 17h-11v-14h-2" />
-                    <path d="M6 5l14 1l-1 7h-13" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Your order has been shipped!</div>
-                    <small class="text-secondary"> 2 hours ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-3.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Sophia commented on your post.</div>
-                    <small class="text-secondary"> 20 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-primary-subtle text-primary-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-settings"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path
-                        d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-                    />
-                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>A system update has been installed.</div>
-                    <small class="text-secondary"> 30 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-info-subtle text-info-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                    <path d="M16 3v4" />
-                    <path d="M8 3v4" />
-                    <path d="M4 11h16" />
-                    <path d="M7 14h.013" />
-                    <path d="M10.01 14h.005" />
-                    <path d="M13.01 14h.005" />
-                    <path d="M16.015 14h.005" />
-                    <path d="M13.015 17h.005" />
-                    <path d="M7.01 17h.005" />
-                    <path d="M10.01 17h.005" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Reminder: Team meeting at 3:00 PM.</div>
-                    <small class="text-secondary"> 1 hour ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <div class="icon-shape icon-md bg-danger-subtle text-danger-emphasis rounded-circle">
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-tabler icons-tabler-outline icon-tabler-shopping-cart"
-                    >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                    <path d="M17 17h-11v-14h-2" />
-                    <path d="M6 5l14 1l-1 7h-13" />
-                    </svg>
-                </div>
-                <div class="d-flex flex-column gap-1">
-                    <div>Your order has been shipped!</div>
-                    <small class="text-secondary"> 2 hours ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-        </div>
-        </div>
-    </div>
-    <div class="tab-pane fade" id="pills-archive" role="tabpanel" aria-labelledby="pills-archive-tab" tabindex="0">
-        <div data-simplebar="" style="height: 800px">
-        <div class="list-group list-group-flush">
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex flex-column gap-1">
-                <div>New message from John Doe</div>
-                <small class="text-secondary"> 2 minutes ago</small>
-                </div>
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex flex-column gap-1">
-                <div>Your password will expire soon.</div>
-                <small class="text-secondary"> 2 minutes ago</small>
-                </div>
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-1.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Alice uploaded a new profile picture.</div>
-                    <small class="text-secondary"> 1 hour ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex gap-4 align-items-center">
-                <img src="assets/images/avatar/avatar-2.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                <div class="d-flex flex-column gap-1">
-                    <div>Mike sent you a friend request.</div>
-                    <small class="text-secondary"> 5 minutes ago</small>
-                </div>
-                </div>
-
-                <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-info">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                </svg>
-                </div>
-            </div>
-            <div class="d-flex gap-2 align-items-center mt-4">
-                <button type="button" class="btn btn-primary btn-sm">Accept</button>
-                <button type="button" class="btn btn-white btn-sm">Decline</button>
-            </div>
-            </a>
-        </div>
-        </div>
-    </div>
-    </div>
-    <div class="px-5 py-3 text-center bg-white position-absolute bottom-0 border-top border-dashed w-100 text-center">
-    <a href="#!" class="text-inherit">View all</a>
     </div>
 </div>
+
 <!-- Modal of pages -->
 <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
         <div class="modal-header">
         <input type="search" class="form-control border-0 rounded-0 ps-0 form-focus-none" id="globalSearchInput" placeholder="Search any word..." aria-label="Search" aria-describedby="search-addon" />

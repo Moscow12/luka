@@ -5,6 +5,7 @@ namespace App\Livewire\Auth;
 use App\Models\LoginActivity;
 use App\Models\TrustedDevice;
 use App\Models\User;
+use App\Models\workstations;
 use App\Services\DeviceFingerprinter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -63,6 +64,9 @@ class Login extends Component
         //     'login_at' => now(),
         // ]);
 
+        // Check if 2FA is enabled in config
+        $twoFactorEnabled = config('auth.two_factor_enabled', true);
+
         if ($trustedDevice) {
             // Device is trusted - skip 2FA and log in directly
             $trustedDevice->updateLastUsed();
@@ -77,7 +81,20 @@ class Login extends Component
             return redirect()->route('dashboard');
         }
 
-        // Device is not trusted - enforce 2FA
+        // If 2FA is disabled, log in directly without verification
+        if (! $twoFactorEnabled) {
+            Auth::login($user);
+
+            $this->dispatch('toastMagic',
+                status: 'success',
+                title: 'Welcome Back',
+                message: 'Login successful'
+            );
+
+            return redirect()->route('dashboard');
+        }
+
+        // Device is not trusted and 2FA is enabled - enforce 2FA
         // Store device details in session for potential saving after 2FA
         session([
             '2fa_user_email' => $user->email,
@@ -98,7 +115,13 @@ class Login extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.login')
-            ->layout('components.layouts.guest');
+        $workstation = workstations::first();
+        $twoFactorEnabled = config('auth.two_factor_enabled', true);
+
+        return view('livewire.auth.login', [
+            'workstation' => $workstation,
+            'twoFactorEnabled' => $twoFactorEnabled,
+            'appName' => config('app.name', 'Dasher'),
+        ])->layout('components.layouts.guest');
     }
 }

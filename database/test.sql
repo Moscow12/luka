@@ -1,0 +1,1 @@
+select * from "leaves" where ("name" = Annual Leave and "description" = Annual Leave and "days" = 15 and "gender" = Both and "status" = Active and "added_by" = 0199d301-cca9-71aa-8f3b-3afe70a26b41) and "leaves"."deleted_at" is null limit 1

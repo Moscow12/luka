@@ -1,1075 +1,721 @@
 <div>
     <div class="custom-container">
-            <div class="row">
-              <div class="col-lg-12 col-md-12 col-12">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-12">
                 <!-- Page header -->
-                <div class="mb-8">
-                  <div>
-                    <h1 class="mb-3 h2">Profile</h1>
+                <div class="mb-5">
+                    <h1 class="mb-2 h2">My Profile</h1>
                     <nav aria-label="breadcrumb">
-                      <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Profile</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Profile details</li>
-                      </ol>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Profile</li>
+                        </ol>
                     </nav>
-                  </div>
                 </div>
-              </div>
             </div>
-            <div class="row align-items-center mb-4">
-              <div class="col-xl-12 col-lg-12 col-md-12 col-12">
-                <!-- Bg -->
+        </div>
 
-                <div class="card card-lg overflow-hidden">
-                  <div class="pt-16 rounded-top position-relative" style="background: url(../../images/background/profile-cover.jpg) no-repeat; background-size: cover">
-                    <div class="position-absolute top-0 end-0 m-4">
-                      <a href="#!" class="icon-shape icon-md bg-white rounded-circle">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="icon icon-tabler icons-tabler-outline icon-tabler-edit text-secondary"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
-                          <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
-                          <path d="M16 5l3 3" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="d-flex flex-column flex-lg-row gap-4">
-                      <div>
-                        <img src="{{ asset('images/avatar/avatar-1.jpg') }}" alt="" class="rounded-circle avatar avatar-xl" />
-                      </div>
-                      <div class="d-flex flex-column flex-lg-row justify-content-between w-100 gap-2">
-                        <div class="d-lg-flex flex-lg-column">
-                          <h3 class="mb-0">Jitu Chauhan</h3>
-                          <div class="d-lg-flex align-items-center gap-2">
-                            <span>@imjituchauhan</span>
-                            <span class="text-secondary">12,500 subscribers</span>
-                            <span class="text-secondary">1200 Posts</span>
-                          </div>
-                          <div class="mt-4">
-                            <a href="#!" class="btn btn-white d-inline-flex align-items-center gap-2"
-                              >View Site<svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-external-link"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" />
-                                <path d="M11 13l9 -9" />
-                                <path d="M15 4h5v5" />
-                              </svg>
-                            </a>
-                          </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-10">
-                          <div class="d-flex flex-column">
-                            <span class="fw-semibold fs-5">12,500</span>
-                            <span class="text-secondary">Followers</span>
-                          </div>
-                          <div class="d-flex flex-column">
-                            <span class="fw-semibold fs-5">350</span>
-                            <span class="text-secondary">Following</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- content -->
+        @if(!$employee)
+            <!-- No Employee Record Found -->
             <div class="row">
-              <div class="col-12 mb-8">
-                <ul class="nav nav-lb-tab  border-bottom">
-                  <li class="nav-item">
-                    <a class='nav-link active' href='profile-overview.html'>
-                      <div class="d-flex align-items-center gap-2 lh-1">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-user-circle"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-                            <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                            <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />
-                          </svg>
-                        </span>
-                        <span>Profile</span>
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class='nav-link' href='profile-project.html'>
-                      <div class="d-flex align-items-center gap-2 lh-1">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-briefcase"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M3 7m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
-                            <path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
-                            <path d="M12 12l0 .01" />
-                            <path d="M3 13a20 20 0 0 0 18 0" />
-                          </svg>
-                        </span>
-                        <span>Project</span>
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class='nav-link' href='profile-team.html'>
-                      <div class="d-flex align-items-center gap-2 lh-1">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-users-group"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1" />
-                            <path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M17 10h2a2 2 0 0 1 2 2v1" />
-                            <path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M3 13v-1a2 2 0 0 1 2 -2h2" />
-                          </svg>
-                        </span>
-                        <span>Teams</span>
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class='nav-link' href='profile-followers.html'>
-                      <div class="d-flex align-items-center gap-2 lh-1">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-users"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
-                          </svg>
-                        </span>
-                        <span>Followers</span>
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class='nav-link' href='profile-activity.html'>
-                      <div class="d-flex align-items-center gap-2 lh-1">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-activity"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M3 12h4l3 8l4 -16l3 8h4" />
-                          </svg>
-                        </span>
-                        <span>Activity</span>
-                      </div>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              </div>
-              <div class="row g-6">
-              <div class="col-xl-3 col-lg-4 d-flex flex-column gap-6">
-                <div class="card card-lg">
-                  <div class="card-body">
-                    <h5 class="mb-4">About me</h5>
-                    <p class="mb-4">Passionate about technology, writing, and sharing knowledge on the latest trends in the tech industry.</p>
-                    <div class="d-flex flex-column">
-                      <div class="d-flex align-items-center gap-2 lh-1 mb-2">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-mail text-secondary"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
-                            <path d="M3 7l9 6l9 -6" />
-                          </svg>
-                        </span>
-                        <span>Email: <a href="#!" class="text-decoration-underline text-inherit">johndoe@example.com</a></span>
-                      </div>
-                      <div class="d-flex align-items-center gap-2 lh-1 mb-2">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-map-pin text-secondary"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                            <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
-                          </svg>
-                        </span>
-                        <span>Location:San Francisco, CA</span>
-                      </div>
-                      <div class="d-flex align-items-center gap-2 lh-1 mb-2">
-                        <span
-                          ><svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-app-window text-secondary"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
-                            <path d="M6 8h.01" />
-                            <path d="M9 8h.01" />
-                          </svg>
-                        </span>
-                        <span>Website: <a href="#!" class="text-decoration-underline text-inherit">johndoe.com</a></span>
-                      </div>
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>
+                            <strong>Employee Record Not Found!</strong><br>
+                            Your account is not linked to an employee record. Please contact HR to set up your employee profile.
+                        </div>
                     </div>
-                  </div>
                 </div>
-                <div class="card card-lg">
-                  <div class="card-body">
-                    <h5 class="mb-4">Skills</h5>
-                    <div class="d-flex flex-row flex-wrap gap-2">
-                      <span class="badge border text-gray-600 rounded-pill bg-transparent">Content Writing</span>
-                      <span class="badge border text-gray-600 rounded-pill bg-transparent">SEO</span>
-                      <span class="badge border text-gray-600 rounded-pill bg-transparent">Video Editing</span>
-                      <span class="badge border text-gray-600 rounded-pill bg-transparent">Digital Marketing</span>
-                      <span class="badge border text-gray-600 rounded-pill bg-transparent">Photography</span>
+            </div>
+        @else
+            <!-- Profile Header Card -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <!-- Cover Image -->
+                        <div class="pt-10 rounded-top position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        </div>
+
+                        <!-- Profile Info -->
+                        <div class="card-body">
+                            <div class="d-flex flex-column flex-lg-row gap-4">
+                                <!-- Profile Photo -->
+                                <div class="position-relative" style="margin-top: -60px;">
+                                    @if($employee->photo)
+                                        <img src="{{ asset('storage/' . $employee->photo) }}"
+                                             alt="{{ $employee->getFullName() }}"
+                                             class="rounded-circle border border-4 border-white shadow-sm"
+                                             style="width: 120px; height: 120px; object-fit: cover;">
+                                    @else
+                                        <div class="rounded-circle border border-4 border-white shadow-sm d-flex align-items-center justify-content-center bg-primary text-white"
+                                             style="width: 120px; height: 120px; font-size: 48px; font-weight: bold;">
+                                            {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- Employee Details -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start">
+                                        <div>
+                                            <h3 class="mb-1">{{ $employee->getFullName() }}</h3>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-briefcase me-2"></i>
+                                                {{ $employee->position->name ?? 'N/A' }}
+                                                @if($employee->department)
+                                                    <span class="mx-2">|</span>
+                                                    <i class="fas fa-building me-2"></i>
+                                                    {{ $employee->department->name }}
+                                                @endif
+                                            </p>
+                                            <p class="text-muted mb-0">
+                                                <i class="fas fa-id-badge me-2"></i>
+                                                Employee #{{ $employee->employee_no }}
+                                                <span class="mx-2">|</span>
+                                                <i class="fas fa-calendar me-2"></i>
+                                                Hired: {{ $employee->hired_date ? $employee->hired_date->format('M d, Y') : 'N/A' }}
+                                            </p>
+                                        </div>
+                                        <div class="mt-3 mt-lg-0">
+                                            <span class="badge bg-{{ $employee->status === 'active' ? 'success' : 'secondary' }} px-3 py-2">
+                                                <i class="fas fa-circle me-1" style="font-size: 8px;"></i>
+                                                {{ ucfirst($employee->status ?? 'N/A') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
-                <div class="card card-lg">
-                  <div class="card-body">
-                    <h5 class="mb-4">Recent Activity</h5>
-                    <div class="d-flex flex-column gap-5 mb-6">
-                      <div class="timeline-vertical timeline-vertical-height">
-                        <div class="timeline-item position-relative">
-                          <div class="row g-0">
-                            <div class="col">
-                              <div>
-                                <div>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-primary"
-                                  >
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                                  </svg>
-                                </div>
-                                <div class="timeline-bar border-start border-dashed"></div>
-                              </div>
-                            </div>
-                            <div class="col-sm-11">
-                              <div>Last Blog Published</div>
-                              <div class="text-secondary">Jan 20, 2025 10:30 AM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="timeline-vertical timeline-vertical-height">
-                        <div class="timeline-item position-relative">
-                          <div class="row g-0">
-                            <div class="col">
-                              <div>
-                                <div>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-warning"
-                                  >
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                                  </svg>
-                                </div>
-                                <div class="timeline-bar border-start border-dashed"></div>
-                              </div>
-                            </div>
-                            <div class="col-sm-11">
-                              <div>Avg. Monthly Views: 50K</div>
-                              <div class="text-secondary">Jan 19, 2025: 3:45 PM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="timeline-vertical timeline-vertical-height">
-                        <div class="timeline-item position-relative">
-                          <div class="row g-0">
-                            <div class="col">
-                              <div>
-                                <div>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-primary"
-                                  >
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                                  </svg>
-                                </div>
-                                <div class="timeline-bar border-start border-dashed"></div>
-                              </div>
-                            </div>
-                            <div class="col-sm-11">
-                              <div>New Follower: Sarah Smith</div>
-                              <div class="text-secondary">Jan 18, 2025: 3:45 PM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="timeline-vertical timeline-vertical-height">
-                        <div class="timeline-item position-relative">
-                          <div class="row g-0">
-                            <div class="col">
-                              <div>
-                                <div>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-danger"
-                                  >
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                                  </svg>
-                                </div>
-                                <div class="timeline-bar border-start border-dashed"></div>
-                              </div>
-                            </div>
-                            <div class="col-sm-11">
-                              <div>Commented on: "AI in Blogging"</div>
-                              <div class="text-secondary">Jan 17, 2025: 3:45 PM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="timeline-vertical timeline-vertical-height">
-                        <div class="timeline-item position-relative">
-                          <div class="row g-0">
-                            <div class="col">
-                              <div>
-                                <div>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-primary"
-                                  >
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                                  </svg>
-                                </div>
-                                <div class="timeline-bar border-start border-dashed"></div>
-                              </div>
-                            </div>
-                            <div class="col-sm-11">
-                              <div>Updated Profile Information</div>
-                              <div class="text-secondary">Jan 16, 2025: 3:45 PM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="timeline-vertical timeline-vertical-height">
-                        <div class="timeline-item position-relative">
-                          <div class="row g-0">
-                            <div class="col">
-                              <div>
-                                <div>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    class="icon icon-tabler icons-tabler-filled icon-tabler-circle text-warning"
-                                  >
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z" />
-                                  </svg>
-                                </div>
-                                <div class="timeline-bar border-start border-dashed"></div>
-                              </div>
-                            </div>
-                            <div class="col-sm-11">
-                              <div>Shared a Blog Post</div>
-                              <div class="text-secondary">Jan 15, 2025: 3:45 PM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <a href="#!" class="btn btn-white">View Full Log</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-xl-9 col-lg-8 d-flex flex-column gap-6">
-                <div class="card card-lg">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                      <div class="d-flex align-items-center gap-3">
-                        <img src="../../assets/images/avatar/avatar-1.jpg" alt="" class="avatar avatar-md rounded-circle" />
-                        <span class="fs-5">Jitu Chauhan</span>
-                      </div>
-                      <div>Visibility: Public</div>
-                    </div>
-                    <div >
-                      <textarea   rows="4" class="form-control" placeholder="What’s on your mind ?"></textarea>
-                      <div class="my-4 d-flex flex-column flex-md-row align-items-md-center gap-3" role="group" aria-label="Basic radio toggle button group">
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1"  />
-                        <label class="btn btn-ghost d-inline-flex align-items-center gap-2" for="btnradio1">
-                          <span
-                            ><svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="icon icon-tabler icons-tabler-outline icon-tabler-photo"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M15 8h.01" />
-                              <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z" />
-                              <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
-                              <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3" />
-                            </svg>
-                          </span>
-                          <span>Image</span>
-                        </label>
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2"  />
-                        <label class="btn btn-ghost d-inline-flex align-items-center gap-2" for="btnradio2">
-                          <span
-                            ><svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="icon icon-tabler icons-tabler-outline icon-tabler-align-justified"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M4 6l16 0" />
-                              <path d="M4 12l16 0" />
-                              <path d="M4 18l12 0" />
-                            </svg>
-                          </span>
-                          <span>Text poll</span></label
-                        >
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3"  />
-                        <label class="btn btn-ghost d-inline-flex align-items-center gap-2" for="btnradio3"
-                          ><span
-                            ><svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="icon icon-tabler icons-tabler-outline icon-tabler-checkbox"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M9 11l3 3l8 -8" />
-                              <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" />
-                            </svg>
-                          </span>
-                          <span>Quiz</span></label
-                        >
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio4"  />
-                        <label class="btn btn-ghost d-inline-flex align-items-center gap-2" for="btnradio4"
-                          ><span
-                            ><svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="icon icon-tabler icons-tabler-outline icon-tabler-movie"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                              <path d="M8 4l0 16" />
-                              <path d="M16 4l0 16" />
-                              <path d="M4 8l4 0" />
-                              <path d="M4 16l4 0" />
-                              <path d="M4 12l16 0" />
-                              <path d="M16 8l4 0" />
-                              <path d="M16 16l4 0" />
-                            </svg>
-                          </span>
-                          <span>Video</span></label
-                        >
-                      </div>
-                      <div class="d-flex gap-3">
-                        <button class="btn btn-white" type="submit">Cancel</button>
-                        <button class="btn btn-dark" type="submit">Post</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card card-lg">
-                  <!-- card body -->
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between mb-5 align-items-center">
-                      <!-- avatar -->
-                      <div class="d-flex align-items-center">
-                        <div>
-                          <img src="../../assets/images/avatar/avatar-3.jpg" alt="Image" class="avatar avatar-lg rounded-circle" />
-                        </div>
-                        <div class="ms-3">
-                          <h5 class="mb-0">Jitu Chauhan</h5>
-                          <p class="mb-0">19 minutes ago</p>
-                        </div>
-                      </div>
-                      <div>
-                        <!-- dropdown -->
-                        <div class="dropdown dropstart">
-                          <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle" id="dropdownprojectFive" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-dots-vertical" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                              <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                            </svg>
-                          </a>
-                          <div class="dropdown-menu" aria-labelledby="dropdownprojectFive">
-                            <a class="dropdown-item d-flex align-items-center" href="#!">Action</a>
-                            <a class="dropdown-item d-flex align-items-center" href="#!">Another action</a>
-                            <a class="dropdown-item d-flex align-items-center" href="#!">Something else here</a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mb-4">
-                      <!-- text -->
-                      <p class="mb-4">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspen disse var ius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla,
-                        ut commodo diam libero vitae erat.
-                      </p>
-                      <div class="ratio ratio-16x9">
-                        <img src="../../assets/images/blog/blog-img-4.jpg" class="rounded-3" alt="Image" />
-                      </div>
-                    </div>
-                    <!-- icons -->
-                    <div class="mb-4 d-flex align-items-center justify-content-between">
-                      <div class="mb-4 d-flex align-items-center">
-                        <span class="me-1 me-md-4"
-                          ><svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1.5"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-heart text-danger"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" /></svg>
-                          <span>20 +</span></span
-                        >
-                        <!-- avatar group -->
-                        <div class="avatar-group me-2 me-md-3">
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-7.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-8.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-9.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-13.jpg" class="rounded-circle" />
-                          </span>
-                        </div>
-                      </div>
-                      <div class="d-flex align-items-center gap-3">
-                        <a href="#!" class="text-secondary">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-message"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M8 9h8" />
-                            <path d="M8 13h6" />
-                            <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" />
-                          </svg>
-                        </a>
-                        <a href="#!" class="text-secondary">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="icon icon-tabler icons-tabler-outline icon-tabler-share"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                            <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                            <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                            <path d="M8.7 10.7l6.6 -3.4" />
-                            <path d="M8.7 13.3l6.6 3.4" />
-                          </svg>
-                        </a>
-                      </div>
-                    </div>
-
-                    <!-- row -->
-                    <div class="d-flex align-items-center gap-2">
-                      <!-- avatar -->
-                      <img src="../../assets/images/avatar/avatar-1.jpg" class="avatar avatar-md rounded-circle" alt="Image" />
-                      <input type="password" id="name" class="form-control" placeholder="What are your thoughts?" />
-
-                      <!-- input -->
-                    </div>
-                  </div>
-                </div>
-                <div class="card card-lg">
-                  <!-- card body -->
-                  <div class="card-body">
-                    <h5 class="mb-6">My Projects</h5>
-
-                    <div class="d-md-flex justify-content-between align-items-center">
-                      <div class="d-flex align-items-center">
-                        <div>
-                          <div class="icon-shape icon-lg border rounded-2">
-                            <img src="../../assets/images/brand/dropbox-logo.svg" alt="Image" />
-                          </div>
-                        </div>
-                        <!-- text -->
-                        <div class="ms-3">
-                          <a href="#!" class="text-inherit fw-semibold">Slack Figma Design UI</a>
-
-                          <p class="mb-0 fs-6 text-secondary">Project description and details about...</p>
-                        </div>
-                      </div>
-                      <div class="d-flex align-items-center">
-                        <!-- avatar group -->
-                        <div class="avatar-group me-2">
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-11.jpg" class="rounded-circle" />
-                          </span>
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-2.jpg" class="rounded-circle" />
-                          </span>
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-3.jpg" class="rounded-circle" />
-                          </span>
-                        </div>
-                        <div>
-                          <!-- dropdown -->
-                          <div class="dropdown dropstart">
-                            <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle" id="dropdownprojectOne" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-dots-vertical"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              </svg>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownprojectOne">
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Another action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Something else here</a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="border-bottom border-dashed my-3"></div>
-                    <div class="d-md-flex justify-content-between align-items-center">
-                      <div class="d-flex align-items-center">
-                        <div>
-                          <!-- icon shape -->
-                          <div class="icon-shape icon-lg border rounded-2">
-                            <img src="../../assets/images/brand/slack-logo.svg" alt="Image" />
-                          </div>
-                        </div>
-                        <!-- text -->
-                        <div class="ms-3">
-                          <a href="#!" class="text-inherit fw-semibold">Design 3d Character</a>
-
-                          <p class="mb-0 fs-6 text-secondary">Project description and details about...</p>
-                        </div>
-                      </div>
-
-                      <div class="d-flex align-items-center">
-                        <!-- avatar group -->
-                        <div class="avatar-group me-2">
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-4.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-5.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-6.jpg" class="rounded-circle" />
-                          </span>
-                        </div>
-                        <div>
-                          <!-- dropdown -->
-                          <div class="dropdown dropstart">
-                            <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle" id="dropdownprojectTwo" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-dots-vertical"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              </svg>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownprojectTwo">
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Another action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Something else here</a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="border-bottom border-dashed my-3"></div>
-                    <div class="d-md-flex justify-content-between align-items-center">
-                      <div class="d-flex align-items-center">
-                        <div>
-                          <!-- icon shape -->
-                          <div class="icon-shape icon-lg border rounded-2">
-                            <img src="../../assets/images/brand/github-logo.svg" alt="Image" />
-                          </div>
-                        </div>
-                        <!-- text -->
-                        <div class="ms-3">
-                          <a href="#!" class="text-inherit fw-semibold">Github Development</a>
-
-                          <p class="mb-0 fs-6 text-secondary">Project description and details about...</p>
-                        </div>
-                      </div>
-                      <div class="d-flex align-items-center">
-                        <!-- avatar group -->
-                        <div class="avatar-group me-2">
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-7.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-8.jpg" class="rounded-circle" />
-                          </span>
-                          <span class="avatar avatar-sm">
-                            <!-- img -->
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-9.jpg" class="rounded-circle" />
-                          </span>
-                        </div>
-                        <div>
-                          <!-- dropdown -->
-                          <div class="dropdown dropstart">
-                            <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle" id="dropdownprojectThree" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-dots-vertical"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              </svg>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownprojectThree">
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Another action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Something else here</a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="border-bottom border-dashed my-3"></div>
-                    <div class="d-md-flex justify-content-between align-items-center">
-                      <div class="d-flex align-items-center">
-                        <!-- icon shape -->
-                        <div>
-                          <div class="icon-shape icon-lg border rounded-2">
-                            <img src="../../assets/images/brand/3dsmax-logo.svg" alt="Image" />
-                          </div>
-                        </div>
-                        <!-- text -->
-                        <div class="ms-3">
-                          <a href="#!" class="text-inherit fw-semibold">Dropbox Design System</a>
-
-                          <p class="mb-0 fs-6 text-secondary">Project description and details about...</p>
-                        </div>
-                      </div>
-                      <div class="d-flex align-items-center">
-                        <!-- avatar group -->
-                        <div class="avatar-group me-2">
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-10.jpg" class="rounded-circle" />
-                          </span>
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-11.jpg" class="rounded-circle" />
-                          </span>
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-12.jpg" class="rounded-circle" />
-                          </span>
-                        </div>
-                        <div>
-                          <!-- dropdown -->
-                          <div class="dropdown dropstart">
-                            <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle" id="dropdownprojectFour" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-dots-vertical"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              </svg>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownprojectFour">
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Another action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Something else here</a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="border-bottom border-dashed my-3"></div>
-                    <div class="d-md-flex justify-content-between align-items-center">
-                      <div class="d-flex align-items-center">
-                        <!-- icon shape -->
-                        <div>
-                          <div class="icon-shape icon-lg border rounded-2 bg-primary">
-                            <img src="../../assets/images/brand/layers-logo.svg" alt="Image" />
-                          </div>
-                        </div>
-                        <!-- text -->
-                        <div class="ms-3">
-                          <a href="#!" class="text-inherit fw-semibold">Project Management</a>
-
-                          <p class="mb-0 fs-6 text-secondary">Project description and details about...</p>
-                        </div>
-                      </div>
-                      <div class="d-flex align-items-center">
-                        <!-- avatar group -->
-                        <div class="avatar-group me-2">
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-13.jpg" class="rounded-circle" />
-                          </span>
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-14.jpg" class="rounded-circle" />
-                          </span>
-                          <!-- img -->
-                          <span class="avatar avatar-sm">
-                            <img alt="avatar" src="../../assets/images/avatar/avatar-15.jpg" class="rounded-circle" />
-                          </span>
-                        </div>
-                        <div>
-                          <!-- dropdown -->
-                          <div class="dropdown dropstart">
-                            <a href="#!" class="btn btn-ghost btn-icon btn-sm rounded-circle" id="dropdownprojectFoufive" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-dots-vertical"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                                <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                              </svg>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownprojectFoufive">
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Another action</a>
-                              <a class="dropdown-item d-flex align-items-center" href="#!">Something else here</a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
-      </div>
+            <!-- Quick Stats Cards -->
+            <div class="row g-3 mb-4">
+                <!-- Leave Statistics -->
+                <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="icon-shape icon-md bg-primary-soft rounded-3">
+                                    <i class="fas fa-umbrella-beach text-primary fs-5"></i>
+                                </div>
+                                <span class="badge bg-primary-soft text-primary">{{ $stats['pending_leaves'] }} Pending</span>
+                            </div>
+                            <h3 class="mb-1">{{ $stats['total_leaves'] }}</h3>
+                            <p class="text-muted mb-0 small">Total Leave Requests</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roster Statistics -->
+                <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="icon-shape icon-md bg-success-soft rounded-3">
+                                    <i class="fas fa-calendar-alt text-success fs-5"></i>
+                                </div>
+                                <span class="badge bg-success-soft text-success">{{ $stats['upcoming_rosters'] }} Upcoming</span>
+                            </div>
+                            <h3 class="mb-1">{{ $stats['total_rosters'] }}</h3>
+                            <p class="text-muted mb-0 small">Roster Assignments</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activities Statistics -->
+                <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="icon-shape icon-md bg-warning-soft rounded-3">
+                                    <i class="fas fa-tasks text-warning fs-5"></i>
+                                </div>
+                            </div>
+                            <h3 class="mb-1">{{ $stats['total_activities'] }}</h3>
+                            <p class="text-muted mb-0 small">CHOP Activities</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Statistics -->
+                <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="icon-shape icon-md bg-info-soft rounded-3">
+                                    <i class="fas fa-clock text-info fs-5"></i>
+                                </div>
+                                <span class="badge bg-info-soft text-info">{{ $stats['attendance_rate'] }}%</span>
+                            </div>
+                            <h3 class="mb-1">{{ $stats['total_attendances'] }}</h3>
+                            <p class="text-muted mb-0 small">Attendance Records</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabbed Content -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- Nav Tabs -->
+                    <ul class="nav nav-tabs nav-lb-tab border-bottom mb-4" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link {{ $activeTab === 'personal' ? 'active' : '' }}"
+                               href="#"
+                               wire:click.prevent="switchTab('personal')"
+                               role="tab">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-user"></i>
+                                    <span>Personal Info</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $activeTab === 'leaves' ? 'active' : '' }}"
+                               href="#"
+                               wire:click.prevent="switchTab('leaves')"
+                               role="tab">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-umbrella-beach"></i>
+                                    <span>Leave Requests</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $activeTab === 'roster' ? 'active' : '' }}"
+                               href="#"
+                               wire:click.prevent="switchTab('roster')"
+                               role="tab">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>My Roster</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $activeTab === 'activities' ? 'active' : '' }}"
+                               href="#"
+                               wire:click.prevent="switchTab('activities')"
+                               role="tab">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-tasks"></i>
+                                    <span>My Activities</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $activeTab === 'attendance' ? 'active' : '' }}"
+                               href="#"
+                               wire:click.prevent="switchTab('attendance')"
+                               role="tab">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Attendance Log</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $activeTab === 'signature' ? 'active' : '' }}"
+                               href="#"
+                               wire:click.prevent="switchTab('signature')"
+                               role="tab">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-signature"></i>
+                                    <span>Digital Signature</span>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Personal Information Tab -->
+                        @if($activeTab === 'personal')
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Personal Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-4">
+                                        <!-- Basic Information -->
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Basic Information</h6>
+                                            <table class="table table-borderless">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-muted" style="width: 150px;">Full Name:</td>
+                                                        <td class="fw-semibold">{{ $employee->getFullName() }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Gender:</td>
+                                                        <td class="fw-semibold">{{ ucfirst($employee->gender ?? 'N/A') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Date of Birth:</td>
+                                                        <td class="fw-semibold">{{ $employee->dob ? $employee->dob->format('M d, Y') : 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Age:</td>
+                                                        <td class="fw-semibold">{{ $employee->getAgeAttribute() }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Marital Status:</td>
+                                                        <td class="fw-semibold">{{ ucfirst($employee->marital_status ?? 'N/A') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">National ID:</td>
+                                                        <td class="fw-semibold">{{ $employee->national_id ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">TIN Number:</td>
+                                                        <td class="fw-semibold">{{ $employee->tin_number ?? 'N/A' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Contact Information -->
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-address-book me-2"></i>Contact Information</h6>
+                                            <table class="table table-borderless">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-muted" style="width: 150px;">Email:</td>
+                                                        <td class="fw-semibold">{{ $employee->email ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Phone:</td>
+                                                        <td class="fw-semibold">{{ $employee->phone ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Country:</td>
+                                                        <td class="fw-semibold">{{ $employee->country->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Region:</td>
+                                                        <td class="fw-semibold">{{ $employee->region->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">District:</td>
+                                                        <td class="fw-semibold">{{ $employee->district->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Ward:</td>
+                                                        <td class="fw-semibold">{{ $employee->ward->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Street/Village:</td>
+                                                        <td class="fw-semibold">{{ $employee->vilstreet->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Employment Information -->
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-briefcase me-2"></i>Employment Information</h6>
+                                            <table class="table table-borderless">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-muted" style="width: 150px;">Employee No:</td>
+                                                        <td class="fw-semibold">{{ $employee->employee_no ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Job Title:</td>
+                                                        <td class="fw-semibold">{{ $employee->position->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Department:</td>
+                                                        <td class="fw-semibold">{{ $employee->department->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Designation:</td>
+                                                        <td class="fw-semibold">{{ $employee->designation->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Workstation:</td>
+                                                        <td class="fw-semibold">{{ $employee->workstation->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Employment Type:</td>
+                                                        <td class="fw-semibold">{{ ucfirst($employee->employment_type ?? 'N/A') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Hired Date:</td>
+                                                        <td class="fw-semibold">{{ $employee->hired_date ? $employee->hired_date->format('M d, Y') : 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Years of Service:</td>
+                                                        <td class="fw-semibold">{{ $employee->getYearsOfServiceAttribute() }} years</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Additional Information -->
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-graduation-cap me-2"></i>Additional Information</h6>
+                                            <table class="table table-borderless">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-muted" style="width: 150px;">Education Level:</td>
+                                                        <td class="fw-semibold">{{ ucfirst($employee->education_level ?? 'N/A') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">Denomination:</td>
+                                                        <td class="fw-semibold">{{ $employee->denomination->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-muted">FP ID:</td>
+                                                        <td class="fw-semibold">{{ $employee->fpid ?? 'N/A' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <!-- Password Change Link -->
+                                            <div class="mt-4">
+                                                <a href="{{ route('user.change-password') }}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-key me-2"></i>Change Password
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Leave Requests Tab -->
+                        @if($activeTab === 'leaves')
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Leave Requests</h5>
+                                    <span class="badge bg-primary">{{ $stats['total_leaves'] }} Total</span>
+                                </div>
+                                <div class="card-body">
+                                    @if($leaveRequests->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Leave Type</th>
+                                                        <th>Start Date</th>
+                                                        <th>End Date</th>
+                                                        <th>Days</th>
+                                                        <th>Status</th>
+                                                        <th>Approved By</th>
+                                                        <th>Applied On</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($leaveRequests as $leave)
+                                                        <tr>
+                                                            <td class="fw-semibold">{{ $leave->leave->name ?? 'N/A' }}</td>
+                                                            <td>{{ $leave->start_date ? date('M d, Y', strtotime($leave->start_date)) : 'N/A' }}</td>
+                                                            <td>{{ $leave->end_date ? date('M d, Y', strtotime($leave->end_date)) : 'N/A' }}</td>
+                                                            <td><span class="badge bg-info-soft text-info">{{ $leave->days }} days</span></td>
+                                                            <td>
+                                                                @if($leave->status === 'approved')
+                                                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Approved</span>
+                                                                @elseif($leave->status === 'rejected')
+                                                                    <span class="badge bg-danger"><i class="fas fa-times me-1"></i>Rejected</span>
+                                                                @elseif($leave->status === 'pending')
+                                                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                                                                @else
+                                                                    <span class="badge bg-secondary">{{ ucfirst($leave->status) }}</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $leave->approved_by_user->full_name ?? '-' }}</td>
+                                                            <td class="text-muted small">{{ $leave->created_at->format('M d, Y') }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-3">
+                                            {{ $leaveRequests->links() }}
+                                        </div>
+                                    @else
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-umbrella-beach text-muted" style="font-size: 48px;"></i>
+                                            <p class="text-muted mt-3">No leave requests found.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Roster Tab -->
+                        @if($activeTab === 'roster')
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">My Roster Assignments</h5>
+                                    <span class="badge bg-success">{{ $stats['upcoming_rosters'] }} Upcoming</span>
+                                </div>
+                                <div class="card-body">
+                                    @if($rosterAssignments->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Shift</th>
+                                                        <th>Time</th>
+                                                        <th>Department</th>
+                                                        <th>Type</th>
+                                                        <th>Status</th>
+                                                        <th>Notes</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($rosterAssignments as $roster)
+                                                        <tr class="{{ $roster->roster_date >= now()->format('Y-m-d') ? 'table-success-soft' : '' }}">
+                                                            <td class="fw-semibold">{{ date('M d, Y', strtotime($roster->roster_date)) }}</td>
+                                                            <td>{{ $roster->shift->name ?? 'N/A' }}</td>
+                                                            <td class="small">
+                                                                @if($roster->shift)
+                                                                    <i class="fas fa-clock text-primary me-1"></i>
+                                                                    {{ date('h:i A', strtotime($roster->shift->start_time)) }} -
+                                                                    {{ date('h:i A', strtotime($roster->shift->end_time)) }}
+                                                                @else
+                                                                    N/A
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $roster->department->name ?? 'N/A' }}</td>
+                                                            <td><span class="badge bg-info-soft text-info">{{ ucfirst($roster->shift_type ?? 'N/A') }}</span></td>
+                                                            <td>
+                                                                @if($roster->status === 'active')
+                                                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                                                @else
+                                                                    <span class="badge bg-secondary">{{ ucfirst($roster->status) }}</span>
+                                                                @endif
+                                                            </td>
+                                                            <td class="small text-muted">{{ $roster->notes ?? '-' }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-3">
+                                            {{ $rosterAssignments->links() }}
+                                        </div>
+                                    @else
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-calendar-alt text-muted" style="font-size: 48px;"></i>
+                                            <p class="text-muted mt-3">No roster assignments found.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Activities Tab -->
+                        @if($activeTab === 'activities')
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">My CHOP Activities</h5>
+                                    <span class="badge bg-warning">{{ $stats['total_activities'] }} Activities</span>
+                                </div>
+                                <div class="card-body">
+                                    @if($chopActivities->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Activity Name</th>
+                                                        <th>Description</th>
+                                                        <th>Type</th>
+                                                        <th>Status</th>
+                                                        <th>Planned Amount</th>
+                                                        <th>Actual Amount</th>
+                                                        <th>Progress</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($chopActivities as $activityPersonel)
+                                                        @php
+                                                            $activity = $activityPersonel->activity;
+                                                        @endphp
+                                                        <tr>
+                                                            <td class="fw-semibold">{{ $activity->planned_activity ?? 'N/A' }}</td>
+                                                            <td class="small">{{ \Illuminate\Support\Str::limit($activity->description ?? '', 50) }}</td>
+                                                            <td>
+                                                                <span class="badge bg-{{ $activity->activity_type === 'revenue' ? 'success' : 'primary' }}-soft text-{{ $activity->activity_type === 'revenue' ? 'success' : 'primary' }}">
+                                                                    {{ ucfirst($activity->activity_type ?? 'N/A') }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                @if($activity->is_approved)
+                                                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Approved</span>
+                                                                @else
+                                                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ number_format($activity->planned_amount ?? 0, 2) }}</td>
+                                                            <td>{{ number_format($activity->actual_amount ?? 0, 2) }}</td>
+                                                            <td>
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                                                        <div class="progress-bar bg-success"
+                                                                             style="width: {{ min($activity->percentage ?? 0, 100) }}%">
+                                                                        </div>
+                                                                    </div>
+                                                                    <span class="small fw-semibold">{{ round($activity->percentage ?? 0) }}%</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-3">
+                                            {{ $chopActivities->links() }}
+                                        </div>
+                                    @else
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-tasks text-muted" style="font-size: 48px;"></i>
+                                            <p class="text-muted mt-3">No CHOP activities assigned to your job title.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Attendance Tab -->
+                        @if($activeTab === 'attendance')
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">My Attendance Log</h5>
+                                    <div>
+                                        <span class="badge bg-info me-2">{{ $stats['attendance_rate'] }}% Rate (Last 30 Days)</span>
+                                        <span class="badge bg-primary">{{ $stats['total_attendances'] }} Total</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    @if($employee->fpid)
+                                        @if($attendanceRecords->count() > 0)
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-sm">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Date</th>
+                                                            <th>Time</th>
+                                                            <th>Clock In</th>
+                                                            <th>Clock Out</th>
+                                                            <th>Status</th>
+                                                            <th>Clock Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($attendanceRecords as $attendance)
+                                                            <tr>
+                                                                <td class="fw-semibold">{{ $attendance->clockdate ? date('M d, Y', strtotime($attendance->clockdate)) : 'N/A' }}</td>
+                                                                <td class="small">{{ $attendance->clocktime ? date('h:i:s A', strtotime($attendance->clocktime)) : 'N/A' }}</td>
+                                                                <td>
+                                                                    @if($attendance->clock_in)
+                                                                        <span class="badge bg-success-soft text-success">
+                                                                            <i class="fas fa-sign-in-alt me-1"></i>{{ date('h:i A', strtotime($attendance->clock_in)) }}
+                                                                        </span>
+                                                                    @else
+                                                                        <span class="text-muted">-</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($attendance->clock_out)
+                                                                        <span class="badge bg-danger-soft text-danger">
+                                                                            <i class="fas fa-sign-out-alt me-1"></i>{{ date('h:i A', strtotime($attendance->clock_out)) }}
+                                                                        </span>
+                                                                    @else
+                                                                        <span class="text-muted">-</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($attendance->status === 'present')
+                                                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Present</span>
+                                                                    @elseif($attendance->status === 'absent')
+                                                                        <span class="badge bg-danger"><i class="fas fa-times me-1"></i>Absent</span>
+                                                                    @elseif($attendance->status === 'late')
+                                                                        <span class="badge bg-warning"><i class="fas fa-exclamation me-1"></i>Late</span>
+                                                                    @else
+                                                                        <span class="badge bg-secondary">{{ ucfirst($attendance->status ?? 'N/A') }}</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td class="small text-muted">{{ $attendance->clock_status ?? '-' }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="mt-3">
+                                                {{ $attendanceRecords->links() }}
+                                            </div>
+                                        @else
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-clock text-muted" style="font-size: 48px;"></i>
+                                                <p class="text-muted mt-3">No attendance records found.</p>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="alert alert-info" role="alert">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Your fingerprint ID is not registered. Please contact HR to set up your fingerprint.
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Digital Signature Tab -->
+                        @if($activeTab === 'signature')
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Digital Signature</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mx-auto">
+                                            @if($employee->signature)
+                                                <div class="text-center">
+                                                    <h6 class="text-muted mb-3">Your Current Signature</h6>
+                                                    <div class="border rounded p-4 bg-light">
+                                                        <img src="{{ asset('storage/' . $employee->signature) }}"
+                                                             alt="Digital Signature"
+                                                             class="img-fluid"
+                                                             style="max-height: 200px;">
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <p class="text-muted small mb-0">
+                                                            <i class="fas fa-info-circle me-1"></i>
+                                                            This signature is used for official documents and approvals.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="text-center py-5">
+                                                    <i class="fas fa-signature text-muted" style="font-size: 64px;"></i>
+                                                    <h6 class="text-muted mt-4 mb-3">No Digital Signature Found</h6>
+                                                    <p class="text-muted">
+                                                        You don't have a digital signature on file. Please contact HR to upload your signature.
+                                                    </p>
+                                                    <div class="alert alert-info mt-4 text-start">
+                                                        <h6 class="alert-heading">What is a Digital Signature?</h6>
+                                                        <p class="small mb-0">
+                                                            A digital signature is an electronic version of your handwritten signature
+                                                            that is used to authenticate and approve documents within the HR system.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>

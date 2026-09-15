@@ -1,0 +1,315 @@
+<?php
+
+namespace App\Livewire\Setup;
+
+use App\Models\shifts;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+class Shiftmngts extends Component
+{
+    use WithPagination;
+
+    // Form properties
+    public $name;
+
+    public $description;
+
+    public $start_time;
+
+    public $end_time;
+
+    public $status = 'active';
+
+    public $count_early;
+
+    public $count_late;
+
+    public $is_default = false;
+
+    public $shift_id;
+
+    // UI State
+    public $modalMode = 'create'; // 'create' or 'edit'
+
+    public $showModal = false;
+
+    // Filters
+    #[Url]
+    public $search = '';
+
+    #[Url]
+    public $statusFilter = '';
+
+    public $perPage = 10;
+
+    // Sort
+    public $sortField = 'name';
+
+    public $sortDirection = 'asc';
+
+    public function mount()
+    {
+        // Initialize component
+    }
+
+    /**
+     * Whether the currently entered times describe an overnight shift,
+     * i.e. the end time is on or before the start time (ends next day).
+     */
+    #[Computed]
+    public function crossesMidnight(): bool
+    {
+        if (! $this->start_time || ! $this->end_time) {
+            return false;
+        }
+
+        try {
+            $start = Carbon::createFromFormat('H:i', $this->start_time);
+            $end = Carbon::createFromFormat('H:i', $this->end_time);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return $end->lessThanOrEqualTo($start);
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+
+    public function openModal($mode = 'create', $id = null)
+    {
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->modalMode = $mode;
+        $this->showModal = true;
+
+        if ($mode === 'edit' && $id) {
+            $shift = shifts::findOrFail($id);
+            $this->shift_id = $id;
+            $this->name = $shift->name;
+            $this->description = $shift->description;
+            $this->start_time = $shift->start_time;
+            $this->end_time = $shift->end_time;
+            $this->status = $shift->status;
+            $this->is_default = (bool) $shift->is_default;
+            $this->count_early = $shift->count_early;
+            $this->count_late = $shift->count_late;
+        } else {
+            $this->reset([
+                'name',
+                'description',
+                'shift_id',
+                'start_time',
+                'end_time',
+                'status',
+                'is_default',
+                'count_early',
+                'count_late',
+            ]);
+            $this->status = 'active';
+        }
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->reset([
+            'name',
+            'description',
+            'shift_id',
+            'start_time',
+            'end_time',
+            'status',
+            'is_default',
+            'count_early',
+            'count_late',
+            'modalMode',
+        ]);
+        $this->resetErrorBag();
+        $this->resetValidation();
+    }
+
+    public function save()
+    {
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'start_time' => ['required', 'date_format:H:i'],
+            // End time may be earlier on the clock than the start time: that
+            // signals an overnight shift (e.g. 19:31 -> 07:31 next day). We
+            // only forbid start == end, which would be a zero-length shift.
+            'end_time' => ['required', 'date_format:H:i', 'different:start_time'],
+            'status' => ['required', 'in:active,inactive'],
+            'is_default' => ['boolean'],
+            'count_early' => ['required', 'integer', 'min:0', 'max:999'],
+            'count_late' => ['required', 'integer', 'min:0', 'max:999'],
+        ];
+
+        $messages = [
+            'end_time.different' => 'The end time must be different from the start time.',
+        ];
+
+        // Add unique validation for name, excluding current shift on edit
+        if ($this->modalMode === 'edit' && $this->shift_id) {
+            $rules['name'][] = 'unique:shifts,name,'.$this->shift_id;
+        } else {
+            $rules['name'][] = 'unique:shifts,name';
+        }
+
+        $this->validate($rules, $messages);
+
+        try {
+            DB::transaction(function () {
+                if ($this->modalMode === 'edit' && $this->shift_id) {
+                    // Update existing shift
+                    $shift = shifts::findOrFail($this->shift_id);
+                    $shift->update([
+                        'name' => $this->name,
+                        'description' => $this->description,
+                        'start_time' => $this->start_time,
+                        'end_time' => $this->end_time,
+                        'status' => $this->status,
+                        'is_default' => (bool) $this->is_default,
+                        'count_early' => $this->count_early,
+                        'count_late' => $this->count_late,
+                    ]);
+
+                    session()->flash('success', 'Shift updated successfully!');
+                } else {
+                    // Create new shift
+                    $shift = shifts::create([
+                        'name' => $this->name,
+                        'description' => $this->description,
+                        'start_time' => $this->start_time,
+                        'end_time' => $this->end_time,
+                        'status' => $this->status,
+                        'is_default' => (bool) $this->is_default,
+                        'count_early' => $this->count_early,
+                        'count_late' => $this->count_late,
+                        'added_by' => Auth::user()->id,
+                    ]);
+
+                    session()->flash('success', 'Shift created successfully!');
+                }
+
+                // Only one shift may be the default at a time.
+                if ($this->is_default) {
+                    shifts::where('id', '!=', $shift->id)->update(['is_default' => false]);
+                }
+            });
+
+            $this->closeModal();
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred: '.$e->getMessage());
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            $shift = shifts::findOrFail($id);
+
+            // Check if shift is being used in rosters
+            $rosterCount = $shift->rosters()->count();
+
+            if ($rosterCount > 0) {
+                session()->flash('error', "Cannot delete shift. It is being used in {$rosterCount} roster(s).");
+
+                return;
+            }
+
+            $shift->delete();
+            session()->flash('success', 'Shift deleted successfully!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while deleting the shift.');
+        }
+    }
+
+    public function toggleStatus($id)
+    {
+        try {
+            $shift = shifts::findOrFail($id);
+            $shift->update([
+                'status' => $shift->status === 'active' ? 'inactive' : 'active',
+            ]);
+
+            session()->flash('success', 'Shift status updated successfully!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while updating the status.');
+        }
+    }
+
+    public function setDefault($id)
+    {
+        try {
+            DB::transaction(function () use ($id) {
+                shifts::where('is_default', true)->update(['is_default' => false]);
+                shifts::whereKey($id)->update(['is_default' => true]);
+            });
+
+            session()->flash('success', 'Default shift updated successfully!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while setting the default shift.');
+        }
+    }
+
+    public function resetFilters()
+    {
+        $this->reset(['search', 'statusFilter']);
+        $this->resetPage();
+    }
+
+    private function getShiftsQuery()
+    {
+        return shifts::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->when($this->statusFilter, function ($query) {
+                $query->where('status', $this->statusFilter);
+            })
+            ->orderBy($this->sortField, $this->sortDirection);
+    }
+
+    public function render()
+    {
+        $shifts = $this->getShiftsQuery()->paginate($this->perPage);
+
+        $summary = [
+            'total' => shifts::count(),
+            'active' => shifts::where('status', 'active')->count(),
+            'inactive' => shifts::where('status', 'inactive')->count(),
+        ];
+
+        return view('livewire.setup.shiftmngts', [
+            'shifttypes' => $shifts,
+            'summary' => $summary,
+        ]);
+    }
+}

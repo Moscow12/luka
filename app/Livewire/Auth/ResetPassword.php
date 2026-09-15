@@ -7,6 +7,7 @@ namespace App\Livewire\Auth;
 use App\Models\PasswordResetToken;
 use App\Models\TrustedDevice;
 use App\Models\User;
+use App\Models\workstations;
 use App\Services\DeviceFingerprinter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Spatie\Activitylog\Facades\CauserResolver;
 
 class ResetPassword extends Component
 {
@@ -41,8 +43,10 @@ class ResetPassword extends Component
 
     public function render(): View
     {
-        return view('livewire.auth.reset-password')
-            ->layout('components.layouts.guest');
+        return view('livewire.auth.reset-password', [
+            'workstation' => workstations::first(),
+            'appName' => config('app.name', 'Dasher'),
+        ])->layout('components.layouts.guest');
     }
 
     public function verifyToken(): void
@@ -93,7 +97,11 @@ class ResetPassword extends Component
             return null;
         }
 
-        // Update password
+        // Update password. The causer is set explicitly since the user isn't
+        // authenticated yet at this point in the reset flow (Auth::user() is null,
+        // which is what LogsActivity's auto-logging would otherwise use).
+        CauserResolver::setCauser($user);
+
         $user->update([
             'password' => Hash::make($this->password),
         ]);

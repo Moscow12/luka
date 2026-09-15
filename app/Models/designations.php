@@ -2,19 +2,29 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class designations extends Model
 {
+    use HasFactory, HasUuids;
     protected $table = 'designations';
     protected $fillable = [
         'name',
-        'description',
+        'code',
+        'status',
         'added_by',
     ];
 
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
+    }
+
+    // Relationship with employees
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'designation_id');
     }
 }

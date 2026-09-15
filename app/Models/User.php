@@ -49,6 +49,7 @@ class User extends Authenticatable
         'phone_number',
         'username',
         'password',
+        'is_super_admin',
         'provider_type',
         'reg_number',
         'qualification',
@@ -76,7 +77,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'dob' => 'date',
+            'is_super_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if the user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->is_super_admin === true;
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -84,6 +94,7 @@ class User extends Authenticatable
         return LogOptions::defaults()
             ->useLogName('user')
             ->logFillable()
+            ->logExcept(['password', 'remember_token'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

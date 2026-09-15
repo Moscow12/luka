@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    /*
+    | Shared-secret token guarding the third-party sync API endpoints
+    | (employees / leaves / assets). Requests must present this token via
+    | an Authorization: Bearer header, an X-Export-Token header, or a
+    | "token" field in the request body. If unset, the guarded endpoints
+    | fail closed (HTTP 503).
+    */
+    'api' => [
+        'sync_token' => env('EXPORT_API_TOKEN'),
+    ],
+
 ];
