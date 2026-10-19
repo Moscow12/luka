@@ -283,55 +283,115 @@
                 <div class="modal-content">
                     <div class="modal-header bg-info text-white">
                         <h5 class="modal-title">
-                            <i class="fa-solid fa-search me-2"></i>Select Stocked Item
+                            @if($showAddProductForm)
+                                <i class="fa-solid fa-box me-2"></i>Add New Product
+                            @else
+                                <i class="fa-solid fa-search me-2"></i>Select Stocked Item
+                            @endif
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="$set('showItemSelector', false)"></button>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeItemSelector"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Search and Filter -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-8">
-                                <input type="text" class="form-control" wire:model.live="itemSearch"
-                                       placeholder="Search items...">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select" wire:model.live="filterCategory">
-                                    <option value="">All Categories</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Items List -->
-                        <div class="list-group" style="max-height: 400px; overflow-y: auto;">
-                            @forelse($availableItems as $item)
-                                @php
-                                    $alreadySelected = collect($selectedItems)->firstWhere('item_id', $item->id);
-                                @endphp
-                                <button type="button"
-                                        class="list-group-item list-group-item-action {{ $alreadySelected ? 'disabled' : '' }}"
-                                        wire:click="addItem('{{ $item->id }}', '{{ $item->name }}', '{{ $item->product_category_id }}', '{{ $item->category->name ?? 'Uncategorized' }}', '{{ $item->unit }}')"
-                                        {{ $alreadySelected ? 'disabled' : '' }}>
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">{{ $item->name }}</h6>
-                                        @if($alreadySelected)
-                                            <span class="badge bg-success">Added</span>
-                                        @endif
-                                    </div>
-                                    <small class="text-muted">
-                                        Category: {{ $item->category->name ?? 'Uncategorized' }}
-                                        @if($item->unit) &middot; Unit: {{ $item->unit }} @endif
-                                    </small>
-                                </button>
-                            @empty
-                                <div class="text-center py-4 text-muted">
-                                    No stocked items found matching your criteria.
+                        @if(! $showAddProductForm)
+                            <!-- Search and Filter -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" wire:model.live="itemSearch"
+                                           placeholder="Search items...">
                                 </div>
-                            @endforelse
-                        </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" wire:model.live="filterCategory">
+                                        <option value="">All Categories</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Items List -->
+                            <div class="list-group" style="max-height: 400px; overflow-y: auto;">
+                                @forelse($availableItems as $item)
+                                    @php
+                                        $alreadySelected = collect($selectedItems)->firstWhere('item_id', $item->id);
+                                    @endphp
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action {{ $alreadySelected ? 'disabled' : '' }}"
+                                            wire:click="addItem('{{ $item->id }}', '{{ $item->name }}', '{{ $item->product_category_id }}', '{{ $item->category->name ?? 'Uncategorized' }}', '{{ $item->unit }}')"
+                                            {{ $alreadySelected ? 'disabled' : '' }}>
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ $item->name }}</h6>
+                                            @if($alreadySelected)
+                                                <span class="badge bg-success">Added</span>
+                                            @endif
+                                        </div>
+                                        <small class="text-muted">
+                                            Category: {{ $item->category->name ?? 'Uncategorized' }}
+                                            @if($item->unit) &middot; Unit: {{ $item->unit }} @endif
+                                        </small>
+                                    </button>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-box-open fa-2x mb-3 d-block"></i>
+                                        No stocked items found matching your criteria.
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-sm btn-primary" wire:click="openAddProductForm">
+                                                <i class="fa-solid fa-plus me-1"></i>Add "{{ $itemSearch ?: 'New' }}" as a new product
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+
+                            @if($availableItems->count() > 0)
+                                <div class="text-center mt-3">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openAddProductForm">
+                                        <i class="fa-solid fa-plus me-1"></i>Can't find it? Add a new product
+                                    </button>
+                                </div>
+                            @endif
+                        @else
+                            <!-- Quick Add Product Form -->
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <p class="text-muted mb-0">Item not found in stock. Fill in the details below to create it.</p>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="closeAddProductForm">
+                                    <i class="fa-solid fa-arrow-left me-1"></i>Back to search
+                                </button>
+                            </div>
+
+                            <form wire:submit.prevent="saveNewProduct">
+                                <div class="row">
+                                    <x-forms.input type="text" name="new_product_name" label="Item Name"
+                                        colMd="6" required wire:model="new_product_name" />
+
+                                    <x-forms.input type="select" name="new_product_category_id" label="Category"
+                                        colMd="6" required wire:model="new_product_category_id"
+                                        :options="$categories->pluck('name', 'id')->toArray()" />
+
+                                    <x-forms.input type="text" name="new_product_unit" label="Unit of Measure"
+                                        colMd="6" required placeholder="e.g. pcs, box, litre"
+                                        wire:model="new_product_unit" />
+
+                                    <x-forms.input type="text" name="new_product_code" label="Code (optional)"
+                                        colMd="6" wire:model="new_product_code" />
+
+                                    <x-forms.input type="number" name="new_product_reorder_level" label="Reorder Level"
+                                        colMd="6" min="0" wire:model="new_product_reorder_level" />
+
+                                    <x-forms.input type="textarea" name="new_product_description" label="Description (optional)"
+                                        colMd="12" rows="2" wire:model="new_product_description" />
+                                </div>
+                            </form>
+                        @endif
                     </div>
+                    @if($showAddProductForm)
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeAddProductForm">Cancel</button>
+                            <button type="button" class="btn btn-primary" wire:click="saveNewProduct">
+                                <i class="fa-solid fa-save me-2"></i>Save & Add to Order
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
