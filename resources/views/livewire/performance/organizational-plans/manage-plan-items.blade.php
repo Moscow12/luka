@@ -6,7 +6,7 @@
         ['label' => 'Organizational Plans', 'url' => route('performance.org.plans')],
         ['label' => $plan->plan_name, 'url' => '#'],
     ]">
-        @if ($plan->status === 'draft')
+        @if ($this->canManageItems())
             <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createItem">
                 <i class="fa-solid fa-plus"></i> ADD ITEM
             </button>
@@ -168,7 +168,7 @@
                                     <i class="fa-solid fa-clipboard-list text-muted mb-3" style="font-size: 48px;"></i>
                                     <h5 class="text-muted">No Items Found</h5>
                                     <p class="text-muted">Start by adding items to this organizational plan</p>
-                                    @if ($plan->status === 'draft')
+                                    @if ($this->canManageItems())
                                         <button class="btn btn-primary mt-2" wire:click="createItem">
                                             <i class="fa-solid fa-plus me-1"></i> Add First Item
                                         </button>
