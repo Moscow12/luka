@@ -34,6 +34,18 @@
                         @case('loan')
                             <i class="fa-solid fa-hand-holding-dollar"></i>
                             @break
+                        @case('ticket')
+                            <i class="fa-solid fa-ticket"></i>
+                            @break
+                        @case('alert-triangle')
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            @break
+                        @case('circle-check')
+                            <i class="fa-solid fa-circle-check"></i>
+                            @break
+                        @case('message')
+                            <i class="fa-regular fa-comment-dots"></i>
+                            @break
                         @default
                             <i class="fa-solid fa-bell"></i>
                     @endswitch

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Common\Concerns;
 
+use App\Enums\TicketStatus;
 use App\Models\approvalleveltodocument;
 use App\Models\approvalleveltoemployee;
 use App\Models\chopactivities;
@@ -9,8 +10,12 @@ use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\leaverequestapproval;
 use App\Models\payrolls;
+use App\Models\Ticket;
+use App\Models\TicketMessage;
+use App\Models\TicketParticipant;
 use App\Models\UserNotificationDismissal;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 trait BuildsNotifications
 {
@@ -142,7 +147,70 @@ trait BuildsNotifications
             }
         }
 
+        // Tickets: new assignments, overdue work, resolutions awaiting my verification, unread replies
+        foreach ($this->buildTicketNotifications($user, $employee, $dismissedKeys, $perGroup) as $notification) {
+            $notifications[] = $notification;
+        }
+
         return $notifications;
+    }
+
+    protected function buildTicketNotifications($user, ?Employee $employee, array $dismissedKeys, int $perGroup): array
+    {
+        $items = [];
+        $push = function (Ticket $ticket, string $event, string $type, string $title, string $icon, string $color, bool $dismissible, $time) use (&$items, $dismissedKeys) {
+            $key = 'ticket:'.$ticket->id.':'.$event;
+            if ($dismissible && in_array($key, $dismissedKeys, true)) {
+                return;
+            }
+            $items[] = [
+                'key' => $key,
+                'type' => $type,
+                'title' => $ticket->ticket_number.' · '.Str::limit($ticket->subject, 60).$title,
+                'time' => $time->diffForHumans(),
+                'icon' => $icon,
+                'color' => $color,
+                'url' => route('tickets.view', $ticket),
+                'dismissible' => $dismissible,
+            ];
+        };
+
+        if ($employee) {
+            Ticket::where('assignee_employee_id', $employee->id)
+                ->where('status', TicketStatus::Assigned->value)
+                ->latest('updated_at')->take($perGroup)->get()
+                ->each(fn (Ticket $t) => $push($t, 'assigned', 'Ticket Assigned', ' — awaiting your acceptance', 'ticket', 'primary', false, $t->updated_at));
+
+            Ticket::where('assignee_employee_id', $employee->id)
+                ->overdue()
+                ->orderBy('due_date')->take($perGroup)->get()
+                ->each(fn (Ticket $t) => $push($t, 'overdue:'.$t->due_date->toDateString(), 'Ticket Overdue', ' — was due '.$t->due_date->format('d M'), 'alert-triangle', 'danger', true, $t->due_date));
+        }
+
+        Ticket::where('created_by', $user->id)
+            ->where('status', TicketStatus::Resolved->value)
+            ->latest('resolved_at')->take($perGroup)->get()
+            ->each(fn (Ticket $t) => $push($t, 'resolved', 'Ticket Resolved', ' — please verify and close', 'circle-check', 'success', false, $t->resolved_at));
+
+        // Unread public replies on tickets I take part in
+        TicketParticipant::where('user_id', $user->id)
+            ->whereHas('ticket', fn ($q) => $q->whereNotIn('status', [TicketStatus::Closed->value, TicketStatus::Cancelled->value]))
+            ->with('ticket')
+            ->get()
+            ->each(function (TicketParticipant $participant) use ($user, $push) {
+                $latest = TicketMessage::where('ticket_id', $participant->ticket_id)
+                    ->where('type', 'public')
+                    ->where('user_id', '!=', $user->id)
+                    ->when($participant->last_read_at, fn ($q) => $q->where('created_at', '>', $participant->last_read_at))
+                    ->latest()
+                    ->first(['id', 'created_at']);
+
+                if ($latest) {
+                    $push($participant->ticket, 'message:'.$latest->id, 'Ticket Reply', ' — new message', 'message', 'info', true, $latest->created_at);
+                }
+            });
+
+        return array_slice($items, 0, $perGroup * 3);
     }
 
     protected function resolveNextLeaveApprovalLevel($leave)

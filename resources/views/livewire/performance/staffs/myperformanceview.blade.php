@@ -281,6 +281,23 @@
             </div>
         </div>
 
+        {{-- Ticket Scorecard --}}
+        @if($ticketScorecard && $ticketScorecard['assigned'] > 0)
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fa-solid fa-ticket me-2 text-primary"></i>Ticket Performance</h5>
+                            <a href="{{ route('tickets.assigned') }}" class="btn btn-sm btn-outline-primary">My assigned tickets</a>
+                        </div>
+                        <div class="card-body">
+                            @include('livewire.tickets.partials.scorecard-summary', ['card' => $ticketScorecard])
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Duties & Attendance Row --}}
         <div class="row mb-4">
             {{-- Assigned Duties Overview --}}

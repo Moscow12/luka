@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TicketAttachmentController;
 use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Paymentreports;
 use App\Livewire\Acc\Payroll\Payrollgeneration;
@@ -62,7 +63,12 @@ use App\Livewire\Procurement\Orders;
 use App\Livewire\Procurement\PurchaseRequisitions;
 use App\Livewire\Setup\Approvalconfigurations;
 use App\Livewire\Setup\Location\Index;
+use App\Livewire\Setup\TicketCategories;
 use App\Livewire\StorageAndSupply\PhysicalCount;
+use App\Livewire\Tickets\CreateTicket;
+use App\Livewire\Tickets\TicketDashboard;
+use App\Livewire\Tickets\TicketList;
+use App\Livewire\Tickets\TicketView;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', App\Livewire\LandingPage::class)->name('dashboard')->middleware('auth');
@@ -213,6 +219,19 @@ Route::prefix('procurement')->middleware('auth')->group(function () {
     Route::get('orders', Orders::class)->name('procurement.orders');
     Route::get('orders/approve', ApproveOrders::class)->name('procurement.orders.approve');
     Route::get('requisitions', PurchaseRequisitions::class)->name('procurement.requisitions');
+});
+
+Route::prefix('tickets')->middleware('auth')->group(function () {
+    // Ticket & task management
+    Route::get('/', TicketList::class)->defaults('scope', 'mine')->name('tickets.mine');
+    Route::get('/assigned', TicketList::class)->defaults('scope', 'assigned')->name('tickets.assigned');
+    Route::get('/department', TicketList::class)->defaults('scope', 'department')->name('tickets.department');
+    Route::get('/all', TicketList::class)->defaults('scope', 'all')->name('tickets.all');
+    Route::get('/create', CreateTicket::class)->name('tickets.create');
+    Route::get('/analytics', TicketDashboard::class)->name('tickets.analytics');
+    Route::get('/categories', TicketCategories::class)->name('tickets.categories');
+    Route::get('/attachments/{attachment}', TicketAttachmentController::class)->name('tickets.attachment');
+    Route::get('/{ticket}', TicketView::class)->name('tickets.view');
 });
 
 Route::prefix('performance')->middleware('auth')->group(function () {

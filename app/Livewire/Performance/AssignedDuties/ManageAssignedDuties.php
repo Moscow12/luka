@@ -4,6 +4,7 @@ namespace App\Livewire\Performance\AssignedDuties;
 
 use App\Models\Employee;
 use App\Models\EmployeeAssignedDuty;
+use App\Services\Tickets\TicketMetricsService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -327,9 +328,17 @@ class ManageAssignedDuties extends Component
             ->when($this->employeeTaskFilterDateFrom, fn ($q) => $q->whereDate('start_date', '>=', $this->employeeTaskFilterDateFrom))
             ->when($this->employeeTaskFilterDateTo, fn ($q) => $q->whereDate('start_date', '<=', $this->employeeTaskFilterDateTo))
             ->with('reviewedBy')
+            ->withCount('tickets')
             ->orderByRaw("FIELD(priority, 'urgent', 'high', 'medium', 'low')")
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    public function getViewingEmployeeTicketScorecardProperty()
+    {
+        $employee = $this->viewingEmployee;
+
+        return $employee ? app(TicketMetricsService::class)->scorecardForEmployee($employee) : null;
     }
 
     public function getViewingEmployeeProperty()

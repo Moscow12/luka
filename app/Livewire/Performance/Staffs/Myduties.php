@@ -79,7 +79,7 @@ class Myduties extends Component
     {
         $this->selectedDuty = EmployeeAssignedDuty::where('id', $dutyId)
             ->where('employee_id', $this->employee->id)
-            ->with(['assignedBy', 'reviewedBy', 'storeOrder.items.item', 'storeOrder.department'])
+            ->with(['assignedBy', 'reviewedBy', 'storeOrder.items.item', 'storeOrder.department', 'tickets' => fn ($q) => $q->latest()])
             ->firstOrFail();
 
         $this->showDetailModal = true;
@@ -162,6 +162,13 @@ class Myduties extends Component
             ->with(['storeOrder.items.item'])
             ->firstOrFail();
 
+        if ($this->selectedDuty->tickets()->exists()) {
+            session()->flash('error', 'Progress for this duty is calculated automatically from its linked tickets.');
+            $this->selectedDuty = null;
+
+            return;
+        }
+
         $this->actual_achievement = $this->selectedDuty->actual_achievement;
         $this->achievement_notes = $this->selectedDuty->achievement_notes;
         $this->update_status = $this->selectedDuty->status;
@@ -193,6 +200,13 @@ class Myduties extends Component
 
         if ($duty->store_order_id) {
             $this->saveItemRemarks($duty);
+
+            return;
+        }
+
+        if ($duty->tickets()->exists()) {
+            session()->flash('error', 'Progress for this duty is calculated automatically from its linked tickets.');
+            $this->closeUpdateModal();
 
             return;
         }
@@ -288,7 +302,8 @@ class Myduties extends Component
         if ($this->employee) {
             $query = EmployeeAssignedDuty::where('employee_id', $this->employee->id)
                 ->where('is_active', true)
-                ->with(['assignedBy']);
+                ->with(['assignedBy'])
+                ->withCount('tickets');
 
             if ($this->filterStatus) {
                 $query->where('status', $this->filterStatus);
