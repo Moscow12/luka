@@ -35,6 +35,31 @@
     $assetRoutes = ['assets.index', 'assets.reports', 'assets.*'];
     $procurementRoutes = ['procurement.orders', 'procurement.*', 'supply.physical.count', 'supply.*'];
     $auditRoutes = ['audit-logs'];
+    $ticketRoutes = ['tickets.*'];
+    $chatRoutes = ['chat.*'];
+    $chatUnread = $user ? app(\App\Services\Chat\ChatInbox::class)->totalUnread($user) : 0;
+
+    // Tickets: badge = my unaccepted + overdue assignments
+    $ticketBadge = 0;
+    $ticketQueueBadge = 0;
+    $canSuperviseTickets = false;
+    if ($user) {
+        $ticketEmployee = \App\Models\Employee::where('user_id', $user->id)->first();
+        if ($ticketEmployee) {
+            $ticketBadge = \App\Models\Ticket::where('assignee_employee_id', $ticketEmployee->id)
+                ->where(fn ($q) => $q->where('status', 'assigned')->orWhere(fn ($o) => $o->overdue()))
+                ->count();
+        }
+        $supervisedTicketDepartments = \App\Services\Tickets\TicketAccess::supervisedDepartmentIds($user);
+        $canSuperviseTickets = \App\Services\Tickets\TicketAccess::isAdmin($user) || $supervisedTicketDepartments !== [];
+
+        // Unassigned tickets waiting in the queue of departments I supervise
+        $ticketQueueBadge = $supervisedTicketDepartments === [] ? 0 : \App\Models\Ticket::whereIn('department_id', $supervisedTicketDepartments)
+            ->where('status', 'open')
+            ->whereNull('assignee_employee_id')
+            ->count();
+        $ticketBadge += $ticketQueueBadge;
+    }
 
     // Pending store orders count, only computed for users who can approve them
     $canApproveProcurement = $isSuperAdmin || ($user?->can('approve-procurement') ?? false);
@@ -227,6 +252,83 @@
             </span>
             <span class="text">My Contract</span>
         </a>
+    </li>
+    @endif
+
+    <!-- Workspace Chat -->
+    @if($user)
+    <li class="nav-item dropdown {{ request()->routeIs($chatRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($chatRoutes) ? 'active' : '' }}" href="{{ route('chat.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($chatRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-regular fa-comments"></i>
+            </span>
+            <span class="text">Chat</span>
+            @if($chatUnread > 0)
+                <span class="badge bg-primary rounded-pill ms-auto">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
+            @endif
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($chatRoutes) ? 'show' : '' }}">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('chat.index') ? 'active' : '' }}" href="{{ route('chat.index') }}"><i class="fa-regular fa-comments me-2"></i>Workspace</a>
+            </li>
+            @if($isSuperAdmin || $user->can('view-chat-analytics'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('chat.analytics') ? 'active' : '' }}" href="{{ route('chat.analytics') }}"><i class="fa-solid fa-chart-line me-2"></i>Analytics</a>
+            </li>
+            @endif
+        </ul>
+    </li>
+    @endif
+
+    <!-- Tickets & Tasks -->
+    @if($user)
+    <li class="nav-item dropdown {{ request()->routeIs($ticketRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($ticketRoutes) ? 'active' : '' }}" href="{{ route('tickets.mine') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($ticketRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-solid fa-ticket"></i>
+            </span>
+            <span class="text">Tickets & Tasks</span>
+            @if($ticketBadge > 0)
+                <span class="badge bg-danger rounded-pill ms-auto">{{ $ticketBadge }}</span>
+            @endif
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($ticketRoutes) ? 'show' : '' }}">
+            @if($isSuperAdmin || $user->can('create-tickets'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.create') ? 'active' : '' }}" href="{{ route('tickets.create') }}"><i class="fa-solid fa-plus me-2"></i>New Ticket</a>
+            </li>
+            @endif
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.mine') ? 'active' : '' }}" href="{{ route('tickets.mine') }}"><i class="fa-solid fa-inbox me-2"></i>My Tickets</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.assigned') ? 'active' : '' }}" href="{{ route('tickets.assigned') }}"><i class="fa-solid fa-user-check me-2"></i>Assigned to Me
+                    @if($ticketBadge - $ticketQueueBadge > 0)<span class="badge bg-danger rounded-pill ms-1">{{ $ticketBadge - $ticketQueueBadge }}</span>@endif
+                </a>
+            </li>
+            @if($canSuperviseTickets)
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.department') ? 'active' : '' }}" href="{{ route('tickets.department') }}?bucket=unassigned"><i class="fa-solid fa-sitemap me-2"></i>Department Tickets
+                    @if($ticketQueueBadge > 0)<span class="badge bg-warning text-dark rounded-pill ms-1">{{ $ticketQueueBadge }}</span>@endif
+                </a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user->can('view-all-tickets'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.all') ? 'active' : '' }}" href="{{ route('tickets.all') }}"><i class="fa-solid fa-layer-group me-2"></i>All Tickets</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user->can('view-ticket-reports'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.analytics') ? 'active' : '' }}" href="{{ route('tickets.analytics') }}"><i class="fa-solid fa-chart-pie me-2"></i>Analytics</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user->can('manage-ticket-categories'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tickets.categories') ? 'active' : '' }}" href="{{ route('tickets.categories') }}"><i class="fa-solid fa-tags me-2"></i>Categories</a>
+            </li>
+            @endif
+        </ul>
     </li>
     @endif
 

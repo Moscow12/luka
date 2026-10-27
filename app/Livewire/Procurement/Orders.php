@@ -44,6 +44,21 @@ class Orders extends Component
 
     public $filterCategory = '';
 
+    // Quick-add product (when searched item doesn't exist)
+    public $showAddProductForm = false;
+
+    public $new_product_name = '';
+
+    public $new_product_category_id = '';
+
+    public $new_product_unit = '';
+
+    public $new_product_code = '';
+
+    public $new_product_description = '';
+
+    public $new_product_reorder_level = 0;
+
     // Order list filters
     public $filterDepartment = '';
 
@@ -119,6 +134,77 @@ class Orders extends Component
     {
         unset($this->selectedItems[$index]);
         $this->selectedItems = array_values($this->selectedItems);
+    }
+
+    public function openAddProductForm()
+    {
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->new_product_name = $this->itemSearch;
+        $this->new_product_category_id = $this->filterCategory;
+        $this->new_product_unit = '';
+        $this->new_product_code = '';
+        $this->new_product_description = '';
+        $this->new_product_reorder_level = 0;
+        $this->showAddProductForm = true;
+    }
+
+    public function closeAddProductForm()
+    {
+        $this->showAddProductForm = false;
+        $this->reset([
+            'new_product_name', 'new_product_category_id', 'new_product_unit',
+            'new_product_code', 'new_product_description', 'new_product_reorder_level',
+        ]);
+        $this->resetErrorBag();
+        $this->resetValidation();
+    }
+
+    public function closeItemSelector()
+    {
+        $this->showItemSelector = false;
+        $this->itemSearch = '';
+        $this->filterCategory = '';
+        $this->closeAddProductForm();
+    }
+
+    public function saveNewProduct()
+    {
+        $this->validate([
+            'new_product_name' => ['required', 'string', 'max:255'],
+            'new_product_category_id' => ['required', 'exists:productcategories,id'],
+            'new_product_unit' => ['required', 'string', 'max:255'],
+            'new_product_code' => ['nullable', 'string', 'max:100', 'unique:products,code'],
+            'new_product_description' => ['nullable', 'string'],
+            'new_product_reorder_level' => ['nullable', 'integer', 'min:0'],
+        ], [], [
+            'new_product_name' => 'item name',
+            'new_product_category_id' => 'category',
+            'new_product_unit' => 'unit',
+            'new_product_code' => 'code',
+            'new_product_reorder_level' => 'reorder level',
+        ]);
+
+        $product = Product::create([
+            'name' => $this->new_product_name,
+            'description' => $this->new_product_description ?: null,
+            'code' => $this->new_product_code ?: null,
+            'unit' => $this->new_product_unit,
+            'reorder_level' => $this->new_product_reorder_level ?: 0,
+            'product_category_id' => $this->new_product_category_id,
+            'status' => 'active',
+            'track_stock' => true,
+            'type' => 'good',
+            'added_by' => Auth::id(),
+        ]);
+
+        $category = ProductCategory::find($product->product_category_id);
+
+        $this->addItem($product->id, $product->name, $product->product_category_id, $category->name ?? 'Uncategorized', $product->unit);
+
+        $this->closeAddProductForm();
+        $this->itemSearch = '';
+        session()->flash('success', 'New product added and included in the order.');
     }
 
     protected function currentDepartmentId()

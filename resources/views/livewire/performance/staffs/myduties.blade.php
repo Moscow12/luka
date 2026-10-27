@@ -243,7 +243,11 @@
                                                 <button class="btn btn-outline-primary" wire:click="viewDuty('{{ $duty->id }}')" title="View Details">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </button>
-                                                @if($duty->status !== 'completed')
+                                                @if($duty->tickets_count)
+                                                    <span class="btn btn-outline-secondary disabled" title="Progress comes from {{ $duty->tickets_count }} linked ticket(s)">
+                                                        <i class="fa-solid fa-ticket"></i> {{ $duty->tickets_count }}
+                                                    </span>
+                                                @elseif($duty->status !== 'completed')
                                                     <button class="btn btn-outline-success" wire:click="openUpdateModal('{{ $duty->id }}')" title="Update Progress">
                                                         <i class="fa-solid fa-edit"></i>
                                                     </button>
@@ -391,6 +395,30 @@
                                     </div>
                                 </div>
                             </div>
+
+                            @if($selectedDuty->tickets->isNotEmpty())
+                                <div class="card mt-3 border-info">
+                                    <div class="card-header bg-info-subtle">
+                                        <h6 class="mb-0"><i class="fa-solid fa-ticket me-2"></i>Linked tickets ({{ $selectedDuty->tickets->count() }})</h6>
+                                        <small class="text-muted">This duty's achievement is calculated from these tickets when they are closed.</small>
+                                    </div>
+                                    <ul class="list-group list-group-flush">
+                                        @foreach($selectedDuty->tickets as $linkedTicket)
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <a href="{{ route('tickets.view', $linkedTicket) }}" class="text-decoration-none">
+                                                    <strong>{{ $linkedTicket->ticket_number }}</strong> · {{ Str::limit($linkedTicket->subject, 50) }}
+                                                </a>
+                                                <span>
+                                                    @if($linkedTicket->quality_rating)
+                                                        <span class="text-warning small me-1"><i class="fa-solid fa-star"></i> {{ $linkedTicket->quality_rating }}</span>
+                                                    @endif
+                                                    <span class="badge {{ $linkedTicket->status->badgeClass() }}">{{ $linkedTicket->status->label() }}</span>
+                                                </span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
 
                             @if($selectedDuty->store_order_id && $selectedDuty->storeOrder)
                                 <div class="card mt-3 border-primary">

@@ -1,4 +1,4 @@
-<a class="position-relative btn-icon btn-ghost btn rounded-circle" data-bs-toggle="offcanvas" href="#offcanvasNotification" role="button" aria-controls="offcanvasNotification">
+<a wire:poll.30s="loadPendingApprovals" class="position-relative btn-icon btn-ghost btn rounded-circle" data-bs-toggle="offcanvas" href="#offcanvasNotification" role="button" aria-controls="offcanvasNotification">
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"
@@ -18,7 +18,7 @@
     @if($notificationCount > 0)
     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger mt-2 ms-n2">
         {{ $notificationCount }}
-        <span class="visually-hidden">pending approvals</span>
+        <span class="visually-hidden">notifications</span>
     </span>
     @endif
 </a>

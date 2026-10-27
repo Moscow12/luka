@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmployeeAssignedDuty extends Model
@@ -64,6 +65,23 @@ class EmployeeAssignedDuty extends Model
     public function storeOrder(): BelongsTo
     {
         return $this->belongsTo(StoreOrder::class);
+    }
+
+    /**
+     * Duties a ticket can be linked to: active and not yet reviewed. A completed duty stays
+     * linkable until its manager reviews it, so new tickets reopen it to in_progress.
+     */
+    public function scopeLinkableTo($query, string $employeeId)
+    {
+        return $query->where('employee_id', $employeeId)
+            ->where('is_active', true)
+            ->whereIn('status', ['assigned', 'in_progress', 'completed'])
+            ->whereNull('reviewed_at');
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'employee_assigned_duty_id');
     }
 
     public function assignedBy(): BelongsTo

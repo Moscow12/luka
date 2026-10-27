@@ -4,11 +4,12 @@ namespace App\Livewire\Performance\Staffs;
 
 use App\Models\Employee;
 use App\Models\EmployeeAssignedDuty;
+use App\Models\employeeattendances;
 use App\Models\EmployeePlan;
 use App\Models\EmployeePlanImplementation;
-use App\Models\employeeattendances;
 use App\Models\fpusers;
 use App\Models\PerformanceEvaluation;
+use App\Services\Tickets\TicketMetricsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -16,6 +17,7 @@ use Livewire\Component;
 class Myperformanceview extends Component
 {
     public $employee;
+
     public $hasEmployeeRecord = false;
 
     // Period filter
@@ -34,7 +36,7 @@ class Myperformanceview extends Component
 
     public function getPlanningStats()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return [
                 'total_plans' => 0,
                 'active_plans' => 0,
@@ -74,7 +76,7 @@ class Myperformanceview extends Component
 
     public function getImplementationStats()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return [
                 'total_implementations' => 0,
                 'this_month' => 0,
@@ -118,7 +120,7 @@ class Myperformanceview extends Component
 
     public function getActivePlansWithProgress()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return collect();
         }
 
@@ -155,7 +157,7 @@ class Myperformanceview extends Component
 
     public function getAssignedDutiesStats()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return [
                 'total' => 0,
                 'assigned' => 0,
@@ -197,7 +199,7 @@ class Myperformanceview extends Component
 
     public function getAttendanceStats()
     {
-        if (!$this->employee || !$this->employee->fpid) {
+        if (! $this->employee || ! $this->employee->fpid) {
             return [
                 'total_days' => 0,
                 'present_days' => 0,
@@ -212,7 +214,7 @@ class Myperformanceview extends Component
         // Get FP user linked to this employee
         $fpUser = fpusers::where('fpdevice_id', $this->employee->fpid)->first();
 
-        if (!$fpUser) {
+        if (! $fpUser) {
             return [
                 'total_days' => 0,
                 'present_days' => 0,
@@ -233,7 +235,7 @@ class Myperformanceview extends Component
         $workingDays = 0;
         $currentDate = $startOfMonth->copy();
         while ($currentDate <= $today && $currentDate <= $endOfMonth) {
-            if (!$currentDate->isWeekend()) {
+            if (! $currentDate->isWeekend()) {
                 $workingDays++;
             }
             $currentDate->addDay();
@@ -258,8 +260,10 @@ class Myperformanceview extends Component
         $lateDays = $attendanceRecords->filter(function ($record) {
             if ($record->clock_in) {
                 $clockIn = Carbon::parse($record->clock_in);
+
                 return $clockIn->format('H:i') > '08:30';
             }
+
             return false;
         })->pluck('clockdate')->unique()->count();
 
@@ -278,7 +282,7 @@ class Myperformanceview extends Component
 
     public function getEvaluationStats()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return [
                 'total_evaluations' => 0,
                 'approved' => 0,
@@ -313,7 +317,7 @@ class Myperformanceview extends Component
 
     public function getPerformanceRanking()
     {
-        if (!$this->employee) {
+        if (! $this->employee) {
             return [
                 'rank' => 0,
                 'total_employees' => 0,
@@ -348,6 +352,7 @@ class Myperformanceview extends Component
                 }
 
                 $emp->performance_score = $itemCount > 0 ? round($totalProgress / $itemCount, 1) : 0;
+
                 return $emp;
             })
             ->sortByDesc('performance_score')
@@ -375,6 +380,7 @@ class Myperformanceview extends Component
             'implementationStats' => $this->getImplementationStats(),
             'activePlans' => $this->getActivePlansWithProgress(),
             'dutiesStats' => $this->getAssignedDutiesStats(),
+            'ticketScorecard' => $this->employee ? app(TicketMetricsService::class)->scorecardForEmployee($this->employee) : null,
             'attendanceStats' => $this->getAttendanceStats(),
             'evaluationStats' => $this->getEvaluationStats(),
             'ranking' => $this->getPerformanceRanking(),

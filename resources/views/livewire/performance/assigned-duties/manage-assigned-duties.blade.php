@@ -306,6 +306,10 @@
                                 wire:model.live="employeeTaskFilterDateTo" />
                         </div>
 
+                        @if ($this->viewingEmployeeTicketScorecard && $this->viewingEmployeeTicketScorecard['assigned'] > 0)
+                            @include('livewire.tickets.partials.scorecard-summary', ['card' => $this->viewingEmployeeTicketScorecard])
+                        @endif
+
                         @php
                             $priorityColors = [
                                 'low' => 'secondary',
@@ -337,6 +341,11 @@
                                                 <span class="badge bg-{{ $statusColors[$task->status] ?? 'secondary' }}">
                                                     {{ ucfirst(str_replace('_', ' ', $task->status)) }}
                                                 </span>
+                                                @if ($task->tickets_count)
+                                                    <span class="badge bg-light text-dark border" title="Progress calculated from linked tickets">
+                                                        <i class="fa-solid fa-ticket me-1"></i>{{ $task->tickets_count }} ticket(s)
+                                                    </span>
+                                                @endif
                                                 @if ($task->start_date || $task->end_date)
                                                     <small class="text-muted">
                                                         @if ($task->start_date){{ $task->start_date->format('d M Y') }}@endif

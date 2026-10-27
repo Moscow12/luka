@@ -43,8 +43,19 @@ class ManagePlanItems extends Component
         $this->plan = OrganizationalPlan::findOrFail($planId);
     }
 
+    public function canManageItems(): bool
+    {
+        return in_array($this->plan->status, ['draft', 'active']);
+    }
+
     public function createItem()
     {
+        if (! $this->canManageItems()) {
+            session()->flash('error', 'Items can only be added to draft or active plans.');
+
+            return;
+        }
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
@@ -118,6 +129,12 @@ class ManagePlanItems extends Component
             'itemForm.weight.required' => 'Please enter the weight.',
             'itemForm.weight.max' => 'Weight cannot exceed 100%.',
         ];
+
+        if (! $this->canManageItems()) {
+            session()->flash('error', 'Items can only be changed on draft or active plans.');
+
+            return;
+        }
 
         $this->validate($rules, $messages);
 

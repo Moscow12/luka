@@ -68,6 +68,17 @@ class PermissionSeeder extends Seeder
                 ['name' => 'assign-duties', 'description' => 'Assign duties and KPIs to employees'],
                 ['name' => 'set-kpis', 'description' => 'Set and manage job title KPIs'],
             ],
+            'Ticket Management' => [
+                ['name' => 'create-tickets', 'description' => 'Create tickets and assign tasks'],
+                ['name' => 'manage-department-tickets', 'description' => 'Supervise and delegate tickets of own department'],
+                ['name' => 'view-all-tickets', 'description' => 'View and manage all tickets organisation-wide'],
+                ['name' => 'manage-ticket-categories', 'description' => 'Manage ticket categories and SLAs'],
+                ['name' => 'view-ticket-reports', 'description' => 'View ticket analytics and staff scorecards'],
+            ],
+            'Chat' => [
+                ['name' => 'view-chat-analytics', 'description' => 'View workspace chat analytics'],
+                ['name' => 'manage-chat', 'description' => 'Moderate and archive any chat room'],
+            ],
             'Contract Management' => [
                 ['name' => 'view-contracts', 'description' => 'View institutional contracts'],
                 ['name' => 'manage-contracts', 'description' => 'Create, edit, and manage contracts'],

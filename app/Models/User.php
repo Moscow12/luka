@@ -75,6 +75,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime', // written via query builder only, so it never hits the activity log
             'password' => 'hashed',
             'dob' => 'date',
             'is_super_admin' => 'boolean',
