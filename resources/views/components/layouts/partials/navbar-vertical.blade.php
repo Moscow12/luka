@@ -36,6 +36,8 @@
     $procurementRoutes = ['procurement.orders', 'procurement.*', 'supply.physical.count', 'supply.*'];
     $auditRoutes = ['audit-logs'];
     $ticketRoutes = ['tickets.*'];
+    $chatRoutes = ['chat.*'];
+    $chatUnread = $user ? app(\App\Services\Chat\ChatInbox::class)->totalUnread($user) : 0;
 
     // Tickets: badge = my unaccepted + overdue assignments
     $ticketBadge = 0;
@@ -250,6 +252,31 @@
             </span>
             <span class="text">My Contract</span>
         </a>
+    </li>
+    @endif
+
+    <!-- Workspace Chat -->
+    @if($user)
+    <li class="nav-item dropdown {{ request()->routeIs($chatRoutes) ? 'show' : '' }}">
+        <a class="nav-link dropdown-toggle {{ request()->routeIs($chatRoutes) ? 'active' : '' }}" href="{{ route('chat.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($chatRoutes) ? 'true' : 'false' }}">
+            <span class="nav-icon">
+                <i class="fa-regular fa-comments"></i>
+            </span>
+            <span class="text">Chat</span>
+            @if($chatUnread > 0)
+                <span class="badge bg-primary rounded-pill ms-auto">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
+            @endif
+        </a>
+        <ul class="dropdown-menu flex-column {{ request()->routeIs($chatRoutes) ? 'show' : '' }}">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('chat.index') ? 'active' : '' }}" href="{{ route('chat.index') }}"><i class="fa-regular fa-comments me-2"></i>Workspace</a>
+            </li>
+            @if($isSuperAdmin || $user->can('view-chat-analytics'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('chat.analytics') ? 'active' : '' }}" href="{{ route('chat.analytics') }}"><i class="fa-solid fa-chart-line me-2"></i>Analytics</a>
+            </li>
+            @endif
+        </ul>
     </li>
     @endif
 

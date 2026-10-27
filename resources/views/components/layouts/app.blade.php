@@ -53,6 +53,11 @@
         </div>
       </div>
     </div>
+    <!-- Floating chat (bubble, dock, toasts) -->
+    @auth
+      <livewire:chat.launcher :hide-bubble="request()->routeIs('chat.index')" />
+    @endauth
+
     <!-- Libs JS -->
     {!! ToastMagic::scripts() !!}
   </body>

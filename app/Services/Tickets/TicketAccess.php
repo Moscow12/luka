@@ -3,10 +3,10 @@
 namespace App\Services\Tickets;
 
 use App\Enums\TicketStatus;
-use App\Models\departments;
 use App\Models\Employee;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Support\DepartmentSupervision;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -32,20 +32,7 @@ class TicketAccess
      */
     public static function supervisedDepartmentIds(User $user): array
     {
-        $ids = [];
-        $employee = static::employeeFor($user);
-
-        if ($employee) {
-            if ($user->can('manage-department-tickets') && $employee->department_id) {
-                $ids[] = $employee->department_id;
-            }
-
-            if ($employee->title_id) {
-                $ids = array_merge($ids, departments::where('supervisor_title_id', $employee->title_id)->pluck('id')->all());
-            }
-        }
-
-        return array_values(array_unique($ids));
+        return DepartmentSupervision::departmentIdsFor($user);
     }
 
     public static function isSupervisorOf(User $user, Ticket $ticket): bool

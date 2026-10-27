@@ -10,6 +10,9 @@ import ApexCharts from 'apexcharts';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 
+// Workspace chat (presence, dock, conversation panes, ticket hover cards)
+import './chat/index.js';
+
 // Import Simplebar
 import SimpleBar from 'simplebar';
 

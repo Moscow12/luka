@@ -8,8 +8,10 @@ use App\Models\EmployeeAssignedDuty;
 use App\Models\TicketCategory;
 use App\Services\Tickets\TicketActionException;
 use App\Services\Tickets\TicketService;
+use App\Support\EncryptedFileStore;
 use App\Support\HtmlSanitizer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -17,7 +19,7 @@ class CreateTicket extends Component
 {
     use WithFileUploads;
 
-    public const ATTACHMENT_RULES = ['file', 'max:25600', 'mimes:pdf,jpg,jpeg,png,gif,webp,doc,docx,xls,xlsx,ppt,pptx,txt,csv'];
+    public const ATTACHMENT_RULES = EncryptedFileStore::UPLOAD_RULES;
 
     public $subject = '';
 
@@ -44,6 +46,14 @@ class CreateTicket extends Component
         abort_unless(Auth::user()->isSuperAdmin() || Auth::user()->can('create-tickets'), 403);
 
         $this->due_date = now()->addDays(3)->toDateString();
+
+        // Pre-fill from chat shortcuts: ?assignee=<employee id>&subject=...
+        $this->subject = Str::limit((string) request()->query('subject', ''), 150, '');
+        $assignee = Employee::where('id', (string) request()->query('assignee'))->whereNotNull('user_id')->first();
+        if ($assignee) {
+            $this->department_id = $assignee->department_id;
+            $this->assignee_employee_id = $assignee->id;
+        }
     }
 
     public function updatedCategoryId($value)

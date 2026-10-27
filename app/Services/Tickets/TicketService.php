@@ -14,12 +14,11 @@ use App\Models\TicketParticipant;
 use App\Models\TicketSequence;
 use App\Models\TicketStatusLog;
 use App\Models\User;
+use App\Support\EncryptedFileStore;
 use App\Support\HtmlSanitizer;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -27,9 +26,7 @@ use Illuminate\Support\Str;
  */
 class TicketService
 {
-    public const ATTACHMENT_DISK = 'local';
-
-    public function __construct(protected TicketDutySync $dutySync) {}
+    public function __construct(protected TicketDutySync $dutySync, protected EncryptedFileStore $files) {}
 
     /**
      * @param  array{subject:string, description:string, category_id:string, priority:string, department_id:string, assignee_employee_id?:?string, employee_assigned_duty_id?:?string, due_date:string, visibility:string}  $data
@@ -244,7 +241,7 @@ class TicketService
      */
     public function attachmentContents(TicketAttachment $attachment): string
     {
-        return Crypt::decryptString(Storage::disk(self::ATTACHMENT_DISK)->get($attachment->path));
+        return $this->files->get($attachment->path);
     }
 
     // ------------------------------------------------------------------
@@ -406,8 +403,7 @@ class TicketService
     protected function storeAttachments(Ticket $ticket, array $files, User $actor, ?TicketMessage $message = null): void
     {
         foreach ($files as $file) {
-            $path = 'tickets/'.$ticket->id.'/'.Str::uuid().'.enc';
-            Storage::disk(self::ATTACHMENT_DISK)->put($path, Crypt::encryptString($file->get()));
+            $path = $this->files->put($file, 'tickets/'.$ticket->id);
 
             TicketAttachment::create([
                 'ticket_id' => $ticket->id,

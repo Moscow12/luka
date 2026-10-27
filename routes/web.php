@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TicketAttachmentController;
 use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Paymentreports;
 use App\Livewire\Acc\Payroll\Payrollgeneration;
 use App\Livewire\Audit\Auditlog;
+use App\Livewire\Chat\ChatAnalytics;
+use App\Livewire\Chat\Workspace;
 use App\Livewire\Chop\ActivitiesManagement;
 use App\Livewire\Chop\ActivityReporting;
 use App\Livewire\Chop\Chopsetting;
@@ -219,6 +222,15 @@ Route::prefix('procurement')->middleware('auth')->group(function () {
     Route::get('orders', Orders::class)->name('procurement.orders');
     Route::get('orders/approve', ApproveOrders::class)->name('procurement.orders.approve');
     Route::get('requisitions', PurchaseRequisitions::class)->name('procurement.requisitions');
+});
+
+Route::prefix('chat')->middleware('auth')->group(function () {
+    // Workspace chat
+    Route::get('/analytics', ChatAnalytics::class)->name('chat.analytics');
+    Route::get('/attachments/{attachment}', [ChatController::class, 'attachment'])->name('chat.attachment');
+    Route::get('/ticket-card/{number}', [ChatController::class, 'ticketCard'])->where('number', 'HRP-\d{4}-\d{5}')->name('chat.ticket.card');
+    Route::get('/ticket/{number}', [ChatController::class, 'openTicket'])->where('number', 'HRP-\d{4}-\d{5}')->name('chat.ticket.open');
+    Route::get('/{conversation?}', Workspace::class)->whereUuid('conversation')->name('chat.index');
 });
 
 Route::prefix('tickets')->middleware('auth')->group(function () {

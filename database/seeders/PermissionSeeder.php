@@ -75,6 +75,10 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-ticket-categories', 'description' => 'Manage ticket categories and SLAs'],
                 ['name' => 'view-ticket-reports', 'description' => 'View ticket analytics and staff scorecards'],
             ],
+            'Chat' => [
+                ['name' => 'view-chat-analytics', 'description' => 'View workspace chat analytics'],
+                ['name' => 'manage-chat', 'description' => 'Moderate and archive any chat room'],
+            ],
             'Contract Management' => [
                 ['name' => 'view-contracts', 'description' => 'View institutional contracts'],
                 ['name' => 'manage-contracts', 'description' => 'Create, edit, and manage contracts'],

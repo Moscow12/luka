@@ -62,10 +62,16 @@ abstract class TicketTestCase extends TestCase
             $table->string('middle_name')->nullable();
             $table->string('last_name');
             $table->string('phone')->nullable();
+            $table->string('email')->nullable();
             $table->string('status')->default('Active');
             $table->softDeletes();
             $table->timestamps();
         });
+
+        // Chat tables: employee/department observers keep department channels in sync
+        foreach (glob(database_path('migrations/2026_10_28_1000*.php')) as $file) {
+            $this->artisan('migrate', ['--path' => 'database/migrations/'.basename($file)]);
+        }
 
         $category = PermissionCategory::create(['name' => 'Tickets']);
         foreach (['create-tickets', 'manage-department-tickets', 'view-all-tickets', 'manage-ticket-categories', 'view-ticket-reports'] as $name) {

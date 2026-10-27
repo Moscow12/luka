@@ -14,6 +14,7 @@ use App\Models\Ticket;
 use App\Models\TicketMessage;
 use App\Models\TicketParticipant;
 use App\Models\UserNotificationDismissal;
+use App\Services\Chat\ChatInbox;
 use App\Services\Tickets\TicketAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -146,6 +147,21 @@ trait BuildsNotifications
                     'dismissible' => true,
                 ];
             }
+        }
+
+        // Chat: a single summary line so the bell doesn't fill up with messages
+        $unreadChats = app(ChatInbox::class)->totalUnread($user);
+        if ($unreadChats > 0) {
+            $notifications[] = [
+                'key' => 'chat:unread',
+                'type' => 'Chat',
+                'title' => $unreadChats.' unread chat '.Str::plural('message', $unreadChats),
+                'time' => 'now',
+                'icon' => 'message',
+                'color' => 'primary',
+                'url' => route('chat.index'),
+                'dismissible' => false,
+            ];
         }
 
         // Tickets: new assignments, overdue work, resolutions awaiting my verification, unread replies
