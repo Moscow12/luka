@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\User;
 use App\Observers\DepartmentChatObserver;
 use App\Observers\EmployeeChatObserver;
+use App\Services\Leave\LeaveApprovalChain;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -17,7 +18,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One leave approval chain per request: its level and approver lookups are cached
+        $this->app->scoped(LeaveApprovalChain::class);
     }
 
     /**

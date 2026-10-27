@@ -30,31 +30,6 @@
 
     <!-- Navbar nav -->
     <ul class="list-unstyled d-flex align-items-center mb-0 gap-2">
-      <!-- Pages link -->
-      <li>
-        <button type="button" class="btn btn-white" data-bs-toggle="modal" data-bs-target="#searchModal">
-          <span
-            ><svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="icon icon-tabler icons-tabler-outline icon-tabler-search"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <circle cx="10" cy="10" r="7" />
-              <line x1="21" y1="21" x2="15" y2="15" />
-            </svg>
-          </span>
-          <small class="ms-1">⌘K</small>
-        </button>
-        <!-- Modal -->
-      </li>
       <!-- Light dark mode-->
       <li>
         <x-ui.theme-switcher iconLibrary="ti" buttonClass="btn-ghost" :withWrapper="false" />
@@ -142,7 +117,7 @@
     <div class="sticky-top bg-white">
         <div class="offcanvas-header gap-4">
             <div class="d-flex justify-content-between w-100">
-                <h5 class="mb-0" id="offcanvasNotificationLabel">Pending Approvals</h5>
+                <h5 class="mb-0" id="offcanvasNotificationLabel">Notifications</h5>
                 <div class="d-flex gap-3 align-items-center">
                     <a href="#" class="link-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Refresh" onclick="Livewire.dispatch('refreshNotifications')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
@@ -163,66 +138,5 @@
                 @livewire('common.notifications-list')
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Modal of pages -->
-<div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-        <div class="modal-header">
-        <input type="search" class="form-control border-0 rounded-0 ps-0 form-focus-none" id="globalSearchInput" placeholder="Search any word..." aria-label="Search" aria-describedby="search-addon" />
-        <button type="button" class="btn btn-white btn-sm" data-bs-dismiss="modal" aria-label="Close">Esc</button>
-        </div>
-        <div class="modal-body" data-simplebar="" style="height: 400px">
-        <div class="mb-4">
-            <div class="d-flex flex-column border-bottom border-dashed py-4">
-            <div class="mb-2">
-                <span class="fw-semibold text-secondary small">Dashboard</span>
-            </div>
-            <div>
-                <ul class="list-unstyled lh-lg mb-0">
-                <li><a class='text-inherit' href='dashboard/analytics.html'>Analytics</a></li>
-                <li><a href="dashboard/project.html" class="text-inherit">Project</a></li>
-                <li><a class='text-inherit' href='dashboard/ecommerce.html'>Ecommerce</a></li>
-                <li><a class='text-inherit' href='dashboard/crm.html'>CRM</a></li>
-                <li><a class='text-inherit' href='dashboard/finance.html'>Finance</a></li>
-                <li><a class='text-inherit' href='dashboard/blog.html'>Blog</a></li>
-                </ul>
-            </div>
-            </div>
-            <div class="d-flex flex-column border-bottom border-dashed py-4">
-            <div class="mb-2">
-                <span class="fw-semibold text-secondary small">Apps</span>
-            </div>
-            <div>
-                <ul class="list-unstyled lh-lg mb-0">
-                <li><a class='text-inherit' href='apps/calendar.html'> Calendar</a></li>
-                <li><a class='text-inherit' href='apps/chat-app.html'> Chat</a></li>
-                <li><a class='text-inherit' href='apps/email/mail.html'>Email</a></li>
-                <li><a class='text-inherit' href='apps/e-commerce/ecommerce-products.html'>Ecommerce</a></li>
-                <li><a class='text-inherit' href='apps/kanban.html'> Kanban</a></li>
-                <li><a class='text-inherit' href='apps/project/project-grid.html'>Project</a></li>
-                <li><a class='text-inherit' href='dashboard/file.html'> File Manager</a></li>
-                <li><a class='text-inherit' href='apps/crm/crm-contacts.html'> CRM</a></li>
-                <li><a class='text-inherit' href='apps/invoice/invoice-list.html'> Invoice</a></li>
-                <li><a class='text-inherit' href='apps/profile/profile-overview.html'> Profile</a></li>
-                <li><a class='text-inherit' href='apps/blog/blog-list.html'> Blog</a></li>
-                </ul>
-            </div>
-            </div>
-            <div class="d-flex flex-column border-bottom border-dashed py-4">
-            <div>
-                <span class="fw-semibold text-secondary small">Pages</span>
-            </div>
-            </div>
-            <div class="d-flex flex-column border-bottom border-dashed py-4">
-            <div>
-                <span class="fw-semibold text-secondary small">Quick Links</span>
-            </div>
-            </div>
-        </div>
-        </div>
-    </div>
     </div>
 </div>
