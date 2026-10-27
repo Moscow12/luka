@@ -1,4 +1,4 @@
-<a class="position-relative btn-icon btn-ghost btn rounded-circle" data-bs-toggle="offcanvas" href="#offcanvasNotification" role="button" aria-controls="offcanvasNotification">
+<a wire:poll.30s="loadPendingApprovals" class="position-relative btn-icon btn-ghost btn rounded-circle" data-bs-toggle="offcanvas" href="#offcanvasNotification" role="button" aria-controls="offcanvasNotification">
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"

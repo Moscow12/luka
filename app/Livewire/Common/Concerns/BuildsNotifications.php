@@ -14,6 +14,7 @@ use App\Models\Ticket;
 use App\Models\TicketMessage;
 use App\Models\TicketParticipant;
 use App\Models\UserNotificationDismissal;
+use App\Services\Tickets\TicketAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -185,6 +186,16 @@ trait BuildsNotifications
                 ->overdue()
                 ->orderBy('due_date')->take($perGroup)->get()
                 ->each(fn (Ticket $t) => $push($t, 'overdue:'.$t->due_date->toDateString(), 'Ticket Overdue', ' — was due '.$t->due_date->format('d M'), 'alert-triangle', 'danger', true, $t->due_date));
+        }
+
+        // Unassigned tickets waiting in the queue of a department I supervise
+        $supervisedDepartments = TicketAccess::supervisedDepartmentIds($user);
+        if ($supervisedDepartments !== []) {
+            Ticket::whereIn('department_id', $supervisedDepartments)
+                ->where('status', TicketStatus::Open->value)
+                ->whereNull('assignee_employee_id')
+                ->latest()->take($perGroup)->get()
+                ->each(fn (Ticket $t) => $push($t, 'queue', 'New Ticket', ' — waiting in your department queue', 'ticket', 'warning', false, $t->created_at));
         }
 
         Ticket::where('created_by', $user->id)

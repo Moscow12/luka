@@ -39,6 +39,7 @@
 
     // Tickets: badge = my unaccepted + overdue assignments
     $ticketBadge = 0;
+    $ticketQueueBadge = 0;
     $canSuperviseTickets = false;
     if ($user) {
         $ticketEmployee = \App\Models\Employee::where('user_id', $user->id)->first();
@@ -47,8 +48,15 @@
                 ->where(fn ($q) => $q->where('status', 'assigned')->orWhere(fn ($o) => $o->overdue()))
                 ->count();
         }
-        $canSuperviseTickets = \App\Services\Tickets\TicketAccess::isAdmin($user)
-            || \App\Services\Tickets\TicketAccess::supervisedDepartmentIds($user) !== [];
+        $supervisedTicketDepartments = \App\Services\Tickets\TicketAccess::supervisedDepartmentIds($user);
+        $canSuperviseTickets = \App\Services\Tickets\TicketAccess::isAdmin($user) || $supervisedTicketDepartments !== [];
+
+        // Unassigned tickets waiting in the queue of departments I supervise
+        $ticketQueueBadge = $supervisedTicketDepartments === [] ? 0 : \App\Models\Ticket::whereIn('department_id', $supervisedTicketDepartments)
+            ->where('status', 'open')
+            ->whereNull('assignee_employee_id')
+            ->count();
+        $ticketBadge += $ticketQueueBadge;
     }
 
     // Pending store orders count, only computed for users who can approve them
@@ -268,12 +276,14 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('tickets.assigned') ? 'active' : '' }}" href="{{ route('tickets.assigned') }}"><i class="fa-solid fa-user-check me-2"></i>Assigned to Me
-                    @if($ticketBadge > 0)<span class="badge bg-danger rounded-pill ms-1">{{ $ticketBadge }}</span>@endif
+                    @if($ticketBadge - $ticketQueueBadge > 0)<span class="badge bg-danger rounded-pill ms-1">{{ $ticketBadge - $ticketQueueBadge }}</span>@endif
                 </a>
             </li>
             @if($canSuperviseTickets)
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('tickets.department') ? 'active' : '' }}" href="{{ route('tickets.department') }}"><i class="fa-solid fa-sitemap me-2"></i>Department Tickets</a>
+                <a class="nav-link {{ request()->routeIs('tickets.department') ? 'active' : '' }}" href="{{ route('tickets.department') }}?bucket=unassigned"><i class="fa-solid fa-sitemap me-2"></i>Department Tickets
+                    @if($ticketQueueBadge > 0)<span class="badge bg-warning text-dark rounded-pill ms-1">{{ $ticketQueueBadge }}</span>@endif
+                </a>
             </li>
             @endif
             @if($isSuperAdmin || $user->can('view-all-tickets'))

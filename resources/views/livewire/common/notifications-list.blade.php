@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.30s.visible="loadPendingApprovals">
     @forelse($pendingApprovals as $notification)
         @php
             $isDismissible = $notification['dismissible'] ?? false;
