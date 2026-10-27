@@ -39,13 +39,18 @@ class Workspace extends Component
 
     public string $groupSearch = '';
 
-    public function mount(?ChatConversation $conversation = null)
+    /**
+     * The conversation id is taken as a plain string: Livewire's implicit model binding
+     * would try to resolve the optional parameter even on /chat and 404.
+     */
+    public function mount(?string $conversation = null)
     {
         $this->userId = Auth::id();
 
-        if ($conversation?->exists) {
+        if ($conversation) {
+            abort_unless(ChatConversation::whereKey($conversation)->exists(), 404);
             abort_unless(ChatAccess::isMember(Auth::user(), $conversation), 403);
-            $this->activeConversationId = $conversation->id;
+            $this->activeConversationId = $conversation;
         }
 
         if (request()->query('new') === 'group') {

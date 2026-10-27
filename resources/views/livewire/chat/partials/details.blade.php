@@ -1,5 +1,5 @@
 {{-- Room details side panel (members, pinned, files, tickets, settings). Rendered inside ConversationPane. --}}
-<aside class="chat-details" aria-label="Room details">
+<aside class="chat-details {{ $compact ? 'overlay' : '' }}" aria-label="Room details">
     <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
         <h6 class="mb-0">Details</h6>
         <button type="button" class="chat-icon-btn" wire:click="toggleDetails" title="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -24,9 +24,9 @@
         </div>
     </div>
 
-    <ul class="nav nav-tabs nav-fill small px-2 pt-2">
+    <ul class="nav nav-tabs nav-fill flex-nowrap small px-2 pt-2">
         @foreach(['members' => $conversation->isDirect() ? 'People' : 'Members', 'pinned' => 'Pinned', 'files' => 'Files', 'tickets' => 'Tickets'] as $tab => $label)
-            <li class="nav-item"><button type="button" class="nav-link py-1 {{ $detailsTab === $tab ? 'active' : '' }}" wire:click="$set('detailsTab', '{{ $tab }}')">{{ $label }}</button></li>
+            <li class="nav-item"><button type="button" class="nav-link py-1 px-2 text-nowrap {{ $detailsTab === $tab ? 'active' : '' }}" wire:click="$set('detailsTab', '{{ $tab }}')">{{ $label }}</button></li>
         @endforeach
     </ul>
 

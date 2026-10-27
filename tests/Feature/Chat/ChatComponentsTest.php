@@ -25,6 +25,16 @@ beforeEach(function () {
     $this->outsider = $this->makeStaff($this->makeDepartment('Finance'));
 });
 
+it('opens the workspace with and without a conversation in the URL', function () {
+    $dm = $this->chat->openDirect($this->alice, $this->bob);
+
+    // Mounted the way the router does for /chat (no parameter) — this used to 404
+    Livewire::actingAs($this->alice)->test(Workspace::class)->assertOk()->assertSee('Welcome to Workspace Chat');
+    Livewire::actingAs($this->alice)->test(Workspace::class, ['conversation' => $dm->id])->assertSet('activeConversationId', $dm->id);
+    Livewire::actingAs($this->outsider)->test(Workspace::class, ['conversation' => $dm->id])->assertForbidden();
+    Livewire::actingAs($this->alice)->test(Workspace::class, ['conversation' => '00000000-0000-0000-0000-000000000000'])->assertNotFound();
+});
+
 it('starts a DM from the directory search in the workspace', function () {
     Livewire::actingAs($this->alice)
         ->test(Workspace::class)
@@ -56,7 +66,7 @@ it('creates a group from the workspace', function () {
 it('refuses to open a conversation the user is not in', function () {
     $dm = $this->chat->openDirect($this->alice, $this->bob);
 
-    Livewire::actingAs($this->outsider)->test(Workspace::class, ['conversation' => $dm])->assertForbidden();
+    Livewire::actingAs($this->outsider)->test(Workspace::class, ['conversation' => $dm->id])->assertForbidden();
     Livewire::actingAs($this->outsider)->test(ConversationPane::class, ['conversationId' => $dm->id])->assertForbidden();
 });
 
@@ -76,7 +86,7 @@ it('sends, renders, edits and reacts in a conversation pane', function () {
         ->set('editBody', 'Hi Bob, updated')
         ->call('saveEdit')
         ->assertSet('editingId', null)
-        ->assertSee('(edited)')
+        ->assertSeeHtml('title="Edited')
         ->call('react', $message->id, '👍')
         ->assertSee('👍');
 

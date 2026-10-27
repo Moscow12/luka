@@ -4,7 +4,6 @@
     $renderer = app(\App\Services\Chat\MessageRenderer::class);
     $meId = auth()->id();
     $marker = $readMarker ? Carbon::parse($readMarker) : null;
-    $lastMine = $messages->where('user_id', $meId)->where('type', 'text')->whereNull('deleted_at')->last();
     $title = $conversation->displayName($meId);
     $placeholder = $conversation->isDirect() ? 'Message '.($other?->first_name ?? $title) : 'Message '.($conversation->isDepartment() ? '#' : '').$title;
 @endphp
@@ -76,14 +75,6 @@
                     }
                     $grouped = isset($prev) && ! $newDay && ! $showDivider && $prev->type === 'text' && $m->type === 'text'
                         && $prev->user_id === $m->user_id && $prev->created_at->diffInMinutes($m->created_at) < 5;
-
-                    $receipt = null;
-                    if ($lastMine && $lastMine->id === $m->id) {
-                        $readers = \App\Livewire\Chat\ConversationPane::readersOf($m, $readPositions);
-                        $receipt = $conversation->isDirect()
-                            ? ($readers > 0 ? 'Seen' : 'Sent')
-                            : ($readers > 0 ? 'Seen by '.$readers : 'Sent');
-                    }
                 @endphp
 
                 @if($newDay)
@@ -96,7 +87,7 @@
                 @endif
 
                 @if($m->type === 'text')
-                    @include('livewire.chat.partials.message', ['m' => $m, 'grouped' => $grouped, 'mine' => $m->user_id === $meId, 'receipt' => $receipt])
+                    @include('livewire.chat.partials.message', ['m' => $m, 'grouped' => $grouped, 'mine' => $m->user_id === $meId, 'isDirect' => $conversation->isDirect()])
                 @else
                     <div class="chat-system" wire:key="m-{{ $m->id }}" data-message-id="{{ $m->id }}">
                         <i class="fa-solid {{ $m->type === 'call' ? 'fa-phone' : 'fa-circle-info' }} me-1"></i>{{ $m->body }} · {{ $m->created_at->format('H:i') }}
@@ -120,12 +111,13 @@
             {{-- Browser-only: messages being sent right now --}}
             <div wire:ignore>
                 <template x-for="p in pending" :key="p.key">
-                    <div class="chat-msg chat-pending" :class="p.failed && 'failed'">
-                        <div class="chat-gutter"></div>
-                        <div class="flex-fill" style="min-width: 0;">
-                            <div class="chat-text" style="white-space: pre-wrap;" x-text="p.text"></div>
-                            <div class="small text-muted" x-show="!p.failed"><span class="spinner-border spinner-border-sm me-1" style="width: 0.7rem; height: 0.7rem;"></span>Sending…</div>
-                            <div class="small text-danger" x-show="p.failed">
+                    <div class="chat-msg mine first chat-pending" :class="p.failed && 'failed'">
+                        <div class="chat-bubble-wrap">
+                            <div class="chat-bubble">
+                                <div class="chat-text" style="white-space: pre-wrap;" x-text="p.text"></div>
+                                <span class="chat-bubble-meta" x-show="!p.failed"><i class="fa-regular fa-clock" title="Sending…"></i></span>
+                            </div>
+                            <div class="small text-danger mt-1 text-end" x-show="p.failed">
                                 <i class="fa-solid fa-circle-exclamation me-1"></i><span x-text="p.error"></span>
                                 <button type="button" class="btn btn-link btn-sm p-0 ms-2" @click="retry(p)">Retry</button>
                                 <button type="button" class="btn btn-link btn-sm p-0 ms-2 text-muted" @click="discard(p)">Discard</button>
