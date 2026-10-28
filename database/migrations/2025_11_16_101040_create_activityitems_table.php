@@ -15,8 +15,9 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('activity_id')->constrained('chopactivities')->cascadeOnDelete();
             $table->foreignUuid('item_id')->constrained('chopitems')->cascadeOnDelete();
+            $table->string('frequency')->nullable()->default(null);
             $table->decimal('quantity', 8, 2)->nullable();
-            $table->decimal('price', 8, 2)->nullable();
+            $table->string('price')->nullable();
             $table->foreignUuid('added_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
