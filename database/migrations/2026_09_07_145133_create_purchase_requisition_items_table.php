@@ -22,6 +22,10 @@ return new class extends Migration
             $table->string('quotation1')->nullable();
             $table->string('quotation2')->nullable();
             $table->string('quotation3')->nullable();
+            $table->enum('status', ['pending', 'approved', 'active', 'rejected'])
+                ->default('approved')
+                ->after('store_order_id');
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }
