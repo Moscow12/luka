@@ -15,13 +15,13 @@ class UserSeeder extends Seeder
     {
         // Create or update super admin user
         $admin = User::firstOrCreate(
-            ['email' => 'admin@hospital.test'],
+            ['email' => 'meshackstev@gmail.com'],
             [
                 'first_name' => 'System',
                 'surname' => 'Administrator',
                 'username' => 'admin',
                 'phone_number' => '0756077558',
-                'password' => Hash::make('admin@hospital.test'),
+                'password' => Hash::make('meshackstev1@gmail.com'),
                 'gender' => 'Male',
                 'country' => 'Tanzania',
                 'is_super_admin' => true,
