@@ -39,5 +39,8 @@ class AppServiceProvider extends ServiceProvider
 
             return null; // Fall through to normal permission checks
         });
+
+        // Without this gate the log viewer is open to everyone outside production
+        Gate::define('viewLogViewer', fn (User $user) => $user->isSuperAdmin());
     }
 }

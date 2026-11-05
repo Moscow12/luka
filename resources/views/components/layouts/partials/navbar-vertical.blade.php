@@ -665,4 +665,16 @@
         </a>
     </li>
     @endif
+
+    <!-- Application Logs -->
+    @if($isSuperAdmin)
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('log-viewer.index') }}" target="_blank" rel="noopener">
+            <span class="nav-icon">
+                <i class="fa-solid fa-file-lines"></i>
+            </span>
+            <span class="text">Application Logs</span>
+        </a>
+    </li>
+    @endif
 </ul>
