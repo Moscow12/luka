@@ -5,9 +5,11 @@
         ['label' => 'Performance Management', 'url' => '#'],
         ['label' => 'Assigned Duties', 'url' => route('performance.assigned.duties')],
     ]">
-        <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createDuty">
-            <i class="fa-solid fa-plus"></i> ASSIGN NEW DUTY
-        </button>
+        @if ($canManage)
+            <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createDuty">
+                <i class="fa-solid fa-plus"></i> ASSIGN NEW DUTY
+            </button>
+        @endif
     </x-pages.breadcrumn>
 
     {{-- Flash Messages --}}
@@ -226,13 +228,17 @@
                                                 style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Assigned Duties Found</h5>
                                             <p class="text-muted">
-                                                @if ($search || $priorityFilter || $statusFilter)
+                                                @if ($hasNoDepartment)
+                                                    Your account is not linked to a department
+                                                @elseif ($search || $priorityFilter || $statusFilter)
                                                     Try adjusting your filters or search query
-                                                @else
+                                                @elseif ($canManage)
                                                     Start by assigning duties to employees
+                                                @else
+                                                    You have no assigned duties yet
                                                 @endif
                                             </p>
-                                            @if (!$search && !$priorityFilter && !$statusFilter)
+                                            @if ($canManage && !$hasNoDepartment && !$search && !$priorityFilter && !$statusFilter)
                                                 <button class="btn btn-primary mt-2" wire:click="createDuty">
                                                     <i class="fa-solid fa-plus me-1"></i> Assign New Duty
                                                 </button>
@@ -356,7 +362,7 @@
                                             </div>
                                         </div>
                                         <div class="text-end" style="min-width: 160px;">
-                                            @if ($task->status === 'completed' && ! $task->reviewed_at)
+                                            @if ($canManage && $task->status === 'completed' && ! $task->reviewed_at)
                                                 <button wire:click="openApproveModal('{{ $task->id }}')"
                                                     class="btn btn-sm btn-success">
                                                     <i class="fa-solid fa-check me-1"></i> Approve

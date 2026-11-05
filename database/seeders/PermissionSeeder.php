@@ -67,6 +67,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'view-all-dept-plans', 'description' => 'View department performance plans of all departments'],
                 ['name' => 'manage-employee-plans', 'description' => 'Manage employee performance plans'],
                 ['name' => 'assign-duties', 'description' => 'Assign duties and KPIs to employees'],
+                ['name' => 'view-all-duties', 'description' => 'View assigned duties of all departments'],
                 ['name' => 'set-kpis', 'description' => 'Set and manage job title KPIs'],
             ],
             'Ticket Management' => [

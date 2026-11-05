@@ -475,7 +475,7 @@
     @endif
 
     <!-- Staff Performance -->
-    @if($isSuperAdmin || $user?->canAny(['manage-org-plans', 'manage-dept-plans', 'view-all-dept-plans', 'manage-employee-plans', 'assign-duties', 'set-kpis']))
+    @if($isSuperAdmin || $user?->canAny(['manage-org-plans', 'manage-dept-plans', 'view-all-dept-plans', 'manage-employee-plans', 'assign-duties', 'view-all-duties', 'set-kpis']))
     <li class="nav-item dropdown {{ request()->routeIs($performanceRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($performanceRoutes) ? 'active' : '' }}" href="{{ route('performance.org.plans') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($performanceRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -499,7 +499,7 @@
                 <a class="nav-link {{ request()->routeIs('performance.employee.plans') ? 'active' : '' }}" href="{{ route('performance.employee.plans') }}"><i class="fa-solid fa-user-check"></i> Employee Plans</a>
             </li>
             @endif
-            @if($isSuperAdmin || $user?->can('assign-duties'))
+            @if($isSuperAdmin || $user?->canAny(['assign-duties', 'view-all-duties']))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.assigned.duties') ? 'active' : '' }}" href="{{ route('performance.assigned.duties') }}"><i class="fa-solid fa-tasks"></i> Assigned Duties</a>
             </li>

@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Performance\AssignedDuties;
 
-use App\Models\Employee;
 use App\Models\EmployeeAssignedDuty;
+use App\Services\Performance\AssignedDutyAccess;
 use App\Services\Tickets\TicketMetricsService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -26,6 +28,7 @@ class ManageAssignedDuties extends Component
     // Employee Tasks Modal (date-filtered view of one employee's duties)
     public $showEmployeeTasksModal = false;
 
+    #[Locked]
     public $viewingEmployeeId = null;
 
     public $employeeTaskFilterDateFrom = '';
@@ -33,6 +36,7 @@ class ManageAssignedDuties extends Component
     public $employeeTaskFilterDateTo = '';
 
     // Approve task (score + comment)
+    #[Locked]
     public $approvingDutyId = null;
 
     public $approval_score = '';
@@ -44,6 +48,7 @@ class ManageAssignedDuties extends Component
 
     public $modalMode = 'create';
 
+    #[Locked]
     public $editingDutyId = null;
 
     // Duty Form Fields
@@ -68,11 +73,26 @@ class ManageAssignedDuties extends Component
 
     public $showDutyEmployeeDropdown = false;
 
+    private function visibleEmployees(): Builder
+    {
+        return AssignedDutyAccess::visibleEmployees(Auth::user());
+    }
+
+    private function visibleDuties(): Builder
+    {
+        return AssignedDutyAccess::visibleDuties(Auth::user());
+    }
+
+    private function authorizeManage(): void
+    {
+        abort_unless(AssignedDutyAccess::canManage(Auth::user()), 403);
+    }
+
     public function getFilteredDutyEmployeesProperty()
     {
         $term = trim($this->dutyEmployeeSearch);
 
-        return Employee::query()
+        return $this->visibleEmployees()
             ->when($term !== '', function ($q) use ($term) {
                 $q->where(function ($q) use ($term) {
                     $q->where('first_name', 'like', '%'.$term.'%')
@@ -90,7 +110,7 @@ class ManageAssignedDuties extends Component
     {
         $id = $this->dutyForm['employee_id'] ?? null;
 
-        return $id ? Employee::find($id) : null;
+        return $id ? $this->visibleEmployees()->find($id) : null;
     }
 
     public function selectDutyEmployee($id)
@@ -132,6 +152,8 @@ class ManageAssignedDuties extends Component
     // Duty CRUD Operations
     public function createDuty()
     {
+        $this->authorizeManage();
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
@@ -156,12 +178,15 @@ class ManageAssignedDuties extends Component
 
     public function editDuty($dutyId)
     {
+        $this->authorizeManage();
+
+        $duty = $this->visibleDuties()->findOrFail($dutyId);
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'edit';
         $this->editingDutyId = $dutyId;
 
-        $duty = EmployeeAssignedDuty::findOrFail($dutyId);
         $this->dutyForm = [
             'employee_id' => $duty->employee_id,
             'duty_name' => $duty->duty_name,
@@ -182,6 +207,8 @@ class ManageAssignedDuties extends Component
 
     public function saveDuty()
     {
+        $this->authorizeManage();
+
         $rules = [
             'dutyForm.employee_id' => 'required|exists:employees,id',
             'dutyForm.duty_name' => 'required|string|max:255',
@@ -209,6 +236,18 @@ class ManageAssignedDuties extends Component
 
         $this->validate($rules, $messages);
 
+        // The picker only offers permitted employees, but its value comes from the client
+        if (! $this->visibleEmployees()->whereKey($this->dutyForm['employee_id'])->exists()) {
+            $this->dutyForm['employee_id'] = '';
+            $this->addError('dutyForm.employee_id', 'You can only assign duties to employees of your own department.');
+
+            return;
+        }
+
+        $editingDuty = $this->modalMode === 'edit' && $this->editingDutyId
+            ? $this->visibleDuties()->findOrFail($this->editingDutyId)
+            : null;
+
         try {
             DB::beginTransaction();
 
@@ -228,9 +267,8 @@ class ManageAssignedDuties extends Component
                 'scoring_criteria' => $this->dutyForm['scoring_criteria'],
             ];
 
-            if ($this->modalMode === 'edit' && $this->editingDutyId) {
-                $duty = EmployeeAssignedDuty::findOrFail($this->editingDutyId);
-                $duty->update($data);
+            if ($editingDuty) {
+                $editingDuty->update($data);
                 session()->flash('success', 'Assigned duty updated successfully!');
             } else {
                 $data['assigned_by'] = Auth::id();
@@ -257,34 +295,13 @@ class ManageAssignedDuties extends Component
         $this->resetErrorBag();
     }
 
-    public function deleteDuty($dutyId)
-    {
-        try {
-            $duty = EmployeeAssignedDuty::findOrFail($dutyId);
-
-            // Check if duty is completed
-            if ($duty->status === 'completed') {
-                session()->flash('error', 'Cannot delete a completed duty.');
-
-                return;
-            }
-
-            DB::beginTransaction();
-            $duty->delete();
-            DB::commit();
-
-            session()->flash('success', 'Assigned duty deleted successfully!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'An error occurred: '.$e->getMessage());
-        }
-    }
-
     public function updateStatus($dutyId, $status)
     {
-        try {
-            $duty = EmployeeAssignedDuty::findOrFail($dutyId);
+        $this->authorizeManage();
 
+        $duty = $this->visibleDuties()->findOrFail($dutyId);
+
+        try {
             if (! in_array($status, ['assigned', 'in_progress', 'completed', 'cancelled'])) {
                 session()->flash('error', 'Invalid status.');
 
@@ -304,7 +321,7 @@ class ManageAssignedDuties extends Component
 
     public function openEmployeeTasksModal($employeeId)
     {
-        $this->viewingEmployeeId = $employeeId;
+        $this->viewingEmployeeId = $this->visibleEmployees()->findOrFail($employeeId)->id;
         $this->employeeTaskFilterDateFrom = '';
         $this->employeeTaskFilterDateTo = '';
         $this->showEmployeeTasksModal = true;
@@ -324,7 +341,8 @@ class ManageAssignedDuties extends Component
             return collect();
         }
 
-        return EmployeeAssignedDuty::where('employee_id', $this->viewingEmployeeId)
+        return $this->visibleDuties()
+            ->where('employee_id', $this->viewingEmployeeId)
             ->when($this->employeeTaskFilterDateFrom, fn ($q) => $q->whereDate('start_date', '>=', $this->employeeTaskFilterDateFrom))
             ->when($this->employeeTaskFilterDateTo, fn ($q) => $q->whereDate('start_date', '<=', $this->employeeTaskFilterDateTo))
             ->with('reviewedBy')
@@ -343,12 +361,14 @@ class ManageAssignedDuties extends Component
 
     public function getViewingEmployeeProperty()
     {
-        return $this->viewingEmployeeId ? Employee::find($this->viewingEmployeeId) : null;
+        return $this->viewingEmployeeId ? $this->visibleEmployees()->find($this->viewingEmployeeId) : null;
     }
 
     public function openApproveModal($dutyId)
     {
-        $duty = EmployeeAssignedDuty::findOrFail($dutyId);
+        $this->authorizeManage();
+
+        $duty = $this->visibleDuties()->findOrFail($dutyId);
 
         if ($duty->status !== 'completed') {
             session()->flash('error', 'Only completed tasks can be approved.');
@@ -378,12 +398,14 @@ class ManageAssignedDuties extends Component
 
     public function submitApproval()
     {
+        $this->authorizeManage();
+
         $this->validate([
             'approval_score' => ['nullable', 'integer', 'min:1', 'max:10'],
             'approval_comments' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $duty = EmployeeAssignedDuty::findOrFail($this->approvingDutyId);
+        $duty = $this->visibleDuties()->findOrFail($this->approvingDutyId);
 
         if ($duty->status !== 'completed') {
             session()->flash('error', 'Only completed tasks can be approved.');
@@ -419,7 +441,7 @@ class ManageAssignedDuties extends Component
                 ->when($this->statusFilter, fn ($sq) => $sq->where('status', $this->statusFilter));
         };
 
-        $employeeSummaries = Employee::query()
+        $employeeSummaries = $this->visibleEmployees()
             ->withCount([
                 'assignedDuties as total_tasks' => $dutyFilter,
                 'assignedDuties as completed_tasks' => function ($q) use ($dutyFilter) {
@@ -427,7 +449,7 @@ class ManageAssignedDuties extends Component
                     $q->where('status', 'completed');
                 },
             ])
-            ->having('total_tasks', '>', 0)
+            ->whereHas('assignedDuties', $dutyFilter)
             ->when($this->search, function ($q) {
                 $q->where(function ($sq) {
                     $sq->where('first_name', 'like', '%'.$this->search.'%')
@@ -438,10 +460,13 @@ class ManageAssignedDuties extends Component
             ->paginate($this->perPage);
 
         // Calculate statistics
-        $totalDuties = EmployeeAssignedDuty::count();
-        $inProgressDuties = EmployeeAssignedDuty::where('status', 'in_progress')->count();
-        $highPriorityDuties = EmployeeAssignedDuty::whereIn('priority', ['high', 'urgent'])->count();
-        $completedDuties = EmployeeAssignedDuty::where('status', 'completed')->count();
+        $totalDuties = $this->visibleDuties()->count();
+        $inProgressDuties = $this->visibleDuties()->where('status', 'in_progress')->count();
+        $highPriorityDuties = $this->visibleDuties()->whereIn('priority', ['high', 'urgent'])->count();
+        $completedDuties = $this->visibleDuties()->where('status', 'completed')->count();
+
+        $user = Auth::user();
+        $canViewAll = AssignedDutyAccess::canViewAll($user);
 
         return view('livewire.performance.assigned-duties.manage-assigned-duties', [
             'employeeSummaries' => $employeeSummaries,
@@ -449,6 +474,8 @@ class ManageAssignedDuties extends Component
             'inProgressDuties' => $inProgressDuties,
             'highPriorityDuties' => $highPriorityDuties,
             'completedDuties' => $completedDuties,
+            'canManage' => AssignedDutyAccess::canManage($user),
+            'hasNoDepartment' => ! $canViewAll && ! $this->visibleEmployees()->exists(),
         ]);
     }
 }
