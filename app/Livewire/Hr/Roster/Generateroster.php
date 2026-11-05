@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Hr\Roster;
 
-use App\Models\departments;
-use App\Models\Employee;
 use App\Models\employeeroster;
 use App\Models\shifts;
+use App\Services\Roster\RosterAccess;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -55,10 +55,32 @@ class Generateroster extends Component
 
     public function mount()
     {
+        $this->authorizeCreate();
+
+        $this->department = RosterAccess::initialDepartment(Auth::user(), $this->department);
+
         // Set default roster date to today
         $this->rosterDate = now()->format('Y-m-d');
         $this->startDate = now()->format('Y-m-d');
         $this->endDate = now()->addDays(6)->format('Y-m-d');
+    }
+
+    private function authorizeCreate(): void
+    {
+        abort_unless(RosterAccess::canCreate(Auth::user()), 403);
+    }
+
+    private function visibleEmployees(): Builder
+    {
+        return RosterAccess::visibleEmployees(Auth::user());
+    }
+
+    /** Selected ids come from the client: every one must be an employee this user may roster. */
+    private function authorizeSelectedEmployees(): void
+    {
+        $selected = array_unique($this->selectedEmployees);
+
+        abort_unless($this->visibleEmployees()->whereIn('id', $selected)->count() === count($selected), 403);
     }
 
     public function updatingSearch()
@@ -94,6 +116,7 @@ class Generateroster extends Component
             'department',
             'status',
         ]);
+        $this->department = RosterAccess::initialDepartment(Auth::user(), null);
         $this->selectedEmployees = [];
         $this->selectAll = false;
         $this->resetPage();
@@ -106,6 +129,8 @@ class Generateroster extends Component
 
     public function generateRoster()
     {
+        $this->authorizeCreate();
+
         // Validation
         $this->validate([
             'selectedEmployees' => 'required|array|min:1',
@@ -119,12 +144,14 @@ class Generateroster extends Component
             'rosterDate.required' => 'Please select a roster date',
         ]);
 
+        $this->authorizeSelectedEmployees();
+
         $created = 0;
         $errors = [];
 
         foreach ($this->selectedEmployees as $employeeId) {
             try {
-                $employee = Employee::find($employeeId);
+                $employee = $this->visibleEmployees()->find($employeeId);
 
                 // Check if roster already exists
                 $existing = employeeroster::where('employee_id', $employeeId)
@@ -202,6 +229,8 @@ class Generateroster extends Component
 
     public function autoGenerateRoster()
     {
+        $this->authorizeCreate();
+
         // Validation
         $this->validate([
             'selectedEmployees' => 'required|array|min:1',
@@ -219,6 +248,8 @@ class Generateroster extends Component
             'shiftCapacities.required' => 'Please set capacity for at least one shift',
             'shiftCapacities.min' => 'Please set capacity for at least one shift',
         ]);
+
+        $this->authorizeSelectedEmployees();
 
         // Validate shift capacities
         $hasCapacity = false;
@@ -254,7 +285,7 @@ class Generateroster extends Component
             $errors = [];
 
             // Get selected employees
-            $employees = Employee::whereIn('id', $this->selectedEmployees)->get();
+            $employees = $this->visibleEmployees()->whereIn('id', $this->selectedEmployees)->get();
             $employeePool = $employees->toArray();
 
             // Get active shifts for rotation
@@ -369,7 +400,9 @@ class Generateroster extends Component
                                 }
 
                                 // Get current count for this shift on this day
+                                // Only the employees being rostered: capacity is per generation, not organisation-wide
                                 $currentShiftCount = employeeroster::where('shift_id', $shiftId)
+                                    ->whereIn('employee_id', $this->selectedEmployees)
                                     ->where('roster_date', $currentDate->format('Y-m-d'))
                                     ->count();
 
@@ -513,7 +546,7 @@ class Generateroster extends Component
 
     private function getEmployeesQuery()
     {
-        return Employee::query()
+        return $this->visibleEmployees()
             ->with(['department', 'designation'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -532,13 +565,17 @@ class Generateroster extends Component
     {
         $employees = $this->getEmployeesQuery()->paginate($this->perPage);
 
-        $departments = departments::orderBy('name')->get();
+        $user = Auth::user();
+        $canViewAll = RosterAccess::canViewAll($user);
+        $departments = RosterAccess::visibleDepartments($user)->orderBy('name')->get();
         $shifts = shifts::where('status', 'active')->orderBy('name')->get();
 
         return view('livewire.hr.roster.generateroster', [
             'employees' => $employees,
             'departments' => $departments,
             'shifts' => $shifts,
+            'canViewAll' => $canViewAll,
+            'hasNoDepartment' => ! $canViewAll && $departments->isEmpty(),
         ]);
     }
 }

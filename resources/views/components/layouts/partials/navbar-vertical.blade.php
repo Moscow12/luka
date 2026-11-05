@@ -95,7 +95,7 @@
     </li>
 
     <!-- Roster -->
-    @if($isSuperAdmin || $user?->canAny(['view-roster', 'create-roster', 'manage-roster', 'approve-roster','edit-roster']))
+    @if($isSuperAdmin || $user?->canAny(['view-roster', 'view-all-rosters', 'create-roster', 'manage-roster', 'approve-roster','edit-roster']))
     <li class="nav-item dropdown {{ request()->routeIs($rosterRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($rosterRoutes) ? 'active' : '' }}" href="{{ route('viewroster.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($rosterRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -104,7 +104,7 @@
             <span class="text">Roster</span>
         </a>
         <ul class="dropdown-menu flex-column {{ request()->routeIs($rosterRoutes) ? 'show' : '' }}">
-            @if($isSuperAdmin || $user?->can('view-roster'))
+            @if($isSuperAdmin || $user?->canAny(['view-roster', 'view-all-rosters']))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('viewroster.index') ? 'active' : '' }}" href="{{ route('viewroster.index') }}"><i class="fa-solid fa-sliders"></i> Overview</a>
             </li>

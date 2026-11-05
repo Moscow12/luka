@@ -130,12 +130,16 @@
 
                         {{-- Department Filter --}}
                         <div class="col-12 col-md-3">
-                            <select wire:model.live="department" class="form-select form-select-sm">
-                                <option value="">All Departments</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                                @endforeach
-                            </select>
+                            @if($canViewAll)
+                                <select wire:model.live="department" class="form-select form-select-sm">
+                                    <option value="">All Departments</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <span class="fw-semibold small"><i class="fa-solid fa-building me-1"></i>{{ $departments->first()?->name ?? 'No department' }}</span>
+                            @endif
                         </div>
 
                         {{-- Search --}}
@@ -156,17 +160,19 @@
                                     <i class="fa-solid fa-ellipsis-vertical"></i> Actions
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('roster.create') }}">
-                                            <i class="fa-solid fa-plus text-success"></i> Generate Roster
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <button class="dropdown-item" wire:click="copyPreviousMonth" wire:confirm="Copy all rosters from previous month?">
-                                            <i class="fa-solid fa-copy text-info"></i> Copy Previous Month
-                                        </button>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    @if($canCreate)
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('roster.create') }}">
+                                                <i class="fa-solid fa-plus text-success"></i> Generate Roster
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item" wire:click="copyPreviousMonth" wire:confirm="Copy all rosters from previous month?">
+                                                <i class="fa-solid fa-copy text-info"></i> Copy Previous Month
+                                            </button>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    @endif
                                     <li>
                                         <button class="dropdown-item" wire:click="exportPDF">
                                             <i class="fa-solid fa-file-pdf text-danger"></i> Export PDF
@@ -210,7 +216,7 @@
                             <div class="text-center py-5">
                                 <i class="fa-solid fa-users-slash text-muted mb-3" style="font-size: 48px;"></i>
                                 <h5 class="text-muted">No Employees Found</h5>
-                                <p class="text-muted">Try adjusting your filters or search query</p>
+                                <p class="text-muted">{{ $hasNoDepartment ? 'Your account is not linked to a department' : 'Try adjusting your filters or search query' }}</p>
                             </div>
                         @else
                             <table class="table table-bordered table-hover mb-0 roster-calendar">
@@ -277,9 +283,13 @@
                                                     }
                                                 @endphp
                                                 <td class="text-center p-0 roster-cell {{ $statusClass }}"
-                                                    style="cursor: pointer; vertical-align: middle;"
-                                                    wire:click="editCell({{ $employee->id }}, '{{ $dateStr }}')"
-                                                    title="{{ $roster ? ($roster->shift->name ?? 'No shift') . ' - ' . ucfirst($roster->status) : 'Click to assign shift' }}">
+                                                    @if($canEdit)
+                                                        style="cursor: pointer; vertical-align: middle;"
+                                                        wire:click="editCell('{{ $employee->id }}', '{{ $dateStr }}')"
+                                                    @else
+                                                        style="vertical-align: middle;"
+                                                    @endif
+                                                    title="{{ $roster ? ($roster->shift->name ?? 'No shift') . ' - ' . ucfirst($roster->status) : ($canEdit ? 'Click to assign shift' : 'No shift') }}">
                                                     @if($shiftAbbr)
                                                         <div class="badge bg-{{ $bgColor }} text-white fw-bold" style="font-size: 11px; padding: 4px 6px;">
                                                             {{ $shiftAbbr }}
@@ -395,7 +405,7 @@
 
                         @if($editShiftId)
                             <button type="button" class="btn btn-danger me-auto"
-                                wire:click="deleteCell({{ $employeeId }}, '{{ $dateStr }}')"
+                                wire:click="deleteCell('{{ $employeeId }}', '{{ $dateStr }}')"
                                 wire:confirm="Are you sure you want to remove this shift assignment?">
                                 <i class="fa-solid fa-trash"></i> Remove
                             </button>
@@ -404,7 +414,7 @@
                         <button type="button" class="btn btn-secondary" wire:click="closeEditModal">
                             <i class="fa-solid fa-times"></i> Cancel
                         </button>
-                        <button type="button" class="btn btn-primary" wire:click="saveCell({{ $employeeId }}, '{{ $dateStr }}')">
+                        <button type="button" class="btn btn-primary" wire:click="saveCell('{{ $employeeId }}', '{{ $dateStr }}')">
                             <i class="fa-solid fa-save"></i> Save
                         </button>
                     </div>

@@ -17,6 +17,7 @@ class PermissionSeeder extends Seeder
         $permissions = [
             'Roster Management' => [
                 ['name' => 'view-roster', 'description' => 'View roster schedules and overview'],
+                ['name' => 'view-all-rosters', 'description' => 'View and work with rosters of all departments'],
                 ['name' => 'create-roster', 'description' => 'Create and generate new rosters'],
                 ['name' => 'edit-roster', 'description' => 'Edit existing roster schedules'],
                 ['name' => 'manage-roster', 'description' => 'Manage and delete roster schedules'],

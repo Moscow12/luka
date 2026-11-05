@@ -137,12 +137,16 @@
                 {{-- Department Filter --}}
                 <div class="col-6 col-md-4 col-lg-2">
                     <label class="form-label small text-muted">Department</label>
-                    <select wire:model.live="filterDepartment" class="form-select">
-                        <option value="">All Departments</option>
-                        @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                        @endforeach
-                    </select>
+                    @if($canViewAll)
+                        <select wire:model.live="filterDepartment" class="form-select">
+                            <option value="">All Departments</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <div class="form-control-plaintext fw-semibold">{{ $departments->first()?->name ?? 'No department' }}</div>
+                    @endif
                 </div>
 
                 {{-- Employee Filter --}}
@@ -222,7 +226,7 @@
                     <div class="text-center py-5">
                         <i class="fa-solid fa-calendar-xmark text-muted mb-3" style="font-size: 48px;"></i>
                         <h5 class="text-muted">No Rosters Found</h5>
-                        <p class="text-muted">Try adjusting your filters or date range</p>
+                        <p class="text-muted">{{ $hasNoDepartment ? 'Your account is not linked to a department' : 'Try adjusting your filters or date range' }}</p>
                     </div>
                 @else
                     <table class="table table-hover mb-0 align-middle">

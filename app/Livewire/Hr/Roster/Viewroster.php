@@ -3,12 +3,14 @@
 namespace App\Livewire\Hr\Roster;
 
 use App\Exports\RosterExport;
-use App\Models\departments;
 use App\Models\Employee;
 use App\Models\employeeroster;
 use App\Models\shifts;
+use App\Services\Roster\RosterAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
@@ -42,9 +44,23 @@ class Viewroster extends Component
 
     public function mount()
     {
+        abort_unless(RosterAccess::canView(Auth::user()), 403);
+
+        $this->department = RosterAccess::initialDepartment(Auth::user(), $this->department);
+
         // Set default to current month and year
         $this->selectedMonth = now()->format('m');
         $this->selectedYear = now()->format('Y');
+    }
+
+    private function visibleRosters(): Builder
+    {
+        return RosterAccess::visibleRosters(Auth::user());
+    }
+
+    private function authorizeEdit(): void
+    {
+        abort_unless(RosterAccess::canEdit(Auth::user()), 403);
     }
 
     public function previousMonth()
@@ -63,11 +79,14 @@ class Viewroster extends Component
 
     public function copyPreviousMonth()
     {
+        abort_unless(RosterAccess::canCreate(Auth::user()), 403);
+
         $currentDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
         $previousDate = $currentDate->copy()->subMonth();
 
         // Get all rosters from previous month
-        $previousRosters = employeeroster::whereYear('roster_date', $previousDate->year)
+        $previousRosters = $this->visibleRosters()
+            ->whereYear('roster_date', $previousDate->year)
             ->whereMonth('roster_date', $previousDate->month)
             ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
             ->get();
@@ -105,6 +124,7 @@ class Viewroster extends Component
                     'status' => 'scheduled',
                     'department_id' => $roster->department_id,
                     'notes' => null,
+                    'added_by' => Auth::id(),
                 ]);
                 $copied++;
             }
@@ -115,6 +135,10 @@ class Viewroster extends Component
 
     public function editCell($employeeId, $date)
     {
+        $this->authorizeEdit();
+
+        RosterAccess::visibleEmployees(Auth::user())->findOrFail($employeeId);
+
         $this->editingCell = $employeeId.'_'.$date;
 
         // Load existing roster data if exists
@@ -135,27 +159,27 @@ class Viewroster extends Component
 
     public function saveCell($employeeId, $date)
     {
+        $this->authorizeEdit();
+
         $this->validate([
             'editShiftId' => 'required|exists:shifts,id',
             'editStatus' => 'required|in:scheduled,completed,cancelled,no_show',
             'editNotes' => 'nullable|string|max:500',
         ]);
 
-        $employee = Employee::find($employeeId);
+        $employee = RosterAccess::visibleEmployees(Auth::user())->findOrFail($employeeId);
 
-        employeeroster::updateOrCreate(
-            [
-                'employee_id' => $employeeId,
-                'roster_date' => $date,
-            ],
-            [
-                'shift_id' => $this->editShiftId,
-                'status' => $this->editStatus,
-                'notes' => $this->editNotes,
-                'department_id' => $employee->department_id,
-                'shift_type' => 'regular',
-            ]
-        );
+        $roster = employeeroster::where('employee_id', $employeeId)
+            ->whereDate('roster_date', $date)
+            ->firstOrNew([], ['employee_id' => $employeeId, 'roster_date' => $date, 'added_by' => Auth::id()]);
+
+        $roster->fill([
+            'shift_id' => $this->editShiftId,
+            'status' => $this->editStatus,
+            'notes' => $this->editNotes,
+            'department_id' => $employee->department_id,
+            'shift_type' => 'regular',
+        ])->save();
 
         session()->flash('success', 'Roster updated successfully.');
         $this->closeEditModal();
@@ -163,7 +187,10 @@ class Viewroster extends Component
 
     public function deleteCell($employeeId, $date)
     {
-        employeeroster::where('employee_id', $employeeId)
+        $this->authorizeEdit();
+
+        $this->visibleRosters()
+            ->where('employee_id', $employeeId)
             ->whereDate('roster_date', $date)
             ->delete();
 
@@ -185,7 +212,7 @@ class Viewroster extends Component
         $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
         $summary = [
             'total_employees' => $employees->count(),
-            'total_rosters' => employeeroster::whereBetween('roster_date', [
+            'total_rosters' => $this->visibleRosters()->whereBetween('roster_date', [
                 $startDate->copy()->startOfMonth(),
                 $startDate->copy()->endOfMonth(),
             ])->when($this->department, fn ($q) => $q->where('department_id', $this->department))->count(),
@@ -225,7 +252,7 @@ class Viewroster extends Component
         $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
         $summary = [
             'total_employees' => $employees->count(),
-            'total_rosters' => employeeroster::whereBetween('roster_date', [
+            'total_rosters' => $this->visibleRosters()->whereBetween('roster_date', [
                 $startDate->copy()->startOfMonth(),
                 $startDate->copy()->endOfMonth(),
             ])->when($this->department, fn ($q) => $q->where('department_id', $this->department))->count(),
@@ -264,7 +291,8 @@ class Viewroster extends Component
         $endDate = $startDate->copy()->endOfMonth();
 
         // Get employee IDs that have rosters in the selected month
-        $employeeIdsWithRosters = employeeroster::whereBetween('roster_date', [$startDate, $endDate])
+        $employeeIdsWithRosters = $this->visibleRosters()
+            ->whereBetween('roster_date', [$startDate, $endDate])
             ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
             ->distinct()
             ->pluck('employee_id');
@@ -290,7 +318,8 @@ class Viewroster extends Component
         $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        return employeeroster::with(['shift', 'employee'])
+        return $this->visibleRosters()
+            ->with(['shift', 'employee'])
             ->whereBetween('roster_date', [$startDate, $endDate])
             ->when($this->department, fn ($q) => $q->where('department_id', $this->department))
             ->get()
@@ -304,7 +333,8 @@ class Viewroster extends Component
         $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        $rosters = employeeroster::with('shift')
+        $rosters = $this->visibleRosters()
+            ->with('shift')
             ->where('employee_id', $employeeId)
             ->whereBetween('roster_date', [$startDate, $endDate])
             ->get();
@@ -332,7 +362,9 @@ class Viewroster extends Component
         $employees = $this->getEmployees();
         $rosterData = $this->getRosterData();
 
-        $departments = departments::orderBy('name')->get();
+        $user = Auth::user();
+        $canViewAll = RosterAccess::canViewAll($user);
+        $departments = RosterAccess::visibleDepartments($user)->orderBy('name')->get();
         $shifts = shifts::where('status', 'active')->orderBy('name')->get();
 
         // Calculate summaries for each employee
@@ -345,7 +377,7 @@ class Viewroster extends Component
         $startDate = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 1);
         $summary = [
             'total_employees' => $employees->count(),
-            'total_rosters' => employeeroster::whereBetween('roster_date', [
+            'total_rosters' => $this->visibleRosters()->whereBetween('roster_date', [
                 $startDate->copy()->startOfMonth(),
                 $startDate->copy()->endOfMonth(),
             ])->when($this->department, fn ($q) => $q->where('department_id', $this->department))->count(),
@@ -360,6 +392,10 @@ class Viewroster extends Component
             'shifts' => $shifts,
             'employeeSummaries' => $employeeSummaries,
             'summary' => $summary,
+            'canViewAll' => $canViewAll,
+            'canCreate' => RosterAccess::canCreate($user),
+            'canEdit' => RosterAccess::canEdit($user),
+            'hasNoDepartment' => ! $canViewAll && $departments->isEmpty(),
         ]);
     }
 }

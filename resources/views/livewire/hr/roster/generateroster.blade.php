@@ -313,19 +313,23 @@
 
                         <!-- Department Filter -->
                         <div class="col-12 col-md-4">
-                            <select wire:model.live="department" class="form-select">
-                                <option value="">All Departments</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                                @endforeach
-                            </select>
+                            @if($canViewAll)
+                                <select wire:model.live="department" class="form-select">
+                                    <option value="">All Departments</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <div class="form-control-plaintext fw-semibold"><i class="fa-solid fa-building me-1"></i>{{ $departments->first()?->name ?? 'No department' }}</div>
+                            @endif
                         </div>
 
                         <!-- Actions -->
                         <div class="col-12 col-md-4">
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                                 <!-- Reset Filters -->
-                                @if($search || $department)
+                                @if($search || ($canViewAll && $department))
                                     <button wire:click="resetFilters" type="button" class="btn btn-outline-secondary">
                                         <i class="fa-solid fa-rotate-left me-1"></i> Reset
                                     </button>
@@ -432,7 +436,9 @@
                                             <i class="fa-solid fa-users-slash text-muted mb-3" style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Employees Found</h5>
                                             <p class="text-muted">
-                                                @if($search || $department)
+                                                @if($hasNoDepartment)
+                                                    Your account is not linked to a department
+                                                @elseif($search || ($canViewAll && $department))
                                                     Try adjusting your filters or search query
                                                 @else
                                                     No employees available

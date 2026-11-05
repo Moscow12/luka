@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Hr\Roster;
 
-use App\Models\departments;
-use App\Models\Employee;
 use App\Models\employeeroster;
 use App\Models\shifts;
+use App\Services\Roster\RosterAccess;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -43,6 +44,7 @@ class Editroster extends Component
 
     // Edit Modal
     public $showEditModal = false;
+    #[Locked]
     public $editingRosterId = null;
     public $editShiftId = '';
     public $editStatus = '';
@@ -60,13 +62,28 @@ class Editroster extends Component
 
     // Delete Confirmation
     public $showDeleteModal = false;
+    #[Locked]
     public $deletingRosterId = null;
 
     public function mount()
     {
+        $this->authorizeEdit();
+
+        $this->filterDepartment = RosterAccess::initialDepartment(Auth::user(), $this->filterDepartment);
+
         // Default to current month
         $this->filterDateFrom = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->filterDateTo = Carbon::now()->endOfMonth()->format('Y-m-d');
+    }
+
+    private function authorizeEdit(): void
+    {
+        abort_unless(RosterAccess::canEdit(Auth::user()), 403);
+    }
+
+    private function visibleRosters(): Builder
+    {
+        return RosterAccess::visibleRosters(Auth::user());
     }
 
     public function updatingSearch()
@@ -99,6 +116,7 @@ class Editroster extends Component
             'filterStatus',
             'search',
         ]);
+        $this->filterDepartment = RosterAccess::initialDepartment(Auth::user(), null);
         $this->filterDateFrom = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->filterDateTo = Carbon::now()->endOfMonth()->format('Y-m-d');
         $this->selectedRosters = [];
@@ -108,8 +126,10 @@ class Editroster extends Component
 
     public function openEditModal($rosterId)
     {
+        $this->authorizeEdit();
+
         $this->resetErrorBag();
-        $roster = employeeroster::findOrFail($rosterId);
+        $roster = $this->visibleRosters()->findOrFail($rosterId);
 
         $this->editingRosterId = $rosterId;
         $this->editShiftId = $roster->shift_id;
@@ -129,6 +149,8 @@ class Editroster extends Component
 
     public function saveRoster()
     {
+        $this->authorizeEdit();
+
         $this->validate([
             'editShiftId' => 'required|exists:shifts,id',
             'editStatus' => 'required|in:scheduled,completed,cancelled,no_show',
@@ -137,10 +159,10 @@ class Editroster extends Component
             'editRosterDate' => 'required|date',
         ]);
 
+        $roster = $this->visibleRosters()->findOrFail($this->editingRosterId);
+
         try {
             DB::beginTransaction();
-
-            $roster = employeeroster::findOrFail($this->editingRosterId);
 
             // Check if date changed and new date conflicts
             if ($roster->roster_date !== $this->editRosterDate) {
@@ -175,7 +197,9 @@ class Editroster extends Component
 
     public function openDeleteModal($rosterId)
     {
-        $this->deletingRosterId = $rosterId;
+        $this->authorizeEdit();
+
+        $this->deletingRosterId = $this->visibleRosters()->findOrFail($rosterId)->id;
         $this->showDeleteModal = true;
     }
 
@@ -187,10 +211,13 @@ class Editroster extends Component
 
     public function deleteRoster()
     {
+        $this->authorizeEdit();
+
+        $roster = $this->visibleRosters()->findOrFail($this->deletingRosterId);
+
         try {
             DB::beginTransaction();
 
-            $roster = employeeroster::findOrFail($this->deletingRosterId);
             $roster->delete();
 
             DB::commit();
@@ -205,6 +232,8 @@ class Editroster extends Component
 
     public function openBulkEditModal()
     {
+        $this->authorizeEdit();
+
         if (empty($this->selectedRosters)) {
             session()->flash('error', 'Please select at least one roster to edit.');
             return;
@@ -225,6 +254,8 @@ class Editroster extends Component
 
     public function saveBulkEdit()
     {
+        $this->authorizeEdit();
+
         // At least one field must be filled
         if (empty($this->bulkShiftId) && empty($this->bulkStatus) && empty($this->bulkShiftType)) {
             session()->flash('error', 'Please select at least one field to update.');
@@ -248,11 +279,11 @@ class Editroster extends Component
                 $updateData['shift_type'] = $this->bulkShiftType;
             }
 
-            employeeroster::whereIn('id', $this->selectedRosters)->update($updateData);
+            // Selected ids come from the client, so only permitted rosters are touched
+            $count = $this->visibleRosters()->whereIn('id', $this->selectedRosters)->update($updateData);
 
             DB::commit();
 
-            $count = count($this->selectedRosters);
             session()->flash('success', "Successfully updated {$count} roster(s).");
 
             $this->closeBulkEditModal();
@@ -266,6 +297,8 @@ class Editroster extends Component
 
     public function bulkDelete()
     {
+        $this->authorizeEdit();
+
         if (empty($this->selectedRosters)) {
             session()->flash('error', 'Please select at least one roster to delete.');
             return;
@@ -274,8 +307,8 @@ class Editroster extends Component
         try {
             DB::beginTransaction();
 
-            $count = count($this->selectedRosters);
-            employeeroster::whereIn('id', $this->selectedRosters)->delete();
+            // Selected ids come from the client, so only permitted rosters are touched
+            $count = $this->visibleRosters()->whereIn('id', $this->selectedRosters)->delete();
 
             DB::commit();
 
@@ -291,7 +324,7 @@ class Editroster extends Component
 
     private function getRostersQuery()
     {
-        return employeeroster::query()
+        return $this->visibleRosters()
             ->with(['employee.department', 'employee.designation', 'shift', 'addedBy'])
             ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
             ->when($this->filterEmployee, fn($q) => $q->where('employee_id', $this->filterEmployee))
@@ -313,7 +346,7 @@ class Editroster extends Component
 
     public function getStatistics()
     {
-        $baseQuery = employeeroster::query()
+        $baseQuery = $this->visibleRosters()
             ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
             ->when($this->filterDateFrom, fn($q) => $q->whereDate('roster_date', '>=', $this->filterDateFrom))
             ->when($this->filterDateTo, fn($q) => $q->whereDate('roster_date', '<=', $this->filterDateTo));
@@ -331,9 +364,11 @@ class Editroster extends Component
     {
         $rosters = $this->getRostersQuery()->paginate($this->perPage);
 
-        $departments = departments::orderBy('name')->get();
+        $user = Auth::user();
+        $canViewAll = RosterAccess::canViewAll($user);
+        $departments = RosterAccess::visibleDepartments($user)->orderBy('name')->get();
         $shifts = shifts::where('status', 'active')->orderBy('name')->get();
-        $employees = Employee::when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
+        $employees = RosterAccess::visibleEmployees($user)->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
             ->where('status', 'Active')
             ->orderBy('first_name')
             ->get();
@@ -344,6 +379,8 @@ class Editroster extends Component
             'shifts' => $shifts,
             'employees' => $employees,
             'statistics' => $this->getStatistics(),
+            'canViewAll' => $canViewAll,
+            'hasNoDepartment' => ! $canViewAll && $departments->isEmpty(),
         ]);
     }
 }
