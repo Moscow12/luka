@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Performance\EmployeePlans;
 
-use App\Models\DepartmentPlan;
 use App\Models\departments;
 use App\Models\Employee;
 use App\Models\EmployeePlan;
 use App\Models\EmployeePlanItem;
+use App\Services\Performance\DepartmentPlanAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -31,10 +32,12 @@ class ManageEmployeePlans extends Component
     public $modalMode = 'create';
 
     // Selected Records
+    #[Locked]
     public $editingPlanId = null;
 
     // Plan Form Fields
     public $planForm = [
+        'department_id' => '',
         'department_plan_id' => '',
         'employee_id' => '',
         'plan_name' => '',
@@ -47,11 +50,38 @@ class ManageEmployeePlans extends Component
 
     public $showPlanEmployeeDropdown = false;
 
+    /** The department chosen in the form, if this user may work with it. */
+    private function formDepartmentId(): ?string
+    {
+        $departmentId = $this->planForm['department_id'] ?? null;
+
+        return $departmentId && DepartmentPlanAccess::visibleDepartments(Auth::user())->whereKey($departmentId)->exists()
+            ? $departmentId
+            : null;
+    }
+
+    public function updatedPlanFormDepartmentId()
+    {
+        // Plan and employee both belong to the department, so neither survives a change
+        $this->planForm['department_plan_id'] = '';
+        $this->planForm['employee_id'] = '';
+        $this->planEmployeeSearch = '';
+        $this->showPlanEmployeeDropdown = false;
+    }
+
     public function getFilteredPlanEmployeesProperty()
     {
+        $departmentId = $this->formDepartmentId();
+
+        if (! $departmentId) {
+            return collect();
+        }
+
         $term = trim($this->planEmployeeSearch);
 
         return Employee::query()
+            ->where('department_id', $departmentId)
+            ->where('status', 'Active')
             ->when($term !== '', function ($q) use ($term) {
                 $q->where(function ($q) use ($term) {
                     $q->where('first_name', 'like', '%'.$term.'%')
@@ -116,6 +146,8 @@ class ManageEmployeePlans extends Component
         $this->modalMode = 'create';
         $this->editingPlanId = null;
         $this->planForm = [
+            // Users limited to their own department have only that one to choose
+            'department_id' => DepartmentPlanAccess::canViewAll(Auth::user()) ? '' : (DepartmentPlanAccess::ownDepartmentId(Auth::user()) ?? ''),
             'department_plan_id' => '',
             'employee_id' => '',
             'plan_name' => '',
@@ -127,13 +159,22 @@ class ManageEmployeePlans extends Component
 
     public function editPlan($planId)
     {
+        $plan = EmployeePlan::with(['departmentPlan', 'employee'])->findOrFail($planId);
+        $departmentId = $plan->departmentPlan?->department_id ?? $plan->employee?->department_id;
+
+        if (! DepartmentPlanAccess::visibleDepartments(Auth::user())->whereKey($departmentId)->exists()) {
+            session()->flash('error', 'You can only edit plans of your own department.');
+
+            return;
+        }
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'edit';
         $this->editingPlanId = $planId;
 
-        $plan = EmployeePlan::findOrFail($planId);
         $this->planForm = [
+            'department_id' => $departmentId,
             'department_plan_id' => $plan->department_plan_id,
             'employee_id' => $plan->employee_id,
             'plan_name' => $plan->plan_name,
@@ -146,6 +187,7 @@ class ManageEmployeePlans extends Component
     public function savePlan()
     {
         $rules = [
+            'planForm.department_id' => 'required',
             'planForm.department_plan_id' => 'required|exists:department_plans,id',
             'planForm.employee_id' => 'required|exists:employees,id',
             'planForm.plan_name' => 'required|string|max:255',
@@ -154,6 +196,7 @@ class ManageEmployeePlans extends Component
         ];
 
         $messages = [
+            'planForm.department_id.required' => 'Please select a department.',
             'planForm.department_plan_id.required' => 'Please select a department plan.',
             'planForm.department_plan_id.exists' => 'The selected department plan is invalid.',
             'planForm.employee_id.required' => 'Please select an employee.',
@@ -163,6 +206,39 @@ class ManageEmployeePlans extends Component
         ];
 
         $this->validate($rules, $messages);
+
+        $editingPlan = $this->modalMode === 'edit' && $this->editingPlanId
+            ? EmployeePlan::findOrFail($this->editingPlanId)
+            : null;
+
+        // The form only offers permitted choices, but its values come from the client
+        $departmentPlan = DepartmentPlanAccess::visiblePlans(Auth::user())
+            ->where('department_id', $this->planForm['department_id'])
+            ->find($this->planForm['department_plan_id']);
+
+        if (! $departmentPlan) {
+            $this->addError('planForm.department_plan_id', 'The selected department plan is not available for this department.');
+
+            return;
+        }
+
+        // An existing assignment stays valid if the employee has since moved or left
+        $unchanged = $editingPlan
+            && $editingPlan->employee_id === $this->planForm['employee_id']
+            && $editingPlan->department_plan_id === $this->planForm['department_plan_id'];
+
+        $employeeAllowed = $unchanged || Employee::whereKey($this->planForm['employee_id'])
+            ->where('department_id', $departmentPlan->department_id)
+            ->where('status', 'Active')
+            ->exists();
+
+        if (! $employeeAllowed) {
+            // The picker only shows errors in its search state, not on a selected employee
+            $this->planForm['employee_id'] = '';
+            $this->addError('planForm.employee_id', 'The selected employee is not an active member of this department.');
+
+            return;
+        }
 
         // Check for duplicate employee-department plan combination
         $existingPlan = EmployeePlan::where('department_plan_id', $this->planForm['department_plan_id'])
@@ -179,9 +255,8 @@ class ManageEmployeePlans extends Component
         try {
             DB::beginTransaction();
 
-            if ($this->modalMode === 'edit' && $this->editingPlanId) {
-                $plan = EmployeePlan::findOrFail($this->editingPlanId);
-                $plan->update([
+            if ($editingPlan) {
+                $editingPlan->update([
                     'department_plan_id' => $this->planForm['department_plan_id'],
                     'employee_id' => $this->planForm['employee_id'],
                     'plan_name' => $this->planForm['plan_name'],
@@ -434,14 +509,18 @@ class ManageEmployeePlans extends Component
         // Get departments for filter
         $departments = departments::orderBy('name')->get();
 
-        // Get employees for modal
-        $employees = Employee::orderBy('first_name')->get();
+        $user = Auth::user();
 
-        // Get active department plans (that have been activated)
-        $departmentPlans = DepartmentPlan::where('status', 'active')
-            ->with('department')
-            ->orderBy('plan_name')
-            ->get();
+        // Active plans of the chosen department, plus the plan already linked when editing
+        $formDepartmentId = $this->formDepartmentId();
+        $currentPlanId = $this->editingPlanId ? $this->planForm['department_plan_id'] : null;
+        $departmentPlans = $formDepartmentId
+            ? DepartmentPlanAccess::visiblePlans($user)
+                ->where('department_id', $formDepartmentId)
+                ->where(fn ($q) => $q->where('status', 'active')->when($currentPlanId, fn ($q) => $q->orWhere('id', $currentPlanId)))
+                ->orderBy('plan_name')
+                ->get()
+            : collect();
 
         return view('livewire.performance.employee-plans.manage-employee-plans', [
             'plans' => $plans,
@@ -450,7 +529,9 @@ class ManageEmployeePlans extends Component
             'reviewedPlans' => $reviewedPlans,
             'completedPlans' => $completedPlans,
             'departments' => $departments,
-            'employees' => $employees,
+            'formDepartments' => DepartmentPlanAccess::visibleDepartments($user)->orderBy('name')->get(),
+            'formDepartmentSelected' => (bool) $formDepartmentId,
+            'canViewAllDepartments' => DepartmentPlanAccess::canViewAll($user),
             'departmentPlans' => $departmentPlans,
         ]);
     }

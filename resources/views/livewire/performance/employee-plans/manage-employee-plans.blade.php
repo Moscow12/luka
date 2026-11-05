@@ -366,6 +366,46 @@
                     <form wire:submit.prevent="savePlan">
                         <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                             <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="planDepartment" class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select wire:model.live="planForm.department_id" class="form-select @error('planForm.department_id') is-invalid @enderror" id="planDepartment">
+                                        @if ($canViewAllDepartments || $formDepartments->isEmpty())
+                                            <option value="">Select Department</option>
+                                        @endif
+                                        @foreach ($formDepartments as $dept)
+                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('planForm.department_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @if ($formDepartments->isEmpty())
+                                        <div class="form-text text-warning">
+                                            <i class="fa-solid fa-exclamation-triangle me-1"></i>
+                                            Your account is not linked to a department.
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="deptPlan" class="form-label">Department Plan <span class="text-danger">*</span></label>
+                                    <select wire:model="planForm.department_plan_id" class="form-select @error('planForm.department_plan_id') is-invalid @enderror" id="deptPlan" @disabled(! $formDepartmentSelected)>
+                                        <option value="">{{ $formDepartmentSelected ? 'Select Department Plan' : 'Select a department first' }}</option>
+                                        @foreach ($departmentPlans as $deptPlan)
+                                            <option value="{{ $deptPlan->id }}">{{ $deptPlan->plan_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('planForm.department_plan_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @if ($formDepartmentSelected && $departmentPlans->isEmpty())
+                                        <div class="form-text text-warning">
+                                            <i class="fa-solid fa-exclamation-triangle me-1"></i>
+                                            This department has no active plans. Please activate a department plan first.
+                                        </div>
+                                    @endif
+                                </div>
+
                                 <div class="col-md-6">
                                     <x-forms.search-picker
                                         name="planForm.employee_id"
@@ -378,37 +418,13 @@
                                         search-prop="planEmployeeSearch"
                                         dropdown-prop="showPlanEmployeeDropdown"
                                         search-placeholder="Search employee by name or number..."
-                                        empty-text="No employees found"
+                                        empty-text="No active employees in this department"
+                                        :disabled="! $formDepartmentSelected"
+                                        disabled-text="Select a department first"
                                         select-method="selectPlanEmployee"
                                         clear-method="clearPlanEmployee"
                                         label-key="name"
                                         sublabel-key="employee_no" />
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label for="deptPlan" class="form-label">Department Plan <span class="text-danger">*</span></label>
-                                    <select wire:model="planForm.department_plan_id" class="form-select @error('planForm.department_plan_id') is-invalid @enderror" id="deptPlan">
-                                        <option value="">Select Department Plan</option>
-                                        @forelse ($departmentPlans ?? [] as $deptPlan)
-                                            <option value="{{ $deptPlan->id }}">
-                                                {{ $deptPlan->plan_name }}
-                                                @if ($deptPlan->department)
-                                                    ({{ $deptPlan->department->name }})
-                                                @endif
-                                            </option>
-                                        @empty
-                                            <option value="" disabled>No active department plans available</option>
-                                        @endforelse
-                                    </select>
-                                    @error('planForm.department_plan_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    @if ($departmentPlans->isEmpty())
-                                        <div class="form-text text-warning">
-                                            <i class="fa-solid fa-exclamation-triangle me-1"></i>
-                                            No active department plans available. Please activate a department plan first.
-                                        </div>
-                                    @endif
                                 </div>
 
                                 <div class="col-12">
@@ -445,7 +461,7 @@
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">
                                 <i class="fa-solid fa-times me-1"></i> Cancel
                             </button>
-                            <button type="submit" class="btn btn-primary" @if($departmentPlans->isEmpty()) disabled @endif>
+                            <button type="submit" class="btn btn-primary" @disabled($departmentPlans->isEmpty())>
                                 <i class="fa-solid fa-save me-1"></i> {{ $editingPlanId ? 'Update Plan' : 'Save Plan' }}
                             </button>
                         </div>
