@@ -3,7 +3,6 @@
 namespace App\Livewire\Performance\DepartmentPlans;
 
 use App\Models\DepartmentPlanItem;
-use App\Models\OrganizationalPlanItem;
 use App\Services\Performance\DepartmentPlanAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +27,7 @@ class ManagePlanItems extends Component
 
     // Item Form Fields
     public $itemForm = [
-        'organizational_plan_item_id' => '',
+        'department_plan_id' => '',
         'item_name' => '',
         'description' => '',
         'weight' => 0,
@@ -60,6 +59,17 @@ class ManagePlanItems extends Component
         return DepartmentPlanItem::where('department_plan_id', $this->planId);
     }
 
+    /** Plans an item can be added to: those this user can see, while still open. */
+    private function selectablePlans(): Builder
+    {
+        return DepartmentPlanAccess::visiblePlans(Auth::user())->whereIn('status', ['draft', 'active']);
+    }
+
+    private function nextDisplayOrder($planId): int
+    {
+        return DepartmentPlanItem::where('department_plan_id', $planId)->max('display_order') + 1;
+    }
+
     public function createItem()
     {
         $this->authorizeManage();
@@ -69,7 +79,7 @@ class ManagePlanItems extends Component
         $this->modalMode = 'create';
         $this->editingItemId = null;
         $this->itemForm = [
-            'organizational_plan_item_id' => '',
+            'department_plan_id' => $this->planId,
             'item_name' => '',
             'description' => '',
             'weight' => 0,
@@ -78,7 +88,7 @@ class ManagePlanItems extends Component
             'min_acceptable' => '',
             'max_possible' => '',
             'department_specific_notes' => '',
-            'display_order' => DepartmentPlanItem::where('department_plan_id', $this->planId)->max('display_order') + 1,
+            'display_order' => $this->nextDisplayOrder($this->planId),
             'is_active' => true,
         ];
         $this->showModal = true;
@@ -96,7 +106,7 @@ class ManagePlanItems extends Component
         $this->editingItemId = $itemId;
 
         $this->itemForm = [
-            'organizational_plan_item_id' => $item->organizational_plan_item_id,
+            'department_plan_id' => $item->department_plan_id,
             'item_name' => $item->item_name,
             'description' => $item->description,
             'weight' => $item->weight,
@@ -111,20 +121,10 @@ class ManagePlanItems extends Component
         $this->showModal = true;
     }
 
-    public function updatedItemFormOrganizationalPlanItemId($value)
+    public function updatedItemFormDepartmentPlanId($value)
     {
-        if ($value) {
-            $orgItem = OrganizationalPlanItem::find($value);
-            if ($orgItem) {
-                $this->itemForm['item_name'] = $orgItem->item_name;
-                $this->itemForm['description'] = $orgItem->description;
-                $this->itemForm['weight'] = $orgItem->weight;
-                $this->itemForm['target_value'] = $orgItem->target_value;
-                $this->itemForm['target_unit'] = $orgItem->target_unit;
-                $this->itemForm['min_acceptable'] = $orgItem->min_acceptable;
-                $this->itemForm['max_possible'] = $orgItem->max_possible;
-            }
-        }
+        // Numbering continues within whichever plan the item is going to
+        $this->itemForm['display_order'] = $this->nextDisplayOrder($value);
     }
 
     public function saveItem()
@@ -132,7 +132,7 @@ class ManagePlanItems extends Component
         $this->authorizeManage();
 
         $rules = [
-            'itemForm.organizational_plan_item_id' => 'required|exists:organizational_plan_items,id',
+            'itemForm.department_plan_id' => 'required',
             'itemForm.item_name' => 'required|string|max:255',
             'itemForm.description' => 'nullable|string',
             'itemForm.weight' => 'required|numeric|min:0|max:100',
@@ -146,7 +146,7 @@ class ManagePlanItems extends Component
         ];
 
         $messages = [
-            'itemForm.organizational_plan_item_id.required' => 'Please select an organizational plan item.',
+            'itemForm.department_plan_id.required' => 'Please select a department plan.',
             'itemForm.item_name.required' => 'Please enter the item name.',
             'itemForm.weight.required' => 'Please enter the weight.',
             'itemForm.weight.max' => 'Weight cannot exceed 100%.',
@@ -158,14 +158,11 @@ class ManagePlanItems extends Component
             ? $this->planItems()->findOrFail($this->editingItemId)
             : null;
 
-        // Check for duplicate org plan item in this department plan
-        $existingItem = DepartmentPlanItem::where('department_plan_id', $this->planId)
-            ->where('organizational_plan_item_id', $this->itemForm['organizational_plan_item_id'])
-            ->when($this->editingItemId, fn ($q) => $q->where('id', '!=', $this->editingItemId))
-            ->first();
+        // A new item goes to the chosen plan, which comes from the client. An edited item stays put.
+        $targetPlan = $editingItem ? null : $this->selectablePlans()->find($this->itemForm['department_plan_id']);
 
-        if ($existingItem) {
-            session()->flash('error', 'This organizational plan item has already been added to this department plan.');
+        if (! $editingItem && ! $targetPlan) {
+            $this->addError('itemForm.department_plan_id', 'The selected department plan is not available.');
 
             return;
         }
@@ -174,8 +171,6 @@ class ManagePlanItems extends Component
             DB::beginTransaction();
 
             $data = [
-                'department_plan_id' => $this->planId,
-                'organizational_plan_item_id' => $this->itemForm['organizational_plan_item_id'],
                 'item_name' => $this->itemForm['item_name'],
                 'description' => $this->itemForm['description'],
                 'weight' => $this->itemForm['weight'],
@@ -192,8 +187,8 @@ class ManagePlanItems extends Component
                 $editingItem->update($data);
                 session()->flash('success', 'Department plan item updated successfully!');
             } else {
-                DepartmentPlanItem::create($data);
-                session()->flash('success', 'Department plan item created successfully!');
+                DepartmentPlanItem::create($data + ['department_plan_id' => $targetPlan->id]);
+                session()->flash('success', "Item added to {$targetPlan->plan_name} successfully!");
             }
 
             DB::commit();
@@ -260,32 +255,13 @@ class ManagePlanItems extends Component
 
         $totalWeight = $items->sum('weight');
 
-        // Get available organizational plan items (from linked org plan)
-        $availableOrgItems = [];
-        if ($this->plan->organizationalPlan) {
-            $usedOrgItemIds = $items->pluck('organizational_plan_item_id')->toArray();
-            $availableOrgItems = OrganizationalPlanItem::where('organizational_plan_id', $this->plan->organizational_plan_id)
-                ->where('is_active', true)
-                ->when($this->editingItemId, function ($q) use ($usedOrgItemIds) {
-                    // When editing, exclude only other items' org items
-                    $currentItem = DepartmentPlanItem::find($this->editingItemId);
-                    if ($currentItem) {
-                        $usedOrgItemIds = array_diff($usedOrgItemIds, [$currentItem->organizational_plan_item_id]);
-                    }
-
-                    return $q->whereNotIn('id', $usedOrgItemIds);
-                }, function ($q) use ($usedOrgItemIds) {
-                    return $q->whereNotIn('id', $usedOrgItemIds);
-                })
-                ->orderBy('display_order')
-                ->get();
-        }
-
         return view('livewire.performance.department-plans.manage-plan-items', [
             'items' => $items,
             'totalWeight' => $totalWeight,
-            'availableOrgItems' => $availableOrgItems,
             'canManage' => DepartmentPlanAccess::canManage(Auth::user()),
+            'departmentPlans' => $this->showModal && ! $this->editingItemId
+                ? $this->selectablePlans()->with('department')->orderBy('plan_name')->get()
+                : collect(),
         ]);
     }
 }

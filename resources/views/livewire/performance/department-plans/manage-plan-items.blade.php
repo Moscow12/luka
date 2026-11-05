@@ -182,7 +182,7 @@
                                     <i class="fa-solid fa-clipboard-list text-muted mb-3" style="font-size: 48px;"></i>
                                     <h5 class="text-muted">No Items Found</h5>
                                     @if ($canManage)
-                                        <p class="text-muted">Add items from the organizational plan or create custom items</p>
+                                        <p class="text-muted">Add items to this department plan</p>
                                     @endif
                                     @if ($canManage && in_array($plan->status, ['draft', 'active']))
                                         <button class="btn btn-primary mt-2" wire:click="createItem">
@@ -214,29 +214,22 @@
                         <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label for="orgPlanItem" class="form-label">Organizational Plan Item <span class="text-danger">*</span></label>
-                                    <select wire:model.live="itemForm.organizational_plan_item_id" class="form-select @error('itemForm.organizational_plan_item_id') is-invalid @enderror" id="orgPlanItem">
-                                        <option value="">Select Source Item</option>
-                                        @if ($editingItemId)
-                                            @php
-                                                $currentItem = \App\Models\DepartmentPlanItem::find($editingItemId);
-                                            @endphp
-                                            @if ($currentItem && $currentItem->organizationalPlanItem)
-                                                <option value="{{ $currentItem->organizational_plan_item_id }}" selected>
-                                                    {{ $currentItem->organizationalPlanItem->item_name }} (Current)
+                                    <label for="departmentPlan" class="form-label">Department Plan <span class="text-danger">*</span></label>
+                                    @if ($editingItemId)
+                                        <div class="form-control-plaintext fw-semibold" id="departmentPlan">{{ $plan->plan_name }}</div>
+                                    @else
+                                        <select wire:model.live="itemForm.department_plan_id" class="form-select @error('itemForm.department_plan_id') is-invalid @enderror" id="departmentPlan">
+                                            <option value="">Select Department Plan</option>
+                                            @foreach ($departmentPlans as $departmentPlan)
+                                                <option value="{{ $departmentPlan->id }}">
+                                                    {{ $departmentPlan->plan_name }} ({{ $departmentPlan->department->name ?? 'N/A' }})
                                                 </option>
-                                            @endif
-                                        @endif
-                                        @foreach ($availableOrgItems as $orgItem)
-                                            <option value="{{ $orgItem->id }}">
-                                                {{ $orgItem->item_name }} ({{ number_format($orgItem->weight, 2) }}%)
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('itemForm.organizational_plan_item_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="form-text">Select an item from the organizational plan to link to</div>
+                                            @endforeach
+                                        </select>
+                                        @error('itemForm.department_plan_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    @endif
                                 </div>
 
                                 <div class="col-12">
