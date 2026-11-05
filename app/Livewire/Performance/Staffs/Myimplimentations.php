@@ -7,40 +7,62 @@ use App\Models\EmployeePlan;
 use App\Models\EmployeePlanImplementation;
 use App\Models\EmployeePlanItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class Myimplimentations extends Component
 {
-    use WithPagination;
+    use WithFileUploads, WithPagination;
 
     protected $paginationTheme = 'bootstrap';
 
     public $employee;
+
     public $hasEmployeeRecord = false;
+
     public $myPlans = [];
+
     public $selectedPlan = null;
+
     public $selectedPlanItems = [];
 
     // Modal states
     public $showModal = false;
+
     public $modalMode = 'create';
 
     // Implementation form fields
     public $implementationId;
+
     public $employee_plan_item_id;
+
     public $implementation_date;
+
     public $activity_title;
+
     public $activity_description;
+
     public $quantity_achieved;
+
     public $unit;
+
     public $evidence;
+
+    public $evidenceFile;
+
+    public $existingEvidenceName;
+
     public $challenges;
+
     public $lessons_learned;
 
     // Filter
     public $search = '';
+
     public $filterPlanId = '';
+
     public $filterStatus = '';
 
     public function mount()
@@ -56,7 +78,9 @@ class Myimplimentations extends Component
 
     public function loadMyPlans()
     {
-        if (!$this->employee) return;
+        if (! $this->employee) {
+            return;
+        }
 
         $this->myPlans = EmployeePlan::where('employee_id', $this->employee->id)
             ->whereIn('status', ['active', 'completed'])
@@ -91,6 +115,7 @@ class Myimplimentations extends Component
             $this->quantity_achieved = $impl->quantity_achieved;
             $this->unit = $impl->unit;
             $this->evidence = $impl->evidence;
+            $this->existingEvidenceName = $impl->evidence_name;
             $this->challenges = $impl->challenges;
             $this->lessons_learned = $impl->lessons_learned;
         } else {
@@ -103,7 +128,7 @@ class Myimplimentations extends Component
         $this->reset([
             'implementationId', 'employee_plan_item_id', 'activity_title',
             'activity_description', 'quantity_achieved', 'unit',
-            'evidence', 'challenges', 'lessons_learned'
+            'evidence', 'evidenceFile', 'existingEvidenceName', 'challenges', 'lessons_learned',
         ]);
         $this->implementation_date = date('Y-m-d');
     }
@@ -128,6 +153,7 @@ class Myimplimentations extends Component
             'quantity_achieved' => ['nullable', 'numeric', 'min:0'],
             'unit' => ['nullable', 'string', 'max:50'],
             'evidence' => ['nullable', 'string'],
+            'evidenceFile' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx', 'max:10240'],
             'challenges' => ['nullable', 'string'],
             'lessons_learned' => ['nullable', 'string'],
         ]);
@@ -143,7 +169,12 @@ class Myimplimentations extends Component
             'evidence' => $this->evidence,
             'challenges' => $this->challenges,
             'lessons_learned' => $this->lessons_learned,
+            // Any change goes back for verification, with the previous decision cleared
             'status' => 'pending',
+            'supervisor_remarks' => null,
+            'verification_score' => null,
+            'verified_by' => null,
+            'verified_at' => null,
             'added_by' => Auth::id(),
         ];
 
@@ -154,13 +185,19 @@ class Myimplimentations extends Component
 
             // Only allow edit if not yet verified
             if ($impl->status !== 'verified') {
-                $impl->update($data);
+                $previousFile = $impl->evidence_path;
+                $impl->update($data + $this->storeEvidenceFile());
+
+                if ($this->evidenceFile && $previousFile) {
+                    Storage::disk('local')->delete($previousFile);
+                }
+
                 session()->flash('success', 'Implementation updated successfully!');
             } else {
                 session()->flash('error', 'Cannot edit verified implementations.');
             }
         } else {
-            EmployeePlanImplementation::create($data);
+            EmployeePlanImplementation::create($data + $this->storeEvidenceFile());
             session()->flash('success', 'Implementation recorded successfully!');
         }
 
@@ -171,6 +208,19 @@ class Myimplimentations extends Component
         if ($this->selectedPlan) {
             $this->selectPlan($this->selectedPlan->id);
         }
+    }
+
+    /** Kept on the private disk: files are only served through PerformanceEvidenceController. */
+    private function storeEvidenceFile(): array
+    {
+        if (! $this->evidenceFile) {
+            return [];
+        }
+
+        return [
+            'evidence_path' => $this->evidenceFile->store('performance-evidence', 'local'),
+            'evidence_name' => $this->evidenceFile->getClientOriginalName(),
+        ];
     }
 
     public function delete($id)
@@ -195,7 +245,9 @@ class Myimplimentations extends Component
 
     public function getAllPlanItems()
     {
-        if (!$this->employee) return collect();
+        if (! $this->employee) {
+            return collect();
+        }
 
         return EmployeePlanItem::whereHas('employeePlan', function ($query) {
             $query->where('employee_id', $this->employee->id)
@@ -207,7 +259,7 @@ class Myimplimentations extends Component
     {
         $implementations = EmployeePlanImplementation::where('employee_id', $this->employee?->id)
             ->when($this->search, function ($query) {
-                $query->where('activity_title', 'like', '%' . $this->search . '%');
+                $query->where('activity_title', 'like', '%'.$this->search.'%');
             })
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);

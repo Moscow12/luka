@@ -89,6 +89,9 @@
                                 <h4 class="mb-0">{{ number_format($evaluationStats['latest_evaluation']->self_score ?? 0, 1) }}%</h4>
                                 <small class="text-white-50">Self Score (Pending Review)</small>
                             @endif
+                            @if($evaluationStats['latest_evaluation']->task_score !== null)
+                                <small class="d-block text-white-50 mt-1">Task Score: {{ number_format($evaluationStats['latest_evaluation']->task_score, 1) }}%</small>
+                            @endif
                         @else
                             <p class="mb-0">No evaluations yet</p>
                             <small class="text-white-50">Submit a plan for evaluation</small>

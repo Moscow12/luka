@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\PerformanceEvidenceController;
 use App\Http\Controllers\TicketAttachmentController;
 use App\Livewire\Acc\Payroll\Allowancepayment;
 use App\Livewire\Acc\Payroll\Paymentreports;
@@ -60,6 +61,7 @@ use App\Livewire\Performance\Staffs\Myimplimentations;
 use App\Livewire\Performance\Staffs\Myperformanceview;
 use App\Livewire\Performance\Staffs\Myplanning;
 use App\Livewire\Performance\Supervisor\ApproveEvaluations;
+use App\Livewire\Performance\Supervisor\VerifyImplementations;
 use App\Livewire\Performance\TitleKpis\ManageTitleKpis;
 use App\Livewire\Procurement\ApproveOrders;
 use App\Livewire\Procurement\Orders;
@@ -184,6 +186,9 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/performance/myimplementation', Myimplimentations::class)->name('performance.myimplementation');
     // my evaluation
     Route::get('/performance/myevaluation', Myevaluations::class)->name('performance.myevaluation');
+    // verify recorded work, and its evidence files
+    Route::get('/performance/verify-implementations', VerifyImplementations::class)->name('performance.verify.implementations');
+    Route::get('/performance/evidence/{implementation}', PerformanceEvidenceController::class)->name('performance.evidence');
     // supervisor evaluation approval
     Route::get('/performance/approve-evaluations', ApproveEvaluations::class)->name('performance.approve.evaluations');
     // my duties

@@ -20,13 +20,15 @@
         }
     }
 
+    $canVerifyImplementations = $hasEmployeeRecord && \App\Services\Performance\EvaluationWorkflow::canVerifyAny($user);
+
     // Define route groups for active state detection
     $rosterRoutes = ['viewroster.index', 'roster.create','roster.edit', 'roster.*'];
     $leaveRoutes = ['leave.leavebalance', 'leave.requestleave', 'leave.leaveapproval', 'leave.acting-assignments', 'leave.acting-settings', 'leave.*'];
     $loanRoutes = ['loan.loanbalance', 'loan.requestloan', 'loan.loanapproval', 'loan.loanpayments', 'loan.items', 'loan.*'];
     $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices', 'hr.my-contract-request', 'hr.contract-requests', 'hr.certificates-of-service'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
-    $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.myduties'];
+    $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.verify.implementations', 'performance.myduties'];
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
 
     // Department Plans sits under Staff Performance for those who manage or oversee plans, under My Performance for other staff
@@ -368,6 +370,11 @@
                 <a class="nav-link {{ request()->routeIs('performance.dept.plans') ? 'active' : '' }}" href="{{ route('performance.dept.plans') }}"><i class="fa-solid fa-sitemap me-2"></i>Department Plans</a>
             </li>
             @endunless
+            @if($canVerifyImplementations)
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.verify.implementations') ? 'active' : '' }}" href="{{ route('performance.verify.implementations') }}"><i class="fa-solid fa-list-check me-2"></i>Verify Implementations</a>
+            </li>
+            @endif
             @if($canApprovePerformance)
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.approve.evaluations') ? 'active' : '' }}" href="{{ route('performance.approve.evaluations') }}"><i class="fa-solid fa-check-double me-2"></i>Approve Evaluations</a>

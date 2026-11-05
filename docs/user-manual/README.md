@@ -146,14 +146,14 @@ This comprehensive user manual provides complete documentation for the HR Manage
 
 ### **Performance & Development**
 
-#### ⏳ [Section 11: Performance Management](./11-performance-management.md)
-**Status:** Pending
+#### 🔄 [Section 11: Performance Management](./11-performance-management.md)
+**Status:** In Review
 **Target Audience:** All staff, managers, HR
 **Topics Covered:**
 - My Performance (employee view)
   - Performance overview
   - Goal setting and planning
-  - Implementation tracking
+  - Implementation tracking and evidence files
   - Self-evaluation
   - My duties
 - Staff Performance (management view)
@@ -162,7 +162,8 @@ This comprehensive user manual provides complete documentation for the HR Manage
   - Employee plans
   - Assigned duties
   - Job title KPIs
-- Evaluation and approval workflows
+- Verification of recorded work
+- Evaluation and approval workflows, routed by department
 
 ---
 
@@ -267,13 +268,13 @@ Comprehensive security guidelines and recommendations
 2. [Section 6: Roster Management](./06-roster-management.md) *(Pending)*
 3. [Section 7: Leave Management](./07-leave-management.md) *(Pending)*
 4. [Section 9: Asset Management](./09-asset-management.md) *(Pending)*
-5. [Section 11: Performance Management](./11-performance-management.md) *(Pending)*
+5. [Section 11: Performance Management](./11-performance-management.md)
 
 ### For Employees (Staff)
 1. [Section 1: Introduction & Overview](./01-introduction-and-overview.md)
 2. [Section 7: Leave Management](./07-leave-management.md) *(Pending)*
 3. [Section 8: Loan Management](./08-loan-management.md) *(Pending)*
-4. [Section 11: My Performance](./11-performance-management.md) *(Pending)*
+4. [Section 11: My Performance](./11-performance-management.md)
 5. [Section 12: My Contract](./12-contract-management.md) *(Pending)*
 
 ### For Finance Officers

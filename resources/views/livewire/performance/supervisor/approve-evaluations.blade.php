@@ -144,6 +144,23 @@
                         </div>
                         <form wire:submit="processApproval">
                             <div class="modal-body">
+                                @php $pendingEntries = $selectedEvaluationForReview?->pendingEntriesCount() ?? 0; @endphp
+                                @if($selectedEvaluationForReview)
+                                    @php $reviewTaskScore = $selectedEvaluationForReview->calculateTaskScore(); @endphp
+                                    <div class="alert alert-light border">
+                                        <strong>Self score:</strong> {{ number_format($selectedEvaluationForReview->calculateSelfScore(), 1) }}%
+                                        <span class="mx-2">|</span>
+                                        <strong>Task score:</strong> {{ $reviewTaskScore !== null ? number_format($reviewTaskScore, 1).'%' : 'No entries scored' }}
+                                        <div class="small text-muted mt-1">The final score is the average of these and your supervisor score.</div>
+                                    </div>
+                                @endif
+                                @if($pendingEntries > 0)
+                                    <div class="alert alert-warning">
+                                        <i class="fa-solid fa-hourglass-half me-2"></i>
+                                        {{ $pendingEntries }} {{ Str::plural('entry', $pendingEntries) }} still {{ $pendingEntries === 1 ? 'awaits' : 'await' }} verification. You can only approve once they are verified or rejected.
+                                        <a href="{{ route('performance.verify.implementations', ['employeeFilter' => $selectedEvaluationForReview->employee_id]) }}" class="alert-link">Verify entries</a>
+                                    </div>
+                                @endif
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label">Supervisor Score <span class="text-danger">*</span></label>
@@ -160,6 +177,7 @@
                                             <option value="approved">Approve</option>
                                             <option value="rejected">Reject</option>
                                         </select>
+                                        @error('approval_status') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                                     </div>
                                 </div>
 
@@ -239,6 +257,9 @@
                                 <div class="col-md-6">
                                     <div class="card bg-light">
                                         <div class="card-body text-center">
+                                            @php $detailTaskScore = $selectedEvaluation->calculateTaskScore(); @endphp
+                                            <h6>Task Score</h6>
+                                            <h4 class="text-primary">{{ $detailTaskScore !== null ? number_format($detailTaskScore, 1).'%' : 'Not scored' }}</h4>
                                             <h6>Self Score</h6>
                                             <h1 class="text-info">{{ number_format($selectedEvaluation->self_score ?? 0, 1) }}%</h1>
                                             @if($selectedEvaluation->employee_comments)
@@ -298,6 +319,9 @@
                                                                         <span class="badge bg-{{ $impl->status === 'verified' ? 'success' : ($impl->status === 'rejected' ? 'danger' : 'warning') }}">
                                                                             {{ $impl->status }}
                                                                         </span>
+                                                                        @if($impl->verification_score)
+                                                                            <span class="badge bg-primary">{{ $impl->verification_score }}/10</span>
+                                                                        @endif
                                                                     </li>
                                                                 @endforeach
                                                                 @if($item->implementations->count() > 3)

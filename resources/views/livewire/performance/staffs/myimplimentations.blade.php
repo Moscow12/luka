@@ -166,9 +166,20 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
+                                                    @if($impl->evidence_path)
+                                                        <a href="{{ route('performance.evidence', $impl->id) }}" target="_blank" rel="noopener" class="d-block small mb-1" title="{{ $impl->evidence_name }}">
+                                                            <i class="fa-solid fa-paperclip"></i> Evidence
+                                                        </a>
+                                                    @endif
                                                     <span class="badge bg-{{ $impl->status === 'verified' ? 'success' : ($impl->status === 'rejected' ? 'danger' : 'warning') }}">
                                                         {{ ucfirst($impl->status) }}
                                                     </span>
+                                                    @if($impl->verification_score)
+                                                        <span class="badge bg-primary d-block mt-1">Score {{ $impl->verification_score }}/10</span>
+                                                    @endif
+                                                    @if($impl->status === 'pending')
+                                                        <small class="d-block text-muted mt-1">Doesn't count until verified</small>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     @if($impl->status !== 'verified')
@@ -191,7 +202,7 @@
                                             @if($impl->supervisor_remarks)
                                                 <tr class="table-light">
                                                     <td colspan="6">
-                                                        <small><strong>Supervisor Remarks:</strong> {{ $impl->supervisor_remarks }}</small>
+                                                        <small><strong>Verifier's comment:</strong> {{ $impl->supervisor_remarks }}</small>
                                                     </td>
                                                 </tr>
                                             @endif
@@ -282,6 +293,16 @@
                                     <label class="form-label">Evidence/Supporting Documents</label>
                                     <textarea class="form-control" wire:model="evidence" rows="2"
                                               placeholder="Links to documents, screenshots, references..."></textarea>
+                                    <input type="file" class="form-control mt-2 @error('evidenceFile') is-invalid @enderror" wire:model="evidenceFile"
+                                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx">
+                                    @error('evidenceFile') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <div wire:loading wire:target="evidenceFile" class="small text-muted mt-1">Uploading...</div>
+                                    <small class="text-muted d-block mt-1">
+                                        Optional: PDF, image, Word or Excel, up to 10 MB.
+                                        @if($existingEvidenceName)
+                                            Current file: {{ $existingEvidenceName }}. Choosing a new one replaces it.
+                                        @endif
+                                    </small>
                                 </div>
 
                                 <div class="row">

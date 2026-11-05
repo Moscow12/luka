@@ -57,6 +57,11 @@ class EmployeePlan extends Model
         return $this->hasMany(EmployeePlanItem::class);
     }
 
+    public function hasApprovedEvaluation(): bool
+    {
+        return PerformanceEvaluation::where('employee_plan_id', $this->id)->where('status', 'approved')->exists();
+    }
+
     public function performanceEvaluation(): HasOne
     {
         return $this->hasOne(PerformanceEvaluation::class);

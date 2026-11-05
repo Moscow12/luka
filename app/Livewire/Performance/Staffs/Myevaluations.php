@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Performance\Staffs;
 
-use App\Models\approvalleveltodocument;
 use App\Models\Employee;
 use App\Models\EmployeePlan;
 use App\Models\PerformanceEvaluation;
+use App\Services\Performance\EvaluationWorkflow;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -17,16 +17,21 @@ class Myevaluations extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $employee;
+
     public $hasEmployeeRecord = false;
+
     public $plansReadyForEvaluation = [];
 
     // Modal states
     public $showSubmitModal = false;
+
     public $showDetailModal = false;
 
     // Form fields
     public $selectedPlanId;
+
     public $employee_comments;
+
     public $selectedEvaluation = null;
 
     // Filter
@@ -44,7 +49,9 @@ class Myevaluations extends Component
 
     public function loadPlansReadyForEvaluation()
     {
-        if (!$this->employee) return;
+        if (! $this->employee) {
+            return;
+        }
 
         // Get active/completed plans that don't have an evaluation yet or have draft/rejected evaluations
         $this->plansReadyForEvaluation = EmployeePlan::where('employee_id', $this->employee->id)
@@ -80,78 +87,51 @@ class Myevaluations extends Component
         // Check if plan has items
         if ($plan->employeePlanItems->isEmpty()) {
             session()->flash('error', 'Cannot submit a plan with no goals for evaluation.');
+
             return;
         }
 
-        // Calculate self score based on implementations
-        $selfScore = $this->calculatePlanScore($plan);
+        // Never submit into a level nobody can act on
+        $firstLevel = EvaluationWorkflow::firstLevelOrder($this->employee);
 
-        // Get the first approval level for Performance documents
-        $firstApprovalLevel = approvalleveltodocument::where('document_type', 'Performance')
-            ->where('is_active', true)
-            ->with('approval_level')
-            ->whereHas('approval_level', function ($q) {
-                $q->where('is_active', true)->orderBy('level_order');
-            })
-            ->first();
+        if ($firstLevel === null) {
+            session()->flash('error', 'No approver is set up for your department yet, so this evaluation cannot be submitted. Please contact your administrator.');
+            $this->showSubmitModal = false;
 
-        $currentLevel = $firstApprovalLevel ? 1 : 0;
+            return;
+        }
 
-        // Check if there's an existing draft/rejected evaluation
+        if (PerformanceEvaluation::where('employee_plan_id', $plan->id)->whereIn('status', ['submitted', 'under_review', 'approved'])->exists()) {
+            session()->flash('error', 'This plan has already been submitted for evaluation.');
+            $this->showSubmitModal = false;
+
+            return;
+        }
+
+        // A rejected or draft evaluation is reused, so its approval history stays together
         $evaluation = PerformanceEvaluation::where('employee_plan_id', $plan->id)
             ->where('employee_id', $this->employee->id)
             ->whereIn('status', ['draft', 'rejected'])
-            ->first();
-
-        if ($evaluation) {
-            // Update existing evaluation
-            $evaluation->update([
-                'self_score' => $selfScore,
-                'employee_comments' => $this->employee_comments,
-                'status' => 'submitted',
-                'current_approval_level' => $currentLevel,
-                'submitted_by' => Auth::id(),
-                'submitted_at' => now(),
-                'rejection_reason' => null,
-            ]);
-        } else {
-            // Create new evaluation
-            PerformanceEvaluation::create([
+            ->first() ?? new PerformanceEvaluation([
                 'employee_plan_id' => $plan->id,
                 'employee_id' => $this->employee->id,
-                'self_score' => $selfScore,
-                'employee_comments' => $this->employee_comments,
-                'status' => 'submitted',
-                'current_approval_level' => $currentLevel,
-                'submitted_by' => Auth::id(),
-                'submitted_at' => now(),
             ]);
-        }
+
+        $evaluation->fill([
+            'self_score' => $evaluation->calculateSelfScore(),
+            'task_score' => $evaluation->calculateTaskScore(),
+            'employee_comments' => $this->employee_comments,
+            'status' => 'submitted',
+            'current_approval_level' => $firstLevel,
+            'submitted_by' => Auth::id(),
+            'submitted_at' => now(),
+            'rejection_reason' => null,
+        ])->save();
 
         session()->flash('success', 'Performance evaluation submitted successfully!');
         $this->showSubmitModal = false;
         $this->reset(['selectedPlanId', 'employee_comments']);
         $this->loadPlansReadyForEvaluation();
-    }
-
-    protected function calculatePlanScore(EmployeePlan $plan): float
-    {
-        $items = $plan->employeePlanItems;
-        if ($items->isEmpty()) return 0;
-
-        $totalWeightedScore = 0;
-        $totalWeight = $items->sum('weight');
-
-        foreach ($items as $item) {
-            if ($item->target_value && $item->target_value > 0) {
-                $achieved = $item->total_achieved ?? 0;
-                $percentage = min(($achieved / $item->target_value) * 100, 100);
-                $weightedScore = ($percentage * $item->weight) / 100;
-                $totalWeightedScore += $weightedScore;
-            }
-        }
-
-        return $totalWeight > 0 ? round(($totalWeightedScore / $totalWeight) * 100, 2) : 0;
     }
 
     public function viewEvaluation($evaluationId)
@@ -182,6 +162,9 @@ class Myevaluations extends Component
 
         return view('livewire.performance.staffs.myevaluations', [
             'evaluations' => $evaluations,
+            'pendingEntriesForSelectedPlan' => $this->showSubmitModal && $this->selectedPlanId
+                ? (new PerformanceEvaluation(['employee_plan_id' => $this->selectedPlanId]))->pendingEntriesCount()
+                : 0,
         ]);
     }
 }

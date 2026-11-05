@@ -96,6 +96,7 @@
                                         <tr>
                                             <th>Plan</th>
                                             <th class="text-center">Self Score</th>
+                                            <th class="text-center">Task Score</th>
                                             <th class="text-center">Supervisor Score</th>
                                             <th class="text-center">Final Score</th>
                                             <th class="text-center">Status</th>
@@ -111,6 +112,13 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <span class="badge bg-info fs-6">{{ number_format($eval->self_score ?? 0, 1) }}%</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if($eval->task_score !== null)
+                                                        <span class="badge bg-secondary fs-6">{{ number_format($eval->task_score, 1) }}%</span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
                                                 </td>
                                                 <td class="text-center">
                                                     @if($eval->supervisor_score)
@@ -147,7 +155,7 @@
                                             </tr>
                                             @if($eval->status === 'rejected' && $eval->rejection_reason)
                                                 <tr class="table-danger">
-                                                    <td colspan="7">
+                                                    <td colspan="8">
                                                         <small><strong>Rejection Reason:</strong> {{ $eval->rejection_reason }}</small>
                                                     </td>
                                                 </tr>
@@ -184,8 +192,14 @@
                             <div class="modal-body">
                                 <div class="alert alert-info">
                                     <i class="fa-solid fa-info-circle me-2"></i>
-                                    Your self-score will be automatically calculated based on your recorded implementations.
+                                    Your self-score will be automatically calculated based on your verified implementations.
                                 </div>
+                                @if($pendingEntriesForSelectedPlan > 0)
+                                    <div class="alert alert-warning">
+                                        <i class="fa-solid fa-hourglass-half me-2"></i>
+                                        {{ $pendingEntriesForSelectedPlan }} of your entries still await verification and don't count yet. You can submit now: your approver must verify or reject them before approving, and your score is updated then.
+                                    </div>
+                                @endif
                                 <div class="mb-3">
                                     <label class="form-label">Comments (Optional)</label>
                                     <textarea class="form-control" wire:model="employee_comments" rows="4"
@@ -219,7 +233,7 @@
                         <div class="modal-body">
                             {{-- Scores Summary --}}
                             <div class="row mb-4">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="card bg-info text-white">
                                         <div class="card-body text-center">
                                             <h6>Self Score</h6>
@@ -227,7 +241,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-secondary text-white">
+                                        <div class="card-body text-center">
+                                            <h6>Task Score</h6>
+                                            <h2>{{ $selectedEvaluation->task_score !== null ? number_format($selectedEvaluation->task_score, 1).'%' : '-' }}</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
                                     <div class="card bg-primary text-white">
                                         <div class="card-body text-center">
                                             <h6>Supervisor Score</h6>
@@ -235,7 +257,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="card bg-success text-white">
                                         <div class="card-body text-center">
                                             <h6>Final Score</h6>

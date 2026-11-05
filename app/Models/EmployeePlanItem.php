@@ -58,7 +58,8 @@ class EmployeePlanItem extends Model
 
     public function getTotalAchievedAttribute(): float
     {
-        return $this->implementations()->where('status', '!=', 'rejected')->sum('quantity_achieved') ?? 0;
+        // Only work a supervisor has verified counts toward progress and scores
+        return $this->implementations()->where('status', 'verified')->sum('quantity_achieved') ?? 0;
     }
 
     public function getProgressPercentageAttribute(): float
