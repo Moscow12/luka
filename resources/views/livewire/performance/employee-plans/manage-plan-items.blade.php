@@ -227,26 +227,25 @@
                                         <label for="deptPlanItem" class="form-label">Department Plan Item</label>
                                         <select wire:model.live="itemForm.department_plan_item_id" class="form-select @error('itemForm.department_plan_item_id') is-invalid @enderror" id="deptPlanItem">
                                             <option value="">Select Source Item (Optional)</option>
-                                            @if ($editingItemId)
-                                                @php
-                                                    $currentItem = \App\Models\EmployeePlanItem::find($editingItemId);
-                                                @endphp
-                                                @if ($currentItem && $currentItem->departmentPlanItem)
-                                                    <option value="{{ $currentItem->department_plan_item_id }}" selected>
-                                                        {{ $currentItem->departmentPlanItem->item_name }} (Current)
-                                                    </option>
-                                                @endif
-                                            @endif
                                             @foreach ($availableDeptItems as $deptItem)
-                                                <option value="{{ $deptItem->id }}">
-                                                    {{ $deptItem->item_name }} ({{ number_format($deptItem->weight, 2) }}%)
+                                                @php $alreadyAdded = in_array($deptItem->id, $usedDeptItemIds, true); @endphp
+                                                <option value="{{ $deptItem->id }}" @disabled($alreadyAdded)>
+                                                    {{ $deptItem->item_name }}{{ $deptItem->description ? ' - '.Str::limit($deptItem->description, 30) : '' }} ({{ number_format($deptItem->weight, 2) }}%){{ $alreadyAdded ? ' - already added' : '' }}
                                                 </option>
                                             @endforeach
                                         </select>
                                         @error('itemForm.department_plan_item_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                        <div class="form-text">Link to a department plan item or leave empty for custom item</div>
+                                        <div class="form-text">
+                                            @if ($availableDeptItems->isEmpty())
+                                                This department plan has no active items yet. Leave empty for a custom item.
+                                            @elseif ($availableDeptItems->count() === count($usedDeptItemIds))
+                                                All items of this department plan are already added. Leave empty for a custom item.
+                                            @else
+                                                Link to a department plan item or leave empty for custom item
+                                            @endif
+                                        </div>
                                     </div>
                                 @endif
 

@@ -285,22 +285,23 @@ class ManagePlanItems extends Component
             return ($item->score ?? 0) * ($item->weight / 100);
         });
 
-        // Get available department plan items (from linked dept plan)
-        $availableDeptItems = [];
+        // Department plan items to pick from. Those already in this plan stay listed, marked as
+        // added, so the picker explains itself instead of looking empty.
+        $availableDeptItems = collect();
+        $usedDeptItemIds = [];
         if ($this->plan->departmentPlan) {
-            $usedDeptItemIds = $items->pluck('department_plan_item_id')->filter()->toArray();
-            $availableDeptItems = DepartmentPlanItem::where('department_plan_id', $this->plan->department_plan_id)
-                ->where('is_active', true)
-                ->when($this->editingItemId, function ($q) use ($usedDeptItemIds) {
-                    $currentItem = EmployeePlanItem::find($this->editingItemId);
-                    if ($currentItem && $currentItem->department_plan_item_id) {
-                        $usedDeptItemIds = array_diff($usedDeptItemIds, [$currentItem->department_plan_item_id]);
-                    }
+            $currentDeptItemId = $this->editingItemId
+                ? $this->planItems()->whereKey($this->editingItemId)->value('department_plan_item_id')
+                : null;
 
-                    return $q->whereNotIn('id', $usedDeptItemIds);
-                }, function ($q) use ($usedDeptItemIds) {
-                    return $q->whereNotIn('id', $usedDeptItemIds);
-                })
+            $usedDeptItemIds = array_values(array_diff(
+                $items->pluck('department_plan_item_id')->filter()->all(),
+                [$currentDeptItemId]
+            ));
+
+            // The item's own source stays selectable even if it has since been deactivated
+            $availableDeptItems = DepartmentPlanItem::where('department_plan_id', $this->plan->department_plan_id)
+                ->where(fn ($q) => $q->where('is_active', true)->when($currentDeptItemId, fn ($q) => $q->orWhere('id', $currentDeptItemId)))
                 ->orderBy('display_order')
                 ->get();
         }
@@ -311,6 +312,7 @@ class ManagePlanItems extends Component
             'averageScore' => $averageScore,
             'weightedScore' => $weightedScore,
             'availableDeptItems' => $availableDeptItems,
+            'usedDeptItemIds' => $usedDeptItemIds,
             'canManage' => EmployeePlanAccess::canManage(Auth::user()),
         ]);
     }
