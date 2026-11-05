@@ -77,7 +77,9 @@ class Myplanning extends Component
 
     public function selectDepartmentPlan($planId)
     {
-        $this->selectedDepartmentPlan = DepartmentPlan::with('departmentPlanItems')->find($planId);
+        $this->selectedDepartmentPlan = DepartmentPlan::with('departmentPlanItems')
+            ->where('department_id', $this->employee?->department_id)
+            ->find($planId);
         $this->departmentPlanItems = $this->selectedDepartmentPlan?->departmentPlanItems ?? [];
     }
 

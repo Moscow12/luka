@@ -28,6 +28,12 @@
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
     $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.myduties'];
     $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
+
+    // Department Plans sits under Staff Performance for those who manage or oversee plans, under My Performance for other staff
+    $deptPlansInStaffPerformance = $isSuperAdmin || ($user?->canAny(['manage-dept-plans', 'view-all-dept-plans']) ?? false);
+    if (! $deptPlansInStaffPerformance) {
+        $myPerformanceRoutes[] = 'performance.dept.plans';
+    }
     $contractRoutes = ['contracts.list', 'contracts.create', 'contracts.*'];
     $chopRoutes = ['chop.budget.requests', 'chop.reporting', 'chop.director.review', 'chop.activities', 'chop.cost.analysis', 'chop.monitoring', 'chop.settings', 'chop.*'];
     $setupRoutes = ['setup.index', 'setup.location', 'setup.finances', 'setup.vendors', 'setup.approvalconfig', 'setup.assetconfig', 'setup.termination-reasons', 'setup.*'];
@@ -357,6 +363,11 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.myduties') ? 'active' : '' }}" href="{{ route('performance.myduties') }}"><i class="fa-solid fa-clipboard-list me-2"></i>My Duties</a>
             </li>
+            @unless($deptPlansInStaffPerformance)
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.dept.plans') ? 'active' : '' }}" href="{{ route('performance.dept.plans') }}"><i class="fa-solid fa-sitemap me-2"></i>Department Plans</a>
+            </li>
+            @endunless
             @if($canApprovePerformance)
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.approve.evaluations') ? 'active' : '' }}" href="{{ route('performance.approve.evaluations') }}"><i class="fa-solid fa-check-double me-2"></i>Approve Evaluations</a>
@@ -464,7 +475,7 @@
     @endif
 
     <!-- Staff Performance -->
-    @if($isSuperAdmin || $user?->canAny(['manage-org-plans', 'manage-dept-plans', 'manage-employee-plans', 'assign-duties', 'set-kpis']))
+    @if($isSuperAdmin || $user?->canAny(['manage-org-plans', 'manage-dept-plans', 'view-all-dept-plans', 'manage-employee-plans', 'assign-duties', 'set-kpis']))
     <li class="nav-item dropdown {{ request()->routeIs($performanceRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($performanceRoutes) ? 'active' : '' }}" href="{{ route('performance.org.plans') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($performanceRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -478,7 +489,7 @@
                 <a class="nav-link {{ request()->routeIs('performance.org.plans') ? 'active' : '' }}" href="{{ route('performance.org.plans') }}"><i class="fa-solid fa-building"></i> Organizational Plans</a>
             </li>
             @endif
-            @if($isSuperAdmin || $user?->can('manage-dept-plans'))
+            @if($deptPlansInStaffPerformance)
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.dept.plans') ? 'active' : '' }}" href="{{ route('performance.dept.plans') }}"><i class="fa-solid fa-sitemap"></i> Department Plans</a>
             </li>

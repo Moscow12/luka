@@ -6,7 +6,7 @@
         ['label' => 'Department Plans', 'url' => route('performance.dept.plans')],
         ['label' => $plan->plan_name, 'url' => '#'],
     ]">
-        @if (in_array($plan->status, ['draft', 'active']))
+        @if ($canManage && in_array($plan->status, ['draft', 'active']))
             <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createItem">
                 <i class="fa-solid fa-plus"></i> ADD ITEM
             </button>
@@ -143,20 +143,28 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <button wire:click="toggleActive('{{ $item->id }}')"
-                                    class="badge border-0 bg-{{ $item->is_active ? 'success' : 'danger' }}-subtle text-{{ $item->is_active ? 'success' : 'danger' }}"
-                                    style="cursor: pointer;">
-                                    {{ $item->is_active ? 'Active' : 'Inactive' }}
-                                </button>
+                                @if ($canManage)
+                                    <button wire:click="toggleActive('{{ $item->id }}')"
+                                        class="badge border-0 bg-{{ $item->is_active ? 'success' : 'danger' }}-subtle text-{{ $item->is_active ? 'success' : 'danger' }}"
+                                        style="cursor: pointer;">
+                                        {{ $item->is_active ? 'Active' : 'Inactive' }}
+                                    </button>
+                                @else
+                                    <span class="badge bg-{{ $item->is_active ? 'success' : 'danger' }}-subtle text-{{ $item->is_active ? 'success' : 'danger' }}">
+                                        {{ $item->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                @endif
                             </td>
                             <td>
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <button wire:click="editItem('{{ $item->id }}')"
-                                        class="btn btn-sm btn-ghost-secondary rounded-circle"
-                                        title="Edit">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    @if ($item->employee_plan_items_count == 0)
+                                    @if ($canManage)
+                                        <button wire:click="editItem('{{ $item->id }}')"
+                                            class="btn btn-sm btn-ghost-secondary rounded-circle"
+                                            title="Edit">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                    @endif
+                                    @if ($canManage && $item->employee_plan_items_count == 0)
                                         <button wire:click="deleteItem('{{ $item->id }}')"
                                             wire:confirm="Are you sure you want to delete this item?"
                                             class="btn btn-sm btn-ghost-danger rounded-circle"
@@ -173,8 +181,10 @@
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fa-solid fa-clipboard-list text-muted mb-3" style="font-size: 48px;"></i>
                                     <h5 class="text-muted">No Items Found</h5>
-                                    <p class="text-muted">Add items from the organizational plan or create custom items</p>
-                                    @if (in_array($plan->status, ['draft', 'active']))
+                                    @if ($canManage)
+                                        <p class="text-muted">Add items from the organizational plan or create custom items</p>
+                                    @endif
+                                    @if ($canManage && in_array($plan->status, ['draft', 'active']))
                                         <button class="btn btn-primary mt-2" wire:click="createItem">
                                             <i class="fa-solid fa-plus me-1"></i> Add First Item
                                         </button>

@@ -64,6 +64,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-performance', 'description' => 'Manage KPIs, duties, and performance evaluations'],
                 ['name' => 'manage-org-plans', 'description' => 'Manage organizational performance plans'],
                 ['name' => 'manage-dept-plans', 'description' => 'Manage department performance plans'],
+                ['name' => 'view-all-dept-plans', 'description' => 'View department performance plans of all departments'],
                 ['name' => 'manage-employee-plans', 'description' => 'Manage employee performance plans'],
                 ['name' => 'assign-duties', 'description' => 'Assign duties and KPIs to employees'],
                 ['name' => 'set-kpis', 'description' => 'Set and manage job title KPIs'],

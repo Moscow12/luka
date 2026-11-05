@@ -2,14 +2,18 @@
 
 namespace App\Livewire\Performance\DepartmentPlans;
 
-use App\Models\DepartmentPlan;
 use App\Models\DepartmentPlanItem;
 use App\Models\OrganizationalPlanItem;
+use App\Services\Performance\DepartmentPlanAccess;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ManagePlanItems extends Component
 {
+    #[Locked]
     public $planId;
 
     public $plan;
@@ -19,6 +23,7 @@ class ManagePlanItems extends Component
 
     public $modalMode = 'create';
 
+    #[Locked]
     public $editingItemId = null;
 
     // Item Form Fields
@@ -39,11 +44,26 @@ class ManagePlanItems extends Component
     public function mount($planId)
     {
         $this->planId = $planId;
-        $this->plan = DepartmentPlan::with(['department', 'organizationalPlan'])->findOrFail($planId);
+        $this->plan = DepartmentPlanAccess::visiblePlans(Auth::user())
+            ->with(['department', 'organizationalPlan'])
+            ->findOrFail($planId);
+    }
+
+    private function authorizeManage(): void
+    {
+        abort_unless(DepartmentPlanAccess::canManage(Auth::user()), 403);
+    }
+
+    /** Items of this plan only: item ids arrive from the client. */
+    private function planItems(): Builder
+    {
+        return DepartmentPlanItem::where('department_plan_id', $this->planId);
     }
 
     public function createItem()
     {
+        $this->authorizeManage();
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
@@ -66,12 +86,15 @@ class ManagePlanItems extends Component
 
     public function editItem($itemId)
     {
+        $this->authorizeManage();
+
+        $item = $this->planItems()->findOrFail($itemId);
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'edit';
         $this->editingItemId = $itemId;
 
-        $item = DepartmentPlanItem::findOrFail($itemId);
         $this->itemForm = [
             'organizational_plan_item_id' => $item->organizational_plan_item_id,
             'item_name' => $item->item_name,
@@ -106,6 +129,8 @@ class ManagePlanItems extends Component
 
     public function saveItem()
     {
+        $this->authorizeManage();
+
         $rules = [
             'itemForm.organizational_plan_item_id' => 'required|exists:organizational_plan_items,id',
             'itemForm.item_name' => 'required|string|max:255',
@@ -128,6 +153,10 @@ class ManagePlanItems extends Component
         ];
 
         $this->validate($rules, $messages);
+
+        $editingItem = $this->modalMode === 'edit' && $this->editingItemId
+            ? $this->planItems()->findOrFail($this->editingItemId)
+            : null;
 
         // Check for duplicate org plan item in this department plan
         $existingItem = DepartmentPlanItem::where('department_plan_id', $this->planId)
@@ -159,9 +188,8 @@ class ManagePlanItems extends Component
                 'is_active' => $this->itemForm['is_active'],
             ];
 
-            if ($this->modalMode === 'edit' && $this->editingItemId) {
-                $item = DepartmentPlanItem::findOrFail($this->editingItemId);
-                $item->update($data);
+            if ($editingItem) {
+                $editingItem->update($data);
                 session()->flash('success', 'Department plan item updated successfully!');
             } else {
                 DepartmentPlanItem::create($data);
@@ -185,9 +213,11 @@ class ManagePlanItems extends Component
 
     public function deleteItem($itemId)
     {
-        try {
-            $item = DepartmentPlanItem::withCount('employeePlanItems')->findOrFail($itemId);
+        $this->authorizeManage();
 
+        $item = $this->planItems()->withCount('employeePlanItems')->findOrFail($itemId);
+
+        try {
             // Check if item has been distributed to employee plans
             if ($item->employee_plan_items_count > 0) {
                 session()->flash('error', 'Cannot delete this item because it has been distributed to '.$item->employee_plan_items_count.' employee plan(s).');
@@ -208,8 +238,11 @@ class ManagePlanItems extends Component
 
     public function toggleActive($itemId)
     {
+        $this->authorizeManage();
+
+        $item = $this->planItems()->findOrFail($itemId);
+
         try {
-            $item = DepartmentPlanItem::findOrFail($itemId);
             $item->update(['is_active' => ! $item->is_active]);
             session()->flash('success', 'Item status updated successfully!');
         } catch (\Exception $e) {
@@ -252,6 +285,7 @@ class ManagePlanItems extends Component
             'items' => $items,
             'totalWeight' => $totalWeight,
             'availableOrgItems' => $availableOrgItems,
+            'canManage' => DepartmentPlanAccess::canManage(Auth::user()),
         ]);
     }
 }

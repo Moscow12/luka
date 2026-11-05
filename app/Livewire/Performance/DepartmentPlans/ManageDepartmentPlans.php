@@ -4,10 +4,12 @@ namespace App\Livewire\Performance\DepartmentPlans;
 
 use App\Models\DepartmentPlan;
 use App\Models\DepartmentPlanItem;
-use App\Models\departments;
 use App\Models\OrganizationalPlan;
+use App\Services\Performance\DepartmentPlanAccess;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -30,6 +32,7 @@ class ManageDepartmentPlans extends Component
     public $modalMode = 'create';
 
     // Selected Records
+    #[Locked]
     public $editingPlanId = null;
 
     // Plan Form Fields
@@ -63,16 +66,29 @@ class ManageDepartmentPlans extends Component
         $this->resetPage();
     }
 
+    private function visiblePlans(): Builder
+    {
+        return DepartmentPlanAccess::visiblePlans(Auth::user());
+    }
+
+    private function authorizeManage(): void
+    {
+        abort_unless(DepartmentPlanAccess::canManage(Auth::user()), 403);
+    }
+
     // Plan CRUD Operations
     public function createPlan()
     {
+        $this->authorizeManage();
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
         $this->editingPlanId = null;
         $this->planForm = [
             'organizational_plan_id' => '',
-            'department_id' => '',
+            // Users limited to their own department have only that one to choose
+            'department_id' => DepartmentPlanAccess::canViewAll(Auth::user()) ? '' : (DepartmentPlanAccess::ownDepartmentId(Auth::user()) ?? ''),
             'plan_name' => '',
             'description' => '',
             'status' => 'draft',
@@ -82,12 +98,15 @@ class ManageDepartmentPlans extends Component
 
     public function editPlan($planId)
     {
+        $this->authorizeManage();
+
+        $plan = $this->visiblePlans()->findOrFail($planId);
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'edit';
         $this->editingPlanId = $planId;
 
-        $plan = DepartmentPlan::findOrFail($planId);
         $this->planForm = [
             'organizational_plan_id' => $plan->organizational_plan_id,
             'department_id' => $plan->department_id,
@@ -100,6 +119,8 @@ class ManageDepartmentPlans extends Component
 
     public function savePlan()
     {
+        $this->authorizeManage();
+
         $rules = [
             'planForm.organizational_plan_id' => 'required|exists:organizational_plans,id',
             'planForm.department_id' => 'required|exists:departments,id',
@@ -119,6 +140,16 @@ class ManageDepartmentPlans extends Component
 
         $this->validate($rules, $messages);
 
+        // The form only offers permitted departments, but its value comes from the client
+        abort_unless(
+            DepartmentPlanAccess::visibleDepartments(Auth::user())->whereKey($this->planForm['department_id'])->exists(),
+            403
+        );
+
+        $editingPlan = $this->modalMode === 'edit' && $this->editingPlanId
+            ? $this->visiblePlans()->findOrFail($this->editingPlanId)
+            : null;
+
         // Check for duplicate department-organizational plan combination
         $existingPlan = DepartmentPlan::where('organizational_plan_id', $this->planForm['organizational_plan_id'])
             ->where('department_id', $this->planForm['department_id'])
@@ -134,9 +165,8 @@ class ManageDepartmentPlans extends Component
         try {
             DB::beginTransaction();
 
-            if ($this->modalMode === 'edit' && $this->editingPlanId) {
-                $plan = DepartmentPlan::findOrFail($this->editingPlanId);
-                $plan->update([
+            if ($editingPlan) {
+                $editingPlan->update([
                     'organizational_plan_id' => $this->planForm['organizational_plan_id'],
                     'department_id' => $this->planForm['department_id'],
                     'plan_name' => $this->planForm['plan_name'],
@@ -174,9 +204,11 @@ class ManageDepartmentPlans extends Component
 
     public function deletePlan($planId)
     {
-        try {
-            $plan = DepartmentPlan::findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()->findOrFail($planId);
+
+        try {
             // Check if plan has employee plans
             if (method_exists($plan, 'employeePlans') && $plan->employeePlans()->count() > 0) {
                 session()->flash('error', 'Cannot delete this plan because it has employee plans assigned to it.');
@@ -208,10 +240,13 @@ class ManageDepartmentPlans extends Component
 
     public function distributePlanItems($planId)
     {
-        try {
-            $plan = DepartmentPlan::with(['organizationalPlan.items', 'departmentPlanItems'])
-                ->findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()
+            ->with(['organizationalPlan.items', 'departmentPlanItems'])
+            ->findOrFail($planId);
+
+        try {
             // Check if organizational plan has items
             if (! $plan->organizationalPlan || $plan->organizationalPlan->items->count() === 0) {
                 session()->flash('error', 'The linked organizational plan has no items to distribute.');
@@ -260,7 +295,10 @@ class ManageDepartmentPlans extends Component
     public function render()
     {
         // Build query with eager loading
-        $plansQuery = DepartmentPlan::query()
+        $user = Auth::user();
+        $canViewAll = DepartmentPlanAccess::canViewAll($user);
+
+        $plansQuery = $this->visiblePlans()
             ->with(['organizationalPlan', 'department', 'assignedBy'])
             ->withCount('departmentPlanItems');
 
@@ -292,13 +330,13 @@ class ManageDepartmentPlans extends Component
         $plans = $plansQuery->paginate($this->perPage);
 
         // Calculate statistics
-        $totalPlans = DepartmentPlan::count();
-        $activePlans = DepartmentPlan::where('status', 'active')->count();
-        $completedPlans = DepartmentPlan::where('status', 'completed')->count();
-        $departmentsCovered = DepartmentPlan::distinct('department_id')->count('department_id');
+        $totalPlans = $this->visiblePlans()->count();
+        $activePlans = $this->visiblePlans()->where('status', 'active')->count();
+        $completedPlans = $this->visiblePlans()->where('status', 'completed')->count();
+        $departmentsCovered = $this->visiblePlans()->distinct('department_id')->count('department_id');
 
-        // Get departments for filter
-        $departments = departments::orderBy('name')->get();
+        // Get departments for filter and form
+        $departments = DepartmentPlanAccess::visibleDepartments($user)->orderBy('name')->get();
 
         // Get approved organizational plans (plans that have been approved - have approved_at set)
         $organizationalPlans = OrganizationalPlan::whereNotNull('approved_at')
@@ -320,6 +358,9 @@ class ManageDepartmentPlans extends Component
             'departmentsCovered' => $departmentsCovered,
             'departments' => $departments,
             'organizationalPlans' => $organizationalPlans,
+            'canViewAll' => $canViewAll,
+            'canManage' => DepartmentPlanAccess::canManage($user),
+            'hasNoDepartment' => ! $canViewAll && $departments->isEmpty(),
         ]);
     }
 }

@@ -5,9 +5,11 @@
         ['label' => 'Performance Management', 'url' => '#'],
         ['label' => 'Department Plans', 'url' => route('performance.dept.plans')],
     ]">
-        <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createPlan">
-            <i class="fa-solid fa-plus"></i> ASSIGN PLAN TO DEPARTMENT
-        </button>
+        @if ($canManage)
+            <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createPlan">
+                <i class="fa-solid fa-plus"></i> ASSIGN PLAN TO DEPARTMENT
+            </button>
+        @endif
     </x-pages.breadcrumn>
 
     {{-- Flash Messages --}}
@@ -119,12 +121,14 @@
                         <div class="col-12 col-md-8">
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                                 <!-- Department Filter -->
-                                <select wire:model.live="departmentFilter" class="form-select" style="width: auto;">
-                                    <option value="">All Departments</option>
-                                    @foreach ($departments ?? [] as $dept)
-                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                                    @endforeach
-                                </select>
+                                @if ($canViewAll)
+                                    <select wire:model.live="departmentFilter" class="form-select" style="width: auto;">
+                                        <option value="">All Departments</option>
+                                        @foreach ($departments ?? [] as $dept)
+                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
 
                                 <!-- Status Filter -->
                                 <select wire:model.live="statusFilter" class="form-select" style="width: auto;">
@@ -225,10 +229,10 @@
                                         <div class="d-flex gap-1 justify-content-end">
                                             <a href="{{ route('performance.dept.plans.items', $deptPlan->id) }}"
                                                 class="btn btn-sm btn-ghost-info rounded-circle"
-                                                title="Manage Items">
+                                                title="{{ $canManage ? 'Manage Items' : 'View Items' }}">
                                                 <i class="fa-solid fa-list"></i>
                                             </a>
-                                            @if ($deptPlan->department_plan_items_count == 0)
+                                            @if ($canManage && $deptPlan->department_plan_items_count == 0)
                                                 <button wire:click="distributePlanItems('{{ $deptPlan->id }}')"
                                                     wire:confirm="This will copy all items from the organizational plan. Continue?"
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
@@ -236,12 +240,14 @@
                                                     <i class="fa-solid fa-download"></i>
                                                 </button>
                                             @endif
-                                            <button wire:click="editPlan('{{ $deptPlan->id }}')"
-                                                class="btn btn-sm btn-ghost-secondary rounded-circle"
-                                                title="Edit">
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                            </button>
-                                            @if ($deptPlan->status === 'draft')
+                                            @if ($canManage)
+                                                <button wire:click="editPlan('{{ $deptPlan->id }}')"
+                                                    class="btn btn-sm btn-ghost-secondary rounded-circle"
+                                                    title="Edit">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                            @endif
+                                            @if ($canManage && $deptPlan->status === 'draft')
                                                 <button wire:click="deletePlan('{{ $deptPlan->id }}')"
                                                     wire:confirm="Are you sure you want to delete this department plan?"
                                                     class="btn btn-sm btn-ghost-danger rounded-circle"
@@ -260,13 +266,17 @@
                                                 style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Department Plans Found</h5>
                                             <p class="text-muted">
-                                                @if ($search || $departmentFilter || $statusFilter)
+                                                @if ($hasNoDepartment)
+                                                    Your account is not linked to a department
+                                                @elseif ($search || $departmentFilter || $statusFilter)
                                                     Try adjusting your filters or search query
-                                                @else
+                                                @elseif ($canManage)
                                                     Start by assigning plans to departments
+                                                @else
+                                                    Your department has no plans yet
                                                 @endif
                                             </p>
-                                            @if (!$search && !$departmentFilter && !$statusFilter)
+                                            @if ($canManage && !$hasNoDepartment && !$search && !$departmentFilter && !$statusFilter)
                                                 <button class="btn btn-primary mt-2" wire:click="createPlan">
                                                     <i class="fa-solid fa-plus me-1"></i> Assign Plan to Department
                                                 </button>
@@ -335,7 +345,9 @@
                                 <div class="col-md-6">
                                     <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
                                     <select wire:model="planForm.department_id" class="form-select @error('planForm.department_id') is-invalid @enderror" id="department">
-                                        <option value="">Select Department</option>
+                                        @if ($canViewAll)
+                                            <option value="">Select Department</option>
+                                        @endif
                                         @foreach ($departments ?? [] as $dept)
                                             <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                                         @endforeach
