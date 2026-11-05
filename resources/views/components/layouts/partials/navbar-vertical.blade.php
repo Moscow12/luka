@@ -678,7 +678,7 @@
     @endif
 
     <!-- Application Logs -->
-    @if($isSuperAdmin)
+    @if($isSuperAdmin && \Illuminate\Support\Facades\Route::has('log-viewer.index'))
     <li class="nav-item">
         <a class="nav-link" href="{{ route('log-viewer.index') }}" target="_blank" rel="noopener">
             <span class="nav-icon">
