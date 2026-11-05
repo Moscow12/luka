@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Performance\EmployeePlans;
 
-use App\Models\departments;
 use App\Models\Employee;
 use App\Models\EmployeePlan;
 use App\Models\EmployeePlanItem;
 use App\Services\Performance\DepartmentPlanAccess;
+use App\Services\Performance\EmployeePlanAccess;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
@@ -138,16 +139,28 @@ class ManageEmployeePlans extends Component
         $this->resetPage();
     }
 
+    private function visiblePlans(): Builder
+    {
+        return EmployeePlanAccess::visiblePlans(Auth::user());
+    }
+
+    private function authorizeManage(): void
+    {
+        abort_unless(EmployeePlanAccess::canManage(Auth::user()), 403);
+    }
+
     // Plan CRUD Operations
     public function createPlan()
     {
+        $this->authorizeManage();
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
         $this->editingPlanId = null;
         $this->planForm = [
-            // Users limited to their own department have only that one to choose
-            'department_id' => DepartmentPlanAccess::canViewAll(Auth::user()) ? '' : (DepartmentPlanAccess::ownDepartmentId(Auth::user()) ?? ''),
+            // Starts on the user's own department; those with view-all access can pick another
+            'department_id' => DepartmentPlanAccess::ownDepartmentId(Auth::user()) ?? '',
             'department_plan_id' => '',
             'employee_id' => '',
             'plan_name' => '',
@@ -159,14 +172,10 @@ class ManageEmployeePlans extends Component
 
     public function editPlan($planId)
     {
-        $plan = EmployeePlan::with(['departmentPlan', 'employee'])->findOrFail($planId);
+        $this->authorizeManage();
+
+        $plan = $this->visiblePlans()->with(['departmentPlan', 'employee'])->findOrFail($planId);
         $departmentId = $plan->departmentPlan?->department_id ?? $plan->employee?->department_id;
-
-        if (! DepartmentPlanAccess::visibleDepartments(Auth::user())->whereKey($departmentId)->exists()) {
-            session()->flash('error', 'You can only edit plans of your own department.');
-
-            return;
-        }
 
         $this->resetErrorBag();
         $this->resetValidation();
@@ -186,6 +195,8 @@ class ManageEmployeePlans extends Component
 
     public function savePlan()
     {
+        $this->authorizeManage();
+
         $rules = [
             'planForm.department_id' => 'required',
             'planForm.department_plan_id' => 'required|exists:department_plans,id',
@@ -208,7 +219,7 @@ class ManageEmployeePlans extends Component
         $this->validate($rules, $messages);
 
         $editingPlan = $this->modalMode === 'edit' && $this->editingPlanId
-            ? EmployeePlan::findOrFail($this->editingPlanId)
+            ? $this->visiblePlans()->findOrFail($this->editingPlanId)
             : null;
 
         // The form only offers permitted choices, but its values come from the client
@@ -296,9 +307,11 @@ class ManageEmployeePlans extends Component
 
     public function deletePlan($planId)
     {
-        try {
-            $plan = EmployeePlan::findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()->findOrFail($planId);
+
+        try {
             // Check if plan has been reviewed
             if ($plan->reviewed_at !== null) {
                 session()->flash('error', 'Cannot delete a plan that has been reviewed.');
@@ -323,9 +336,11 @@ class ManageEmployeePlans extends Component
 
     public function activatePlan($planId)
     {
-        try {
-            $plan = EmployeePlan::withCount('employeePlanItems')->findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()->withCount('employeePlanItems')->findOrFail($planId);
+
+        try {
             // Validate that plan has items
             if ($plan->employee_plan_items_count === 0) {
                 session()->flash('error', 'Cannot activate a plan without items. Please distribute items first.');
@@ -355,9 +370,11 @@ class ManageEmployeePlans extends Component
 
     public function reviewPlan($planId)
     {
-        try {
-            $plan = EmployeePlan::withCount('employeePlanItems')->findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()->withCount('employeePlanItems')->findOrFail($planId);
+
+        try {
             // Check if already reviewed
             if ($plan->reviewed_at !== null) {
                 session()->flash('error', 'This plan has already been reviewed.');
@@ -388,9 +405,11 @@ class ManageEmployeePlans extends Component
 
     public function completePlan($planId)
     {
-        try {
-            $plan = EmployeePlan::findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()->findOrFail($planId);
+
+        try {
             // Validate that plan has been reviewed
             if ($plan->reviewed_at === null) {
                 session()->flash('error', 'Plan must be reviewed before completing.');
@@ -413,10 +432,13 @@ class ManageEmployeePlans extends Component
 
     public function distributePlanItems($planId)
     {
-        try {
-            $plan = EmployeePlan::with(['departmentPlan.departmentPlanItems', 'employeePlanItems'])
-                ->findOrFail($planId);
+        $this->authorizeManage();
 
+        $plan = $this->visiblePlans()
+            ->with(['departmentPlan.departmentPlanItems', 'employeePlanItems'])
+            ->findOrFail($planId);
+
+        try {
             // Check if department plan has items
             if (! $plan->departmentPlan || $plan->departmentPlan->departmentPlanItems->count() === 0) {
                 session()->flash('error', 'The linked department plan has no items to distribute.');
@@ -465,7 +487,10 @@ class ManageEmployeePlans extends Component
     public function render()
     {
         // Build query with eager loading
-        $plansQuery = EmployeePlan::query()
+        $user = Auth::user();
+        $canViewAll = DepartmentPlanAccess::canViewAll($user);
+
+        $plansQuery = $this->visiblePlans()
             ->with(['departmentPlan.department', 'employee', 'assignedBy', 'reviewedBy'])
             ->withCount('employeePlanItems');
 
@@ -501,15 +526,13 @@ class ManageEmployeePlans extends Component
         $plans = $plansQuery->paginate($this->perPage);
 
         // Calculate statistics
-        $totalPlans = EmployeePlan::count();
-        $activePlans = EmployeePlan::where('status', 'active')->count();
-        $reviewedPlans = EmployeePlan::whereNotNull('reviewed_at')->count();
-        $completedPlans = EmployeePlan::where('status', 'completed')->count();
+        $totalPlans = $this->visiblePlans()->count();
+        $activePlans = $this->visiblePlans()->where('status', 'active')->count();
+        $reviewedPlans = $this->visiblePlans()->whereNotNull('reviewed_at')->count();
+        $completedPlans = $this->visiblePlans()->where('status', 'completed')->count();
 
-        // Get departments for filter
-        $departments = departments::orderBy('name')->get();
-
-        $user = Auth::user();
+        // Get departments for filter and form
+        $departments = DepartmentPlanAccess::visibleDepartments($user)->orderBy('name')->get();
 
         // Active plans of the chosen department, plus the plan already linked when editing
         $formDepartmentId = $this->formDepartmentId();
@@ -529,9 +552,10 @@ class ManageEmployeePlans extends Component
             'reviewedPlans' => $reviewedPlans,
             'completedPlans' => $completedPlans,
             'departments' => $departments,
-            'formDepartments' => DepartmentPlanAccess::visibleDepartments($user)->orderBy('name')->get(),
             'formDepartmentSelected' => (bool) $formDepartmentId,
-            'canViewAllDepartments' => DepartmentPlanAccess::canViewAll($user),
+            'canViewAll' => $canViewAll,
+            'canManage' => EmployeePlanAccess::canManage($user),
+            'hasNoDepartment' => ! $canViewAll && $departments->isEmpty(),
             'departmentPlans' => $departmentPlans,
         ]);
     }

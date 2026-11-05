@@ -5,9 +5,11 @@
         ['label' => 'Performance Management', 'url' => '#'],
         ['label' => 'Employee Plans', 'url' => route('performance.employee.plans')],
     ]">
-        <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createPlan">
-            <i class="fa-solid fa-plus"></i> ASSIGN PLAN TO EMPLOYEE
-        </button>
+        @if ($canManage)
+            <button class='btn btn-primary d-md-flex align-items-center gap-2' wire:click="createPlan">
+                <i class="fa-solid fa-plus"></i> ASSIGN PLAN TO EMPLOYEE
+            </button>
+        @endif
     </x-pages.breadcrumn>
 
     {{-- Flash Messages --}}
@@ -119,12 +121,14 @@
                         <div class="col-12 col-md-8">
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                                 <!-- Department Filter -->
-                                <select wire:model.live="departmentFilter" class="form-select" style="width: auto;">
-                                    <option value="">All Departments</option>
-                                    @foreach ($departments ?? [] as $dept)
-                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                                    @endforeach
-                                </select>
+                                @if ($canViewAll)
+                                    <select wire:model.live="departmentFilter" class="form-select" style="width: auto;">
+                                        <option value="">All Departments</option>
+                                        @foreach ($departments ?? [] as $dept)
+                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
 
                                 <!-- Status Filter -->
                                 <select wire:model.live="statusFilter" class="form-select" style="width: auto;">
@@ -235,10 +239,10 @@
                                         <div class="d-flex gap-1 justify-content-end">
                                             <a href="{{ route('performance.employee.plans.items', $empPlan->id) }}"
                                                 class="btn btn-sm btn-ghost-info rounded-circle"
-                                                title="Manage Items">
+                                                title="{{ $canManage ? 'Manage Items' : 'View Items' }}">
                                                 <i class="fa-solid fa-list"></i>
                                             </a>
-                                            @if ($empPlan->employee_plan_items_count == 0)
+                                            @if ($canManage && $empPlan->employee_plan_items_count == 0)
                                                 <button wire:click="distributePlanItems('{{ $empPlan->id }}')"
                                                     wire:confirm="This will copy all items from the department plan. Continue?"
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
@@ -246,7 +250,7 @@
                                                     <i class="fa-solid fa-download"></i>
                                                 </button>
                                             @endif
-                                            @if ($empPlan->status === 'draft' && $empPlan->employee_plan_items_count > 0)
+                                            @if ($canManage && $empPlan->status === 'draft' && $empPlan->employee_plan_items_count > 0)
                                                 <button wire:click="activatePlan('{{ $empPlan->id }}')"
                                                     wire:confirm="Activate this plan?"
                                                     class="btn btn-sm btn-ghost-primary rounded-circle"
@@ -254,7 +258,7 @@
                                                     <i class="fa-solid fa-play"></i>
                                                 </button>
                                             @endif
-                                            @if ($empPlan->status === 'active' && !$empPlan->reviewed_at)
+                                            @if ($canManage && $empPlan->status === 'active' && !$empPlan->reviewed_at)
                                                 <button wire:click="reviewPlan('{{ $empPlan->id }}')"
                                                     wire:confirm="Mark this plan as reviewed?"
                                                     class="btn btn-sm btn-ghost-info rounded-circle"
@@ -262,7 +266,7 @@
                                                     <i class="fa-solid fa-clipboard-check"></i>
                                                 </button>
                                             @endif
-                                            @if ($empPlan->status === 'active' && $empPlan->reviewed_at)
+                                            @if ($canManage && $empPlan->status === 'active' && $empPlan->reviewed_at)
                                                 <button wire:click="completePlan('{{ $empPlan->id }}')"
                                                     wire:confirm="Mark this plan as completed?"
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
@@ -270,12 +274,14 @@
                                                     <i class="fa-solid fa-check-double"></i>
                                                 </button>
                                             @endif
-                                            <button wire:click="editPlan('{{ $empPlan->id }}')"
-                                                class="btn btn-sm btn-ghost-secondary rounded-circle"
-                                                title="Edit">
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                            </button>
-                                            @if (in_array($empPlan->status, ['draft', 'cancelled']) && !$empPlan->reviewed_at)
+                                            @if ($canManage)
+                                                <button wire:click="editPlan('{{ $empPlan->id }}')"
+                                                    class="btn btn-sm btn-ghost-secondary rounded-circle"
+                                                    title="Edit">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                            @endif
+                                            @if ($canManage && in_array($empPlan->status, ['draft', 'cancelled']) && !$empPlan->reviewed_at)
                                                 <button wire:click="deletePlan('{{ $empPlan->id }}')"
                                                     wire:confirm="Are you sure you want to delete this employee plan?"
                                                     class="btn btn-sm btn-ghost-danger rounded-circle"
@@ -294,13 +300,17 @@
                                                 style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Employee Plans Found</h5>
                                             <p class="text-muted">
-                                                @if ($search || $departmentFilter || $statusFilter)
+                                                @if ($hasNoDepartment)
+                                                    Your account is not linked to a department
+                                                @elseif ($search || $departmentFilter || $statusFilter)
                                                     Try adjusting your filters or search query
-                                                @else
+                                                @elseif ($canManage)
                                                     Start by assigning plans to employees
+                                                @else
+                                                    Your department has no employee plans yet
                                                 @endif
                                             </p>
-                                            @if (!$search && !$departmentFilter && !$statusFilter)
+                                            @if ($canManage && !$hasNoDepartment && !$search && !$departmentFilter && !$statusFilter)
                                                 <button class="btn btn-primary mt-2" wire:click="createPlan">
                                                     <i class="fa-solid fa-plus me-1"></i> Assign Plan to Employee
                                                 </button>
@@ -369,17 +379,17 @@
                                 <div class="col-12">
                                     <label for="planDepartment" class="form-label">Department <span class="text-danger">*</span></label>
                                     <select wire:model.live="planForm.department_id" class="form-select @error('planForm.department_id') is-invalid @enderror" id="planDepartment">
-                                        @if ($canViewAllDepartments || $formDepartments->isEmpty())
+                                        @if ($canViewAll || $departments->isEmpty())
                                             <option value="">Select Department</option>
                                         @endif
-                                        @foreach ($formDepartments as $dept)
+                                        @foreach ($departments as $dept)
                                             <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                                         @endforeach
                                     </select>
                                     @error('planForm.department_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    @if ($formDepartments->isEmpty())
+                                    @if ($departments->isEmpty())
                                         <div class="form-text text-warning">
                                             <i class="fa-solid fa-exclamation-triangle me-1"></i>
                                             Your account is not linked to a department.

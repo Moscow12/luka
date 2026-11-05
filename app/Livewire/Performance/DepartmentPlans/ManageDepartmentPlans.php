@@ -87,8 +87,8 @@ class ManageDepartmentPlans extends Component
         $this->editingPlanId = null;
         $this->planForm = [
             'organizational_plan_id' => '',
-            // Users limited to their own department have only that one to choose
-            'department_id' => DepartmentPlanAccess::canViewAll(Auth::user()) ? '' : (DepartmentPlanAccess::ownDepartmentId(Auth::user()) ?? ''),
+            // Starts on the user's own department; those with view-all access can pick another
+            'department_id' => DepartmentPlanAccess::ownDepartmentId(Auth::user()) ?? '',
             'plan_name' => '',
             'description' => '',
             'status' => 'draft',

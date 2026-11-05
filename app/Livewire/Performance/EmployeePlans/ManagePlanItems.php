@@ -3,13 +3,17 @@
 namespace App\Livewire\Performance\EmployeePlans;
 
 use App\Models\DepartmentPlanItem;
-use App\Models\EmployeePlan;
 use App\Models\EmployeePlanItem;
+use App\Services\Performance\EmployeePlanAccess;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ManagePlanItems extends Component
 {
+    #[Locked]
     public $planId;
 
     public $plan;
@@ -19,6 +23,7 @@ class ManagePlanItems extends Component
 
     public $modalMode = 'create';
 
+    #[Locked]
     public $editingItemId = null;
 
     // Item Form Fields
@@ -43,11 +48,26 @@ class ManagePlanItems extends Component
     public function mount($planId)
     {
         $this->planId = $planId;
-        $this->plan = EmployeePlan::with(['employee', 'departmentPlan.department'])->findOrFail($planId);
+        $this->plan = EmployeePlanAccess::visiblePlans(Auth::user())
+            ->with(['employee', 'departmentPlan.department'])
+            ->findOrFail($planId);
+    }
+
+    private function authorizeManage(): void
+    {
+        abort_unless(EmployeePlanAccess::canManage(Auth::user()), 403);
+    }
+
+    /** Items of this plan only: item ids arrive from the client. */
+    private function planItems(): Builder
+    {
+        return EmployeePlanItem::where('employee_plan_id', $this->planId);
     }
 
     public function createItem()
     {
+        $this->authorizeManage();
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'create';
@@ -74,12 +94,15 @@ class ManagePlanItems extends Component
 
     public function editItem($itemId)
     {
+        $this->authorizeManage();
+
+        $item = $this->planItems()->findOrFail($itemId);
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = 'edit';
         $this->editingItemId = $itemId;
 
-        $item = EmployeePlanItem::findOrFail($itemId);
         $this->itemForm = [
             'department_plan_item_id' => $item->department_plan_item_id,
             'item_name' => $item->item_name,
@@ -103,7 +126,7 @@ class ManagePlanItems extends Component
     public function updatedItemFormDepartmentPlanItemId($value)
     {
         if ($value) {
-            $deptItem = DepartmentPlanItem::find($value);
+            $deptItem = DepartmentPlanItem::where('department_plan_id', $this->plan->department_plan_id)->find($value);
             if ($deptItem) {
                 $this->itemForm['item_name'] = $deptItem->item_name;
                 $this->itemForm['description'] = $deptItem->description;
@@ -118,6 +141,8 @@ class ManagePlanItems extends Component
 
     public function saveItem()
     {
+        $this->authorizeManage();
+
         $rules = [
             'itemForm.department_plan_item_id' => 'nullable|exists:department_plan_items,id',
             'itemForm.item_name' => 'required|string|max:255',
@@ -144,6 +169,10 @@ class ManagePlanItems extends Component
         ];
 
         $this->validate($rules, $messages);
+
+        $editingItem = $this->modalMode === 'edit' && $this->editingItemId
+            ? $this->planItems()->findOrFail($this->editingItemId)
+            : null;
 
         // Check for duplicate dept plan item in this employee plan (if linked)
         if ($this->itemForm['department_plan_item_id']) {
@@ -181,9 +210,8 @@ class ManagePlanItems extends Component
                 'is_active' => $this->itemForm['is_active'],
             ];
 
-            if ($this->modalMode === 'edit' && $this->editingItemId) {
-                $item = EmployeePlanItem::findOrFail($this->editingItemId);
-                $item->update($data);
+            if ($editingItem) {
+                $editingItem->update($data);
                 session()->flash('success', 'Employee plan item updated successfully!');
             } else {
                 EmployeePlanItem::create($data);
@@ -207,9 +235,11 @@ class ManagePlanItems extends Component
 
     public function deleteItem($itemId)
     {
-        try {
-            $item = EmployeePlanItem::findOrFail($itemId);
+        $this->authorizeManage();
 
+        $item = $this->planItems()->findOrFail($itemId);
+
+        try {
             // Check if item has been scored
             if ($item->score !== null) {
                 session()->flash('error', 'Cannot delete an item that has been scored. Please clear the score first.');
@@ -230,8 +260,11 @@ class ManagePlanItems extends Component
 
     public function toggleActive($itemId)
     {
+        $this->authorizeManage();
+
+        $item = $this->planItems()->findOrFail($itemId);
+
         try {
-            $item = EmployeePlanItem::findOrFail($itemId);
             $item->update(['is_active' => ! $item->is_active]);
             session()->flash('success', 'Item status updated successfully!');
         } catch (\Exception $e) {
@@ -278,6 +311,7 @@ class ManagePlanItems extends Component
             'averageScore' => $averageScore,
             'weightedScore' => $weightedScore,
             'availableDeptItems' => $availableDeptItems,
+            'canManage' => EmployeePlanAccess::canManage(Auth::user()),
         ]);
     }
 }
