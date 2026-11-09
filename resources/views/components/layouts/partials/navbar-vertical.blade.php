@@ -29,7 +29,7 @@
     $hrRoutes = ['hr.index', 'hr.stafflist', 'hr.addstaff', 'hr.staffdetails', 'hr.*', 'leave.leavemanagement', 'fp.attendance', 'managefpusers', 'fp.devices', 'hr.my-contract-request', 'hr.contract-requests', 'hr.certificates-of-service'];
     $payrollRoutes = ['payrollgeneration', 'allowancepayment', 'paymentreports', 'payroll.*'];
     $myPerformanceRoutes = ['performance.overview', 'performance.myplanning', 'performance.myimplementation', 'performance.myevaluation', 'performance.approve.evaluations', 'performance.verify.implementations', 'performance.myduties'];
-    $performanceRoutes = ['performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
+    $performanceRoutes = ['performance.dashboard', 'performance.org.plans', 'performance.dept.plans', 'performance.employee.plans', 'performance.assigned.duties', 'performance.title.kpis'];
 
     // Department Plans sits under Staff Performance for those who manage or oversee plans, under My Performance for other staff
     $deptPlansInStaffPerformance = $isSuperAdmin || ($user?->canAny(['manage-dept-plans', 'view-all-dept-plans']) ?? false);
@@ -482,7 +482,7 @@
     @endif
 
     <!-- Staff Performance -->
-    @if($isSuperAdmin || $user?->canAny(['manage-org-plans', 'manage-dept-plans', 'view-all-dept-plans', 'manage-employee-plans', 'assign-duties', 'view-all-duties', 'set-kpis']))
+    @if($isSuperAdmin || $user?->canAny(['view-performance', 'manage-org-plans', 'manage-dept-plans', 'view-all-dept-plans', 'manage-employee-plans', 'assign-duties', 'view-all-duties', 'set-kpis']))
     <li class="nav-item dropdown {{ request()->routeIs($performanceRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($performanceRoutes) ? 'active' : '' }}" href="{{ route('performance.org.plans') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($performanceRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -491,6 +491,11 @@
             <span class="text">Staff Performance</span>
         </a>
         <ul class="dropdown-menu flex-column {{ request()->routeIs($performanceRoutes) ? 'show' : '' }}">
+            @if($user && \App\Services\Performance\PerformanceDashboard::canView($user))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('performance.dashboard') ? 'active' : '' }}" href="{{ route('performance.dashboard') }}"><i class="fa-solid fa-gauge-high"></i> Performance Dashboard</a>
+            </li>
+            @endif
             @if($isSuperAdmin || $user?->can('manage-org-plans'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('performance.org.plans') ? 'active' : '' }}" href="{{ route('performance.org.plans') }}"><i class="fa-solid fa-building"></i> Organizational Plans</a>

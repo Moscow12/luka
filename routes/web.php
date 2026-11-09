@@ -49,6 +49,7 @@ use App\Livewire\Hr\Staffs\Promotions;
 use App\Livewire\Hr\Staffs\Qualifications;
 use App\Livewire\Hr\Staffs\Salary;
 use App\Livewire\Performance\AssignedDuties\ManageAssignedDuties;
+use App\Livewire\Performance\Dashboard\PerformanceDashboard;
 use App\Livewire\Performance\DepartmentPlans\ManageDepartmentPlans;
 use App\Livewire\Performance\DepartmentPlans\ManagePlanItems as ManageDepartmentPlanItems;
 use App\Livewire\Performance\EmployeePlans\ManageEmployeePlans;
@@ -252,6 +253,9 @@ Route::prefix('tickets')->middleware('auth')->group(function () {
 });
 
 Route::prefix('performance')->middleware('auth')->group(function () {
+    // Organisation -> department -> employee progress for HR and management
+    Route::get('dashboard', PerformanceDashboard::class)->name('performance.dashboard');
+
     // Organizational Plans
     Route::get('organizational-plans', ManagePlans::class)->name('performance.org.plans');
     Route::get('organizational-plans/{planId}/items', ManagePlanItems::class)->name('performance.org.plans.items');
