@@ -165,6 +165,17 @@ This comprehensive user manual provides complete documentation for the HR Manage
 - Verification of recorded work
 - Evaluation and approval workflows, routed by department
 
+#### ✅ [Section 11A: Performance Management, Step by Step](./11a-performance-step-by-step.md)
+**Status:** Complete
+**Target Audience:** HR officers, management, department heads, supervisors, employees
+**Topics Covered:**
+- One appraisal cycle in order, with a worked example carried through every step
+- Setting up organisational, department and employee plans
+- Recording and verifying implementation
+- Monitoring progress on the Performance Dashboard (organisation → department → employee)
+- Reading statuses, SMART chips and planning gaps, and what to do about them
+- Monthly routine for each role
+
 ---
 
 ### **Contracts & CHOP**

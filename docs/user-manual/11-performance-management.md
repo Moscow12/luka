@@ -3,6 +3,8 @@
 **Target audience:** All staff, supervisors, department heads, HR, system administrators
 **Describes the system as of:** November 2026
 
+> **New to the cycle?** [Section 11A: Step by Step](./11a-performance-step-by-step.md) walks through it in order with one example, including monitoring on the **Performance Dashboard**. This section is the full reference.
+
 ## Table of Contents
 - [Overview](#overview)
 - [How to read this guide](#how-to-read-this-guide)
@@ -284,7 +286,7 @@ The employee sees the score and comment on My Implementation. Score consistently
 
 Verify regularly, ideally at each monthly or quarterly check-in, so employees see accurate progress. You can change a decision or score (**Edit score**) until the evaluation is approved; after that, its entries are locked.
 
-Progress is visible at any time under **My Performance → Overview**, and reflects verified work only.
+Progress is visible at any time under **My Performance → Overview**, and reflects verified work only. HR officers and management can follow every department and employee under **Staff Performance → Performance Dashboard**. See [Section 11A, Step 6](./11a-performance-step-by-step.md#step-6-monitor-progress-on-the-performance-dashboard).
 
 ---
 
