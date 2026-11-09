@@ -14,17 +14,7 @@
     </div>
     <div class="d-flex flex-column gap-6">
         <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
-            <div class="d-flex flex-row gap-3 align-items-center">
-                <div>
-                    <form>
-                        <input class="form-control" type="search" value="" placeholder="Search" />
-                    </form>
-                </div>
-                <a href="#!" class="text-inherit">
-                    <i class="fa-solid fa-filter"></i>
-                    <span>Filter</span>
-                </a>
-            </div>
+            <div></div>
             <div>
                 <x-forms.button-model name="ADD LEAVE"/>
             </div>
@@ -36,35 +26,55 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-       
+        @if (session()->has('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div>
             <x-pages.card title="Employee Leaves List">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
-                                <th>Name</th>
+                                <th scope="col">#</th>
+                                <th>Leave Type</th>
                                 <th>Start Date</th>
                                 <th>Reporting Date</th>
                                 <th>Days</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th>Approval Progress</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leaves as $leave)
-                            <tr>
-                                <td>{{ $leave->leave->name }}</td>
-                                <td>{{ $leave->start_date }}</td>
-                                <td>{{ $leave->end_date }}</td>
+                            @php
+                                $num=1;
+                            @endphp
+                            @forelse($leaves as $leave)
+                            <tr wire:key="staff-leave-{{ $leave->id }}">
+                                <td>{{ $num++ }}</td>
+                                <td>{{ $leave->leave->name ?? 'N/A' }}</td>
+                                <td class="text-nowrap">{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</td>
+                                <td class="text-nowrap">{{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
                                 <td>{{ $leave->days }}</td>
-                                <td>{{ $leave->status }}</td>
-                                <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $leave->id }}')" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')">Delete</a>
+                                <td>@include('livewire.hr.leave.partials.status-badge', ['status' => $leave->status])</td>
+                                <td style="min-width: 220px;">@include('livewire.hr.leave.partials.progress-cell', ['leave' => $leave])</td>
+                                <td class="text-end text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="viewProgress('{{ $leave->id }}')" title="View approval progress">
+                                        <i class="fa-solid fa-eye me-1"></i>View
+                                    </button>
+                                    @if($canManage)
+                                        <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $leave->id }}')" />
+                                        <button type="button" class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')" wire:confirm="Delete this leave record? This cannot be undone.">Delete</button>
+                                    @endif
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr><td colspan="7" class="text-center text-muted py-4">No leave records for this employee.</td></tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -97,5 +107,7 @@
                 <div class="text-danger mt-2">{{ $errorMessage }}</div>
             @endif
         </x-pages.model>
+
+        @include('livewire.hr.leave.partials.progress-modal', ['progressLeave' => $progressLeave, 'ownRequest' => false])
     </div>
 </div>

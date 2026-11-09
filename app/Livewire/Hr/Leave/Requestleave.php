@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Hr\Leave;
 
+use App\Livewire\Hr\Leave\Concerns\ShowsLeaveProgress;
 use App\Models\ActingAssignment;
 use App\Models\departments;
 use App\Models\designations;
@@ -9,6 +10,7 @@ use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\Leaves;
 use App\Models\LeaveSetting;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -16,7 +18,7 @@ use Livewire\WithFileUploads;
 
 class Requestleave extends Component
 {
-    use WithFileUploads;
+    use ShowsLeaveProgress, WithFileUploads;
 
     public $search = '';
 
@@ -45,8 +47,6 @@ class Requestleave extends Component
     public $employee_id;
 
     public $leaveslist = [];
-
-    public $leaves = [];
 
     public $errorMessage;
 
@@ -118,8 +118,6 @@ class Requestleave extends Component
                 })
                 ->get();
 
-            $this->listdata();
-
             // Load employees, designations, and departments for acting assignment
             $this->employeesList = Employee::where('status', 'active')
                 ->where('id', '!=', $this->employee_id)
@@ -129,15 +127,39 @@ class Requestleave extends Component
         }
     }
 
-    public function listdata()
+    /** The employee's own requests, and nobody else's. */
+    protected function leaveScope(): Builder
     {
-        if (! $this->hasEmployeeRecord) {
-            return;
-        }
+        return Employeeleaves::where('employee_id', $this->employee_id);
+    }
 
-        $this->leaves = Employeeleaves::where('employee_id', $this->employee_id)
+    /** The employee's own requests, newest first, filtered by the search box. */
+    protected function myLeaves()
+    {
+        $term = trim($this->search);
+
+        return $this->leaveScope()
+            ->with($this->progressRelations())
+            ->when($term !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->where('travel_to', 'like', "%{$term}%")
+                ->orWhere('status', 'like', "%{$term}%")
+                ->orWhereHas('leave', fn ($leave) => $leave->where('name', 'like', "%{$term}%"))))
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    protected function ownLeave($id): Employeeleaves
+    {
+        return $this->leaveScope()->whereKey($id)->firstOrFail();
+    }
+
+    /**
+     * A request can be changed or withdrawn only before any approver has acted on it.
+     */
+    public static function isEditable(Employeeleaves $leave): bool
+    {
+        return strtolower((string) $leave->status) === 'awaiting'
+            && ($leave->relationLoaded('approvalnote') ? $leave->approvalnote->isEmpty() : ! $leave->approvalnote()->exists());
     }
 
     public function openModal($mode = 'create', $id = null)
@@ -152,8 +174,16 @@ class Requestleave extends Component
         $this->showModal = true;
 
         if ($mode === 'edit' && $id) {
-            $this->editingLeaveId = $id;
-            $leave = Employeeleaves::findOrFail($id);
+            $leave = $this->ownLeave($id);
+
+            if (! static::isEditable($leave)) {
+                $this->showModal = false;
+                session()->flash('error', 'This request is already being processed and can no longer be edited.');
+
+                return;
+            }
+
+            $this->editingLeaveId = $leave->id;
             $this->leave_id = $leave->leave_id;
             $this->start_date = $leave->start_date;
             $this->end_date = $leave->end_date;
@@ -399,7 +429,6 @@ class Requestleave extends Component
             'acting_employee_id', 'acting_designation_id', 'acting_department_id', 'acting_responsibilities', 'acting_notes',
             'actingEmployeeSearch', 'actingDesignationSearch', 'actingDepartmentSearch',
             'showActingEmployeeDropdown', 'showActingDesignationDropdown', 'showActingDepartmentDropdown']);
-        $this->listdata();
     }
 
     public function update()
@@ -424,9 +453,14 @@ class Requestleave extends Component
 
         $this->validate($rules);
 
-        $leave = Employeeleaves::where('id', $this->editingLeaveId)
-            ->where('employee_id', $this->employee_id)
-            ->firstOrFail();
+        $leave = $this->ownLeave($this->editingLeaveId);
+
+        if (! static::isEditable($leave)) {
+            session()->flash('error', 'This request is already being processed and can no longer be edited.');
+            $this->showModal = false;
+
+            return;
+        }
 
         $updateData = [
             'leave_id' => $this->leave_id,
@@ -448,7 +482,6 @@ class Requestleave extends Component
         session()->flash('success', 'Leave request updated successfully!');
         $this->showModal = false;
         $this->reset(['leave_id', 'start_date', 'end_date', 'days', 'travel_to', 'othercontact', 'comments', 'document', 'editingLeaveId']);
-        $this->listdata();
     }
 
     public function delete($uuid)
@@ -457,19 +490,16 @@ class Requestleave extends Component
             return;
         }
 
-        $leave = Employeeleaves::where('id', $uuid)
-            ->where('employee_id', $this->employee_id)
-            ->firstOrFail();
+        $leave = $this->ownLeave($uuid);
 
-        // Employees may only withdraw requests that are still pending.
-        if ($leave->status !== 'Awaiting') {
-            session()->flash('error', 'You can only delete leave requests that are still awaiting approval.');
+        // Employees may only withdraw requests no approver has acted on yet
+        if (! static::isEditable($leave)) {
+            session()->flash('error', 'You can only delete leave requests that no approver has acted on yet.');
 
             return;
         }
 
         $leave->delete();
-        $this->listdata();
         session()->flash('success', 'Leave request deleted successfully!');
     }
 
@@ -539,6 +569,16 @@ class Requestleave extends Component
 
     public function render()
     {
-        return view('livewire.hr.leave.requestleave');
+        if (! $this->hasEmployeeRecord) {
+            return view('livewire.hr.leave.requestleave', ['leaves' => collect(), 'progressLeave' => null]);
+        }
+
+        $leaves = $this->withProgress($this->myLeaves())
+            ->each(fn (Employeeleaves $leave) => $leave->editable = static::isEditable($leave));
+
+        return view('livewire.hr.leave.requestleave', [
+            'leaves' => $leaves,
+            'progressLeave' => $this->progressLeave($leaves),
+        ]);
     }
 }

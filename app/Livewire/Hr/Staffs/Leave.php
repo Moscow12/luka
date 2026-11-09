@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Hr\Staffs;
 
+use App\Livewire\Hr\Leave\Concerns\ShowsLeaveProgress;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\Leaves;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,7 +14,7 @@ use Livewire\WithFileUploads;
 
 class Leave extends Component
 {
-    use WithFileUploads;
+    use ShowsLeaveProgress, WithFileUploads;
 
     public $search = '';
 
@@ -60,7 +62,8 @@ class Leave extends Component
 
     public $leaveslist = [];
 
-    public $leaves = [];
+    /** The leave record open in the edit form; $leave_id is the leave type. */
+    public $editingLeaveId = null;
 
     public $errorMessage;
 
@@ -97,23 +100,36 @@ class Leave extends Component
                     ->orWhere('gender', $employeeGender);
             })
             ->get();
-
-        $this->listdata();
     }
 
-    public function listdata()
+    /** This employee's leave requests. */
+    protected function leaveScope(): Builder
     {
-        $this->leaves = Employeeleaves::where('employee_id', $this->employee_id)->get();
+        return Employeeleaves::where('employee_id', $this->employee_id);
+    }
+
+    /** Only super admins may change or delete leave records here; everyone else can view them. */
+    protected function canManageRecords(): bool
+    {
+        return (bool) Auth::user()?->isSuperAdmin();
     }
 
     public function openModal($mode = 'create', $id = null)
     {
+        if ($mode === 'edit' && ! $this->canManageRecords()) {
+            session()->flash('error', 'Only a super admin can edit leave records.');
+
+            return;
+        }
+
         $this->resetErrorBag();
         $this->resetValidation();
         $this->modalMode = $mode;
         $this->showModal = true;
+        $this->editingLeaveId = null;
         if ($mode === 'edit' && $id) {
-            $leave = Employeeleaves::findOrFail($id);
+            $leave = $this->leaveScope()->whereKey($id)->firstOrFail();
+            $this->editingLeaveId = $leave->id;
             $this->leave_id = $leave->leave_id;
             $this->start_date = $leave->start_date;
             $this->end_date = $leave->end_date;
@@ -169,9 +185,17 @@ class Leave extends Component
             $documentPath = $this->document->store('leave-documents', 'public');
         }
 
-        if ($this->modalMode === 'edit' && $this->leave_id) {
-            $leave = Employeeleaves::findOrFail($this->leave_id);
+        if ($this->modalMode === 'edit' && $this->editingLeaveId) {
+            if (! $this->canManageRecords()) {
+                session()->flash('error', 'Only a super admin can edit leave records.');
+                $this->showModal = false;
+
+                return;
+            }
+
+            $leave = $this->leaveScope()->whereKey($this->editingLeaveId)->firstOrFail();
             $updateData = [
+                'leave_id' => $this->leave_id,
                 'start_date' => $this->start_date,
                 'end_date' => $this->end_date,
                 'days' => $this->days,
@@ -186,7 +210,6 @@ class Leave extends Component
             }
 
             $leave->update($updateData);
-            $this->listdata();
             session()->flash('success', 'Leave updated successfully!');
         } else {
             Employeeleaves::create([
@@ -205,22 +228,18 @@ class Leave extends Component
             session()->flash('success', 'Leave added successfully!');
         }
         $this->showModal = false;
-        $this->reset(['start_date', 'end_date', 'days', 'status', 'travel_to', 'othercontact', 'comments', 'document']);
+        $this->reset(['start_date', 'end_date', 'days', 'status', 'travel_to', 'othercontact', 'comments', 'document', 'editingLeaveId']);
     }
 
     public function delete($uuid)
     {
-        $user = Auth::user();
-
-        if (! $user->can('manage-leave') && ! $user->isSuperAdmin()) {
-            session()->flash('error', 'You do not have permission to delete leave records.');
+        if (! $this->canManageRecords()) {
+            session()->flash('error', 'Only a super admin can delete leave records.');
 
             return;
         }
 
-        $leave = Employeeleaves::findOrFail($uuid);
-        $leave->delete();
-        $this->listdata();
+        $this->leaveScope()->whereKey($uuid)->firstOrFail()->delete();
         session()->flash('success', 'Leave record deleted successfully!');
     }
 
@@ -285,6 +304,14 @@ class Leave extends Component
 
     public function render()
     {
-        return view('livewire.hr.staffs.leave');
+        $leaves = $this->withProgress(
+            $this->leaveScope()->with($this->progressRelations())->orderBy('created_at', 'desc')->get()
+        );
+
+        return view('livewire.hr.staffs.leave', [
+            'leaves' => $leaves,
+            'progressLeave' => $this->progressLeave($leaves),
+            'canManage' => $this->canManageRecords(),
+        ]);
     }
 }

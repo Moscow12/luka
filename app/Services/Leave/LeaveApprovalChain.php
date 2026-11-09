@@ -116,6 +116,141 @@ class LeaveApprovalChain
     }
 
     /**
+     * Where a leave request stands, for the person who raised it.
+     *
+     * History is the decisions actually recorded, oldest first, so it stays true even if the
+     * approval setup changes later. The steps still to come are read from the current setup:
+     * the level waiting now, then every later level, each with the people who can act on it.
+     *
+     * @return array{
+     *     state: string,
+     *     summary: string,
+     *     steps: array<int, array<string, mixed>>,
+     *     done: int,
+     *     total: int,
+     * }
+     */
+    public function progress(Employeeleaves $leave): array
+    {
+        $leave->loadMissing(['employee', 'approvalnote.approval_level', 'approvalnote.approver']);
+
+        $departmentId = $leave->employee->department_id ?? null;
+        $decisions = $leave->approvalnote->sortBy('approved_at')->values();
+        $rejection = $decisions->firstWhere('status', 'rejected');
+        $status = strtolower((string) $leave->status);
+
+        $steps = [[
+            'state' => 'submitted',
+            'title' => 'Request submitted',
+            'by' => trim(($leave->employee->first_name ?? '').' '.($leave->employee->last_name ?? '')) ?: null,
+            'at' => $leave->created_at,
+            'comments' => $leave->comments,
+        ]];
+
+        foreach ($decisions as $decision) {
+            $steps[] = [
+                'state' => $decision->status === 'rejected' ? 'rejected' : 'approved',
+                'title' => $decision->approval_level->name ?? 'Approval level',
+                'by' => $decision->approver?->full_name,
+                'at' => $decision->approved_at,
+                'comments' => $decision->comments,
+            ];
+        }
+
+        $done = $decisions->where('status', 'approved')->count();
+
+        if ($rejection || $status === 'rejected') {
+            return [
+                'state' => 'rejected',
+                'summary' => $rejection
+                    ? 'Rejected at '.($rejection->approval_level->name ?? 'approval').($rejection->approver ? ' by '.$rejection->approver->full_name : '').'.'
+                    : 'This request was rejected.',
+                'steps' => $steps,
+                'done' => $done,
+                'total' => $done + ($rejection ? 1 : 0),
+            ];
+        }
+
+        $pending = in_array($status, self::PENDING_STATUSES, true);
+        $current = $pending ? $this->nextLevel($leave) : null;
+
+        if (! $current) {
+            // Pending with no level left means the chain finished before the status caught up
+            $state = match (true) {
+                $pending && $this->levelGroups()->isEmpty() => 'unconfigured',
+                $pending || $status === 'approved' => 'approved',
+                default => $status,
+            };
+
+            if ($state === 'approved') {
+                $steps[] = ['state' => 'final', 'title' => 'Leave approved', 'by' => null, 'at' => null, 'comments' => null];
+            }
+
+            return [
+                'state' => $state,
+                'summary' => match ($state) {
+                    'unconfigured' => 'No approval levels are set up for leave yet. Please contact HR.',
+                    'approved' => 'Fully approved.',
+                    default => 'Status: '.ucfirst($status).'.',
+                },
+                'steps' => $steps,
+                'done' => $done,
+                'total' => $done,
+            ];
+        }
+
+        // The level waiting now and every level after it
+        $groups = $this->levelGroups();
+        $currentIndex = $groups->search(fn ($group) => $group->contains(fn ($level) => $level->id === $current->id));
+        $waitingOn = null;
+
+        foreach ($groups->slice($currentIndex) as $offset => $group) {
+            $applicable = $this->levelsForDepartment($group, $departmentId);
+            $isCurrent = $offset === $currentIndex;
+
+            // Later levels that nobody covers for this department are not part of this request's route
+            if (! $isCurrent && $applicable->isEmpty()) {
+                continue;
+            }
+
+            $levels = $applicable->isNotEmpty() ? $applicable : collect([$current]);
+            $approvers = $levels
+                ->flatMap(fn ($level) => $this->approversForLevel($level->id, $departmentId))
+                ->unique('id')
+                ->map(fn ($employee) => trim($employee->first_name.' '.$employee->last_name))
+                ->values()
+                ->all();
+
+            $step = [
+                'state' => $isCurrent ? ($approvers ? 'current' : 'blocked') : 'upcoming',
+                'title' => $levels->pluck('name')->unique()->implode(' / '),
+                'approvers' => $approvers,
+                'by' => null,
+                'at' => null,
+                'comments' => null,
+            ];
+            $steps[] = $step;
+
+            if ($isCurrent) {
+                $waitingOn = $step;
+            }
+        }
+
+        $steps[] = ['state' => 'final_pending', 'title' => 'Leave approved', 'by' => null, 'at' => null, 'comments' => null];
+        $remaining = collect($steps)->whereIn('state', ['current', 'blocked', 'upcoming'])->count();
+
+        return [
+            'state' => $waitingOn['state'] === 'blocked' ? 'blocked' : 'pending',
+            'summary' => $waitingOn['state'] === 'blocked'
+                ? "Waiting at {$waitingOn['title']}, but nobody is assigned to approve it for this department. Please contact HR."
+                : "Waiting for {$waitingOn['title']}: ".implode(', ', $waitingOn['approvers']).'.',
+            'steps' => $steps,
+            'done' => $done,
+            'total' => $done + $remaining,
+        ];
+    }
+
+    /**
      * Status after a decision: next level pending → Awaiting/Active, none left → approved.
      */
     public function statusAfterDecision(Employeeleaves $leave, string $decision): string

@@ -15,6 +15,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
+        @if (session()->has('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
         @if(!$hasEmployeeRecord)
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -27,14 +33,8 @@
             <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
                 <div class="d-flex flex-row gap-3 align-items-center">
                     <div>
-                        <form>
-                            <input class="form-control" type="search" wire:model.live="search" placeholder="Search" />
-                        </form>
+                        <input class="form-control" type="search" wire:model.live.debounce.300ms="search" placeholder="Search leave type, destination or status" aria-label="Search my leave requests" />
                     </div>
-                    <a href="#!" class="text-inherit">
-                        <i class="fa-solid fa-filter"></i>
-                        <span>Filter</span>
-                    </a>
                 </div>
                 <div>
                     <x-forms.button-model name="REQUEST LEAVE"/>
@@ -47,44 +47,46 @@
                         <table class="table table-hover align-middle">
                             <thead>
                                 <tr>
+                                    <th scope="col">#</th>
                                     <th>Leave Type</th>
                                     <th>Start Date</th>
                                     <th>Reporting Date</th>
                                     <th>Days</th>
                                     <th>Travel To</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Approval Progress</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $num=1;
+                                @endphp
                                 @forelse($leaves as $leave)
-                                <tr>
+                                <tr wire:key="leave-{{ $leave->id }}">
+                                    <td>{{ $num++ }}</td>
                                     <td>{{ $leave->leave->name ?? 'N/A' }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
+                                    <td class="text-nowrap">{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</td>
+                                    <td class="text-nowrap">{{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
                                     <td>{{ $leave->days }}</td>
                                     <td>{{ $leave->travel_to }}</td>
-                                    <td>
-                                        <span class="badge
-                                            @if($leave->status === 'Approved') bg-success
-                                            @elseif($leave->status === 'Rejected') bg-danger
-                                            @else bg-warning
-                                            @endif">
-                                            {{ $leave->status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if($leave->status === 'Awaiting')
+                                    <td>@include('livewire.hr.leave.partials.status-badge', ['status' => $leave->status])</td>
+                                    <td style="min-width: 220px;">@include('livewire.hr.leave.partials.progress-cell', ['leave' => $leave])</td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="viewProgress('{{ $leave->id }}')" title="View approval progress">
+                                            <i class="fa-solid fa-eye me-1"></i>View
+                                        </button>
+                                        @if($leave->editable)
                                             <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $leave->id }}')" />
-                                            <a href="#" class="btn btn-sm btn-danger" wire:click.prevent="delete('{{ $leave->id }}')">Delete</a>
-                                        @else
-                                            <span class="text-muted">{{ $leave->status }}</span>
+                                            <button type="button" class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')" wire:confirm="Withdraw this leave request?">Delete</button>
                                         @endif
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted">No leave requests found</td>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        {{ trim($search) !== '' ? 'No leave requests match your search.' : 'No leave requests found' }}
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -234,5 +236,7 @@
                     <div class="alert alert-danger mt-2">{{ $errorMessage }}</div>
                 @endif
             </x-pages.model>
+
+            @include('livewire.hr.leave.partials.progress-modal', ['progressLeave' => $progressLeave, 'ownRequest' => true])
         @endif
     </div>
