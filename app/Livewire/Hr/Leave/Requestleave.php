@@ -13,14 +13,46 @@ use App\Models\LeaveSetting;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class Requestleave extends Component
 {
-    use ShowsLeaveProgress, WithFileUploads;
+    use ShowsLeaveProgress, WithFileUploads, WithPagination;
+
+    /** Status tabs: key => stored statuses it covers (lower-cased). An empty list means every request. */
+    public const STATUS_TABS = [
+        '' => ['label' => 'All', 'statuses' => []],
+        'awaiting' => ['label' => 'Awaiting approval', 'statuses' => ['awaiting', 'pending']],
+        'active' => ['label' => 'In progress', 'statuses' => ['active']],
+        'approved' => ['label' => 'Approved', 'statuses' => ['approved']],
+        'rejected' => ['label' => 'Rejected', 'statuses' => ['rejected']],
+    ];
+
+    /** Columns the table can sort by: query string key => database column. */
+    protected const SORTABLE = [
+        'created_at' => 'created_at',
+        'start_date' => 'start_date',
+        'end_date' => 'end_date',
+        'days' => 'days',
+        'status' => 'status',
+    ];
+
+    protected $paginationTheme = 'bootstrap';
 
     public $search = '';
+
+    // Datatable controls
+    public $statusFilter = '';
+
+    /** Rows per page; 'all' shows every request in one scrollable table. */
+    public $perPage = '25';
+
+    public $sortField = 'created_at';
+
+    public $sortDirection = 'desc';
 
     public $modalMode = 'create';
 
@@ -133,19 +165,74 @@ class Requestleave extends Component
         return Employeeleaves::where('employee_id', $this->employee_id);
     }
 
-    /** The employee's own requests, newest first, filtered by the search box. */
-    protected function myLeaves()
+    public function sortBy(string $field): void
+    {
+        if (! array_key_exists($field, self::SORTABLE)) {
+            return;
+        }
+
+        $this->sortDirection = $this->sortField === $field && $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        $this->sortField = $field;
+        $this->resetPage();
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    /** The employee's own requests matching the search box, before the status tab is applied. */
+    protected function searchedLeaves(): Builder
     {
         $term = trim($this->search);
 
         return $this->leaveScope()
-            ->with($this->progressRelations())
             ->when($term !== '', fn ($q) => $q->where(fn ($q) => $q
                 ->where('travel_to', 'like', "%{$term}%")
                 ->orWhere('status', 'like', "%{$term}%")
-                ->orWhereHas('leave', fn ($leave) => $leave->where('name', 'like', "%{$term}%"))))
-            ->orderBy('created_at', 'desc')
-            ->get();
+                ->orWhereHas('leave', fn ($leave) => $leave->where('name', 'like', "%{$term}%"))));
+    }
+
+    /** Count per status tab, for the tab badges. */
+    protected function statusCounts(): array
+    {
+        $byStatus = $this->searchedLeaves()
+            ->selectRaw('LOWER(status) as status_key, COUNT(*) as total')
+            ->groupBy('status_key')
+            ->pluck('total', 'status_key');
+
+        return collect(self::STATUS_TABS)->map(fn ($tab) => $tab['statuses'] === []
+            ? (int) $byStatus->sum()
+            : (int) collect($tab['statuses'])->sum(fn ($status) => $byStatus[$status] ?? 0))->all();
+    }
+
+    /** One page of the employee's requests, filtered and sorted as the table controls say. */
+    protected function myLeaves()
+    {
+        $statuses = self::STATUS_TABS[$this->statusFilter]['statuses'] ?? [];
+        $column = self::SORTABLE[$this->sortField] ?? 'created_at';
+        $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
+        $query = $this->searchedLeaves()
+            ->with($this->progressRelations())
+            ->when($statuses !== [], fn ($q) => $q->whereIn(DB::raw('LOWER(status)'), $statuses))
+            // days is stored as text; "+ 0" sorts it as a number on both MySQL and SQLite
+            ->when($column === 'days', fn ($q) => $q->orderByRaw("days + 0 {$direction}"), fn ($q) => $q->orderBy($column, $direction))
+            ->orderBy('created_at', 'desc');
+
+        $perPage = $this->perPage === 'all' ? max($query->count(), 1) : max(10, min((int) $this->perPage, 100));
+
+        return $query->paginate($perPage);
     }
 
     protected function ownLeave($id): Employeeleaves
@@ -570,15 +657,18 @@ class Requestleave extends Component
     public function render()
     {
         if (! $this->hasEmployeeRecord) {
-            return view('livewire.hr.leave.requestleave', ['leaves' => collect(), 'progressLeave' => null]);
+            return view('livewire.hr.leave.requestleave', ['leaves' => null, 'progressLeave' => null, 'statusCounts' => []]);
         }
 
-        $leaves = $this->withProgress($this->myLeaves())
+        // Progress is worked out for the rows on screen only
+        $leaves = $this->myLeaves();
+        $this->withProgress($leaves->getCollection())
             ->each(fn (Employeeleaves $leave) => $leave->editable = static::isEditable($leave));
 
         return view('livewire.hr.leave.requestleave', [
             'leaves' => $leaves,
-            'progressLeave' => $this->progressLeave($leaves),
+            'progressLeave' => $this->progressLeave($leaves->getCollection()),
+            'statusCounts' => $this->statusCounts(),
         ]);
     }
 }

@@ -30,46 +30,83 @@
                 <p class="mb-0">Please contact your system administrator to link your account to an employee record.</p>
             </div>
         @else
-            <div class="d-flex flex-md-row flex-column gap-2 justify-content-between">
-                <div class="d-flex flex-row gap-3 align-items-center">
-                    <div>
-                        <input class="form-control" type="search" wire:model.live.debounce.300ms="search" placeholder="Search leave type, destination or status" aria-label="Search my leave requests" />
+            @php
+                $sortIcon = fn ($field) => $sortField !== $field
+                    ? 'fa-sort text-muted'
+                    : ($sortDirection === 'asc' ? 'fa-sort-up text-primary' : 'fa-sort-down text-primary');
+                $tabs = \App\Livewire\Hr\Leave\Requestleave::STATUS_TABS;
+                $sortable = ['start_date' => 'Start Date', 'end_date' => 'Reporting Date', 'days' => 'Days', 'created_at' => 'Requested', 'status' => 'Status'];
+            @endphp
+
+            {{-- Status tabs + search + new request --}}
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-xl-7">
+                    <ul class="nav nav-pills gap-2" role="tablist" aria-label="Filter by status">
+                        @foreach($tabs as $key => $tab)
+                            <li class="nav-item">
+                                <button type="button" wire:click="$set('statusFilter', '{{ $key }}')"
+                                        class="nav-link {{ $statusFilter === $key ? 'active' : '' }}" role="tab" aria-selected="{{ $statusFilter === $key ? 'true' : 'false' }}">
+                                    {{ $tab['label'] }}
+                                    <span class="badge {{ $statusFilter === $key ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary-emphasis' }} ms-1">{{ $statusCounts[$key] ?? 0 }}</span>
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                <div class="col-12 col-md-8 col-xl-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                        <input type="search" class="form-control" wire:model.live.debounce.300ms="search"
+                               placeholder="Leave type, destination, status" aria-label="Search my leave requests">
+                        @if($search)
+                            <button class="btn btn-outline-secondary" type="button" wire:click="$set('search', '')" aria-label="Clear search">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        @endif
                     </div>
                 </div>
-                <div>
+                <div class="col-12 col-md-4 col-xl-2 text-md-end">
                     <x-forms.button-model name="REQUEST LEAVE"/>
                 </div>
             </div>
 
             <div>
                 <x-pages.card title="My Leave Requests">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
+                    {{-- Scrolls inside the card; the header row stays visible --}}
+                    <div class="table-responsive leave-table-scroll" wire:loading.class="opacity-50"
+                         wire:target="statusFilter, search, sortBy, perPage, gotoPage, nextPage, previousPage">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th scope="col">#</th>
-                                    <th>Leave Type</th>
-                                    <th>Start Date</th>
-                                    <th>Reporting Date</th>
-                                    <th>Days</th>
-                                    <th>Travel To</th>
-                                    <th>Status</th>
-                                    <th>Approval Progress</th>
-                                    <th class="text-end">Actions</th>
+                                    <th scope="col" style="width: 50px;">#</th>
+                                    <th scope="col">Leave Type</th>
+                                    @foreach(['start_date', 'end_date', 'days'] as $field)
+                                        <th scope="col" role="button" class="user-select-none text-nowrap" wire:click="sortBy('{{ $field }}')"
+                                            aria-sort="{{ $sortField === $field ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}">
+                                            {{ $sortable[$field] }} <i class="fa-solid {{ $sortIcon($field) }} ms-1"></i>
+                                        </th>
+                                    @endforeach
+                                    <th scope="col">Travel To</th>
+                                    @foreach(['created_at', 'status'] as $field)
+                                        <th scope="col" role="button" class="user-select-none text-nowrap" wire:click="sortBy('{{ $field }}')"
+                                            aria-sort="{{ $sortField === $field ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}">
+                                            {{ $sortable[$field] }} <i class="fa-solid {{ $sortIcon($field) }} ms-1"></i>
+                                        </th>
+                                    @endforeach
+                                    <th scope="col">Approval Progress</th>
+                                    <th scope="col" class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $num=1;
-                                @endphp
                                 @forelse($leaves as $leave)
                                 <tr wire:key="leave-{{ $leave->id }}">
-                                    <td>{{ $num++ }}</td>
-                                    <td>{{ $leave->leave->name ?? 'N/A' }}</td>
+                                    <td class="text-muted">{{ $leaves->firstItem() + $loop->index }}</td>
+                                    <td class="fw-semibold">{{ $leave->leave->name ?? 'N/A' }}</td>
                                     <td class="text-nowrap">{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</td>
                                     <td class="text-nowrap">{{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
                                     <td>{{ $leave->days }}</td>
                                     <td>{{ $leave->travel_to }}</td>
+                                    <td class="text-nowrap small text-muted">{{ $leave->created_at?->format('d M Y') }}</td>
                                     <td>@include('livewire.hr.leave.partials.status-badge', ['status' => $leave->status])</td>
                                     <td style="min-width: 220px;">@include('livewire.hr.leave.partials.progress-cell', ['leave' => $leave])</td>
                                     <td class="text-end text-nowrap">
@@ -84,16 +121,54 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        {{ trim($search) !== '' ? 'No leave requests match your search.' : 'No leave requests found' }}
+                                    <td colspan="10" class="text-center text-muted py-5">
+                                        <i class="fa-solid fa-calendar-xmark fa-2x mb-2 d-block opacity-50"></i>
+                                        @if(trim($search) !== '' || $statusFilter !== '')
+                                            No leave requests match these filters.
+                                            <button type="button" class="btn btn-link btn-sm p-0 align-baseline" wire:click="$set('search', ''); $set('statusFilter', '')">Show all</button>
+                                        @else
+                                            You haven't requested any leave yet.
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Rows per page, range, pages --}}
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <div class="d-flex align-items-center gap-2 small text-muted">
+                            <label for="leave-per-page" class="mb-0">Show</label>
+                            <select id="leave-per-page" wire:model.live="perPage" class="form-select form-select-sm" style="width: auto;">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">All</option>
+                            </select>
+                            <span>rows</span>
+                        </div>
+                        <div class="text-muted small">
+                            @if($leaves->total() > 0)
+                                Showing {{ $leaves->firstItem() }} to {{ $leaves->lastItem() }} of {{ $leaves->total() }} requests
+                            @else
+                                No results
+                            @endif
+                        </div>
+                        <div>
+                            @if($leaves->hasPages())
+                                {{ $leaves->links() }}
+                            @endif
+                        </div>
+                    </div>
                 </x-pages.card>
             </div>
+
+            <style>
+                .leave-table-scroll { max-height: 65vh; overflow-y: auto; }
+                .leave-table-scroll thead th { position: sticky; top: 0; z-index: 2; box-shadow: inset 0 -1px 0 var(--bs-border-color); }
+            </style>
 
             <x-pages.model
                 :title="$modalMode === 'edit' ? 'Edit Leave Request' : 'Request Leave'"
