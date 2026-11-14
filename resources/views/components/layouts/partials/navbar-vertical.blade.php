@@ -340,6 +340,11 @@
     </li>
     @endif
 
+    <!-- Engineering / Maintenance -->
+    @if($user && \App\Services\Engineering\EngineeringNavigation::installed())
+        @include('components.layouts.partials.navbar-engineering')
+    @endif
+
     <!-- My Performance - Available to any logged-in staff with employee record -->
     @if($hasEmployeeRecord)
     <li class="nav-item dropdown {{ request()->routeIs($myPerformanceRoutes) ? 'show' : '' }}">

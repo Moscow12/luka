@@ -78,6 +78,17 @@ class PermissionSeeder extends Seeder
                 ['name' => 'manage-ticket-categories', 'description' => 'Manage ticket categories and SLAs'],
                 ['name' => 'view-ticket-reports', 'description' => 'View ticket analytics and staff scorecards'],
             ],
+            'Engineering' => [
+                ['name' => 'engineering-helpdesk', 'description' => 'Engineering helpdesk: receive requisitions, assign and re-assign jobs'],
+                ['name' => 'engineering-manage', 'description' => 'Head of engineering: oversee every section, job and engineer'],
+                ['name' => 'engineering-store', 'description' => 'Engineering store keeper: issue or reject spares requisitions'],
+                ['name' => 'engineering-certify', 'description' => 'Certify engineering job cards'],
+                ['name' => 'engineering-authorise', 'description' => 'Authorise certified engineering job cards'],
+                ['name' => 'engineering-purchasing', 'description' => 'Record purchasing information on authorised job cards'],
+                ['name' => 'engineering-inventory', 'description' => 'Maintain the equipment register, rooms and PPM schedules'],
+                ['name' => 'engineering-reports', 'description' => 'View all engineering reports, dashboards and KPIs'],
+                ['name' => 'engineering-setup', 'description' => 'Manage engineering sections, staff, categories and KPI weights'],
+            ],
             'Chat' => [
                 ['name' => 'view-chat-analytics', 'description' => 'View workspace chat analytics'],
                 ['name' => 'manage-chat', 'description' => 'Moderate and archive any chat room'],

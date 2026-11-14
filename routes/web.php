@@ -19,6 +19,7 @@ use App\Livewire\Chop\MonitoringEvaluation;
 use App\Livewire\Contracts\ContractDetails;
 use App\Livewire\Contracts\ContractForm;
 use App\Livewire\Contracts\ManageContracts;
+use App\Livewire\Engineering;
 use App\Livewire\Hr\Attendance\Checkindata;
 use App\Livewire\Hr\Attendance\Fpdevices;
 use App\Livewire\Hr\Attendance\Managefpattendance;
@@ -250,6 +251,42 @@ Route::prefix('tickets')->middleware('auth')->group(function () {
     Route::get('/categories', TicketCategories::class)->name('tickets.categories');
     Route::get('/attachments/{attachment}', TicketAttachmentController::class)->name('tickets.attachment');
     Route::get('/{ticket}', TicketView::class)->name('tickets.view');
+});
+
+Route::prefix('engineering')->middleware('auth')->name('engineering.')->group(function () {
+    // Requesting users
+    Route::get('/request', Engineering\RequestService::class)->name('request');
+    Route::get('/requisitions', Engineering\MyRequisitions::class)->name('requisitions');
+    Route::get('/processed', Engineering\ProcessedRequisitions::class)->name('processed');
+    Route::get('/oxygen', Engineering\OxygenOrders::class)->name('oxygen');
+
+    // Helpdesk
+    Route::get('/helpdesk/queue', Engineering\Helpdesk\JobQueue::class)->name('helpdesk.queue');
+    Route::get('/helpdesk/workload', Engineering\Helpdesk\SectionWorkload::class)->name('helpdesk.workload');
+    Route::get('/helpdesk/reassignment', Engineering\Helpdesk\Reassignment::class)->name('helpdesk.reassignment');
+
+    // Engineers
+    Route::get('/jobs', Engineering\Jobs\MyJobs::class)->name('jobs.mine');
+    Route::get('/jobs/{job}', Engineering\Jobs\Workspace::class)->whereUuid('job')->name('jobs.show');
+    Route::get('/jobs/{job}/job-card', Engineering\Jobs\JobCardForm::class)->whereUuid('job')->name('jobs.card');
+    Route::get('/jobs/{job}/root-cause', Engineering\Jobs\RootCause::class)->whereUuid('job')->name('jobs.rca');
+    Route::get('/jobs/{job}/summary', Engineering\Jobs\Summary::class)->whereUuid('job')->name('jobs.summary');
+
+    // Inventory, PPM and store
+    Route::get('/inventory', Engineering\Inventory::class)->name('inventory');
+    Route::get('/inventory/rooms', Engineering\InventoryRooms::class)->name('inventory.rooms');
+    Route::get('/ppm', Engineering\Ppm::class)->name('ppm');
+    Route::get('/store', Engineering\Store::class)->name('store');
+
+    // Reports
+    Route::get('/reports/mrv-dashboard', Engineering\Reports\MrvDashboard::class)->name('reports.dashboard');
+    Route::get('/reports/procurement-tracker', Engineering\Reports\ProcurementTracker::class)->name('reports.procurement');
+    Route::get('/reports/technical', Engineering\Reports\TechnicalReports::class)->name('reports.technical');
+    Route::get('/reports/executive-summary', Engineering\Reports\ExecutiveSummary::class)->name('reports.executive');
+    Route::get('/reports/weekly-summary', Engineering\Reports\WeeklySummary::class)->name('reports.weekly');
+    Route::get('/reports/individual-kpi', Engineering\Reports\IndividualKpi::class)->name('reports.kpi');
+
+    Route::get('/setup', Engineering\Setup::class)->name('setup');
 });
 
 Route::prefix('performance')->middleware('auth')->group(function () {
