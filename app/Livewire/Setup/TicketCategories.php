@@ -111,7 +111,7 @@ class TicketCategories extends Component
                 ->when($this->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
                 ->orderBy('name')
                 ->paginate(15),
-            'departments' => departments::orderBy('name')->get(['id', 'name']),
+            'departments' => departments::active()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 }

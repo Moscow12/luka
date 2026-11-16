@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Setup;
 
+use App\Livewire\Concerns\ManagesRecordStatus;
 use App\Models\countries;
 use App\Models\districts;
 use App\Models\regions;
 use App\Models\wards;
 use App\Models\workstations;
+use App\Support\RecordUsage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -15,42 +17,63 @@ use Livewire\WithPagination;
 
 class Workstation extends Component
 {
-    use WithFileUploads, WithPagination;
+    use ManagesRecordStatus, WithFileUploads, WithPagination;
 
     // Form fields
     public $workstation_id;
+
     public $workstation_name;
+
     public $location;
+
     public $postal_code;
+
     public $physical_address;
+
     public $phone_number;
+
     public $tin_number;
+
     public $email_address;
+
     public $country_id;
+
     public $region_id;
+
     public $district_id;
+
     public $ward_id;
 
     // File uploads
     public $logo;
+
     public $official_stamp;
+
     public $letter_head;
 
     // Existing file paths (for edit mode)
     public $existing_logo;
+
     public $existing_stamp;
+
     public $existing_letterhead;
 
     // Dropdown data
     public $countries = [];
+
     public $regions = [];
+
     public $districts = [];
+
     public $wards = [];
 
     // UI state
     public $modalMode = 'create';
+
     public $showModal = false;
+
     public $search = '';
+
     public $confirmingDelete = null;
 
     protected $paginationTheme = 'bootstrap';
@@ -58,7 +81,7 @@ class Workstation extends Component
     protected function rules()
     {
         $uniqueRule = $this->modalMode === 'edit' && $this->workstation_id
-            ? 'unique:workstations,workstation_name,' . $this->workstation_id
+            ? 'unique:workstations,workstation_name,'.$this->workstation_id
             : 'unique:workstations,workstation_name';
 
         return [
@@ -250,26 +273,25 @@ class Workstation extends Component
         $this->confirmingDelete = $id;
     }
 
+    /** Deletes only a workstation nothing refers to (and then its files); one in use is deactivated instead. */
     public function delete()
     {
         if ($this->confirmingDelete) {
             $workstation = workstations::findOrFail($this->confirmingDelete);
+            $files = array_filter([$workstation->logo, $workstation->official_stamp, $workstation->letter_head]);
 
-            // Delete associated files
-            if ($workstation->logo) {
-                Storage::disk('public')->delete($workstation->logo);
-            }
-            if ($workstation->official_stamp) {
-                Storage::disk('public')->delete($workstation->official_stamp);
-            }
-            if ($workstation->letter_head) {
-                Storage::disk('public')->delete($workstation->letter_head);
+            if ($this->deleteUnlessInUse($workstation, "Workstation {$workstation->workstation_name}")) {
+                Storage::disk('public')->delete($files);
             }
 
-            $workstation->delete();
             $this->confirmingDelete = null;
-            session()->flash('success', 'Workstation deleted successfully!');
         }
+    }
+
+    public function toggleStatus($id)
+    {
+        $workstation = workstations::findOrFail($id);
+        $this->toggleRecordStatus($workstation, "Workstation {$workstation->workstation_name}");
     }
 
     public function cancelDelete()
@@ -292,14 +314,17 @@ class Workstation extends Component
     {
         $workstations = workstations::with(['country', 'region', 'district', 'ward', 'added_by'])
             ->when($this->search, function ($query) {
-                $query->where('workstation_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email_address', 'like', '%' . $this->search . '%')
-                    ->orWhere('tin_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('phone_number', 'like', '%' . $this->search . '%');
+                $query->where('workstation_name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email_address', 'like', '%'.$this->search.'%')
+                    ->orWhere('tin_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('phone_number', 'like', '%'.$this->search.'%');
             })
             ->orderBy('workstation_name')
             ->paginate(10);
 
-        return view('livewire.setup.workstation', compact('workstations'));
+        return view('livewire.setup.workstation', [
+            'workstations' => $workstations,
+            'usedIds' => RecordUsage::usedIds('workstations', $workstations->pluck('id')),
+        ]);
     }
 }

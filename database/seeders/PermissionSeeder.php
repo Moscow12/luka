@@ -37,6 +37,7 @@ class PermissionSeeder extends Seeder
             'Asset Management' => [
                 ['name' => 'manage-assets', 'description' => 'Manage department assets and asset reports'],
                 ['name' => 'delete-asset', 'description' => 'Delete department assets'],
+                ['name' => 'approve-asset-transfer', 'description' => 'Approve or reject asset transfers between departments and locations'],
             ],
             'procurement' => [
                 ['name' => 'view-procurement', 'description' => 'View procurement orders and reports'],

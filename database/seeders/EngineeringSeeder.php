@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\assetclass;
 use App\Models\Engineering\OxygenPlant;
 use App\Models\Engineering\ProblemCategory;
 use App\Models\Engineering\Section;
@@ -45,6 +46,14 @@ class EngineeringSeeder extends Seeder
         'EM-15' => [['ELECTRICAL', 'ESTATE'], 'AC malfunctioning in a temperature-controlled room housing equipment such as MRI, CT scan, Cobalt-60'],
         'EM-16' => [['ELECTRICAL', 'MECHANICAL'], 'Generator fails to start after a power cut'],
         'EM-17' => [['ELECTRICAL'], 'Lack of power in an isolated area while the rest of the hospital has electricity'],
+    ];
+
+    /** Asset class (by name) => engineering section that maintains its items */
+    protected const CLASS_SECTIONS = [
+        'Medical Equipment' => 'BIOMEDICAL',
+        'Electrical' => 'ELECTRICAL',
+        'Plumbing Fixtures' => 'PLUMBING',
+        'Furniture' => 'CARPENTRY',
     ];
 
     // Starter list only: the engineering department maintains these under Engineering > Setup
@@ -92,6 +101,14 @@ class EngineeringSeeder extends Seeder
             foreach (['Oxygen plant 1'] as $name) {
                 OxygenPlant::create(['name' => $name]);
             }
+        }
+
+        // Asset classes engineering maintains. Only classes not yet mapped are touched, so a
+        // mapping changed under Setup > Asset configuration is kept.
+        foreach (self::CLASS_SECTIONS as $className => $sectionCode) {
+            assetclass::whereRaw('LOWER(name) = ?', [strtolower($className)])
+                ->whereNull('eng_section_id')
+                ->update(['eng_section_id' => $sections[$sectionCode]->id]);
         }
     }
 }

@@ -8,6 +8,9 @@ use App\Models\User;
 use App\Observers\DepartmentChatObserver;
 use App\Observers\EmployeeChatObserver;
 use App\Services\Leave\LeaveApprovalChain;
+use App\Support\RecordUsage;
+use Illuminate\Database\Events\MigrationsEnded;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -39,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
 
             return null; // Fall through to normal permission checks
         });
+
+        // The "is this record in use" map is built from foreign keys, which migrations change
+        Event::listen(MigrationsEnded::class, fn () => RecordUsage::flush());
 
         // Without this gate the log viewer is open to everyone outside production
         Gate::define('viewLogViewer', fn (User $user) => $user->isSuperAdmin());

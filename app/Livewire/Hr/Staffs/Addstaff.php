@@ -149,9 +149,13 @@ class Addstaff extends Component
 
     public $showDesignationDropdown = false;
 
-    protected function dbSearch($model, string $term, ?string $scope = null, ?string $scopeValue = null, string $column = 'name')
+    protected function dbSearch($model, string $term, ?string $scope = null, ?string $scopeValue = null, string $column = 'name', bool $activeOnly = false)
     {
         $query = $model::query()->select('id', $column.' as name');
+        if ($activeOnly) {
+            // Deactivated master records are not offered for new assignments
+            $query->active();
+        }
         if ($scope && $scopeValue) {
             $query->where($scope, $scopeValue);
         }
@@ -308,7 +312,7 @@ class Addstaff extends Component
     // Department
     public function getFilteredDepartmentsProperty()
     {
-        return $this->dbSearch(departments::class, $this->departmentSearch);
+        return $this->dbSearch(departments::class, $this->departmentSearch, activeOnly: true);
     }
 
     public function getSelectedDepartmentProperty()
@@ -358,7 +362,7 @@ class Addstaff extends Component
     // Designation
     public function getFilteredDesignationsProperty()
     {
-        return $this->dbSearch(designations::class, $this->designationSearch);
+        return $this->dbSearch(designations::class, $this->designationSearch, activeOnly: true);
     }
 
     public function getSelectedDesignationProperty()
@@ -427,7 +431,7 @@ class Addstaff extends Component
 
     public function listdata()
     {
-        $this->workstations = workstations::orderBy('workstation_name')->get();
+        $this->workstations = workstations::activeOr($this->workstation_id ?: null)->orderBy('workstation_name')->get();
         $this->denominations = denominations::orderBy('name')->get();
         $this->users = User::orderBy('first_name')->get();
         $this->roles = Role::orderBy('name')->get();

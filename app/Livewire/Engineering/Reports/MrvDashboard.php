@@ -60,7 +60,7 @@ class MrvDashboard extends Component
             ->when($this->filterStatus, fn (Builder $q, $status) => $q->where('status', $status))
             ->search($this->search)
             ->with([
-                'requisition.room', 'requisition.department:id,name', 'equipment:id,name,code,serial_number', 'section:id,name',
+                'requisition.room', 'requisition.department:id,name', 'equipment:id,name,code,asset_registry_id', 'equipment.assetRegistry:id,serial_number,model', 'section:id,name',
                 'engineer:id,first_name,last_name', 'assistants:id,first_name,last_name', 'assignedBy:id,first_name,surname',
                 'safetyTests', 'sparesRequisitions.lines', 'jobCard', 'notes', 'currentFeedback',
             ])

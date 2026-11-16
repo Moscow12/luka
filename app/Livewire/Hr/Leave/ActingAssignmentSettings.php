@@ -4,17 +4,22 @@ namespace App\Livewire\Hr\Leave;
 
 use App\Models\designations;
 use App\Models\LeaveSetting;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class ActingAssignmentSettings extends Component
 {
     public $acting_assignment_enabled;
+
     public $acting_assignment_mandatory;
+
     public $acting_assignment_min_days;
+
     public $acting_assignment_auto_approve;
+
     public $acting_assignment_notify_employee;
+
     public $acting_assignment_designations = [];
+
     public $allDesignations = [];
 
     public function mount()
@@ -28,7 +33,7 @@ class ActingAssignmentSettings extends Component
         $this->acting_assignment_designations = LeaveSetting::get('acting_assignment_designations', []);
 
         // Load all designations
-        $this->allDesignations = designations::where('status', 'active')->get();
+        $this->allDesignations = designations::active()->get();
     }
 
     public function save()

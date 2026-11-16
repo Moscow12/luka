@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActiveStatus;
 use Database\Factories\WorkstationsFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class workstations extends Model
 {
-    use HasFactory, HasUuids;
+    use HasActiveStatus, HasFactory, HasUuids;
 
     protected $table = 'workstations';
 
@@ -17,6 +18,7 @@ class workstations extends Model
     {
         return WorkstationsFactory::new();
     }
+
     protected $fillable = [
         'workstation_name',
         'location',
@@ -32,8 +34,10 @@ class workstations extends Model
         'region_id',
         'district_id',
         'ward_id',
+        'status',
         'added_by',
     ];
+
     public function added_by()
     {
         return $this->belongsTo(User::class, 'added_by');
@@ -48,6 +52,7 @@ class workstations extends Model
     {
         return $this->belongsTo(regions::class, 'region_id');
     }
+
     public function district()
     {
         return $this->belongsTo(districts::class, 'district_id');

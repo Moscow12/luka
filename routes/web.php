@@ -107,6 +107,7 @@ Route::group([
 Route::prefix('assets')->middleware('auth')->group(function () {
     Route::get('/assets.index', App\Livewire\Assets\DepartmentAssets::class)->name('assets.index');
     Route::get('/reports', App\Livewire\Assets\Assetreports::class)->name('assets.reports');
+    Route::get('/transfers', App\Livewire\Assets\AssetTransfers::class)->name('assets.transfers');
 });
 
 Route::prefix('setup')->middleware('auth')->group(function () {

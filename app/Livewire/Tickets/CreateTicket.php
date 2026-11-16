@@ -152,7 +152,7 @@ class CreateTicket extends Component
 
         return view('livewire.tickets.create-ticket', [
             'categories' => TicketCategory::active()->orderBy('name')->get(['id', 'name', 'default_sla_hours']),
-            'departments' => departments::orderBy('name')->get(['id', 'name']),
+            'departments' => departments::active()->orderBy('name')->get(['id', 'name']),
             'employees' => $employees,
             'duties' => $duties,
         ]);

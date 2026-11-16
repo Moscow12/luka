@@ -152,19 +152,22 @@ class Assetreports extends Component
 
         $totalValue = $assets->sum('purchase_cost') ?? 0;
 
+        // A register row may be a lot of identical items: count units, not rows
+        $units = fn ($rows) => (int) $rows->sum(fn ($row) => max(1, (int) $row->quantity));
+
         return [
-            'total_assets' => $assets->count(),
+            'total_assets' => $units($assets),
             'total_value' => $totalValue,
             'total_depreciation' => $totalDepreciation,
             'net_book_value' => $totalValue - $totalDepreciation,
-            'active_assets' => $assets->where('status', 'active')->count(),
-            'disposed_assets' => $assets->where('status', 'disposed')->count(),
-            'under_maintenance' => $assets->where('status', 'under_maintenance')->count(),
+            'active_assets' => $units($assets->where('status', 'active')),
+            'disposed_assets' => $units($assets->where('status', 'disposed')),
+            'under_maintenance' => $units($assets->where('status', 'under_maintenance')),
             'by_condition' => [
-                'new' => $assets->where('condition', 'new')->count(),
-                'good' => $assets->where('condition', 'good')->count(),
-                'fair' => $assets->where('condition', 'fair')->count(),
-                'poor' => $assets->where('condition', 'poor')->count(),
+                'new' => $units($assets->where('condition', 'new')),
+                'good' => $units($assets->where('condition', 'good')),
+                'fair' => $units($assets->where('condition', 'fair')),
+                'poor' => $units($assets->where('condition', 'poor')),
             ],
         ];
     }

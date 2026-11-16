@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('requester_phone', 30)->nullable();
             $table->string('requester_role', 150)->nullable();
             $table->foreignUuid('department_id')->nullable()->constrained('departments')->nullOnDelete();
-            $table->foreignUuid('room_id')->nullable()->constrained('eng_rooms')->nullOnDelete();
+            $table->foreignUuid('room_id')->nullable()->constrained('facilitylocations')->nullOnDelete();
             $table->string('location_text', 200)->nullable();
             $table->dateTime('requested_at');
             $table->timestamps();

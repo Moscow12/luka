@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Concerns\ResolvesSyncEntities;
 use App\Http\Controllers\Controller;
 use App\Models\asset;
 use App\Models\assetregistry;
+use App\Models\AssetTransfer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -117,13 +118,27 @@ class AssetController extends Controller
             // Resolve or create building
             $buildingId = $this->resolveOrCreateBuilding($request->building_id ?: 'Main Building', $workstationId, $firstUserId);
 
-            // Resolve or create facility location
-            $facilityLocationId = $this->resolveOrCreateFacilityLocation(
-                $request->location ?: 'Main Location',
-                $buildingId,
-                $workstationId,
-                $firstUserId
-            );
+            // Check if registry entry already exists (by serial_no or code_no)
+            $existingRegistry = null;
+            if (! empty($request->serial_no)) {
+                $existingRegistry = assetregistry::where('serial_number', $request->serial_no)->first();
+            }
+            if (! $existingRegistry && ! empty($request->code_no)) {
+                $existingRegistry = assetregistry::where('codeno', $request->code_no)->first();
+            }
+
+            // An existing asset reported in the same department and place keeps its current room
+            // (the room may be shared or named slightly differently); anything else is resolved.
+            $locationName = $request->location ?: 'Main Location';
+            $currentLocation = $existingRegistry?->facilityLocation;
+            $unchanged = $existingRegistry
+                && $existingRegistry->department_id === $departmentId
+                && $currentLocation
+                && strcasecmp(trim($currentLocation->name), trim($locationName)) === 0;
+
+            $facilityLocationId = $unchanged
+                ? $currentLocation->id
+                : $this->resolveOrCreateFacilityLocation($locationName, $buildingId, $workstationId, $firstUserId, $departmentId);
 
             // Resolve or create the asset (catalog entry)
             $assetId = $this->resolveOrCreateAsset(
@@ -172,15 +187,6 @@ class AssetController extends Controller
                 ], 422);
             }
 
-            // Check if registry entry already exists (by serial_no or code_no)
-            $existingRegistry = null;
-            if (! empty($request->serial_no)) {
-                $existingRegistry = assetregistry::where('serial_number', $request->serial_no)->first();
-            }
-            if (! $existingRegistry && ! empty($request->code_no)) {
-                $existingRegistry = assetregistry::where('codeno', $request->code_no)->first();
-            }
-
             $payload = [
                 'asset_class_id' => $assetClassId,
                 'facility_location_id' => $facilityLocationId,
@@ -202,7 +208,27 @@ class AssetController extends Controller
             ];
 
             if ($existingRegistry) {
-                $existingRegistry->update($payload);
+                // Department / location of a registered asset change only through an approved transfer:
+                // a different location from the sync becomes a pending transfer request instead.
+                $locationFields = ['facility_location_id', 'workstation_id', 'building_id', 'department_id'];
+                $moved = $existingRegistry->facility_location_id !== $facilityLocationId
+                    || $existingRegistry->department_id !== $departmentId;
+
+                if ($moved && $firstUserId && ! $existingRegistry->pendingTransfer()->exists() && $existingRegistry->status !== 'disposed') {
+                    AssetTransfer::create([
+                        'assetregistry_id' => $existingRegistry->id,
+                        'quantity' => max(1, (int) $existingRegistry->quantity),
+                        'from_department_id' => $existingRegistry->department_id,
+                        'from_facility_location_id' => $existingRegistry->facility_location_id,
+                        'to_department_id' => $departmentId,
+                        'to_facility_location_id' => $facilityLocationId,
+                        'reason' => 'Asset sync reported a new department / location.',
+                        'status' => AssetTransfer::PENDING,
+                        'requested_by' => $firstUserId,
+                    ]);
+                }
+
+                $existingRegistry->update(array_diff_key($payload, array_flip([...$locationFields, 'added_by'])));
 
                 DB::commit();
 
@@ -355,14 +381,22 @@ class AssetController extends Controller
     /**
      * Resolve or create facility location
      */
-    private function resolveOrCreateFacilityLocation(string $name, ?string $buildingId, ?string $workstationId, ?string $addedBy): ?string
+    private function resolveOrCreateFacilityLocation(string $name, ?string $buildingId, ?string $workstationId, ?string $addedBy, ?string $departmentId = null): ?string
     {
+        // Prefer the department's own room, then a room not yet given a department (which it claims)
         $existing = DB::table('facilitylocations')
+            ->whereNull('deleted_at')
             ->where('name', 'LIKE', '%'.$name.'%')
             ->where('building_id', $buildingId)
+            ->where(fn ($q) => $q->where('department_id', $departmentId)->orWhereNull('department_id'))
+            ->orderByRaw('department_id is null')
             ->first();
 
         if ($existing) {
+            if (! $existing->department_id && $departmentId) {
+                DB::table('facilitylocations')->where('id', $existing->id)->update(['department_id' => $departmentId, 'updated_at' => now()]);
+            }
+
             return $existing->id;
         }
 
@@ -372,6 +406,7 @@ class AssetController extends Controller
             'name' => $name,
             'building_id' => $buildingId,
             'workstation_id' => $workstationId,
+            'department_id' => $departmentId,
             'added_by' => $addedBy,
             'created_at' => now(),
             'updated_at' => now(),

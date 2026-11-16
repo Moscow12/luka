@@ -77,8 +77,8 @@ class Promotions extends Component
         $this->email = $staff->email;
         $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
-        $this->workstations = workstations::all();
-        $this->departments = departments::all();
+        $this->workstations = workstations::active()->get();
+        $this->departments = departments::active()->get();
         $this->titles = Jobtitle::all();
         $this->listdata();
     }

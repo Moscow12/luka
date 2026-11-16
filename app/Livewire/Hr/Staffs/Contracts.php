@@ -2,7 +2,11 @@
 
 namespace App\Livewire\Hr\Staffs;
 
-use App\Models\{workstations, departments, Employee, Employeecontracts, Jobtitle};
+use App\Models\departments;
+use App\Models\Employee;
+use App\Models\Employeecontracts;
+use App\Models\Jobtitle;
+use App\Models\workstations;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,17 +16,79 @@ class Contracts extends Component
     use WithFileUploads;
 
     public $search = '';
+
     public $modalMode = 'create';
+
     public $showModal = false;
-    public $employee_id, $workstation_id, $department_id, $position_id, $workstations, $departments, $positions, $editmode = false;
-    public $first_name, $middle_name, $last_name, $gender, $getfullname, $age, $email, $editUrl, $photo;
-    public $contract_type = 'permanent', $start_date, $expire_date, $expirenotification = false, $notify_time, $payment_frequency = 'monthly', $base_salary = 0, $description, $attachment, $contract_id, $contracts=[];
+
+    public $employee_id;
+
+    public $workstation_id;
+
+    public $department_id;
+
+    public $position_id;
+
+    public $workstations;
+
+    public $departments;
+
+    public $positions;
+
+    public $editmode = false;
+
+    public $first_name;
+
+    public $middle_name;
+
+    public $last_name;
+
+    public $gender;
+
+    public $getfullname;
+
+    public $age;
+
+    public $email;
+
+    public $editUrl;
+
+    public $photo;
+
+    public $contract_type = 'permanent';
+
+    public $start_date;
+
+    public $expire_date;
+
+    public $expirenotification = false;
+
+    public $notify_time;
+
+    public $payment_frequency = 'monthly';
+
+    public $base_salary = 0;
+
+    public $description;
+
+    public $attachment;
+
+    public $contract_id;
+
+    public $contracts = [];
+
     public $canAddNewContract = true;
+
     public $activeContractMessage = '';
+
     public $showTerminateModal = false;
+
     public $termination_reason = '';
+
     public $termination_date = '';
+
     public $termination_notes = '';
+
     public function mount($id = null)
     {
         $staff = Employee::findOrFail($id);
@@ -37,8 +103,8 @@ class Contracts extends Component
         $this->email = $staff->email;
         $this->photo = $staff->photo;
         $this->editUrl = route('hr.editstaff', $id);
-        $this->workstations = workstations::all();
-        $this->departments = departments::all();
+        $this->workstations = workstations::active()->get();
+        $this->departments = departments::active()->get();
         $this->positions = Jobtitle::all();
         $this->listdata();
     }
@@ -106,7 +172,7 @@ class Contracts extends Component
                 'base_salary' => $this->base_salary,
                 'description' => $this->description,
                 'attachment' => $paths,
-                'added_by' => Auth::user()->id
+                'added_by' => Auth::user()->id,
             ]);
 
             // Update employee status to active when new contract is added
@@ -126,6 +192,7 @@ class Contracts extends Component
     {
         $this->save();
     }
+
     public function listdata()
     {
         $this->contracts = Employeecontracts::where('employee_id', $this->employee_id)
@@ -144,9 +211,10 @@ class Contracts extends Component
             ->where('status', 'active')
             ->first();
 
-        if (!$activeContract) {
+        if (! $activeContract) {
             $this->canAddNewContract = true;
             $this->activeContractMessage = '';
+
             return;
         }
 
@@ -173,11 +241,13 @@ class Contracts extends Component
         $this->listdata();
         session()->flash('success', 'Contract deleted successfully!');
     }
+
     public function openModal($mode = 'create', $id = null)
     {
         // Check if user can add new contract
-        if ($mode === 'create' && !$this->canAddNewContract) {
+        if ($mode === 'create' && ! $this->canAddNewContract) {
             session()->flash('error', $this->activeContractMessage);
+
             return;
         }
 
@@ -324,6 +394,7 @@ class Contracts extends Component
         $this->showTerminateModal = false;
         $this->reset(['contract_id', 'termination_reason', 'termination_date', 'termination_notes']);
     }
+
     public function render()
     {
         return view('livewire.hr.staffs.contracts');

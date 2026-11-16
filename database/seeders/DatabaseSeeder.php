@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Barryvdh\Reflection\DocBlock\Location;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,7 +12,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,         
+            UserSeeder::class,
             AclSeeder::class,
             PermissionSeeder::class,
             ReligionsSeeder::class,
@@ -32,7 +31,11 @@ class DatabaseSeeder extends Seeder
             AllowanceSeeder::class,
             WorkstationsSeeder::class,
             EmployeeSeeder::class,
-            
+            // Asset classes, catalogue and (fresh install) rooms per department, then engineering
+            // sections, which map the engineering asset classes
+            AssetSetupSeeder::class,
+            EngineeringSeeder::class,
+
         ]);
     }
 }

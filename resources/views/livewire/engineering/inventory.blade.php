@@ -8,6 +8,7 @@
 <x-engineering.page title="Inventory" subtitle="Equipment register per department and room">
     <x-slot:actions>
         <a href="{{ route('engineering.inventory.rooms') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-door-open me-1"></i>Rooms & responsible staff</a>
+        <a href="{{ route('assets.transfers') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-right-left me-1"></i>Transfers</a>
         <button type="button" class="btn btn-outline-success" wire:click="export"><i class="fa-solid fa-file-excel me-1"></i>Export to Excel</button>
         @if($canManage)
             <button type="button" class="btn btn-primary" wire:click="create"><i class="fa-solid fa-plus me-1"></i>Add equipment</button>
@@ -97,6 +98,7 @@
                                 @if($canManage && $view !== 'removed')
                                     <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="openStatus('{{ $item->id }}')" title="Change status"><i class="fa-solid fa-heart-pulse"></i></button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="edit('{{ $item->id }}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="requestTransfer('{{ $item->id }}')" title="Request transfer to another department / room"><i class="fa-solid fa-right-left"></i></button>
                                     @if($canRemove)
                                         <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openRemove('{{ $item->id }}')" title="Remove from inventory"><i class="fa-solid fa-box-archive"></i></button>
                                     @endif
@@ -133,7 +135,9 @@
                     <x-engineering.detail label="Manufacturer">{{ $detail->manufacturer }}</x-engineering.detail>
                     <x-engineering.detail label="Manufacturer contact" class="col-12 col-md-8 col-lg-9">{{ $detail->manufacturerContact() }}</x-engineering.detail>
                     <x-engineering.detail label="Supplier">{{ $detail->supplier ?? '—' }} @if($detail->under_contract)<span class="badge bg-info">Under contract{{ $detail->contract_expiry ? ' to '.Eng::date($detail->contract_expiry) : '' }}</span>@endif</x-engineering.detail>
-                    <x-engineering.detail label="Location">{{ $detail->department->name }} · {{ $detail->room->label() }}</x-engineering.detail>
+                    <x-engineering.detail label="Location">{{ $detail->department->name }} · {{ $detail->room->label() }}
+                        @if($pending = $detail->assetRegistry?->pendingTransfer)<div class="small text-warning">Transfer pending to {{ $pending->toDepartment?->name }} · {{ $pending->toLocation?->name }}</div>@endif
+                    </x-engineering.detail>
                     <x-engineering.detail label="Installed">{{ Eng::date($detail->installation_date) }}</x-engineering.detail>
                     <x-engineering.detail label="Condition when received">{{ strtoupper($detail->condition_received) }}</x-engineering.detail>
                     <x-engineering.detail label="Predicted replacement">{{ Eng::date($detail->replacementDate()) }}</x-engineering.detail>
@@ -168,7 +172,71 @@
         <x-engineering.modal :title="$editingId ? 'Edit equipment' : 'Add equipment'" close="closeForm" size="modal-xl">
             <form wire:submit="save">
                 <div class="modal-body">
+                    @if(! $editingId)
+                        <div class="btn-group mb-3" role="group">
+                            <button type="button" class="btn {{ $source === 'new' ? 'btn-primary' : 'btn-outline-primary' }}" wire:click="setSource('new')"><i class="fa-solid fa-plus me-1"></i>New item</button>
+                            <button type="button" class="btn {{ $source === 'register' ? 'btn-primary' : 'btn-outline-primary' }}" wire:click="setSource('register')"><i class="fa-solid fa-boxes-stacked me-1"></i>From asset register</button>
+                        </div>
+                        <p class="small text-muted">
+                            {{ $source === 'new'
+                                ? 'The item is added to the asset register and the engineering inventory together.'
+                                : 'Give an item already in the asset register its engineering details. Only engineering asset classes are listed.' }}
+                        </p>
+                    @endif
+
                     <div class="row g-3">
+                        @if(! $editingId && $source === 'register')
+                            <div class="col-12">
+                                <label class="form-label">Asset register item <span class="text-danger">*</span></label>
+                                @if($pickedRegistry)
+                                    <div class="d-flex align-items-center gap-2 border rounded p-2">
+                                        <div class="flex-grow-1">
+                                            <strong>{{ $pickedRegistry->label() }}</strong>
+                                            <div class="small text-muted">{{ $pickedRegistry->department?->name }} · {{ $pickedRegistry->facilityLocation?->label() }} · Qty {{ $pickedRegistry->quantity }} @if($pickedRegistry->serial_number)· S/N {{ $pickedRegistry->serial_number }}@endif</div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="clearRegistry">Change</button>
+                                    </div>
+                                @else
+                                    <input type="search" class="form-control @error('form.asset_registry_id') is-invalid @enderror" placeholder="Search by item name, code, serial or model" wire:model.live.debounce.400ms="registrySearch">
+                                    @error('form.asset_registry_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <div class="list-group mt-1" style="max-height: 240px; overflow-y: auto;">
+                                        @forelse($registryCandidates as $row)
+                                            <button type="button" class="list-group-item list-group-item-action" wire:click="pickRegistry('{{ $row->id }}')" wire:key="reg-{{ $row->id }}">
+                                                <strong>{{ $row->label() }}</strong> <span class="badge bg-light text-dark">{{ $row->assetClass?->name }}</span>
+                                                <div class="small text-muted">{{ $row->department?->name }} · {{ $row->facilityLocation?->label() }} · Qty {{ $row->quantity }} @if($row->serial_number)· S/N {{ $row->serial_number }}@endif</div>
+                                            </button>
+                                        @empty
+                                            <div class="list-group-item small text-muted">No register items without engineering details. Only classes linked to an engineering section (Asset configuration) are listed.</div>
+                                        @endforelse
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                        @if(! $editingId && $source === 'new')
+                            <div class="col-md-4">
+                                <label class="form-label">Asset class <span class="text-danger">*</span></label>
+                                <select class="form-select @error('form.asset_class_id') is-invalid @enderror" wire:model.live="form.asset_class_id">
+                                    <option value="">{{ $engineeringClasses->isEmpty() ? 'No class is linked to an engineering section yet' : 'Select' }}</option>
+                                    @foreach($engineeringClasses as $class)<option value="{{ $class->id }}">{{ $class->name }} ({{ $class->engSection?->name }})</option>@endforeach
+                                </select>
+                                @error('form.asset_class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Catalogue item <span class="text-danger">*</span></label>
+                                <select class="form-select @error('form.asset_id') is-invalid @enderror" wire:model.live="form.asset_id" @disabled(! $form['asset_class_id'])>
+                                    <option value="">Select, or type a new item name</option>
+                                    @foreach($catalogue as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach
+                                </select>
+                                @error('form.asset_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">New catalogue item</label>
+                                <input type="text" class="form-control @error('form.new_asset_name') is-invalid @enderror" wire:model="form.new_asset_name" @disabled($form['asset_id']) placeholder="e.g. Infusion pump">
+                                @error('form.new_asset_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        @endif
+
                         <div class="col-md-5">
                             <label class="form-label">Equipment name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('form.name') is-invalid @enderror" wire:model="form.name">
@@ -207,26 +275,43 @@
                             <input type="text" class="form-control" wire:model="form.model">
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Department <span class="text-danger">*</span></label>
-                            <select class="form-select @error('form.department_id') is-invalid @enderror" wire:model.live="form.department_id">
-                                <option value="">Select</option>
-                                @foreach($departments as $department)<option value="{{ $department->id }}">{{ $department->name }}</option>@endforeach
-                            </select>
-                            @error('form.department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Room <span class="text-danger">*</span></label>
-                            <select class="form-select @error('form.room_id') is-invalid @enderror" wire:model="form.room_id" @disabled($formRooms->isEmpty())>
-                                <option value="">{{ $form['department_id'] && $formRooms->isEmpty() ? 'Register a room for this department first' : 'Select' }}</option>
-                                @foreach($formRooms as $room)<option value="{{ $room->id }}">{{ $room->label() }}</option>@endforeach
-                            </select>
-                            @error('form.room_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                            <input type="number" min="1" class="form-control @error('form.quantity') is-invalid @enderror" wire:model="form.quantity">
-                        </div>
+                        @if(! $editingId && $source === 'new')
+                            <div class="col-md-4">
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
+                                <select class="form-select @error('form.department_id') is-invalid @enderror" wire:model.live="form.department_id">
+                                    <option value="">Select</option>
+                                    @foreach($formDepartments as $department)<option value="{{ $department->id }}">{{ $department->name }}</option>@endforeach
+                                </select>
+                                @error('form.department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Room <span class="text-danger">*</span></label>
+                                <select class="form-select @error('form.room_id') is-invalid @enderror" wire:model="form.room_id" @disabled($formRooms->isEmpty())>
+                                    <option value="">{{ $form['department_id'] && $formRooms->isEmpty() ? 'Register a room for this department first' : 'Select' }}</option>
+                                    @foreach($formRooms as $room)<option value="{{ $room->id }}">{{ $room->label() }}</option>@endforeach
+                                </select>
+                                @error('form.room_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <input type="number" min="1" class="form-control @error('form.quantity') is-invalid @enderror" wire:model="form.quantity">
+                                <div class="form-text">1 for a numbered unit.</div>
+                            </div>
+                        @elseif($editingId)
+                            <div class="col-md-10">
+                                <label class="form-label">Location</label>
+                                <div class="d-flex align-items-center gap-2 border rounded p-2 bg-light">
+                                    <div class="flex-grow-1">
+                                        {{ $editingEquipment?->department?->name }} · {{ $editingEquipment?->room?->label() }} · Qty {{ $editingEquipment?->quantity }}
+                                        @if($editingEquipment?->assetRegistry?->pendingTransfer)<span class="badge bg-warning text-dark ms-1">Transfer pending</span>@endif
+                                    </div>
+                                    @unless($editingEquipment?->assetRegistry?->pendingTransfer)
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="requestTransfer('{{ $editingId }}')"><i class="fa-solid fa-right-left me-1"></i>Request transfer</button>
+                                    @endunless
+                                </div>
+                                <div class="form-text">Department, room and quantity change only through an approved asset transfer.</div>
+                            </div>
+                        @endif
                         <div class="col-6 col-md-2">
                             <label class="form-label">Condition <span class="text-danger">*</span></label>
                             <select class="form-select" wire:model="form.condition_received">
@@ -270,7 +355,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Supplier</label>
-                            <input type="text" class="form-control" wire:model="form.supplier">
+                            <input type="text" class="form-control" wire:model="form.vendor">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Service contract</label>
@@ -283,10 +368,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Purchase cost</label>
                             <input type="number" min="0" step="any" class="form-control" wire:model="form.purchase_cost">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Current value</label>
-                            <input type="number" min="0" step="any" class="form-control" wire:model="form.current_value">
+                            <div class="form-text">Total for the quantity. Current value is worked out from asset depreciation.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Date of inventory count <span class="text-danger">*</span></label>
@@ -358,4 +440,6 @@
             </form>
         </x-engineering.modal>
     @endif
+
+    <livewire:assets.transfer-request />
 </x-engineering.page>

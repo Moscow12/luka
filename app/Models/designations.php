@@ -2,14 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActiveStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class designations extends Model
 {
-    use HasFactory, HasUuids;
+    use HasActiveStatus, HasFactory, HasUuids;
+
+    // This table stores capitalised status values
+    public const STATUS_ACTIVE = 'Active';
+
+    public const STATUS_INACTIVE = 'Inactive';
+
     protected $table = 'designations';
+
     protected $fillable = [
         'name',
         'code',

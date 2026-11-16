@@ -42,6 +42,13 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
+    @if (session()->has('error'))
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
 
     <!-- Workstations Table -->
     <div class="card">
@@ -54,6 +61,7 @@
                         <th>Contact</th>
                         <th>Location</th>
                         <th>TIN Number</th>
+                        <th>Status</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -101,6 +109,7 @@
                         <td>
                             <span class="badge bg-light text-dark">{{ $station->tin_number }}</span>
                         </td>
+                        <td><x-record-status-badge :active="$station->isActive()" :in-use="isset($usedIds[$station->id])" /></td>
                         <td class="text-end pe-4">
                             <div class="d-flex justify-content-end gap-2">
                                 <button class="btn btn-sm btn-outline-primary"
@@ -108,11 +117,8 @@
                                     title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger"
-                                    wire:click="confirmDelete('{{ $station->id }}')"
-                                    title="Delete">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <x-record-status-actions :active="$station->isActive()" :in-use="isset($usedIds[$station->id])"
+                                    toggle="toggleStatus('{{ $station->id }}')" delete="confirmDelete('{{ $station->id }}')" :confirm="null" />
                             </div>
                         </td>
                     </tr>

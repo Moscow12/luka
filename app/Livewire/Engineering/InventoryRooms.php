@@ -3,6 +3,7 @@
 namespace App\Livewire\Engineering;
 
 use App\Livewire\Engineering\Concerns\InteractsWithEngineering;
+use App\Models\building;
 use App\Models\departments;
 use App\Models\Employee;
 use App\Models\Engineering\MaintenanceJob;
@@ -33,8 +34,8 @@ class InventoryRooms extends Component
 
     public ?string $editingRoomId = null;
 
-    /** @var array{name:string, code:string, floor:string, block:string} */
-    public array $room = ['name' => '', 'code' => '', 'floor' => '', 'block' => ''];
+    /** @var array{name:string, code:string, floor:string, building_id:string} */
+    public array $room = ['name' => '', 'code' => '', 'floor' => '', 'building_id' => ''];
 
     // Responsibility: room id, or "department" for the whole department
     public ?string $assignTarget = null;
@@ -43,7 +44,7 @@ class InventoryRooms extends Component
 
     public function mount(): void
     {
-        $this->departmentId = $this->departmentId ?: (string) departments::orderBy('name')->value('id');
+        $this->departmentId = $this->departmentId ?: (string) departments::active()->orderBy('name')->value('id');
     }
 
     protected function authorizeManage(): void
@@ -59,7 +60,7 @@ class InventoryRooms extends Component
         $this->resetErrorBag();
 
         $this->editingRoomId = null;
-        $this->room = ['name' => '', 'code' => '', 'floor' => '', 'block' => ''];
+        $this->room = ['name' => '', 'code' => '', 'floor' => '', 'building_id' => ''];
         $this->roomFormOpen = true;
     }
 
@@ -70,7 +71,7 @@ class InventoryRooms extends Component
 
         $room = Room::findOrFail($roomId);
         $this->editingRoomId = $room->id;
-        $this->room = ['name' => $room->name, 'code' => $room->code, 'floor' => (string) $room->floor, 'block' => (string) $room->block];
+        $this->room = ['name' => $room->name, 'code' => (string) $room->code, 'floor' => (string) $room->floor, 'building_id' => (string) $room->building_id];
         $this->roomFormOpen = true;
     }
 
@@ -85,18 +86,46 @@ class InventoryRooms extends Component
 
         $this->validate([
             'departmentId' => ['required', Rule::exists('departments', 'id')],
-            'room.name' => ['required', 'string', 'max:120'],
-            'room.code' => ['required', 'string', 'max:30', Rule::unique('eng_rooms', 'code')->where('department_id', $this->departmentId)->ignore($this->editingRoomId)],
+            'room.name' => ['required', 'string', 'max:255'],
+            'room.code' => ['required', 'string', 'max:30', Rule::unique('facilitylocations', 'code')->where('department_id', $this->departmentId)->ignore($this->editingRoomId)],
             'room.floor' => ['nullable', 'string', 'max:60'],
-            'room.block' => ['nullable', 'string', 'max:80'],
-        ], [], ['room.name' => 'room name', 'room.code' => 'room code']);
+            'room.building_id' => ['required', Rule::exists('buildings', 'id')->whereNull('deleted_at')],
+        ], [], ['room.name' => 'room name', 'room.code' => 'room code', 'room.building_id' => 'building']);
 
-        $data = array_merge($this->room, ['code' => strtoupper($this->room['code']), 'department_id' => $this->departmentId]);
+        $building = building::findOrFail($this->room['building_id']);
 
-        $this->editingRoomId ? Room::findOrFail($this->editingRoomId)->update($data) : Room::create($data);
+        $data = [
+            'name' => $this->room['name'],
+            'code' => strtoupper($this->room['code']),
+            'floor' => $this->room['floor'] ?: null,
+            'building_id' => $building->id,
+            'workstation_id' => $building->workstation_id,
+            'department_id' => $this->departmentId,
+        ];
+
+        $this->editingRoomId
+            ? Room::findOrFail($this->editingRoomId)->update($data)
+            : Room::create($data + ['added_by' => Auth::id()]);
 
         session()->flash('success', "Room {$data['name']} saved.");
         $this->roomFormOpen = false;
+    }
+
+    /** Older rooms without a department (from the asset register) can be claimed for this department. */
+    public function claimRoom(string $roomId): void
+    {
+        $this->authorizeManage();
+
+        $room = Room::whereNull('department_id')->findOrFail($roomId);
+
+        if ($room->code && Room::where('department_id', $this->departmentId)->where('code', $room->code)->exists()) {
+            session()->flash('error', "This department already has a room coded {$room->code}. Edit one of them first.");
+
+            return;
+        }
+
+        $room->update(['department_id' => $this->departmentId]);
+        session()->flash('success', "{$room->name} now belongs to this department.");
     }
 
     /** A room in use is deactivated, never deleted. */
@@ -117,7 +146,7 @@ class InventoryRooms extends Component
             }
         }
 
-        $room->update(['status' => $room->status === 'active' ? 'inactive' : 'active']);
+        $room->toggleStatus();
     }
 
     /* ---------- Responsible staff ---------- */
@@ -154,7 +183,7 @@ class InventoryRooms extends Component
         return $this->exportTable(
             'Room responsibility history',
             ['Department', 'Room', 'Staff', 'From', 'To', 'Assigned by'],
-            RoomStaff::with(['department:id,name', 'room:id,name', 'employee:id,first_name,last_name', 'assignedBy:id,first_name,surname'])
+            RoomStaff::with(['department:id,name', 'room:id,name,floor,building_id', 'employee:id,first_name,last_name', 'assignedBy:id,first_name,surname'])
                 ->where('department_id', $this->departmentId)->latest('effective_from')->get()
                 ->map(fn (RoomStaff $row) => [
                     $row->department->name, $row->room?->name ?? 'Whole department', Eng::name($row->employee),
@@ -167,15 +196,20 @@ class InventoryRooms extends Component
     public function render()
     {
         $user = Auth::user();
-        $assignments = RoomStaff::with(['employee:id,first_name,last_name', 'assignedBy:id,first_name,surname', 'room:id,name'])
+        $canManage = EngineeringAccess::canManageInventory($user);
+        $assignments = RoomStaff::with(['employee:id,first_name,last_name', 'assignedBy:id,first_name,surname', 'room:id,name,floor,building_id'])
             ->where('department_id', $this->departmentId)->latest('effective_from')->get();
 
         return view('livewire.engineering.inventory-rooms', [
-            'departments' => departments::orderBy('name')->get(['id', 'name']),
+            'departments' => departments::activeOr($this->departmentId ?: null)->orderBy('name')->get(['id', 'name']),
             'rooms' => Room::where('department_id', $this->departmentId)->withCount(['equipment' => fn (Builder $q) => $q->whereNull('removed_at')])->orderBy('name')->get(),
+            'unassignedRooms' => $canManage
+                ? Room::whereNull('department_id')->active()->orderBy('name')->limit(50)->get()
+                : collect(),
+            'buildings' => $this->roomFormOpen ? building::activeOr($this->room['building_id'] ?: null)->with('workstation:id,workstation_name')->orderBy('name')->get() : collect(),
             'current' => $assignments->whereNull('effective_to')->keyBy(fn (RoomStaff $row) => $row->room_id ?? 'department'),
             'history' => $assignments->whereNotNull('effective_to'),
-            'canManage' => EngineeringAccess::canManageInventory($user),
+            'canManage' => $canManage,
             'canAssign' => EngineeringAccess::isManager($user) || EngineeringAccess::isHeadOfSection($user),
             // Engineering staff = anyone who belongs to a section
             'engineers' => $this->assignTarget

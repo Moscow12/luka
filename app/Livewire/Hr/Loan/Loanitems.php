@@ -65,7 +65,7 @@ class Loanitems extends Component
 
     public function mount()
     {
-        $this->workstations = workstations::orderBy('workstation_name')->get();
+        $this->workstations = workstations::active()->orderBy('workstation_name')->get();
 
         // Set default workstation from session if available
         if (session()->has('workstation_id')) {

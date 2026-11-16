@@ -29,6 +29,9 @@
                         @if (session()->has('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
+                        @if (session()->has('error'))
+                            <div class="alert alert-danger">{{ session('error') }}</div>
+                        @endif
 
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
@@ -38,6 +41,7 @@
                                     </th>
                                     <th class="listjs-sorter" data-sort="task_title"> name</th>
                                     <th class="listjs-sorter" data-sort="task_type">Description</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -52,10 +56,11 @@
                                         </td>
                                         <td class="name">{{ $designation->name }}</td>
                                         <td class="task_type">{{ $designation->code }}</td>
+                                        <td><x-record-status-badge :active="$designation->isActive()" :in-use="isset($usedIds[$designation->id])" /></td>
                                         <td>
                                             <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $designation->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $designation->id }}')" 
-                                                onclick="return confirm('Delete this department?')">Delete</button>
+                                            <x-record-status-actions :active="$designation->isActive()" :in-use="isset($usedIds[$designation->id])"
+                                                toggle="toggleStatus('{{ $designation->id }}')" delete="delete('{{ $designation->id }}')" confirm="Delete this designation?" />
                                         </td>
                                        
                                     </tr>

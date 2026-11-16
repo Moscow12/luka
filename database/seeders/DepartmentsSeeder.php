@@ -3,29 +3,41 @@
 namespace Database\Seeders;
 
 use App\Models\departments;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Jobtitle;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
+/**
+ * Starter departments. Idempotent: existing departments (matched by name) are left untouched.
+ */
 class DepartmentsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    public const DEPARTMENTS = [
+        'Human Resources' => 'HR',
+        'Finance' => 'Finance',
+        'Accounting' => 'Accounting',
+        'IT' => 'Information Technology',
+        'Administration' => 'Administration',
+        'Medical Ward' => 'MW',
+        'Surgical Ward' => 'SW',
+        'Dental Ward' => 'DW',
+        'Pharmacy' => 'Pharmacy',
+        'Laboratory' => 'Laboratory',
+        'OPD' => 'OPD',
+    ];
+
     public function run(): void
     {
-        departments::create(
-            ['name' => 'Human Resources', 'description'=>'HR','supervisor_title_id'=>\App\Models\Jobtitle::first()->id, 'added_by' => \App\Models\User::factory()->create()->id],
+        $addedBy = User::query()->value('id') ?? User::factory()->create()->id;
+        $supervisorTitleId = Jobtitle::query()->value('id');
 
-            ['name' => 'Finance', 'description'=>'Finance', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Accounting', 'description'=>'Accounting', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'IT', 'description'=>'Information Technology', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Administration', 'description'=>'Administration', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Medical Ward', 'description'=>'MW', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Surgical Ward', 'description'=>'SW', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Dental Ward', 'description'=>'DW', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Pharmacy', 'description'=>'Pharmacy', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'Laboratory', 'description'=>'Laboratory', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-            ['name' => 'OPD', 'description'=>'OPD', 'added_by' => \App\Models\User::factory()->create()->id, 'supervisor_title_id'=>\App\Models\Jobtitle::first()->id],
-        );
+        foreach (self::DEPARTMENTS as $name => $description) {
+            departments::firstOrCreate(['name' => $name], [
+                'description' => $description,
+                'supervisor_title_id' => $supervisorTitleId,
+                'status' => departments::activeValue(),
+                'added_by' => $addedBy,
+            ]);
+        }
     }
 }

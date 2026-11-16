@@ -2,22 +2,25 @@
 
 namespace App\Livewire\Assets;
 
+use App\Livewire\Concerns\ManagesRecordStatus;
 use App\Models\asset;
 use App\Models\assetclass;
 use App\Models\assetregistry;
-use App\Models\building;
 use App\Models\departments;
 use App\Models\Employee;
 use App\Models\facilitylocation;
 use App\Models\vendors;
-use App\Models\workstations;
+use App\Services\Assets\EquipmentSync;
+use App\Support\RecordUsage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class DepartmentAssets extends Component
 {
-    use WithPagination;
+    use ManagesRecordStatus, WithPagination;
 
     // Form fields
     public $asset_class_id;
@@ -25,6 +28,8 @@ class DepartmentAssets extends Component
     public $facility_location_id;
 
     public $asset_id;
+
+    public $quantity = 1;
 
     public $workstation_id;
 
@@ -96,13 +101,17 @@ class DepartmentAssets extends Component
 
     protected function rules()
     {
-        return [
+        // Department and location are set on registration; afterwards they change only by transfer
+        $location = $this->editingId ? [] : [
+            'department_id' => 'required|exists:departments,id',
+            'facility_location_id' => ['required', Rule::exists('facilitylocations', 'id')->whereNull('deleted_at')->where(fn ($q) => $q
+                ->where('department_id', $this->department_id)->orWhereNull('department_id'))],
+            'quantity' => 'required|integer|min:1',
+        ];
+
+        return $location + [
             'asset_class_id' => 'required|exists:assetclasses,id',
             'asset_id' => 'required|exists:assets,id',
-            'workstation_id' => 'required|exists:workstations,id',
-            'building_id' => 'required|exists:buildings,id',
-            'facility_location_id' => 'required|exists:facilitylocations,id',
-            'department_id' => 'required|exists:departments,id',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,disposed,under_maintenance',
             'serial_number' => 'nullable|string|unique:assetregistries,serial_number,'.$this->editingId,
@@ -120,15 +129,23 @@ class DepartmentAssets extends Component
         ];
     }
 
-    public function updatedWorkstationId($value)
+    public function updatedDepartmentId($value)
     {
-        $this->building_id = '';
         $this->facility_location_id = '';
     }
 
-    public function updatedBuildingId($value)
+    /** Opens the shared transfer form; the register row moves only once the transfer is approved. */
+    public function requestTransfer($id)
     {
-        $this->facility_location_id = '';
+        $this->showModal = false;
+        $this->resetForm();
+        $this->dispatch('open-asset-transfer', registryId: $id);
+    }
+
+    #[On('asset-transfer-requested')]
+    public function transferRequested()
+    {
+        // re-render to show the pending badge
     }
 
     public function updatedAssetClassId($value)
@@ -147,7 +164,7 @@ class DepartmentAssets extends Component
 
         $term = trim($this->assetSearch);
 
-        return asset::where('asset_class_id', $this->asset_class_id)
+        return asset::active()->where('asset_class_id', $this->asset_class_id)
             ->when($term !== '', fn ($q) => $q->where(function ($q) use ($term) {
                 $q->where('name', 'like', '%'.$term.'%')
                     ->orWhere('type', 'like', '%'.$term.'%');
@@ -268,6 +285,7 @@ class DepartmentAssets extends Component
             $this->asset_class_id = $registry->asset_class_id;
             $this->facility_location_id = $registry->facility_location_id;
             $this->asset_id = $registry->asset_id;
+            $this->quantity = $registry->quantity;
             $this->workstation_id = $registry->workstation_id;
             $this->building_id = $registry->building_id;
             $this->department_id = $registry->department_id;
@@ -290,7 +308,6 @@ class DepartmentAssets extends Component
             $employee = Employee::where('user_id', Auth::id())->first();
             if ($employee && $employee->department_id) {
                 $this->department_id = $employee->department_id;
-                $this->workstation_id = $employee->workstation_id;
             }
         }
         $this->showModal = true;
@@ -302,6 +319,7 @@ class DepartmentAssets extends Component
         $this->asset_class_id = '';
         $this->facility_location_id = '';
         $this->asset_id = '';
+        $this->quantity = 1;
         $this->assetSearch = '';
         $this->showAssetDropdown = false;
         $this->cancelNewAsset();
@@ -331,11 +349,7 @@ class DepartmentAssets extends Component
 
         $data = [
             'asset_class_id' => $this->asset_class_id,
-            'facility_location_id' => $this->facility_location_id,
             'asset_id' => $this->asset_id,
-            'workstation_id' => $this->workstation_id,
-            'building_id' => $this->building_id,
-            'department_id' => $this->department_id,
             'description' => $this->description,
             'status' => $this->status,
             'serial_number' => $this->serial_number ?: null,
@@ -350,14 +364,25 @@ class DepartmentAssets extends Component
             'codeno' => $this->codeno ?: null,
             'depreciation_method' => $this->depreciation_method ?: null,
             'useful_life_years' => $this->useful_life_years ?: null,
-            'added_by' => Auth::id(),
         ];
 
         if ($this->editingId) {
-            assetregistry::findOrFail($this->editingId)->update($data);
+            // Department, location and quantity change only through an approved transfer
+            $registry = assetregistry::findOrFail($this->editingId);
+            $registry->update($data);
+            EquipmentSync::fromRegistry($registry);
             session()->flash('success', 'Asset updated successfully.');
         } else {
-            assetregistry::create($data);
+            // Building and workstation always follow the room
+            $location = facilitylocation::findOrFail($this->facility_location_id);
+            assetregistry::create($data + [
+                'facility_location_id' => $location->id,
+                'building_id' => $location->building_id,
+                'workstation_id' => $location->workstation_id,
+                'department_id' => $this->department_id,
+                'quantity' => (int) $this->quantity,
+                'added_by' => Auth::id(),
+            ]);
             session()->flash('success', 'Asset registered successfully.');
         }
 
@@ -394,14 +419,15 @@ class DepartmentAssets extends Component
             return;
         }
 
-        assetregistry::findOrFail($this->deleteId)->delete();
-        session()->flash('success', 'Asset deleted successfully.');
+        // A row with an engineering profile or transfer history is disposed of, not deleted
+        $registry = assetregistry::with('asset')->findOrFail($this->deleteId);
+        $this->deleteUnlessInUse($registry, $registry->label());
         $this->cancelDelete();
     }
 
     public function render()
     {
-        $query = assetregistry::with(['asset', 'assetClass', 'building', 'facilityLocation', 'department', 'workstation'])
+        $query = assetregistry::with(['asset', 'assetClass', 'building', 'facilityLocation', 'department', 'workstation', 'pendingTransfer'])
             ->when($this->search, fn ($q) => $q->where(function ($query) {
                 $query->where('serial_number', 'like', '%'.$this->search.'%')
                     ->orWhere('codeno', 'like', '%'.$this->search.'%')
@@ -413,28 +439,28 @@ class DepartmentAssets extends Component
             ->when($this->filterAssetClass, fn ($q) => $q->where('asset_class_id', $this->filterAssetClass))
             ->latest();
 
-        // Get buildings filtered by workstation
-        $buildings = $this->workstation_id
-            ? building::where('workstation_id', $this->workstation_id)->orderBy('name')->get()
-            : collect();
-
-        // Get facility locations filtered by building
-        $facilityLocations = $this->building_id
-            ? facilitylocation::where('building_id', $this->building_id)->orderBy('name')->get()
+        // Rooms of the chosen department (plus rooms not yet given a department)
+        $facilityLocations = $this->department_id && ! $this->editingId
+            ? facilitylocation::active()->forDepartment($this->department_id)->with('building:id,name')->orderBy('name')->get()
             : collect();
 
         // Get assets filtered by asset class
         $assets = $this->asset_class_id
-            ? asset::where('asset_class_id', $this->asset_class_id)->orderBy('name')->get()
+            ? asset::activeOr($this->asset_id ?: null)->where('asset_class_id', $this->asset_class_id)->orderBy('name')->get()
             : collect();
 
+        $registries = $query->paginate(10);
+
         return view('livewire.assets.department-assets', [
-            'registries' => $query->paginate(10),
-            'workstations' => workstations::orderBy('workstation_name')->get(),
-            'buildings' => $buildings,
+            'registries' => $registries,
+            'usedIds' => RecordUsage::usedIds('assetregistries', $registries->pluck('id')),
+            'editingRegistry' => $this->showModal && $this->editingId
+                ? assetregistry::with(['department:id,name', 'facilityLocation.building:id,name', 'pendingTransfer'])->find($this->editingId)
+                : null,
             'facilityLocations' => $facilityLocations,
             'departments' => departments::orderBy('name')->get(),
-            'assetClasses' => assetclass::orderBy('name')->get(),
+            'formDepartments' => $this->showModal ? departments::activeOr($this->department_id ?: null)->orderBy('name')->get(['id', 'name']) : collect(),
+            'assetClasses' => $this->showModal ? assetclass::activeOr($this->asset_class_id ?: null)->orderBy('name')->get() : assetclass::orderBy('name')->get(),
             'assets' => $assets,
             'vendors' => vendors::orderBy('name')->get(),
             'statuses' => [

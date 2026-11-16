@@ -144,6 +144,7 @@ class RequestService extends Component
             'categoryId' => ['required'],
             'items' => ['required', 'array', 'min:1'],
             'phone' => ['required', 'string', 'regex:/^\+?[0-9 ]{9,15}$/'],
+            'roomId' => ['nullable', 'exists:facilitylocations,id'],
             'locationText' => ['required_without:roomId', 'nullable', 'string', 'max:200'],
         ], [
             'sectionId.required' => 'Select the responsible section.',
@@ -208,11 +209,11 @@ class RequestService extends Component
                 ? ProblemCategory::where('section_id', $this->sectionId)->where('status', 'active')->orderBy('name')->get()
                 : collect(),
             'matches' => $this->draftEquipmentId === null && mb_strlen($search) >= 2
-                ? Equipment::inService()->search($search)->with('room:id,name')->orderBy('name')->limit(6)->get()
+                ? Equipment::inService()->search($search)->with(['room:id,name,floor,building_id', 'assetRegistry:id,serial_number,model'])->orderBy('name')->limit(6)->get()
                 : collect(),
-            'departments' => departments::orderBy('name')->get(['id', 'name']),
+            'departments' => departments::activeOr($this->departmentId ?: null)->orderBy('name')->get(['id', 'name']),
             'rooms' => $this->departmentId
-                ? Room::where('department_id', $this->departmentId)->where('status', 'active')->orderBy('name')->get()
+                ? Room::active()->forDepartment($this->departmentId)->orderBy('name')->get()
                 : collect(),
             'submitted' => $this->submittedId ? Requisition::with('jobs')->find($this->submittedId) : null,
             'maxItems' => config('engineering.max_items_per_requisition'),

@@ -41,18 +41,7 @@ return new class extends Migration
             $table->index(['section_id', 'status']);
         });
 
-        Schema::create('eng_rooms', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('department_id')->constrained('departments');
-            $table->string('name', 120);
-            $table->string('code', 30);
-            $table->string('floor', 60)->nullable();
-            $table->string('block', 80)->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-
-            $table->unique(['department_id', 'code']);
-        });
+        // Rooms are the shared facilitylocations register (department per room), not a separate table
 
         // One row per number series per year; locked while a number is generated
         Schema::create('eng_sequences', function (Blueprint $table) {
@@ -86,7 +75,6 @@ return new class extends Migration
         Schema::dropIfExists('eng_oxygen_plants');
         Schema::dropIfExists('eng_settings');
         Schema::dropIfExists('eng_sequences');
-        Schema::dropIfExists('eng_rooms');
         Schema::dropIfExists('eng_problem_categories');
         Schema::dropIfExists('eng_section_staff');
         Schema::dropIfExists('eng_sections');

@@ -2,21 +2,32 @@
 
 namespace App\Livewire\Setup;
 
+use App\Livewire\Concerns\ManagesRecordStatus;
 use App\Models\designations as ModelsDesignations;
+use App\Support\RecordUsage;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Designations extends Component
 {
-    
+    use ManagesRecordStatus;
+
     public $designations;
+
     public $search = '';
+
     public $name;
+
     public $code;
+
     public $designation;
+
     public $designation_id;
+
     public $modalMode = 'create'; // or 'edit'
+
     public $showModal = false;
+
     public function mount()
     {
         $this->listdata();
@@ -59,7 +70,7 @@ class Designations extends Component
     public function save()
     {
         $this->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:designations,name'],
+            'name' => ['required', 'string', 'max:255', 'unique:designations,name,'.$this->designation_id],
             'code' => ['required', 'string', 'max:255'],
         ]);
 
@@ -70,9 +81,9 @@ class Designations extends Component
             session()->flash('success', 'Designation updated successfully!');
         } else {
             ModelsDesignations::create([
-                'name' => $this->name, 
-                'code' => $this->code, 
-                'added_by' => Auth::user()->id
+                'name' => $this->name,
+                'code' => $this->code,
+                'added_by' => Auth::user()->id,
             ]);
             $this->listdata();
             session()->flash('success', 'Designation added successfully!');
@@ -82,18 +93,25 @@ class Designations extends Component
         $this->reset(['name', 'designation_id', 'code']);
     }
 
+    /** Deletes only a designation nothing refers to; one in use is deactivated instead. */
     public function delete($uuid)
     {
         $designation = ModelsDesignations::findOrFail($uuid);
-        $designation->delete();
+        $this->deleteUnlessInUse($designation, "Designation {$designation->name}");
         $this->listdata();
-        session()->flash('success', 'Designation deleted successfully!');
     }
 
-   
+    public function toggleStatus($uuid)
+    {
+        $designation = ModelsDesignations::findOrFail($uuid);
+        $this->toggleRecordStatus($designation, "Designation {$designation->name}");
+        $this->listdata();
+    }
 
     public function render()
     {
-        return view('livewire.setup.designations');
+        return view('livewire.setup.designations', [
+            'usedIds' => RecordUsage::usedIds('designations', $this->designations->pluck('id')),
+        ]);
     }
 }

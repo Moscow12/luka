@@ -172,7 +172,7 @@ class JobQueue extends Component
     protected function queueQuery(): Builder
     {
         return $this->assignableJobs()
-            ->with(['requisition.department:id,name', 'requisition.room', 'requisition.category:id,name', 'equipment:id,name,code,serial_number', 'section:id,name', 'engineer:id,first_name,last_name'])
+            ->with(['requisition.department:id,name', 'requisition.room', 'requisition.category:id,name', 'equipment:id,name,code,asset_registry_id', 'equipment.assetRegistry:id,serial_number,model', 'section:id,name', 'engineer:id,first_name,last_name'])
             ->when($this->filterStatus === 'waiting', fn (Builder $q) => $q->where('status', JobStatus::Submitted->value), fn (Builder $q) => $q->open())
             ->when($this->filterSection, fn (Builder $q, $id) => $q->where('section_id', $id))
             ->whereHas('requisition', fn (Builder $q) => $q

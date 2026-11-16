@@ -2,27 +2,19 @@
 
 namespace App\Models\Engineering;
 
-use App\Models\departments;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\facilitylocation;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Room extends EngineeringModel
+/**
+ * Engineering's view of a facility location (the shared room register).
+ */
+class Room extends facilitylocation
 {
-    protected $table = 'eng_rooms';
-
-    public function department(): BelongsTo
-    {
-        return $this->belongsTo(departments::class, 'department_id');
-    }
+    /** label() shows the building, so it is always loaded with the room (select building_id when narrowing columns). */
+    protected $with = ['building:id,name'];
 
     public function equipment(): HasMany
     {
         return $this->hasMany(Equipment::class, 'room_id');
-    }
-
-    /** "Block A / 1st floor / LAB-12" */
-    public function label(): string
-    {
-        return collect([$this->block, $this->floor, $this->name])->filter()->implode(' / ');
     }
 }

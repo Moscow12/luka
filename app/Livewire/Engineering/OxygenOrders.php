@@ -59,6 +59,7 @@ class OxygenOrders extends Component
             'quantity' => ['required', 'integer', 'min:1', 'max:100'],
             'departmentId' => ['required'],
             'phone' => ['required', 'string', 'max:30'],
+            'roomId' => ['nullable', 'exists:facilitylocations,id'],
             'locationText' => ['required_without:roomId', 'nullable', 'string', 'max:200'],
         ], [
             'departmentId.required' => 'Select the ward or department.',
@@ -123,9 +124,9 @@ class OxygenOrders extends Component
         return view('livewire.engineering.oxygen-orders', [
             'orders' => $this->ordersQuery()->paginate(10),
             'cylinderTypes' => config('engineering.oxygen.cylinder_types'),
-            'departments' => departments::orderBy('name')->get(['id', 'name']),
+            'departments' => departments::activeOr($this->departmentId ?: null)->orderBy('name')->get(['id', 'name']),
             'rooms' => $this->departmentId
-                ? Room::where('department_id', $this->departmentId)->where('status', 'active')->orderBy('name')->get()
+                ? Room::active()->forDepartment($this->departmentId)->orderBy('name')->get()
                 : collect(),
         ]);
     }

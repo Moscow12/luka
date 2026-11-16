@@ -16,6 +16,7 @@ class assetregistry extends Model
         'asset_class_id',
         'facility_location_id',
         'asset_id',
+        'quantity',
         'workstation_id',
         'building_id',
         'department_id',
@@ -41,6 +42,7 @@ class assetregistry extends Model
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'purchase_date' => 'date',
         'warranty_expiry_date' => 'date',
         'disposal_date' => 'date',
@@ -87,5 +89,29 @@ class assetregistry extends Model
     public function addedBy()
     {
         return $this->belongsTo(User::class, 'added_by');
+    }
+
+    /** Engineering profile (maintenance, uptime, PPM) when engineering looks after this item. */
+    public function equipment()
+    {
+        return $this->hasOne(Engineering\Equipment::class, 'asset_registry_id');
+    }
+
+    public function transfers()
+    {
+        return $this->hasMany(AssetTransfer::class, 'assetregistry_id');
+    }
+
+    public function pendingTransfer()
+    {
+        return $this->hasOne(AssetTransfer::class, 'assetregistry_id')->where('status', AssetTransfer::PENDING);
+    }
+
+    /** "Bed" or "Bed (BED/003)" */
+    public function label(): string
+    {
+        $name = $this->asset?->name ?? 'Asset';
+
+        return $this->codeno ? "{$name} ({$this->codeno})" : $name;
     }
 }

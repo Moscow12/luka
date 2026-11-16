@@ -34,8 +34,8 @@ class StoreManagement extends Component
     public function mount()
     {
         $this->listdata();
-        $this->departmentList = ModelsDepartments::orderBy('name')->get();
-        $this->locationList = facilitylocation::orderBy('name')->get();
+        $this->departmentList = ModelsDepartments::active()->orderBy('name')->get();
+        $this->locationList = facilitylocation::active()->orderBy('name')->get();
     }
 
     public function openModal($mode = 'create', $id = null)

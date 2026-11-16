@@ -29,6 +29,9 @@
                         @if (session()->has('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
+                        @if (session()->has('error'))
+                            <div class="alert alert-danger">{{ session('error') }}</div>
+                        @endif
 
                         <table class="table text-nowrap mb-0 table-centered table-hover" data-check-container="">
                             <thead>
@@ -39,6 +42,7 @@
                                     <th class="listjs-sorter" data-sort="task_title"> name</th>
                                     <th class="listjs-sorter" data-sort="task_type">Description</th>
                                     <th>Supervisor (Approval Level)</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -60,10 +64,11 @@
                                                 <span class="text-muted">Not assigned</span>
                                             @endif
                                         </td>
+                                        <td><x-record-status-badge :active="$dept->isActive()" :in-use="isset($usedIds[$dept->id])" /></td>
                                         <td>
                                             <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $dept->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $dept->id }}')" 
-                                                onclick="return confirm('Delete this department?')">Delete</button>
+                                            <x-record-status-actions :active="$dept->isActive()" :in-use="isset($usedIds[$dept->id])"
+                                                toggle="toggleStatus('{{ $dept->id }}')" delete="delete('{{ $dept->id }}')" confirm="Delete this department?" />
                                         </td>
                                        
                                     </tr>

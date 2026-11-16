@@ -127,6 +127,7 @@
                                         <th>Building Name</th>
                                         <th>Workstation</th>
                                         <th>Created</th>
+                                        <th>Status</th>
                                         <th class="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -151,6 +152,7 @@
                                         <td>
                                             <small class="text-muted">{{ $building->created_at->format('M d, Y') }}</small>
                                         </td>
+                                        <td><x-record-status-badge :active="$building->isActive()" :in-use="isset($usedIds['building'][$building->id])" /></td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
@@ -158,17 +160,14 @@
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger"
-                                                    wire:click="confirmDelete('building', '{{ $building->id }}')"
-                                                    title="Delete">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>
+                                                <x-record-status-actions :active="$building->isActive()" :in-use="isset($usedIds['building'][$building->id])"
+                                                    toggle="toggleStatus('building', '{{ $building->id }}')" delete="confirmDelete('building', '{{ $building->id }}')" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-5">
+                                        <td colspan="6" class="text-center py-5">
                                             <div class="d-flex flex-column align-items-center">
                                                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3"
                                                     style="width: 80px; height: 80px;">
@@ -232,7 +231,16 @@
                                             placeholder="Search locations...">
                                     </div>
                                 </div>
-                                <div class="col-md-8 text-md-end mt-3 mt-md-0">
+                                <div class="col-md-4 mt-3 mt-md-0">
+                                    <select class="form-select" wire:model.live="filterLocationDepartment">
+                                        <option value="">All departments</option>
+                                        <option value="none">No department (to clean up)</option>
+                                        @foreach($departmentsForFilter as $dept)
+                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
                                     <span class="text-muted">
                                         Showing {{ $locations->firstItem() ?? 0 }} - {{ $locations->lastItem() ?? 0 }} of {{ $locations->total() }} locations
                                     </span>
@@ -249,9 +257,11 @@
                                     <tr>
                                         <th class="ps-4" style="width: 50px;">#</th>
                                         <th>Location Name</th>
+                                        <th>Department</th>
                                         <th>Building</th>
                                         <th>Workstation</th>
                                         <th>Created</th>
+                                        <th>Status</th>
                                         <th class="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -267,8 +277,16 @@
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0">{{ $location->name }}</h6>
+                                                    <small class="text-muted">{{ collect([$location->code, $location->floor])->filter()->implode(' · ') }}</small>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            @if($location->department)
+                                                {{ $location->department->name }}
+                                            @else
+                                                <span class="badge bg-warning-subtle text-warning-emphasis">No department</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <span class="badge bg-primary-subtle text-primary">{{ $location->building?->name ?? 'N/A' }}</span>
@@ -279,6 +297,7 @@
                                         <td>
                                             <small class="text-muted">{{ $location->created_at->format('M d, Y') }}</small>
                                         </td>
+                                        <td><x-record-status-badge :active="$location->isActive()" :in-use="isset($usedIds['location'][$location->id])" /></td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
@@ -286,17 +305,14 @@
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger"
-                                                    wire:click="confirmDelete('location', '{{ $location->id }}')"
-                                                    title="Delete">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>
+                                                <x-record-status-actions :active="$location->isActive()" :in-use="isset($usedIds['location'][$location->id])"
+                                                    toggle="toggleStatus('location', '{{ $location->id }}')" delete="confirmDelete('location', '{{ $location->id }}')" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-5">
+                                        <td colspan="8" class="text-center py-5">
                                             <div class="d-flex flex-column align-items-center">
                                                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3"
                                                     style="width: 80px; height: 80px;">
@@ -380,6 +396,7 @@
                                         <th>Method</th>
                                         <th>Rate / Life</th>
                                         <th>Assets</th>
+                                        <th>Status</th>
                                         <th class="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -397,6 +414,9 @@
                                                     <h6 class="mb-0">{{ $class->name }}</h6>
                                                     @if($class->depreciation)
                                                         <small class="text-muted">{{ $class->depreciation }}</small>
+                                                    @endif
+                                                    @if($class->engSection)
+                                                        <span class="badge bg-info-subtle text-info-emphasis"><i class="fa-solid fa-screwdriver-wrench me-1"></i>{{ $class->engSection->name }}</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -419,6 +439,7 @@
                                         <td>
                                             <span class="badge bg-dark">{{ $class->assets_count }}</span>
                                         </td>
+                                        <td><x-record-status-badge :active="$class->isActive()" :in-use="isset($usedIds['class'][$class->id])" /></td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
@@ -426,17 +447,14 @@
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger"
-                                                    wire:click="confirmDelete('class', '{{ $class->id }}')"
-                                                    title="Delete">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>
+                                                <x-record-status-actions :active="$class->isActive()" :in-use="isset($usedIds['class'][$class->id])"
+                                                    toggle="toggleStatus('class', '{{ $class->id }}')" delete="confirmDelete('class', '{{ $class->id }}')" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-5">
+                                        <td colspan="7" class="text-center py-5">
                                             <div class="d-flex flex-column align-items-center">
                                                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3"
                                                     style="width: 80px; height: 80px;">
@@ -520,6 +538,7 @@
                                         <th>Type</th>
                                         <th>Asset Class</th>
                                         <th>Created</th>
+                                        <th>Status</th>
                                         <th class="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -560,6 +579,7 @@
                                         <td>
                                             <small class="text-muted">{{ $asset->created_at->format('M d, Y') }}</small>
                                         </td>
+                                        <td><x-record-status-badge :active="$asset->isActive()" :in-use="isset($usedIds['asset'][$asset->id])" /></td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
@@ -567,17 +587,14 @@
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger"
-                                                    wire:click="confirmDelete('asset', '{{ $asset->id }}')"
-                                                    title="Delete">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>
+                                                <x-record-status-actions :active="$asset->isActive()" :in-use="isset($usedIds['asset'][$asset->id])"
+                                                    toggle="toggleStatus('asset', '{{ $asset->id }}')" delete="confirmDelete('asset', '{{ $asset->id }}')" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-5">
+                                        <td colspan="7" class="text-center py-5">
                                             <div class="d-flex flex-column align-items-center">
                                                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3"
                                                     style="width: 80px; height: 80px;">
@@ -712,31 +729,48 @@
                         </div>
 
                         <div class="mb-3">
+                            <label class="form-label">Department <span class="text-danger">*</span></label>
+                            <select class="form-select @error('location_department_id') is-invalid @enderror"
+                                wire:model="location_department_id">
+                                <option value="">Select Department</option>
+                                @foreach($departmentsForSelect as $dept)
+                                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('location_department_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">Choosing a department in asset and engineering forms lists its rooms.</div>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">Building <span class="text-danger">*</span></label>
                             <select class="form-select @error('location_building_id') is-invalid @enderror"
                                 wire:model="location_building_id">
                                 <option value="">Select Building</option>
                                 @foreach($buildingsForSelect as $b)
-                                    <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                    <option value="{{ $b->id }}">{{ $b->name }} · {{ $b->workstation?->workstation_name }}</option>
                                 @endforeach
                             </select>
                             @error('location_building_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <div class="form-text">The workstation is taken from the building.</div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Workstation <span class="text-danger">*</span></label>
-                            <select class="form-select @error('location_workstation_id') is-invalid @enderror"
-                                wire:model="location_workstation_id">
-                                <option value="">Select Workstation</option>
-                                @foreach($workstations as $ws)
-                                    <option value="{{ $ws->id }}">{{ $ws->workstation_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('location_workstation_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">Room code</label>
+                                <input type="text" class="form-control text-uppercase @error('location_code') is-invalid @enderror"
+                                    wire:model="location_code" placeholder="e.g., ICU-204">
+                                @error('location_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Floor</label>
+                                <input type="text" class="form-control" wire:model="location_floor" placeholder="e.g., 2nd floor">
+                            </div>
                         </div>
                     </div>
 
@@ -836,6 +870,20 @@
                                 @error('class_depreciation')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Maintained by engineering section</label>
+                                <select class="form-select @error('class_eng_section_id') is-invalid @enderror" wire:model="class_eng_section_id">
+                                    <option value="">Not maintained by engineering</option>
+                                    @foreach($engSections as $section)
+                                        <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('class_eng_section_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Items of this class can then be added to the engineering inventory.</div>
                             </div>
                         </div>
 
@@ -960,7 +1008,7 @@
                         <i class="fa-solid fa-trash fa-lg text-danger"></i>
                     </div>
                     <h5 class="mb-2">Delete {{ ucfirst($deleteType) }}?</h5>
-                    <p class="text-muted mb-0">This action cannot be undone. All associated data will be permanently removed.</p>
+                    <p class="text-muted mb-0">Only records not used anywhere can be deleted. Records in use are deactivated instead.</p>
                 </div>
                 <div class="modal-footer border-top justify-content-center gap-2">
                     <button type="button" class="btn btn-light" wire:click="cancelDelete">

@@ -2,13 +2,17 @@
 
 namespace App\Livewire\Setup;
 
+use App\Livewire\Concerns\ManagesRecordStatus;
 use App\Models\approvallevel;
 use App\Models\departments as ModelsDepartments;
+use App\Support\RecordUsage;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Departments extends Component
 {
+    use ManagesRecordStatus;
+
     public $departments;
 
     public $approvalLevels;
@@ -102,16 +106,25 @@ class Departments extends Component
         $this->reset(['name', 'department_id', 'approval_level_id']);
     }
 
+    /** Deletes only a department nothing refers to; one in use is deactivated instead. */
     public function delete($uuid)
     {
         $department = ModelsDepartments::findOrFail($uuid);
-        $department->delete();
+        $this->deleteUnlessInUse($department, "Department {$department->name}");
         $this->listdata();
-        session()->flash('success', 'Department deleted successfully!');
+    }
+
+    public function toggleStatus($uuid)
+    {
+        $department = ModelsDepartments::findOrFail($uuid);
+        $this->toggleRecordStatus($department, "Department {$department->name}");
+        $this->listdata();
     }
 
     public function render()
     {
-        return view('livewire.setup.departments');
+        return view('livewire.setup.departments', [
+            'usedIds' => RecordUsage::usedIds('departments', $this->departments->pluck('id')),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Engineering;
 
+use App\Models\assetregistry;
 use App\Models\departments;
 use App\Models\Engineering\Concerns\LogsEngineeringActivity;
 use App\Models\User;
@@ -26,6 +27,45 @@ class Equipment extends EngineeringModel
         'removed_at' => 'datetime',
         'quantity' => 'integer',
     ];
+
+    /**
+     * The asset register row this is the engineering profile of. Serial, model, vendor and cost
+     * live there; department_id, room_id and quantity here are copies kept in step by EquipmentSync.
+     */
+    public function assetRegistry(): BelongsTo
+    {
+        return $this->belongsTo(assetregistry::class, 'asset_registry_id')->withTrashed();
+    }
+
+    public function getSerialNumberAttribute(): ?string
+    {
+        return $this->assetRegistry?->serial_number;
+    }
+
+    public function getModelAttribute(): ?string
+    {
+        return $this->assetRegistry?->model;
+    }
+
+    public function getSupplierAttribute(): ?string
+    {
+        $registry = $this->assetRegistry;
+
+        return $registry?->vendorRelation?->name ?? $registry?->vendor;
+    }
+
+    public function getPurchaseCostAttribute(): ?string
+    {
+        return $this->assetRegistry?->purchase_cost;
+    }
+
+    /** Purchase cost less accumulated depreciation, from the asset register. */
+    public function getCurrentValueAttribute(): ?float
+    {
+        $registry = $this->assetRegistry;
+
+        return $registry?->purchase_cost === null ? null : max(0, (float) $registry->purchase_cost - (float) $registry->depreciation);
+    }
 
     public function section(): BelongsTo
     {
@@ -73,7 +113,9 @@ class Equipment extends EngineeringModel
         return $query->when($term, fn (Builder $q) => $q->where(fn (Builder $w) => $w
             ->where('name', 'like', "%{$term}%")
             ->orWhere('code', 'like', "%{$term}%")
-            ->orWhere('serial_number', 'like', "%{$term}%")));
+            ->orWhereHas('assetRegistry', fn (Builder $r) => $r
+                ->where('serial_number', 'like', "%{$term}%")
+                ->orWhere('model', 'like', "%{$term}%"))));
     }
 
     /** Installation date plus expected life; null when the life span is unknown. */

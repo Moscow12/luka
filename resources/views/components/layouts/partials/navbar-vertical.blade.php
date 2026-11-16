@@ -190,7 +190,7 @@
     @endif
 
     <!-- allow HOD to add department assets -->
-    @if($isSuperAdmin || $user?->can('manage-assets'))
+    @if($isSuperAdmin || $user?->can('manage-assets') || $user?->can('approve-asset-transfer'))
     <li class="nav-item dropdown {{ request()->routeIs($assetRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($assetRoutes) ? 'active' : '' }}" href="{{ route('assets.index') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($assetRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -207,6 +207,9 @@
                 <a class="nav-link {{ request()->routeIs('assets.reports') ? 'active' : '' }}" href="{{ route('assets.reports') }}"><i class="fa-solid fa-chart-bar"></i> Asset Reports</a>
             </li>
             @endif
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('assets.transfers') ? 'active' : '' }}" href="{{ route('assets.transfers') }}"><i class="fa-solid fa-right-left"></i> Asset Transfers</a>
+            </li>
         </ul>
     </li>
     @endif

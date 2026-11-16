@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActiveStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class departments extends Model
 {
-    use HasFactory, HasUuids;
+    use HasActiveStatus, HasFactory, HasUuids;
 
     // Tell Eloquent the primary key is 'id' (UUID)
     protected $primaryKey = 'id';
@@ -26,6 +27,7 @@ class departments extends Model
         'description',
         'supervisor_title_id',
         'approval_level_id',
+        'status',
         'added_by',
     ];
 

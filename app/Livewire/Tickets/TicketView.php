@@ -321,7 +321,7 @@ class TicketView extends Component
             'isAssignee' => TicketAccess::isAssignee($user, $ticket),
             'transitions' => TicketAccess::availableTransitions($user, $ticket),
             'canReassign' => $canManage && ! in_array($ticket->status, [TicketStatus::Resolved, TicketStatus::Closed, TicketStatus::Cancelled], true),
-            'departments' => $this->modal === 'assign' ? departments::orderBy('name')->get(['id', 'name']) : collect(),
+            'departments' => $this->modal === 'assign' ? departments::active()->orderBy('name')->get(['id', 'name']) : collect(),
             'assignEmployees' => $assignEmployees,
             'assignDuties' => $assignDuties,
             'participantCandidates' => $participantCandidates,

@@ -8,22 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Engineering profile of an asset register row. Identity, cost and depreciation live on the
+        // register row; department_id, room_id and quantity are copies kept in step by EquipmentSync
+        // (changed only through an approved asset transfer) so uptime queries stay simple.
         Schema::create('eng_equipment', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('asset_registry_id')->unique()->constrained('assetregistries')->restrictOnDelete();
             $table->string('name', 150);
             $table->foreignUuid('section_id')->constrained('eng_sections');
             $table->string('code', 60)->unique();
-            $table->string('serial_number', 100);
-            $table->string('model', 100)->nullable();
             $table->string('manufacturer', 150);
             $table->string('manufacturer_email', 150)->nullable();
             $table->string('manufacturer_phone', 60)->nullable();
             $table->string('manufacturer_postal', 200)->nullable();
-            $table->string('supplier', 150)->nullable();
             $table->boolean('under_contract')->default(false);
             $table->date('contract_expiry')->nullable();
             $table->foreignUuid('department_id')->constrained('departments');
-            $table->foreignUuid('room_id')->constrained('eng_rooms');
+            $table->foreignUuid('room_id')->constrained('facilitylocations')->restrictOnDelete();
             $table->unsignedInteger('quantity')->default(1);
             $table->date('installation_date');
             $table->enum('condition_received', ['new', 'old'])->default('new');
@@ -33,8 +34,6 @@ return new class extends Migration
             $table->text('status_note')->nullable();
             $table->string('manual_location', 200);
             $table->string('manual_file')->nullable();
-            $table->decimal('purchase_cost', 15, 2)->nullable();
-            $table->decimal('current_value', 15, 2)->nullable();
             $table->foreignUuid('counted_by')->constrained('users');
             $table->date('counted_at');
             // Removal (de-commissioning) keeps the record and its history
@@ -66,7 +65,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->foreignUuid('department_id')->constrained('departments');
-            $table->foreignUuid('room_id')->nullable()->constrained('eng_rooms')->nullOnDelete();
+            $table->foreignUuid('room_id')->nullable()->constrained('facilitylocations')->nullOnDelete();
             $table->dateTime('effective_from');
             $table->timestamp('effective_to')->nullable();
             $table->foreignUuid('assigned_by')->constrained('users');

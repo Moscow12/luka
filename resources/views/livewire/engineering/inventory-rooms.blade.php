@@ -1,6 +1,6 @@
 @php use App\Support\Engineering\Eng; @endphp
 
-<x-engineering.page title="Rooms & responsible staff" subtitle="The room register, and who looks after the equipment in each room">
+<x-engineering.page title="Rooms & responsible staff" subtitle="Rooms of each department (shared with the asset register), and who looks after the equipment in each room">
     <x-slot:actions>
         <a href="{{ route('engineering.inventory') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i>Inventory</a>
         <button type="button" class="btn btn-outline-success" wire:click="export"><i class="fa-solid fa-file-excel me-1"></i>Export history</button>
@@ -29,16 +29,16 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Room</th><th>Code</th><th>Floor</th><th>Block / building</th><th class="text-center">Equipment</th><th>Responsible staff</th><th>Status</th><th class="text-end">Action</th></tr>
+                    <tr><th>Room</th><th>Code</th><th>Floor</th><th>Building</th><th class="text-center">Equipment</th><th>Responsible staff</th><th>Status</th><th class="text-end">Action</th></tr>
                 </thead>
                 <tbody>
                     @forelse($rooms as $room)
                         @php $assignment = $current[$room->id] ?? null; @endphp
                         <tr wire:key="room-{{ $room->id }}">
                             <td class="fw-semibold">{{ $room->name }}</td>
-                            <td>{{ $room->code }}</td>
+                            <td>{{ $room->code ?? '—' }}</td>
                             <td>{{ $room->floor ?? '—' }}</td>
-                            <td>{{ $room->block ?? '—' }}</td>
+                            <td>{{ $room->building?->name ?? '—' }}</td>
                             <td class="text-center">{{ $room->equipment_count }}</td>
                             <td>
                                 @if($assignment)
@@ -67,6 +67,27 @@
         </div>
     </div>
 
+    @if($unassignedRooms->isNotEmpty())
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning-subtle">
+                <h6 class="mb-0">Rooms without a department</h6>
+                <div class="small text-muted">Older rooms from the asset register. Claim the ones that belong to the department selected above.</div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <tbody>
+                        @foreach($unassignedRooms as $room)
+                            <tr wire:key="unassigned-{{ $room->id }}">
+                                <td>{{ $room->label() }}</td>
+                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" wire:click="claimRoom('{{ $room->id }}')">Belongs to this department</button></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     @if($history->isNotEmpty())
         <div class="card">
             <div class="card-header"><h6 class="mb-0">Previous assignments</h6></div>
@@ -94,6 +115,14 @@
             <form wire:submit="saveRoom">
                 <div class="modal-body">
                     <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Building <span class="text-danger">*</span></label>
+                            <select class="form-select @error('room.building_id') is-invalid @enderror" wire:model="room.building_id">
+                                <option value="">{{ $buildings->isEmpty() ? 'Add a building under Setup > Asset configuration first' : 'Select' }}</option>
+                                @foreach($buildings as $building)<option value="{{ $building->id }}">{{ $building->name }} · {{ $building->workstation?->workstation_name }}</option>@endforeach
+                            </select>
+                            @error('room.building_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                         <div class="col-md-8">
                             <label class="form-label">Room name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('room.name') is-invalid @enderror" wire:model="room.name">
@@ -107,10 +136,6 @@
                         <div class="col-md-6">
                             <label class="form-label">Floor</label>
                             <input type="text" class="form-control" wire:model="room.floor" placeholder="1st floor">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Block / building</label>
-                            <input type="text" class="form-control" wire:model="room.block" placeholder="Block A">
                         </div>
                     </div>
                 </div>

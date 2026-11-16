@@ -28,6 +28,13 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
+    @if (session()->has('error'))
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
 
     <!-- Search & Filters -->
     <div class="card mb-4">
@@ -103,8 +110,9 @@
                                     <i class="fa-solid fa-box text-primary"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">{{ $registry->asset?->name ?? 'N/A' }}</h6>
+                                    <h6 class="mb-0">{{ $registry->asset?->name ?? 'N/A' }} @if($registry->quantity > 1)<span class="badge bg-secondary-subtle text-secondary-emphasis">× {{ $registry->quantity }}</span>@endif</h6>
                                     <small class="text-muted">{{ $registry->assetClass?->name ?? 'N/A' }}</small>
+                                    @if($registry->pendingTransfer)<span class="badge bg-warning text-dark">Transfer pending</span>@endif
                                 </div>
                             </div>
                         </td>
@@ -168,12 +176,21 @@
                                     title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
+                                @if(! $registry->pendingTransfer && $registry->status !== 'disposed')
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    wire:click="requestTransfer('{{ $registry->id }}')"
+                                    title="Request transfer to another department / room">
+                                    <i class="fa-solid fa-right-left"></i>
+                                </button>
+                                @endif
                                 @can('delete-asset')
+                                @unless(isset($usedIds[$registry->id]))
                                 <button class="btn btn-sm btn-outline-danger"
                                     wire:click="confirmDelete('{{ $registry->id }}')"
                                     title="Delete">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                @endunless
                                 @endcan
                             </div>
                         </td>
@@ -328,17 +345,13 @@
                                     </x-forms.search-picker>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Department <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('department_id') is-invalid @enderror"
-                                        wire:model="department_id">
-                                        <option value="">Select Department</option>
-                                        @foreach($departments as $dept)
-                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('department_id')
+                                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                    <input type="number" min="1" class="form-control @error('quantity') is-invalid @enderror"
+                                        wire:model="quantity" @if($editingId) readonly @endif>
+                                    @error('quantity')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">{{ $editingId ? 'Changes only through a transfer (moving part of a lot splits it).' : '1 for a numbered item (Bed 1, Bed 2); more for a lot of identical items.' }}</div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Asset Code</label>
@@ -378,49 +391,54 @@
                             <h6 class="text-primary mb-3">
                                 <i class="fa-solid fa-location-dot me-2"></i>Location Information
                             </h6>
+                            @if($editingId && $editingRegistry)
+                                <div class="d-flex flex-wrap align-items-center gap-2 border rounded p-3 bg-light">
+                                    <div class="flex-grow-1">
+                                        <strong>{{ $editingRegistry->department?->name ?? 'No department' }}</strong>
+                                        · {{ $editingRegistry->facilityLocation?->label() ?? 'No location' }}
+                                        @if($editingRegistry->pendingTransfer)
+                                            <span class="badge bg-warning text-dark ms-1">Transfer pending</span>
+                                        @endif
+                                        <div class="small text-muted">Department and location change only through an approved asset transfer.</div>
+                                    </div>
+                                    @if(! $editingRegistry->pendingTransfer && $editingRegistry->status !== 'disposed')
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="requestTransfer('{{ $editingId }}')">
+                                            <i class="fa-solid fa-right-left me-1"></i> Request transfer
+                                        </button>
+                                    @endif
+                                </div>
+                            @else
                             <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Workstation <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('workstation_id') is-invalid @enderror"
-                                        wire:model.live="workstation_id">
-                                        <option value="">Select Workstation</option>
-                                        @foreach($workstations as $ws)
-                                            <option value="{{ $ws->id }}">{{ $ws->workstation_name }}</option>
+                                <div class="col-md-6">
+                                    <label class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('department_id') is-invalid @enderror"
+                                        wire:model.live="department_id">
+                                        <option value="">Select Department</option>
+                                        @foreach($formDepartments as $dept)
+                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('workstation_id')
+                                    @error('department_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Building <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('building_id') is-invalid @enderror"
-                                        wire:model.live="building_id"
-                                        @if(!$workstation_id) disabled @endif>
-                                        <option value="">Select Building</option>
-                                        @foreach($buildings as $bldg)
-                                            <option value="{{ $bldg->id }}">{{ $bldg->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('building_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Facility Location <span class="text-danger">*</span></label>
+                                <div class="col-md-6">
+                                    <label class="form-label">Room / Facility Location <span class="text-danger">*</span></label>
                                     <select class="form-select @error('facility_location_id') is-invalid @enderror"
                                         wire:model="facility_location_id"
-                                        @if(!$building_id) disabled @endif>
-                                        <option value="">Select Location</option>
+                                        @if(!$department_id) disabled @endif>
+                                        <option value="">{{ $department_id && $facilityLocations->isEmpty() ? 'No room for this department yet (Setup > Asset configuration)' : 'Select Location' }}</option>
                                         @foreach($facilityLocations as $loc)
-                                            <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                                            <option value="{{ $loc->id }}">{{ $loc->label() }}{{ $loc->department_id ? '' : ' (no department)' }}</option>
                                         @endforeach
                                     </select>
                                     @error('facility_location_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">Building and workstation are taken from the room.</div>
                                 </div>
                             </div>
+                            @endif
                         </div>
 
                         <!-- Physical Details -->
@@ -603,4 +621,5 @@
         </div>
     </div>
     @endif
+    <livewire:assets.transfer-request />
 </div>

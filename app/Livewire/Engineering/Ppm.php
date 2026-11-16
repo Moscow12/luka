@@ -331,7 +331,7 @@ class Ppm extends Component
     {
         return PpmSchedule::query()
             ->active()
-            ->with(['equipment.room:id,name', 'equipment.department:id,name', 'equipment.section:id,name', 'responsible:id,first_name,last_name', 'lastDoneBy:id,first_name,surname', 'openInstance.job:id,number', 'openInstance.entries', 'tasks:id,schedule_id', 'consumables'])
+            ->with(['equipment.room:id,name,floor,building_id', 'equipment.department:id,name', 'equipment.section:id,name', 'responsible:id,first_name,last_name', 'lastDoneBy:id,first_name,surname', 'openInstance.job:id,number', 'openInstance.entries', 'tasks:id,schedule_id', 'consumables'])
             ->when($this->state === 'attention', fn (Builder $q) => $q->needingAttention())
             ->when($this->filterPerformer, fn (Builder $q, $performer) => $q->where('performer', $performer))
             ->whereHas('equipment', fn (Builder $q) => $q

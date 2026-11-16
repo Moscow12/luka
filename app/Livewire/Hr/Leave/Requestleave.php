@@ -154,8 +154,8 @@ class Requestleave extends Component
             $this->employeesList = Employee::where('status', 'active')
                 ->where('id', '!=', $this->employee_id)
                 ->get();
-            $this->designationsList = designations::where('status', 'active')->get();
-            $this->departmentsList = departments::all();
+            $this->designationsList = designations::active()->get();
+            $this->departmentsList = departments::active()->get();
         }
     }
 
