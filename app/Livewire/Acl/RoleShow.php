@@ -2,22 +2,39 @@
 
 namespace App\Livewire\Acl;
 
+use App\Livewire\Concerns\ConfirmsAdminPassword;
 use App\Models\PermissionCategory;
 use App\Models\Role;
+use App\Services\Acl\AccessControl;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
 
+/**
+ * Edit or delete a role. Needs manage-roles, the role must be within the actor's own
+ * access, a role the actor holds cannot be edited or deleted by them, and only permissions
+ * the actor holds can be added.
+ */
 class RoleShow extends Component
 {
+    use ConfirmsAdminPassword;
+
     public Role $role;
 
     public string $name = '';
 
     public array $selectedPermissions = [];
 
-    /**
-     * Mount the component with the role instance.
-     */
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(AccessControl::MANAGE_ROLES), 403);
+    }
+
+    protected function adminConfirmableActions(): array
+    {
+        return ['updateRole', 'deleteRole'];
+    }
+
     public function mount(Role $role): void
     {
         $this->role = $role;
@@ -25,39 +42,65 @@ class RoleShow extends Component
         $this->selectedPermissions = $role->permissions->pluck('id')->toArray();
     }
 
-    /**
-     * Validate and update the role.
-     *
-     * @return \Illuminate\Http\RedirectResponse|null
-     */
     public function updateRole()
     {
+        if ($message = $this->refusal()) {
+            session()->flash('error', $message);
+
+            return null;
+        }
+
         $this->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:roles,name,'.$this->role->id,
             'selectedPermissions' => 'nullable|array',
             'selectedPermissions.*' => 'string|exists:permissions,id',
         ]);
 
-        // Update the role name
+        if (! AccessControl::canAssignPermissions(Auth::user(), $this->selectedPermissions)) {
+            $this->addError('selectedPermissions', 'You can only include permissions you hold yourself.');
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('updateRole');
+        }
+
+        $before = ['name' => $this->role->name, 'permissions' => $this->role->permissions()->pluck('name')->sort()->values()->all()];
+
         $this->role->name = $this->name;
         $this->role->save();
-
-        // Sync the selected permissions
         $this->role->syncPermissions($this->selectedPermissions);
+
+        activity('role')->causedBy(Auth::user())->performedOn($this->role)->event('updated')
+            ->withProperties([
+                'old' => $before,
+                'attributes' => ['name' => $this->role->name, 'permissions' => $this->role->permissions()->pluck('name')->sort()->values()->all()],
+            ])
+            ->log("Role updated: {$this->role->name}");
 
         session()->flash('success', 'Role updated successfully.');
 
         return redirect()->route('acl.index');
     }
 
-    /**
-     * Delete the role.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function deleteRole()
     {
-        // Delete the role
+        if ($message = $this->refusal()) {
+            session()->flash('error', $message);
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('deleteRole');
+        }
+
+        $name = $this->role->name;
+        activity('role')->causedBy(Auth::user())->performedOn($this->role)->event('deleted')
+            ->withProperties(['permissions' => $this->role->permissions()->pluck('name')->all()])
+            ->log("Role deleted: {$name}");
+
         $this->role->delete();
 
         session()->flash('success', 'Role deleted successfully.');
@@ -65,16 +108,29 @@ class RoleShow extends Component
         return redirect()->route('acl.index');
     }
 
-    /**
-     * Render the component.
-     */
+    /** Why the actor may not change this role, or null when they may. */
+    protected function refusal(): ?string
+    {
+        $actor = Auth::user();
+
+        if (AccessControl::holdsRole($actor, $this->role) && ! $actor->isSuperAdmin()) {
+            return 'You cannot change a role you hold yourself. Ask another administrator.';
+        }
+
+        if (! AccessControl::canGrantRole($actor, $this->role)) {
+            return 'This role includes permissions you do not hold, so you cannot change it.';
+        }
+
+        return null;
+    }
+
     public function render(): View
     {
-        // Eager-load permission categories with their permissions
-        $categories = PermissionCategory::with('permissions')->get();
-
         return view('livewire.acl.role-show')->with([
-            'categories' => $categories,
+            'categories' => PermissionCategory::with('permissions')->get(),
+            'assignable' => AccessControl::permissionNames(Auth::user())->all(),
+            'isSuperAdmin' => Auth::user()->isSuperAdmin(),
+            'readOnlyReason' => $this->refusal(),
         ]);
     }
 }

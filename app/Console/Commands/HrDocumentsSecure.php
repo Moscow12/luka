@@ -20,7 +20,7 @@ use RecursiveIteratorIterator;
  *  - quarantines referenced HR files whose content is NOT allow-listed;
  *  - quarantines unreferenced files left in the old HR folders;
  *  - quarantines dangerous files (PHP, HTML, SVG, scripts) anywhere on the public disk.
- * Quarantine is storage/app/quarantine (private, 0700); nothing is deleted outright.
+ * Quarantine is config('filesystems.quarantine_path') (private, 0700); nothing is deleted outright.
  */
 class HrDocumentsSecure extends Command
 {
@@ -180,7 +180,7 @@ class HrDocumentsSecure extends Command
 
     protected function quarantine(string $absolute, string $folder): void
     {
-        $base = storage_path('app/quarantine');
+        $base = rtrim((string) config('filesystems.quarantine_path'), '/');
         File::ensureDirectoryExists($base, 0700);
         @chmod($base, 0700);
 

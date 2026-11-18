@@ -87,7 +87,7 @@
                         <i class="fa-solid fa-edit"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-danger"
-                        wire:click="confirmDelete('category', '{{ $category->id }}', '{{ $category->name }}')"
+                        wire:click="confirmDelete('category', {{ Js::from($category->id) }})"
                         title="Delete Category">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -124,7 +124,7 @@
                                                     <i class="fa-solid fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-outline-danger"
-                                                    wire:click="confirmDelete('permission', '{{ $permission->id }}', '{{ $permission->name }}')"
+                                                    wire:click="confirmDelete('permission', {{ Js::from($permission->id) }})"
                                                     title="Delete">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
@@ -320,4 +320,6 @@
         </div>
     </div>
     @endif
+
+    @include('livewire.partials.confirm-admin-password')
 </div>

@@ -3,6 +3,8 @@
 namespace App\Livewire\Acl;
 
 use App\Models\Role;
+use App\Services\Acl\AccessControl;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -11,6 +13,11 @@ class RoleIndex extends Component
     public ?string $selectedRoleId = null;
 
     public string $permissionSearch = '';
+
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(AccessControl::MANAGE_ROLES), 403);
+    }
 
     public function selectRole(string $roleId): void
     {

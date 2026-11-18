@@ -21,6 +21,11 @@
         </div>
     </div>
 
+    @if (session()->has('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+    @php($locked = false)
+
     <!-- Role Create Form -->
     <form id="role-create-form" wire:submit.prevent="createRole">
         <!-- Role Name -->
@@ -35,6 +40,12 @@
 
         <!-- Permissions Grouped by Category -->
         <h4 class="mb-3">Permissions</h4>
+        @unless($isSuperAdmin)
+            <p class="text-muted small">Only permissions you hold yourself can be added to a role.</p>
+        @endunless
+        @error('selectedPermissions')
+            <div class="alert alert-danger py-2">{{ $message }}</div>
+        @enderror
         @foreach($categories as $category)
             <h6>{{ $category->name }}</h6>
             <div class="row mb-3">
@@ -45,6 +56,7 @@
                         :value="$permission->id"
                         :id="'permission-' . $permission->id"
                         wire:model="selectedPermissions"
+                        :disabled="$locked || (! $isSuperAdmin && ! in_array($permission->name, $assignable, true))"
                         colSm="3"
                     />
                 @endforeach
@@ -57,4 +69,6 @@
             <button type="submit" class="btn btn-primary">Create Role</button>
         </div>
     </form>
+
+    @include('livewire.partials.confirm-admin-password')
 </div>

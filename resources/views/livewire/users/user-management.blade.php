@@ -7,6 +7,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     {{-- Page Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -193,23 +200,27 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <button wire:click="editUser('{{ $user->id }}')"
+                                    @if (in_array($user->id, $manageableIds, true))
+                                    <button wire:click="editUser({{ Js::from($user->id) }})"
                                         class="btn btn-sm btn-ghost-secondary rounded-circle" title="Edit">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
 
                                     @if ($user->trashed())
-                                        <button wire:click="enableUser('{{ $user->id }}')"
+                                        <button wire:click="enableUser({{ Js::from($user->id) }})"
                                             wire:confirm="Are you sure you want to enable this user?"
                                             class="btn btn-sm btn-ghost-success rounded-circle" title="Enable">
                                             <i class="fa-solid fa-check-circle"></i>
                                         </button>
-                                    @else
-                                        <button wire:click="disableUser('{{ $user->id }}')"
+                                    @elseif ($user->id !== auth()->id())
+                                        <button wire:click="disableUser({{ Js::from($user->id) }})"
                                             wire:confirm="Are you sure you want to disable this user?"
                                             class="btn btn-sm btn-ghost-warning rounded-circle" title="Disable">
                                             <i class="fa-solid fa-ban"></i>
                                         </button>
+                                    @endif
+                                    @else
+                                        <span class="badge bg-light text-muted" title="This account has access beyond yours"><i class="fa-solid fa-lock"></i></span>
                                     @endif
                                 </div>
                             </td>
@@ -382,13 +393,18 @@
                             {{-- Role --}}
                             <div class="mb-4">
                                 <label class="form-label">Assign Role <span class="text-danger">*</span></label>
-                                <select wire:model="selectedRole" class="form-select @error('selectedRole') is-invalid @enderror">
+                                <select wire:model="selectedRole" class="form-select @error('selectedRole') is-invalid @enderror" @disabled($editingSelf)>
                                     <option value="">Select a role</option>
-                                    @foreach ($roles as $role)
+                                    @foreach ($roleOptions as $role)
                                         <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
                                     @endforeach
                                 </select>
                                 @error('selectedRole') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @if ($editingSelf)
+                                    <div class="form-text">You cannot change your own role. Ask another administrator.</div>
+                                @else
+                                    <div class="form-text">Only roles whose permissions you hold yourself are listed.</div>
+                                @endif
                             </div>
 
                             {{-- Additional Information --}}
@@ -453,4 +469,6 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
+
+    @include('livewire.partials.confirm-admin-password')
 </div>

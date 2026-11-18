@@ -91,17 +91,18 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'users', 'middleware' => 'auth'], function () {
     Route::get('profile', App\Livewire\Users\Profile\ProfileIndex::class)->name('user.profile');
     Route::get('change-password', App\Livewire\Users\ChangePassword::class)->name('user.change-password');
-    Route::get('management', App\Livewire\Users\UserManagement::class)->name('user.management');
+    Route::get('management', App\Livewire\Users\UserManagement::class)->middleware('can:manage-users')->name('user.management');
 });
 
 Route::group([
     'prefix' => 'acl',
     'middleware' => ['auth'],
 ], function () {
-    Route::get('/', \App\Livewire\Acl\RoleIndex::class)->name('acl.index');
-    Route::get('/create', \App\Livewire\Acl\RoleCreate::class)->name('acl.create');
-    Route::get('/show/{role}', \App\Livewire\Acl\RoleShow::class)->name('acl.show');
-    Route::get('/permissions', \App\Livewire\Acl\PermissionIndex::class)->name('acl.permissions');
+    // Components re-check these on every request (boot()); the route gate is the first layer
+    Route::get('/', \App\Livewire\Acl\RoleIndex::class)->middleware('can:manage-roles')->name('acl.index');
+    Route::get('/create', \App\Livewire\Acl\RoleCreate::class)->middleware('can:manage-roles')->name('acl.create');
+    Route::get('/show/{role}', \App\Livewire\Acl\RoleShow::class)->middleware('can:manage-roles')->name('acl.show');
+    Route::get('/permissions', \App\Livewire\Acl\PermissionIndex::class)->middleware('can:manage-permissions')->name('acl.permissions');
 });
 
 Route::prefix('assets')->middleware('auth')->group(function () {

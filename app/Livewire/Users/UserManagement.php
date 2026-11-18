@@ -2,17 +2,31 @@
 
 namespace App\Livewire\Users;
 
+use App\Livewire\Concerns\ConfirmsAdminPassword;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Acl\AccessControl;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * User administration. Requires manage-users on every request; a non-super-admin can only
+ * manage accounts whose access is within their own, can only grant roles they could
+ * themselves hold (no escalation), can never change their own role or disable themselves,
+ * and must re-enter their password before any change is saved.
+ */
 class UserManagement extends Component
 {
-    use WithPagination;
+    use ConfirmsAdminPassword, WithPagination;
 
     // Search and Filters
     #[Url(as: 'q')]
@@ -36,7 +50,8 @@ class UserManagement extends Component
 
     public $editMode = false;
 
-    // Form Fields
+    // Form Fields. The id of the account being edited is set server-side only.
+    #[Locked]
     public $userId;
 
     public $salutation = '';
@@ -76,6 +91,17 @@ class UserManagement extends Component
     public $qualification = '';
 
     public $selectedRole = '';
+
+    /** Runs on every request (initial render and every action), not just on mount. */
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(AccessControl::MANAGE_USERS), 403);
+    }
+
+    protected function adminConfirmableActions(): array
+    {
+        return ['saveUser', 'disableUser', 'enableUser'];
+    }
 
     // Reset pagination when searching/filtering
     public function updatingSearch()
@@ -123,9 +149,16 @@ class UserManagement extends Component
     // Open modal for editing existing user
     public function editUser($userId)
     {
+        $user = User::withTrashed()->findOrFail($userId);
+
+        if (! AccessControl::canManageUser(Auth::user(), $user)) {
+            session()->flash('error', 'You are not permitted to manage this account.');
+
+            return;
+        }
+
         $this->resetForm();
         $this->editMode = true;
-        $user = User::withTrashed()->findOrFail($userId);
 
         $this->userId = $user->id;
         $this->salutation = $user->salutation ?? '';
@@ -173,10 +206,12 @@ class UserManagement extends Component
             'selectedRole' => 'required|exists:roles,id',
         ];
 
+        $strongPassword = Password::min(12)->letters()->mixedCase()->numbers()->symbols();
+
         if (! $this->editMode) {
-            $rules['password'] = 'required|string|min:8|confirmed';
+            $rules['password'] = ['required', 'string', 'confirmed', $strongPassword];
         } elseif ($this->password) {
-            $rules['password'] = 'nullable|string|min:8|confirmed';
+            $rules['password'] = ['nullable', 'string', 'confirmed', $strongPassword];
         }
 
         $this->validate($rules, [
@@ -191,9 +226,38 @@ class UserManagement extends Component
             'selectedRole.required' => 'Please select a role for this user.',
             'selectedRole.exists' => 'The selected role is invalid.',
             'password.required' => 'Please enter a password.',
-            'password.min' => 'Password must be at least 8 characters.',
+            'password.min' => 'Password must be at least 12 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);
+
+        $actor = Auth::user();
+        $role = Role::findOrFail($this->selectedRole);
+        $target = $this->editMode ? User::withTrashed()->findOrFail($this->userId) : null;
+
+        if ($target && ! AccessControl::canManageUser($actor, $target)) {
+            session()->flash('error', 'You are not permitted to manage this account.');
+            $this->closeModal();
+
+            return null;
+        }
+
+        // Saving would sync the account to exactly this one role, so for yourself it must already be exactly your role
+        if ($target && $target->is($actor) && $target->getRoleNames()->implode(', ') !== $role->name) {
+            $this->addError('selectedRole', 'You cannot change your own role. Ask another administrator.');
+
+            return null;
+        }
+
+        if (! AccessControl::canGrantRole($actor, $role)
+            && ! ($target && $target->roles->pluck('id')->contains($role->id))) {
+            $this->addError('selectedRole', 'You can only grant roles whose permissions you hold yourself.');
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('saveUser');
+        }
 
         $userData = [
             'salutation' => $this->salutation,
@@ -218,8 +282,8 @@ class UserManagement extends Component
             $userData['password'] = Hash::make($this->password);
         }
 
-        if ($this->editMode) {
-            $user = User::withTrashed()->findOrFail($this->userId);
+        if ($target) {
+            $user = $target;
             $user->update($userData);
             session()->flash('message', 'User updated successfully.');
         } else {
@@ -227,40 +291,91 @@ class UserManagement extends Component
             session()->flash('message', 'User created successfully.');
         }
 
-        // Assign the selected role
-        $role = Role::find($this->selectedRole);
-        if ($role) {
-            $previousRoleNames = $user->getRoleNames()->implode(', ') ?: 'none';
+        $previousRoleNames = $user->getRoleNames()->implode(', ') ?: 'none';
+
+        // Only touch roles when they actually change, so a user's own (unchanged) role is never re-synced
+        if ($previousRoleNames !== $role->name) {
             $user->syncRoles([$role]);
 
-            if ($previousRoleNames !== $role->name) {
-                activity('user')
-                    ->causedBy(auth()->user())
-                    ->performedOn($user)
-                    ->event('updated')
-                    ->withProperties(['old' => ['role' => $previousRoleNames], 'attributes' => ['role' => $role->name]])
-                    ->log("User role changed from {$previousRoleNames} to {$role->name}");
-            }
+            activity('user')
+                ->causedBy($actor)
+                ->performedOn($user)
+                ->event('updated')
+                ->withProperties(['old' => ['role' => $previousRoleNames], 'attributes' => ['role' => $role->name]])
+                ->log("User role changed from {$previousRoleNames} to {$role->name}");
+        }
+
+        if ($target && $this->password) {
+            // An administrator reset the password: end the user's existing sessions
+            $this->endSessionsOf($user);
+            activity('user')->causedBy($actor)->performedOn($user)->event('password-reset')->log('Password reset by administrator');
         }
 
         $this->closeModal();
         $this->resetPage();
+
+        return null;
     }
 
     // Disable user (soft delete)
     public function disableUser($userId)
     {
         $user = User::findOrFail($userId);
+
+        if ($user->is(Auth::user())) {
+            session()->flash('error', 'You cannot disable your own account.');
+
+            return null;
+        }
+
+        if (! AccessControl::canManageUser(Auth::user(), $user)) {
+            session()->flash('error', 'You are not permitted to manage this account.');
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('disableUser', [$userId]);
+        }
+
         $user->delete();
+        $this->endSessionsOf($user);
+        activity('user')->causedBy(Auth::user())->performedOn($user)->event('disabled')->log('User disabled');
         session()->flash('message', 'User disabled successfully.');
+
+        return null;
     }
 
     // Enable user (restore soft deleted)
     public function enableUser($userId)
     {
         $user = User::withTrashed()->findOrFail($userId);
+
+        if (! AccessControl::canManageUser(Auth::user(), $user)) {
+            session()->flash('error', 'You are not permitted to manage this account.');
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('enableUser', [$userId]);
+        }
+
         $user->restore();
+        activity('user')->causedBy(Auth::user())->performedOn($user)->event('enabled')->log('User enabled');
         session()->flash('message', 'User enabled successfully.');
+
+        return null;
+    }
+
+    /** Logs the user out everywhere: database sessions and remember-me cookies. */
+    protected function endSessionsOf(User $user): void
+    {
+        if (config('session.driver') === 'database' && Schema::hasTable(config('session.table', 'sessions'))) {
+            DB::table(config('session.table', 'sessions'))->where('user_id', $user->getKey())->delete();
+        }
+
+        $user->forceFill(['remember_token' => Str::random(60)])->saveQuietly();
     }
 
     // Close modal and reset form
@@ -335,11 +450,19 @@ class UserManagement extends Component
         }
 
         $users = $query->latest()->paginate($this->perPage);
-        $roles = Role::all();
+        $actor = Auth::user();
+        $grantable = AccessControl::grantableRoles($actor);
+
+        // The role dropdown offers only grantable roles, plus whatever the edited user already has
+        $currentRoles = $this->userId ? Role::whereHas('users', fn ($q) => $q->whereKey($this->userId))->get() : collect();
+        $roleOptions = $grantable->concat($currentRoles)->unique('id')->sortBy('name')->values();
 
         return view('livewire.users.user-management', [
             'users' => $users,
-            'roles' => $roles,
+            'roles' => Role::orderBy('name')->get(), // filter list
+            'roleOptions' => $roleOptions,
+            'editingSelf' => $this->userId && (string) $this->userId === (string) $actor->getKey(),
+            'manageableIds' => $users->getCollection()->filter(fn ($u) => AccessControl::canManageUser($actor, $u))->pluck('id')->all(),
         ]);
     }
 }

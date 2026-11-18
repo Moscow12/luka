@@ -73,6 +73,11 @@ return [
     |
     */
 
+    /*
+    | Private folder where hr-documents:secure moves unsafe or orphaned public files.
+    */
+    'quarantine_path' => env('QUARANTINE_PATH', storage_path('app/quarantine')),
+
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],

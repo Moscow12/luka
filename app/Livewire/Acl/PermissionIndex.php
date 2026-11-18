@@ -2,22 +2,32 @@
 
 namespace App\Livewire\Acl;
 
+use App\Livewire\Concerns\ConfirmsAdminPassword;
 use App\Models\Permission;
 use App\Models\PermissionCategory;
+use App\Services\Acl\AccessControl;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Exceptions\PermissionAlreadyExists;
 
+/**
+ * Permission catalogue. Needs manage-permissions on every request; every change needs a
+ * fresh password confirmation; a non-super-admin cannot rename, move or delete a
+ * permission they do not hold themselves.
+ */
 class PermissionIndex extends Component
 {
-    use WithPagination;
+    use ConfirmsAdminPassword, WithPagination;
 
     // Category properties
     public $showCategoryModal = false;
 
     public $categoryModalMode = 'create';
 
+    #[Locked]
     public $category_id;
 
     public $category_name;
@@ -27,6 +37,7 @@ class PermissionIndex extends Component
 
     public $permissionModalMode = 'create';
 
+    #[Locked]
     public $permission_id;
 
     public $permission_name;
@@ -35,11 +46,13 @@ class PermissionIndex extends Component
 
     public $permission_category_id;
 
-    // Delete confirmation
+    // Delete confirmation (target set server-side only)
     public $showDeleteModal = false;
 
+    #[Locked]
     public $deleteType;
 
+    #[Locked]
     public $deleteId;
 
     public $deleteName;
@@ -66,9 +79,25 @@ class PermissionIndex extends Component
         'permission_category_id.required' => 'Please select a category.',
     ];
 
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(AccessControl::MANAGE_PERMISSIONS), 403);
+    }
+
+    protected function adminConfirmableActions(): array
+    {
+        return ['saveCategory', 'savePermission', 'delete'];
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    /** A non-super-admin may only alter permissions they hold. */
+    protected function mayAlter(Permission $permission): bool
+    {
+        return AccessControl::holdsAll(Auth::user(), [$permission->name]);
     }
 
     // Category Methods
@@ -100,6 +129,10 @@ class PermissionIndex extends Component
             'category_name' => 'required|string|min:2|max:100|unique:permission_categories,name,'.$this->category_id,
         ]);
 
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('saveCategory');
+        }
+
         if ($this->categoryModalMode === 'edit' && $this->category_id) {
             $category = PermissionCategory::findOrFail($this->category_id);
             $category->update(['name' => $this->category_name]);
@@ -110,6 +143,8 @@ class PermissionIndex extends Component
         }
 
         $this->closeCategoryModal();
+
+        return null;
     }
 
     // Permission Methods
@@ -147,9 +182,23 @@ class PermissionIndex extends Component
             'permission_category_id' => 'required|exists:permission_categories,id',
         ]);
 
+        $existing = $this->permissionModalMode === 'edit' && $this->permission_id
+            ? Permission::findOrFail($this->permission_id)
+            : null;
+
+        if ($existing && ! $this->mayAlter($existing)) {
+            $this->addError('permission_name', 'You cannot change a permission you do not hold.');
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            return $this->requireAdminPassword('savePermission');
+        }
+
         try {
-            if ($this->permissionModalMode === 'edit' && $this->permission_id) {
-                $permission = Permission::findOrFail($this->permission_id);
+            if ($existing) {
+                $permission = $existing;
                 $permission->update([
                     'name' => $this->permission_name,
                     'description' => $this->permission_description,
@@ -170,14 +219,23 @@ class PermissionIndex extends Component
         } catch (PermissionAlreadyExists $e) {
             $this->addError('permission_name', "The permission '{$this->permission_name}' already exists. Please choose a different name.");
         }
+
+        return null;
     }
 
     // Delete Methods
-    public function confirmDelete($type, $id, $name)
+    /** The name shown in the dialog is looked up here, never passed in from the page. */
+    public function confirmDelete($type, $id)
     {
+        $target = match ($type) {
+            'category' => PermissionCategory::findOrFail($id),
+            'permission' => Permission::findOrFail($id),
+            default => abort(404),
+        };
+
         $this->deleteType = $type;
-        $this->deleteId = $id;
-        $this->deleteName = $name;
+        $this->deleteId = $target->getKey();
+        $this->deleteName = $target->name;
         $this->showDeleteModal = true;
     }
 
@@ -191,6 +249,27 @@ class PermissionIndex extends Component
 
     public function delete()
     {
+        if ($this->deleteType === 'permission' && ! $this->mayAlter(Permission::findOrFail($this->deleteId))) {
+            session()->flash('error', 'You cannot delete a permission you do not hold.');
+            $this->closeDeleteModal();
+
+            return null;
+        }
+
+        if ($this->deleteType === 'category' && PermissionCategory::findOrFail($this->deleteId)->permissions()
+            ->pluck('name')->contains(fn ($name) => ! AccessControl::holdsAll(Auth::user(), [$name]))) {
+            session()->flash('error', 'This category contains permissions you do not hold.');
+            $this->closeDeleteModal();
+
+            return null;
+        }
+
+        if (! $this->adminPasswordConfirmed()) {
+            $this->showDeleteModal = false;
+
+            return $this->requireAdminPassword('delete');
+        }
+
         if ($this->deleteType === 'category') {
             $category = PermissionCategory::findOrFail($this->deleteId);
             $category->delete();
@@ -201,7 +280,13 @@ class PermissionIndex extends Component
             session()->flash('success', 'Permission deleted successfully!');
         }
 
+        activity('permission')->causedBy(Auth::user())->event('deleted')
+            ->withProperties(['type' => $this->deleteType, 'name' => $this->deleteName])
+            ->log("Deleted {$this->deleteType}: {$this->deleteName}");
+
         $this->closeDeleteModal();
+
+        return null;
     }
 
     public function render(): View

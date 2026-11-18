@@ -126,4 +126,11 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    | Re-authentication window (seconds) for sensitive administrative changes:
+    | creating or editing users, granting roles, resetting passwords, and editing
+    | roles or permissions. Kept much shorter than password_timeout.
+    */
+    'admin_confirmation_timeout' => (int) env('ADMIN_PASSWORD_CONFIRM_SECONDS', 900),
+
 ];
