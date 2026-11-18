@@ -57,7 +57,8 @@ return [
         'url' => env('ATTENDANCE_BRIDGE_URL'),
         'token' => env('ATTENDANCE_BRIDGE_TOKEN'),
         'timeout' => (int) env('ATTENDANCE_BRIDGE_TIMEOUT', 200),
-        'verify_tls' => (bool) env('ATTENDANCE_BRIDGE_VERIFY_TLS', true),
+        // TLS certificates are always verified. For an internal CA, point this at its PEM bundle.
+        'ca_bundle' => env('ATTENDANCE_BRIDGE_CA_BUNDLE'),
     ],
 
 ];

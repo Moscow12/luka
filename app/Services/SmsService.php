@@ -3,7 +3,12 @@
 namespace App\Services;
 
 use App\Models\SmsApiSetting;
+use App\Support\OutboundUrlGuard;
+use App\Support\SecretRedactor;
 use Exception;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -76,9 +81,10 @@ class SmsService
                 'recipients' => $formattedNumbers,
             ];
         } catch (Exception $e) {
-            Log::error('SMS sending failed: '.$e->getMessage(), [
+            // Message bodies can carry credentials (e.g. new-account SMS), so only the length is logged
+            Log::error('SMS sending failed: '.SecretRedactor::text($e->getMessage(), $this->secrets()), [
                 'phone_numbers' => $phoneNumbers ?? [],
-                'message' => $message,
+                'message_length' => mb_strlen($message),
                 'provider' => $this->apiSetting->provider_name ?? 'Unknown',
             ]);
 
@@ -168,57 +174,80 @@ class SmsService
     }
 
     /**
-     * Send request to SMS API
+     * Send request to SMS API.
+     *
+     * The URL is re-checked against the SSRF guard on every send (stored settings may
+     * predate the allow-list, and DNS can change), the connection is pinned to the
+     * checked address, TLS certificates are verified and redirects are not followed.
      */
     protected function sendToApi(array $payload): array
     {
-        $ch = curl_init($this->apiSetting->sending_url);
+        $url = (string) $this->apiSetting->sending_url;
+        $checked = app(OutboundUrlGuard::class)->check($url, config('sms.allowed_hosts', []));
 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'Authorization: Basic '.base64_encode($this->apiSetting->api_key.':'.$this->apiSetting->secret_key),
-                'Content-Type: application/json',
-            ],
-            CURLOPT_POSTFIELDS => json_encode($payload),
+        try {
+            $response = $this->http($checked)->post($url, $payload);
+        } catch (ConnectionException $e) {
+            Log::warning('SMS provider connection failed', ['host' => $checked['host'], 'error' => SecretRedactor::text($e->getMessage(), $this->secrets())]);
+
+            throw new Exception('Could not connect securely to the SMS provider.');
+        }
+
+        if (! $response->successful()) {
+            $this->logProviderError($response, $checked['host']);
+
+            // The provider's body is not echoed back to users: it may contain request details
+            throw new Exception('SMS provider returned HTTP '.$response->status().'.');
+        }
+
+        return $response->json() ?? ['raw_response' => mb_substr($response->body(), 0, 1000)];
+    }
+
+    protected function http(array $checked): PendingRequest
+    {
+        return Http::withBasicAuth((string) $this->apiSetting->api_key, (string) $this->apiSetting->secret_key)
+            ->acceptJson()
+            ->asJson()
+            ->timeout((int) config('sms.timeout', 30))
+            ->connectTimeout((int) config('sms.connect_timeout', 10))
+            ->withoutRedirecting()
+            ->withOptions([
+                'verify' => true,
+                'curl' => OutboundUrlGuard::pinOption($checked),
+            ]);
+    }
+
+    protected function logProviderError(Response $response, string $host): void
+    {
+        Log::error('SMS provider error', [
+            'host' => $host,
+            'status' => $response->status(),
+            'body' => SecretRedactor::text(mb_substr($response->body(), 0, 500), $this->secrets()),
         ]);
+    }
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        if ($response === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new Exception('cURL Error: '.$error);
-        }
-
-        curl_close($ch);
-
-        $responseData = json_decode($response, true);
-
-        if ($httpCode !== 200 && $httpCode !== 201) {
-            throw new Exception('API returned status code '.$httpCode.': '.$response);
-        }
-
-        return $responseData ?? ['raw_response' => $response];
+    /** @return array<int, string|null> */
+    protected function secrets(): array
+    {
+        return [$this->apiSetting?->api_key, $this->apiSetting?->secret_key];
     }
 
     /**
-     * Log SMS to database
+     * Log SMS to database (message text is stored with credentials masked)
      */
     protected function logSms(array $phoneNumbers, string $message, array $response): void
     {
         try {
+            $storedMessage = SecretRedactor::text($message, $this->secrets());
+            $storedResponse = json_encode(SecretRedactor::data($response, $this->secrets()));
+
             foreach ($phoneNumbers as $phoneNumber) {
                 \App\Models\SmsLog::create([
                     'sms_api_setting_id' => $this->apiSetting->id,
                     'phone_number' => $phoneNumber,
-                    'message' => $message,
+                    'message' => $storedMessage,
                     'status' => $response['success'] ?? true ? 'sent' : 'failed',
-                    'response' => json_encode($response),
+                    'response' => $storedResponse,
                     'sent_by' => auth()->id(),
                 ]);
             }
@@ -237,15 +266,19 @@ class SmsService
         }
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Basic '.base64_encode($this->apiSetting->api_key.':'.$this->apiSetting->secret_key),
-            ])->get($this->apiSetting->delivery_report_url, [
-                'message_id' => $messageId,
-            ]);
+            $url = (string) $this->apiSetting->delivery_report_url;
+            $checked = app(OutboundUrlGuard::class)->check($url, config('sms.allowed_hosts', []));
+            $response = $this->http($checked)->get($url, ['message_id' => $messageId]);
+
+            if (! $response->successful()) {
+                $this->logProviderError($response, $checked['host']);
+
+                return null;
+            }
 
             return $response->json();
         } catch (Exception $e) {
-            Log::error('Failed to get delivery report: '.$e->getMessage());
+            Log::error('Failed to get delivery report: '.SecretRedactor::text($e->getMessage(), $this->secrets()));
 
             return null;
         }

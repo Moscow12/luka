@@ -107,7 +107,8 @@ class AttendanceBridgeClient
             ->acceptJson()
             ->asJson()
             ->timeout((int) config('services.attendance_bridge.timeout', 200))
-            ->withOptions(['verify' => (bool) config('services.attendance_bridge.verify_tls', true)]);
+            ->withoutRedirecting()
+            ->withOptions(['verify' => config('services.attendance_bridge.ca_bundle') ?: true]);
     }
 
     private function logFailure(string $endpoint, Response $response): void

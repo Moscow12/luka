@@ -3,7 +3,11 @@
 namespace App\Livewire\Setup;
 
 use App\Models\SmsApiSetting;
+use App\Support\OutboundUrlGuard;
+use App\Support\UnsafeUrlException;
+use Closure;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -11,10 +15,14 @@ class Smsapis extends Component
 {
     use WithPagination;
 
+    public const MANAGE_PERMISSION = 'manage-settings';
+
     public $search = '';
 
+    #[Locked]
     public $sms_api_id;
 
+    #[Locked]
     public $modalMode = 'create';
 
     public $showModal = false;
@@ -30,9 +38,13 @@ class Smsapis extends Component
 
     public $sender_name_url;
 
+    /** Write-only: never loaded from the database, so stored keys are not sent to the browser. */
     public $api_key;
 
     public $secret_key;
+
+    #[Locked]
+    public $hasStoredKeys = false;
 
     public $is_default = false;
 
@@ -45,23 +57,30 @@ class Smsapis extends Component
 
     public $bulk_message = '';
 
+    /** Runs on every Livewire request, so no action is reachable without the permission. */
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(self::MANAGE_PERMISSION), 403);
+    }
+
     public function openModal($mode = 'create', $id = null)
     {
         $this->resetErrorBag();
         $this->resetValidation();
-        $this->modalMode = $mode;
+        $this->modalMode = $mode === 'edit' ? 'edit' : 'create';
         $this->showModal = true;
 
-        if ($mode === 'edit' && $id) {
+        if ($this->modalMode === 'edit' && $id) {
             $smsApi = SmsApiSetting::findOrFail($id);
-            $this->sms_api_id = $id;
+            $this->sms_api_id = $smsApi->id;
             $this->provider_name = $smsApi->provider_name;
             $this->sender_id = $smsApi->sender_id;
             $this->sending_url = $smsApi->sending_url;
             $this->delivery_report_url = $smsApi->delivery_report_url;
             $this->sender_name_url = $smsApi->sender_name_url;
-            $this->api_key = $smsApi->api_key;
-            $this->secret_key = $smsApi->secret_key;
+            $this->api_key = '';
+            $this->secret_key = '';
+            $this->hasStoredKeys = true;
             $this->is_default = $smsApi->is_default;
             $this->is_active = $smsApi->is_active;
         } else {
@@ -71,16 +90,25 @@ class Smsapis extends Component
 
     public function save()
     {
+        $editing = $this->modalMode === 'edit' && $this->sms_api_id;
+        // On edit, blank keys mean "keep the stored ones"
+        $keyRule = $editing ? ['nullable', 'string', 'max:500'] : ['required', 'string', 'max:500'];
+
         $this->validate([
             'provider_name' => ['required', 'string', 'max:255'],
             'sender_id' => ['nullable', 'string', 'max:255'],
-            'sending_url' => ['required', 'url', 'max:1000'],
-            'delivery_report_url' => ['nullable', 'url', 'max:1000'],
-            'sender_name_url' => ['nullable', 'url', 'max:1000'],
-            'api_key' => ['required', 'string'],
-            'secret_key' => ['required', 'string'],
+            'sending_url' => ['required', 'string', 'max:1000', $this->safeProviderUrl()],
+            'delivery_report_url' => ['nullable', 'string', 'max:1000', $this->safeProviderUrl()],
+            'sender_name_url' => ['nullable', 'string', 'max:1000', $this->safeProviderUrl()],
+            'api_key' => $keyRule,
+            'secret_key' => $keyRule,
             'is_default' => ['boolean'],
             'is_active' => ['boolean'],
+        ]);
+
+        $keys = array_filter([
+            'api_key' => filled($this->api_key) ? trim($this->api_key) : null,
+            'secret_key' => filled($this->secret_key) ? trim($this->secret_key) : null,
         ]);
 
         // If setting as default, unset all other defaults
@@ -88,7 +116,7 @@ class Smsapis extends Component
             SmsApiSetting::query()->update(['is_default' => false]);
         }
 
-        if ($this->modalMode === 'edit' && $this->sms_api_id) {
+        if ($editing) {
             $smsApi = SmsApiSetting::findOrFail($this->sms_api_id);
             $smsApi->update([
                 'provider_name' => $this->provider_name,
@@ -96,11 +124,9 @@ class Smsapis extends Component
                 'sending_url' => $this->sending_url,
                 'delivery_report_url' => $this->delivery_report_url,
                 'sender_name_url' => $this->sender_name_url,
-                'api_key' => $this->api_key,
-                'secret_key' => $this->secret_key,
                 'is_default' => $this->is_default,
                 'is_active' => $this->is_active,
-            ]);
+            ] + $keys);
             session()->flash('success', 'SMS API Setting updated successfully!');
         } else {
             SmsApiSetting::create([
@@ -109,8 +135,8 @@ class Smsapis extends Component
                 'sending_url' => $this->sending_url,
                 'delivery_report_url' => $this->delivery_report_url,
                 'sender_name_url' => $this->sender_name_url,
-                'api_key' => $this->api_key,
-                'secret_key' => $this->secret_key,
+                'api_key' => $keys['api_key'],
+                'secret_key' => $keys['secret_key'],
                 'is_default' => $this->is_default,
                 'is_active' => $this->is_active,
                 'added_by' => Auth::id(),
@@ -161,6 +187,22 @@ class Smsapis extends Component
         session()->flash('success', 'SMS API Setting deleted successfully!');
     }
 
+    /** Validation rule: https, approved provider host, public addresses only (SSRF guard). */
+    private function safeProviderUrl(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail) {
+            if (blank($value)) {
+                return;
+            }
+
+            try {
+                app(OutboundUrlGuard::class)->check((string) $value, config('sms.allowed_hosts', []));
+            } catch (UnsafeUrlException $e) {
+                $fail($e->getMessage());
+            }
+        };
+    }
+
     private function resetFormFields()
     {
         $this->reset([
@@ -174,6 +216,7 @@ class Smsapis extends Component
             'secret_key',
             'is_default',
             'is_active',
+            'hasStoredKeys',
         ]);
         $this->is_default = false;
         $this->is_active = true;

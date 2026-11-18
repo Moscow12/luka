@@ -25,11 +25,14 @@ class SmsApiSetting extends Model
     ];
 
     protected $casts = [
+        'api_key' => 'encrypted',
+        'secret_key' => 'encrypted',
         'is_default' => 'boolean',
         'is_active' => 'boolean',
     ];
 
     protected $hidden = [
+        'api_key',
         'secret_key',
     ];
 

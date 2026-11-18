@@ -181,12 +181,20 @@
 
         <div class="row">
             <div class="col-md-6">
-                <x-forms.input type="text" name="api_key" label="API Key" placeholder="Enter API Key" required />
+                <x-forms.input type="password" name="api_key" autocomplete="off"
+                    :label="$hasStoredKeys ? 'API Key (leave blank to keep)' : 'API Key'"
+                    :placeholder="$hasStoredKeys ? '••••••••' : 'Enter API Key'" :required="! $hasStoredKeys" />
             </div>
             <div class="col-md-6">
-                <x-forms.input type="text" name="secret_key" label="Secret Key" placeholder="Enter Secret Key" required />
+                <x-forms.input type="password" name="secret_key" autocomplete="new-password"
+                    :label="$hasStoredKeys ? 'Secret Key (leave blank to keep)' : 'Secret Key'"
+                    :placeholder="$hasStoredKeys ? '••••••••' : 'Enter Secret Key'" :required="! $hasStoredKeys" />
             </div>
         </div>
+        <p class="small text-muted mb-3">
+            Stored keys are encrypted and never shown again. URLs must use https on an approved provider host
+            ({{ implode(', ', config('sms.allowed_hosts')) ?: 'none configured' }}).
+        </p>
 
         <div class="row">
             <div class="col-md-6">

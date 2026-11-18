@@ -3,6 +3,7 @@
 namespace App\Livewire\Setup;
 
 use App\Models\SmsLog;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,6 +22,12 @@ class Smslogs extends Component
     public $showModal = false;
 
     public $selectedLog = null;
+
+    /** SMS logs hold message content and recipients: same permission as the SMS gateway settings. */
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(Smsapis::MANAGE_PERMISSION), 403);
+    }
 
     public function updatingSearch()
     {
