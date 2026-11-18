@@ -7,6 +7,16 @@
     ]">
     </x-pages.breadcrumn>
 
+    @unless($archivePasswordConfigured)
+        <div class="alert alert-danger d-flex align-items-start mb-4">
+            <i class="fa-solid fa-lock-open me-2 mt-1"></i>
+            <div>
+                <strong>Backups are disabled.</strong> Set <code>BACKUP_ARCHIVE_PASSWORD</code> (at least 32 characters) in the server
+                environment so archives can be encrypted, then run <code>php artisan backup:protect</code> to encrypt existing archives.
+            </div>
+        </div>
+    @endunless
+
     <!-- Summary Cards -->
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
@@ -81,10 +91,12 @@
                         <div class="flex-grow-1 ms-3">
                             <p class="text-muted mb-1 small">Backup Status</p>
                             <h4 class="mb-0 fw-bold text-warning small">
-                                @if($backups->count() > 0)
-                                    Protected
-                                @else
+                                @if($backups->isEmpty())
                                     At Risk
+                                @elseif($backups->contains('encrypted', false))
+                                    {{ $backups->where('encrypted', false)->count() }} unencrypted
+                                @else
+                                    Encrypted
                                 @endif
                             </h4>
                         </div>
@@ -107,7 +119,7 @@
                             </h5>
                         </div>
                         <div class="col-auto">
-                            <button wire:click="openCreateModal" class="btn btn-primary">
+                            <button wire:click="openCreateModal" class="btn btn-primary" @disabled(! $archivePasswordConfigured)>
                                 <i class="fa-solid fa-plus me-1"></i>Create New Backup
                             </button>
                         </div>
@@ -131,7 +143,7 @@
                         </thead>
                         <tbody>
                             @forelse($backups as $index => $backup)
-                                <tr wire:key="backup-{{ $index }}">
+                                <tr wire:key="backup-{{ $backup['filename'] }}">
                                     <td class="text-center text-muted">
                                         {{ $index + 1 }}
                                     </td>
@@ -139,9 +151,14 @@
                                         <div class="d-flex flex-column">
                                             <span class="fw-semibold text-dark">
                                                 <i class="fa-solid fa-file-zipper text-primary me-1"></i>
-                                                {{ $backup['metadata']['name'] ?? basename($backup['filename'], '.zip') }}
+                                                {{ $backup['metadata']['label'] ?? $backup['metadata']['name'] ?? basename($backup['filename'], '.zip') }}
                                             </span>
                                             <small class="text-muted">{{ $backup['filename'] }}</small>
+                                            @if($backup['encrypted'])
+                                                <span class="badge bg-success-subtle text-success mt-1 align-self-start"><i class="fa-solid fa-lock me-1"></i>AES-256 encrypted</span>
+                                            @else
+                                                <span class="badge bg-danger-subtle text-danger mt-1 align-self-start" title="Run php artisan backup:protect"><i class="fa-solid fa-lock-open me-1"></i>Unencrypted (legacy)</span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td>
@@ -191,19 +208,13 @@
                                     <td>
                                         <div class="d-flex gap-1 justify-content-center">
                                             <button
-                                                wire:click="downloadBackup('{{ $backup['filename'] }}')"
+                                                wire:click="downloadBackup({{ Js::from($backup['filename']) }})"
                                                 class="btn btn-sm btn-success"
-                                                title="Download">
+                                                title="Download (requires password confirmation)">
                                                 <i class="fa-solid fa-download"></i>
                                             </button>
                                             <button
-                                                wire:click="openRestoreModal('{{ $backup['filename'] }}')"
-                                                class="btn btn-sm btn-warning"
-                                                title="Restore">
-                                                <i class="fa-solid fa-rotate-left"></i>
-                                            </button>
-                                            <button
-                                                wire:click="deleteBackup('{{ $backup['filename'] }}')"
+                                                wire:click="deleteBackup({{ Js::from($backup['filename']) }})"
                                                 wire:confirm="Are you sure you want to delete this backup?"
                                                 class="btn btn-sm btn-danger"
                                                 title="Delete">
@@ -219,7 +230,7 @@
                                             <i class="fa-solid fa-database text-muted mb-3" style="font-size: 48px;"></i>
                                             <h5 class="text-muted">No Backups Found</h5>
                                             <p class="text-muted">Create your first backup to secure your system data</p>
-                                            <button wire:click="openCreateModal" class="btn btn-primary mt-2">
+                                            <button wire:click="openCreateModal" class="btn btn-primary mt-2" @disabled(! $archivePasswordConfigured)>
                                                 <i class="fa-solid fa-plus me-1"></i>Create Backup
                                             </button>
                                         </div>
@@ -231,6 +242,16 @@
                 </div>
 
                 <!-- Card Footer -->
+                <div class="card-footer border-top bg-light">
+                    <div class="d-flex align-items-start small text-muted">
+                        <i class="fa-solid fa-terminal me-2 mt-1"></i>
+                        <div>
+                            <strong class="text-dark">Restoring</strong> is done from the server console by an administrator with shell access, which
+                            validates the archive and takes a safety backup first:
+                            <code class="d-block mt-1">php artisan backup:restore &lt;backup file name&gt;</code>
+                        </div>
+                    </div>
+                </div>
                 @if($backups->count() > 0)
                 <div class="card-footer border-top bg-white">
                     <div class="d-flex justify-content-between align-items-center">
@@ -264,11 +285,12 @@
                             <div class="row g-3">
                                 <!-- Backup Name -->
                                 <div class="col-12">
-                                    <label class="form-label">Backup Name <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="backup_name" class="form-control @error('backup_name') is-invalid @enderror" placeholder="Enter backup name">
-                                    @error('backup_name')
+                                    <label class="form-label">Label</label>
+                                    <input type="text" wire:model="backup_label" maxlength="100" class="form-control @error('backup_label') is-invalid @enderror" placeholder="Optional, e.g. Before payroll run">
+                                    @error('backup_label')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">The file name is generated automatically. The label and description are stored encrypted inside the archive.</div>
                                 </div>
 
                                 <!-- Description -->
@@ -283,6 +305,9 @@
                                 <!-- Backup Options -->
                                 <div class="col-12">
                                     <label class="form-label d-block mb-3">What to Include</label>
+                                    @error('include_database')
+                                        <div class="text-danger small mb-2">{{ $message }}</div>
+                                    @enderror
 
                                     <div class="card mb-2">
                                         <div class="card-body">
@@ -352,79 +377,43 @@
         </div>
     @endif
 
-    <!-- Restore Backup Modal -->
-    @if($showRestoreModal && $selectedBackup)
+    <!-- Password Confirmation Modal -->
+    @if($showConfirmModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">
-                            <i class="fa-solid fa-triangle-exclamation me-2"></i>Restore Backup - Confirmation Required
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeRestoreModal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-danger">
-                            <h5 class="alert-heading">
-                                <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                                Critical Warning
+                    <form wire:submit="confirmPasswordAndContinue">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-user-shield me-2"></i>Confirm your password
                             </h5>
-                            <p class="mb-0">Restoring a backup will <strong>REPLACE ALL CURRENT DATA</strong> with the backup data. This action cannot be undone!</p>
+                            <button type="button" class="btn-close" wire:click="cancelConfirmation"></button>
                         </div>
-
-                        <div class="card mb-3">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">Backup Information</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <strong>Backup File:</strong>
-                                        <p class="mb-0 text-muted">{{ $selectedBackup }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="modal-body">
+                            <p class="text-muted">
+                                Backups contain the full database. Re-enter your password to
+                                {{ match ($pendingAction) { 'create' => 'create a backup', 'download' => 'download '.$pendingFilename, 'delete' => 'delete '.$pendingFilename, default => 'continue' } }}.
+                            </p>
+                            <input type="password" wire:model="confirmPassword" autocomplete="current-password" autofocus
+                                   class="form-control @error('confirmPassword') is-invalid @enderror" placeholder="Your password">
+                            @error('confirmPassword')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-
-                        <div class="card mb-3 border-danger">
-                            <div class="card-body">
-                                <h6 class="text-danger mb-3">What will happen:</h6>
-                                <ul class="mb-0">
-                                    <li>All current database data will be replaced</li>
-                                    <li>All users will be logged out</li>
-                                    <li>Recent changes will be lost</li>
-                                    <li>System will be restored to the backup state</li>
-                                </ul>
-                            </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="cancelConfirmation">Cancel</button>
+                            <button type="submit" class="btn btn-warning" wire:loading.attr="disabled">
+                                <i class="fa-solid fa-check me-1"></i>Confirm
+                            </button>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">
-                                Type <code class="text-danger">RESTORE</code> to confirm this action:
-                            </label>
-                            <input type="text" wire:model="restoreConfirmation" class="form-control form-control-lg text-center" placeholder="Type RESTORE" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeRestoreModal">
-                            Cancel
-                        </button>
-                        <button type="button" class="btn btn-danger" wire:click="restoreBackup" wire:loading.attr="disabled" {{ $restoreConfirmation !== 'RESTORE' ? 'disabled' : '' }}>
-                            <span wire:loading.remove wire:target="restoreBackup">
-                                <i class="fa-solid fa-rotate-left me-1"></i>Restore Backup
-                            </span>
-                            <span wire:loading wire:target="restoreBackup">
-                                <i class="fa-solid fa-spinner fa-spin me-1"></i>Restoring...
-                            </span>
-                        </button>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     @endif
 
     <!-- Loading Indicator -->
-    <div wire:loading wire:target="createBackup,restoreBackup" class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
+    <div wire:loading wire:target="createBackup,confirmPasswordAndContinue" class="position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
         <div class="card shadow-lg">
             <div class="card-body text-center">
                 <div class="spinner-border text-primary mb-3" role="status">

@@ -118,7 +118,13 @@ Route::prefix('setup')->middleware('auth')->group(function () {
     Route::get('/vendors', App\Livewire\Setup\VendorManagement::class)->name('setup.vendors');
     Route::get('/asset-configuration', App\Livewire\Setup\Asset\Assetconf::class)->name('setup.assetconfig');
     Route::get('/termination-reasons', App\Livewire\Setup\TerminationReasons::class)->name('setup.termination-reasons');
-    Route::get('/backuprecovery', App\Livewire\Setup\Backuprecovery::class)->name('setup.backuprecovery');
+    Route::get('/backuprecovery', App\Livewire\Setup\Backuprecovery::class)
+        ->middleware('can:'.App\Livewire\Setup\Backuprecovery::PERMISSION)
+        ->name('setup.backuprecovery');
+    Route::get('/backups/download/{filename}', App\Http\Controllers\BackupDownloadController::class)
+        ->middleware(['signed', 'can:'.App\Livewire\Setup\Backuprecovery::PERMISSION])
+        ->where('filename', 'backup_[0-9_]+(?:_[a-f0-9]{8})?\.zip')
+        ->name('setup.backups.download');
     Route::get('/products/categories', App\Livewire\Setup\Products\Productcategory::class)->name('setup.product-categories');
     Route::get('/setup/smsapis', App\Livewire\Setup\Smsapis::class)->name('setup.smsapis');
     Route::get('/setup/smslogs', App\Livewire\Setup\Smslogs::class)->name('setup.smslogs');
