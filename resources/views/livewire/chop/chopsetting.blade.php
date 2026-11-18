@@ -29,6 +29,13 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link py-2" id="objectives-tab" data-bs-toggle="pill" href="#objectives" role="tab" aria-controls="objectives" aria-selected="false">
+                        <i class="fa-solid fa-bullseye"></i>
+                        Objectives &amp; Targets
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link py-2" id="source-funds-tab" data-bs-toggle="pill" href="#source-funds" role="tab" aria-controls="source-funds" aria-selected="false">
                         <i class="fa-solid fa-hand-holding-dollar"></i>
                         Source of Funds
@@ -53,6 +60,10 @@
             <div class="tab-content" id="tabContent">
                 <div class="tab-pane fade show active" id="category-areas" role="tabpanel" aria-labelledby="category-areas-tab">
                     <livewire:chop.category-areas />
+                </div>
+
+                <div class="tab-pane fade" id="objectives" role="tabpanel" aria-labelledby="objectives-tab">
+                    <livewire:chop.objectives-targets />
                 </div>
 
                 <div class="tab-pane fade" id="source-funds" role="tabpanel" aria-labelledby="source-funds-tab">

@@ -33,6 +33,7 @@ class chopactivities extends Model
         'frequence_monitoring',
         'source_id',
         'category_id',
+        'target_id',
         'added_by',
         'financial_year_id',
     ];
@@ -99,6 +100,11 @@ class chopactivities extends Model
     public function personels(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(activitypersonel::class, 'activity_id');
+    }
+
+    public function target(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(ChopTarget::class, 'target_id');
     }
 
     public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany

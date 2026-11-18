@@ -85,6 +85,13 @@
                                         @if($activity->description)
                                             <p class="text-muted small mb-0">{{ Str::limit($activity->description, 60) }}</p>
                                         @endif
+                                        @if($activity->target)
+                                            <p class="small mb-0" title="{{ $activity->target->objective?->name }}">
+                                                <i class="fa-solid fa-bullseye text-primary"></i> {{ Str::limit($activity->target->description, 70) }}
+                                            </p>
+                                        @else
+                                            <p class="small text-warning mb-0"><i class="fa-solid fa-link-slash"></i> No target</p>
+                                        @endif
                                         @if($activity->is_approved)
                                             <span class="badge bg-success-subtle text-success mt-1">
                                                 <i class="fa-solid fa-check-circle"></i> Approved
@@ -271,13 +278,29 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label fw-semibold">Financial Year <span class="text-danger">*</span></label>
-                                        <select class="form-select @error('financial_year_id') is-invalid @enderror" wire:model="financial_year_id" required>
+                                        <select class="form-select @error('financial_year_id') is-invalid @enderror" wire:model.live="financial_year_id" required>
                                             <option value="">Select FY</option>
                                             @foreach($financialYears as $fy)
                                                 <option value="{{ $fy->id }}">{{ $fy->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('financial_year_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Target</label>
+                                        <select class="form-select @error('target_id') is-invalid @enderror" wire:model="target_id" @disabled($modalMode === 'view')>
+                                            <option value="">{{ $targetOptions->isEmpty() ? 'No targets for this financial year: add them in Objectives & Targets' : 'Select the target this activity serves' }}</option>
+                                            @foreach($targetOptions as $objectiveLabel => $targets)
+                                                <optgroup label="{{ \Illuminate\Support\Str::limit($objectiveLabel, 80) }}">
+                                                    @foreach($targets as $target)
+                                                        <option value="{{ $target->id }}">{{ \Illuminate\Support\Str::limit($target->description, 120) }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                        @error('target_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        <div class="form-text">Used to group this intervention under its objective and target in the cost analysis.</div>
                                     </div>
 
                                     <div class="col-12">

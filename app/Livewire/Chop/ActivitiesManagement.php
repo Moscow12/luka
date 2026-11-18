@@ -2,16 +2,18 @@
 
 namespace App\Livewire\Chop;
 
-use App\Models\chopactivities;
 use App\Models\activityitems;
 use App\Models\activitypersonel;
+use App\Models\chopactivities;
 use App\Models\chopcategoryarea;
 use App\Models\chopitems;
-use App\Models\sourceoffunds;
+use App\Models\ChopTarget;
 use App\Models\FinancialYear;
 use App\Models\Jobtitle;
+use App\Models\sourceoffunds;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,36 +22,60 @@ class ActivitiesManagement extends Component
     use WithPagination;
 
     public $search = '';
+
     public $activity_id;
+
     public $modalMode = 'create';
+
     public $showModal = false;
 
     // Activity fields
     public $planned_activity;
+
     public $actual_activity;
+
     public $description;
+
     public $status = 'pending';
+
     public $planned_amount = 0;
+
     public $actual_amount = 0;
+
     public $percentage = 0;
+
     public $is_active = true;
+
     public $is_planned = true;
+
     public $is_approved = false;
+
     public $expected_outcome;
+
     public $expected_outcome_date;
+
     public $activity_type = 'expenditure';
-    public $frequence_monitoring;
+
+    public $frequence_monitoring = 'monthly';
+
     public $source_id;
+
     public $category_id;
+
     public $financial_year_id;
+
+    public $target_id = '';
 
     // Items management
     public $selectedItems = [];
+
     public $itemSearch = '';
+
     public $showItemSelector = false;
 
     // Personnel management
     public $selectedPersonnel = [];
+
     public $showPersonnelSelector = false;
 
     public function mount()
@@ -88,6 +114,7 @@ class ActivitiesManagement extends Component
             $this->source_id = $activity->source_id;
             $this->category_id = $activity->category_id;
             $this->financial_year_id = $activity->financial_year_id;
+            $this->target_id = $activity->target_id ?? '';
 
             // Load existing items
             $this->selectedItems = $activity->items->map(function ($item) {
@@ -113,7 +140,7 @@ class ActivitiesManagement extends Component
             'status', 'planned_amount', 'actual_amount', 'percentage',
             'is_active', 'is_planned', 'is_approved', 'expected_outcome',
             'expected_outcome_date', 'activity_type', 'frequence_monitoring',
-            'source_id', 'category_id'
+            'source_id', 'category_id', 'target_id',
         ]);
 
         $this->selectedItems = [];
@@ -125,6 +152,7 @@ class ActivitiesManagement extends Component
         $this->planned_amount = 0;
         $this->actual_amount = 0;
         $this->percentage = 0;
+        $this->frequence_monitoring = 'monthly';
 
         $currentFY = FinancialYear::current();
         if ($currentFY) {
@@ -132,11 +160,19 @@ class ActivitiesManagement extends Component
         }
     }
 
+    /** Targets belong to one year: drop the chosen target when the year changes. */
+    public function updatedFinancialYearId()
+    {
+        if ($this->target_id && ! ChopTarget::whereKey($this->target_id)->where('financial_year_id', $this->financial_year_id)->exists()) {
+            $this->target_id = '';
+        }
+    }
+
     public function addItem($itemId, $itemName)
     {
         // Check if item already added
         $exists = collect($this->selectedItems)->firstWhere('item_id', $itemId);
-        if (!$exists) {
+        if (! $exists) {
             $this->selectedItems[] = [
                 'item_id' => $itemId,
                 'name' => $itemName,
@@ -215,8 +251,15 @@ class ActivitiesManagement extends Component
             'financial_year_id' => ['required', 'exists:financial_years,id'],
             'expected_outcome_date' => ['nullable', 'date'],
             'activity_type' => ['required', 'in:expenditure,revenue'],
-            'frequence_monitoring' => ['nullable', 'string'],
+            'frequence_monitoring' => ['nullable', Rule::in(array_keys(chopactivities::getFrequencyOptions()))],
+            'target_id' => ['nullable', 'exists:chop_targets,id'],
         ]);
+
+        if ($this->target_id && ! ChopTarget::whereKey($this->target_id)->where('financial_year_id', $this->financial_year_id)->exists()) {
+            $this->addError('target_id', 'The target must belong to the same financial year as the activity.');
+
+            return;
+        }
 
         try {
             DB::transaction(function () {
@@ -234,10 +277,12 @@ class ActivitiesManagement extends Component
                     'expected_outcome' => $this->expected_outcome,
                     'expected_outcome_date' => $this->expected_outcome_date,
                     'activity_type' => $this->activity_type,
-                    'frequence_monitoring' => $this->frequence_monitoring,
+                    // The column is NOT NULL (default monthly); an unset dropdown must not send NULL
+                    'frequence_monitoring' => $this->frequence_monitoring ?: 'monthly',
                     'source_id' => $this->source_id,
                     'category_id' => $this->category_id,
                     'financial_year_id' => $this->financial_year_id,
+                    'target_id' => $this->target_id ?: null,
                 ];
 
                 if ($this->modalMode === 'edit' && $this->activity_id) {
@@ -275,6 +320,7 @@ class ActivitiesManagement extends Component
         } catch (\Throwable $th) {
             report($th);
             session()->flash('error', 'Failed to save activity. Please try again or contact support if the problem persists.');
+
             return;
         }
 
@@ -295,6 +341,7 @@ class ActivitiesManagement extends Component
         } catch (\Throwable $th) {
             report($th);
             session()->flash('error', 'Failed to delete activity. Please try again or contact support if the problem persists.');
+
             return;
         }
 
@@ -304,10 +351,10 @@ class ActivitiesManagement extends Component
     public function render()
     {
         $activities = chopactivities::query()
-            ->with(['source', 'category', 'financialYear', 'items', 'personels'])
+            ->with(['source', 'category', 'financialYear', 'items', 'personels', 'target.objective'])
             ->where(function ($query) {
-                $query->where('planned_activity', 'like', '%' . $this->search . '%')
-                    ->orWhere('description', 'like', '%' . $this->search . '%');
+                $query->where('planned_activity', 'like', '%'.$this->search.'%')
+                    ->orWhere('description', 'like', '%'.$this->search.'%');
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -319,13 +366,24 @@ class ActivitiesManagement extends Component
         $availableItems = chopitems::query()
             ->where('is_active', true)
             ->when($this->itemSearch, function ($query) {
-                $query->where('name', 'like', '%' . $this->itemSearch . '%');
+                $query->where('name', 'like', '%'.$this->itemSearch.'%');
             })
             ->orderBy('name')
             ->limit(20)
             ->get();
 
         $jobTitles = Jobtitle::orderBy('name')->get();
+
+        // Targets for the activity's year, grouped by objective for the form's dropdown
+        $targetOptions = $this->financial_year_id
+            ? ChopTarget::with('objective')
+                ->where('financial_year_id', $this->financial_year_id)
+                ->where(fn ($q) => $q->where('status', 'active')->when($this->target_id, fn ($q) => $q->orWhere('id', $this->target_id)))
+                ->ordered()
+                ->get()
+                ->sortBy(fn ($t) => [$t->objective?->sort_order, $t->objective?->name])
+                ->groupBy(fn ($t) => $t->objective?->label ?? 'No objective')
+            : collect();
 
         return view('livewire.chop.activities-management', [
             'activities' => $activities,
@@ -334,6 +392,7 @@ class ActivitiesManagement extends Component
             'financialYears' => $financialYears,
             'availableItems' => $availableItems,
             'jobTitles' => $jobTitles,
+            'targetOptions' => $targetOptions,
             'activityTypes' => chopactivities::getActivityTypes(),
             'frequencyOptions' => chopactivities::getFrequencyOptions(),
         ]);

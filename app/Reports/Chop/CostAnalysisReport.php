@@ -51,7 +51,7 @@ class CostAnalysisReport
     public function query(): Builder
     {
         return chopactivities::query()
-            ->with(['category', 'financialYear', 'source', 'items.item'])
+            ->with(['category', 'financialYear', 'source', 'items.item', 'target.objective'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('planned_activity', 'like', '%'.$this->search.'%')
@@ -159,31 +159,38 @@ class CostAnalysisReport
 
     /**
      * The official CHOP cost analysis layout: objectives → targets → planned interventions,
-     * each with its costed inputs and a subtotal per source of fund.
-     *
-     * Mapping (no dedicated fields exist yet): objective = category area,
-     * target = the activity's expected outcome.
+     * each with its costed inputs and a subtotal per source of fund. Interventions are
+     * numbered 1…N across the whole plan, as in the official documents. Activities not yet
+     * linked to a target are listed last under "No objective assigned".
      *
      * @return array{objectives: array, by_source: array, grand_total: float}
      */
     public function sheet(Collection $activities): array
     {
+        $activities->loadMissing('target.objective');
+
         $objectives = [];
         $bySource = [];
+        $interventionNumber = 0;
+        $last = "\u{10FFFF}";
 
         $grouped = $activities
             ->sortBy(fn ($a) => [
-                mb_strtolower($a->category?->name ?? "\u{10FFFF}"),
-                mb_strtolower(trim((string) $a->expected_outcome)),
+                $a->target ? 0 : 1,
+                $a->target?->objective?->sort_order ?? PHP_INT_MAX,
+                mb_strtolower($a->target?->objective?->code ?? $last),
+                mb_strtolower($a->target?->objective?->name ?? $last),
+                $a->target?->sort_order ?? PHP_INT_MAX,
+                (string) $a->target?->created_at,
                 (string) $a->created_at,
             ])
-            ->groupBy(fn ($a) => $a->category_id ?? 'none');
+            ->groupBy(fn ($a) => $a->target?->objective_id ?? 'none');
 
         foreach ($grouped->values() as $o => $objectiveActivities) {
             $targets = [];
-            $interventionNumber = 0;
+            $objective = $objectiveActivities->first()->target?->objective;
 
-            foreach ($objectiveActivities->groupBy(fn ($a) => mb_strtolower(trim((string) $a->expected_outcome)))->values() as $t => $targetActivities) {
+            foreach ($objectiveActivities->groupBy(fn ($a) => $a->target_id ?? 'none')->values() as $t => $targetActivities) {
                 $interventions = [];
 
                 foreach ($targetActivities as $activity) {
@@ -211,6 +218,7 @@ class CostAnalysisReport
                     $interventions[] = [
                         'number' => ++$interventionNumber,
                         'name' => $activity->planned_activity,
+                        'priority_area' => $activity->category?->name,
                         'inputs' => $inputs,
                         'total' => $total,
                         'source' => $source,
@@ -218,16 +226,17 @@ class CostAnalysisReport
                     ];
                 }
 
+                $target = $targetActivities->first()->target;
                 $targets[] = [
-                    'number' => $t + 1,
-                    'text' => trim((string) $targetActivities->first()->expected_outcome),
+                    'number' => $target?->code ?: $t + 1,
+                    'text' => $target?->description ?? 'No target assigned',
                     'interventions' => $interventions,
                 ];
             }
 
             $objectives[] = [
-                'number' => $o + 1,
-                'name' => $objectiveActivities->first()->category?->name ?? 'Uncategorised',
+                'number' => $objective?->code ?: $o + 1,
+                'name' => $objective?->name ?? 'No objective assigned',
                 'targets' => $targets,
                 'total' => (float) collect($targets)->flatMap(fn ($t) => $t['interventions'])->sum('total'),
             ];
