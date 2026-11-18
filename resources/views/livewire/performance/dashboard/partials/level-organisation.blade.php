@@ -128,9 +128,9 @@
                     </thead>
                     <tbody>
                         @foreach($o['departments'] as $row)
-                            <tr class="pd-row" wire:key="dept-{{ $row['id'] }}" wire:click="openDepartment('{{ $row['id'] }}')">
+                            <tr class="pd-row" wire:key="dept-{{ $row['id'] }}" wire:click="openDepartment({{ Js::from((string) ($row['id'])) }})">
                                 <td>
-                                    <button type="button" class="btn btn-link p-0 text-start fw-semibold text-decoration-none" wire:click.stop="openDepartment('{{ $row['id'] }}')">{{ $row['department'] }}</button>
+                                    <button type="button" class="btn btn-link p-0 text-start fw-semibold text-decoration-none" wire:click.stop="openDepartment({{ Js::from((string) ($row['id'])) }})">{{ $row['department'] }}</button>
                                     <div class="small text-muted">{{ count($row['goals']) }} goals</div>
                                 </td>
                                 <td class="text-center {{ $row['staff_planned'] < $row['headcount'] ? 'text-warning-emphasis' : '' }}">{{ $row['staff_planned'] }} / {{ $row['headcount'] }}</td>

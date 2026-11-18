@@ -66,8 +66,8 @@
                                 <td>{{ $dependant->address }}</td>
                                 <td>{{ $dependant->is_next_of_kin }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $dependant->id }}')" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $dependant->id }}')">Delete</a>
+                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ Js::from((string) ($dependant->id)) }})" />
+                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($dependant->id)) }})">Delete</a>
                                 </td>
                             </tr>
                             @endforeach

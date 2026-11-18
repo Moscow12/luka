@@ -8,7 +8,7 @@
     <ul class="nav nav-pills mb-3 flex-nowrap overflow-auto">
         @foreach(\App\Livewire\Engineering\MyRequisitions::TABS as $key => $label)
             <li class="nav-item">
-                <button type="button" class="nav-link text-nowrap {{ $tab === $key ? 'active' : '' }}" wire:click="setTab('{{ $key }}')">
+                <button type="button" class="nav-link text-nowrap {{ $tab === $key ? 'active' : '' }}" wire:click="setTab({{ Js::from((string) ($key)) }})">
                     {{ $label }}
                     @if(($counts[$key] ?? 0) > 0)
                         <span class="badge rounded-pill ms-1 {{ $key === 'unattended' ? 'bg-secondary' : 'bg-danger' }} {{ $key === 'feedback' ? 'eng-blink' : '' }}">{{ $counts[$key] }}</span>
@@ -102,7 +102,7 @@
                                     <a href="{{ route('engineering.helpdesk.queue', ['job' => $job->id]) }}" class="btn btn-sm btn-outline-primary">Assign job</a>
                                 @endif
                                 @if($job->isOpen())
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="openNote('{{ $job->id }}')" title="Add a comment"><i class="fa-regular fa-comment"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="openNote({{ Js::from((string) ($job->id)) }})" title="Add a comment"><i class="fa-regular fa-comment"></i></button>
                                 @endif
                                 <a href="{{ route('engineering.jobs.summary', $job) }}" class="btn btn-sm btn-outline-secondary" title="View"><i class="fa-solid fa-eye"></i></a>
                             </td>

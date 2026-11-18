@@ -63,12 +63,12 @@
                                 <td>@include('livewire.hr.leave.partials.status-badge', ['status' => $leave->status])</td>
                                 <td style="min-width: 220px;">@include('livewire.hr.leave.partials.progress-cell', ['leave' => $leave])</td>
                                 <td class="text-end text-nowrap">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="viewProgress('{{ $leave->id }}')" title="View approval progress">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="viewProgress({{ Js::from((string) ($leave->id)) }})" title="View approval progress">
                                         <i class="fa-solid fa-eye me-1"></i>View
                                     </button>
                                     @if($canManage)
-                                        <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $leave->id }}')" />
-                                        <button type="button" class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')" wire:confirm="Delete this leave record? This cannot be undone.">Delete</button>
+                                        <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ Js::from((string) ($leave->id)) }})" />
+                                        <button type="button" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($leave->id)) }})" wire:confirm="Delete this leave record? This cannot be undone.">Delete</button>
                                     @endif
                                 </td>
                             </tr>

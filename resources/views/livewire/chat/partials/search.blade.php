@@ -29,10 +29,10 @@
                         <div class="chat-section-title">People</div>
                         @foreach($results['people'] as $person)
                             <div class="chat-person" wire:key="person-{{ $person['user_id'] }}">
-                                <button type="button" class="d-flex gap-2 align-items-center border-0 bg-transparent p-0 text-start flex-fill chat-truncate" wire:click="openPerson('{{ $person['user_id'] }}')" title="Message {{ $person['name'] }}">
+                                <button type="button" class="d-flex gap-2 align-items-center border-0 bg-transparent p-0 text-start flex-fill chat-truncate" wire:click="openPerson({{ Js::from((string) ($person['user_id'])) }})" title="Message {{ $person['name'] }}">
                                     <span class="chat-avatar" style="width: 38px; height: 38px; font-size: 14px;">
                                         @if($person['avatar'])<img src="{{ $person['avatar'] }}" alt="">@else{{ $person['initials'] }}@endif
-                                        <span class="chat-presence" x-data :class="$store.presence.status('{{ $person['user_id'] }}')"></span>
+                                        <span class="chat-presence" x-data :class="$store.presence.status({{ Js::from((string) ($person['user_id'])) }})"></span>
                                     </span>
                                     <span class="chat-truncate">
                                         <span class="d-block fw-semibold chat-truncate" style="font-size: 0.88rem;">{{ $person['name'] }}</span>
@@ -40,12 +40,12 @@
                                     </span>
                                 </button>
                                 @if($person['department'])
-                                    <button type="button" class="chat-dept-tag flex-shrink-0" wire:click="openDepartmentChannel('{{ $person['department_id'] }}')" title="Open the {{ $person['department'] }} channel">{{ $person['department'] }}</button>
+                                    <button type="button" class="chat-dept-tag flex-shrink-0" wire:click="openDepartmentChannel({{ Js::from((string) ($person['department_id'])) }})" title="Open the {{ $person['department'] }} channel">{{ $person['department'] }}</button>
                                 @endif
                                 <div class="chat-person-actions flex-shrink-0">
-                                    <button type="button" class="chat-icon-btn" wire:click="openPerson('{{ $person['user_id'] }}')" title="Message"><i class="fa-regular fa-comment"></i></button>
+                                    <button type="button" class="chat-icon-btn" wire:click="openPerson({{ Js::from((string) ($person['user_id'])) }})" title="Message"><i class="fa-regular fa-comment"></i></button>
                                     @if(\Illuminate\Support\Facades\Route::has('chat.call.start'))
-                                        <button type="button" class="chat-icon-btn" x-data @click="window.dispatchEvent(new CustomEvent('chat-call', { detail: { userId: '{{ $person['user_id'] }}', type: 'audio' } }))" title="Start call"><i class="fa-solid fa-phone"></i></button>
+                                        <button type="button" class="chat-icon-btn" x-data @click="window.dispatchEvent(new CustomEvent('chat-call', { detail: { userId: {{ Js::from((string) ($person['user_id'])) }}, type: 'audio' } }))" title="Start call"><i class="fa-solid fa-phone"></i></button>
                                     @endif
                                     @if(auth()->user()->isSuperAdmin() || auth()->user()->can('create-tickets'))
                                         <a class="chat-icon-btn" href="{{ route('tickets.create', ['assignee' => $person['employee_id']]) }}" title="Assign a ticket"><i class="fa-solid fa-ticket"></i></a>
@@ -61,7 +61,7 @@
                     @if($results['rooms']->isNotEmpty())
                         <div class="chat-section-title">Channels &amp; groups</div>
                         @foreach($results['rooms'] as $room)
-                            <button type="button" class="chat-room" wire:key="sr-{{ $room->id }}" wire:click="openConversation('{{ $room->id }}')">
+                            <button type="button" class="chat-room" wire:key="sr-{{ $room->id }}" wire:click="openConversation({{ Js::from((string) ($room->id)) }})">
                                 <span class="chat-room-icon"><i class="fa-solid {{ $room->type === 'department' ? 'fa-building' : 'fa-users' }}"></i></span>
                                 <span class="chat-truncate"><span class="d-block chat-room-name">{{ $room->name }}</span><span class="d-block chat-room-preview chat-truncate">{{ $room->topic }}</span></span>
                             </button>

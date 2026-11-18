@@ -147,9 +147,8 @@
                                     </td>
                                     <td>{{ Str::limit($source->description, 30) }}</td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $source->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $source->id }}')"
-                                            onclick="return confirm('Delete this source of funds?')">
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($source->id)) }})" />
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($source->id)) }})" wire:confirm="Delete this source of funds?">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>

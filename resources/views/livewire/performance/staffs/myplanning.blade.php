@@ -37,7 +37,7 @@
                                 @foreach($departmentPlans as $deptPlan)
                                     <button type="button"
                                             class="list-group-item list-group-item-action {{ $selectedDepartmentPlan && $selectedDepartmentPlan->id === $deptPlan->id ? 'active' : '' }}"
-                                            wire:click="selectDepartmentPlan('{{ $deptPlan->id }}')">
+                                            wire:click="selectDepartmentPlan({{ Js::from((string) ($deptPlan->id)) }})">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <strong>{{ $deptPlan->plan_name }}</strong>
@@ -143,19 +143,19 @@
 
                                                 <div class="d-flex gap-2 mb-3">
                                                     @if($plan->status === 'draft')
-                                                        <button class="btn btn-sm btn-outline-primary" wire:click="openPlanModal('edit', '{{ $plan->id }}')">
+                                                        <button class="btn btn-sm btn-outline-primary" wire:click="openPlanModal('edit', {{ Js::from((string) ($plan->id)) }})">
                                                             <i class="fa-solid fa-pencil"></i> Edit Plan
                                                         </button>
-                                                        <button class="btn btn-sm btn-success" wire:click="submitPlanForReview('{{ $plan->id }}')"
+                                                        <button class="btn btn-sm btn-success" wire:click="submitPlanForReview({{ Js::from((string) ($plan->id)) }})"
                                                                 wire:confirm="Submit this plan for review?">
                                                             <i class="fa-solid fa-paper-plane"></i> Submit for Review
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger" wire:click="deletePlan('{{ $plan->id }}')"
+                                                        <button class="btn btn-sm btn-danger" wire:click="deletePlan({{ Js::from((string) ($plan->id)) }})"
                                                                 wire:confirm="Delete this plan and all its goals?">
                                                             <i class="fa-solid fa-trash"></i>
                                                         </button>
                                                     @endif
-                                                    <button class="btn btn-sm btn-primary" wire:click="openItemModal('create', '{{ $plan->id }}')">
+                                                    <button class="btn btn-sm btn-primary" wire:click="openItemModal('create', {{ Js::from((string) ($plan->id)) }})">
                                                         <i class="fa-solid fa-plus"></i> Add Goal
                                                     </button>
                                                 </div>
@@ -200,11 +200,11 @@
                                                                         </td>
                                                                         <td>
                                                                             <button class="btn btn-sm btn-outline-primary"
-                                                                                    wire:click="openItemModal('edit', '{{ $plan->id }}', '{{ $item->id }}')">
+                                                                                    wire:click="openItemModal('edit', {{ Js::from((string) ($plan->id)) }}, {{ Js::from((string) ($item->id)) }})">
                                                                                 <i class="fa-solid fa-pencil"></i>
                                                                             </button>
                                                                             <button class="btn btn-sm btn-outline-danger"
-                                                                                    wire:click="deleteItem('{{ $item->id }}')"
+                                                                                    wire:click="deleteItem({{ Js::from((string) ($item->id)) }})"
                                                                                     wire:confirm="Delete this goal?">
                                                                                 <i class="fa-solid fa-trash"></i>
                                                                             </button>

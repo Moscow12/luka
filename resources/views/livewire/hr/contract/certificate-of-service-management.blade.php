@@ -63,7 +63,7 @@
             <p class="mb-2">The following approved termination requests need certificates of service:</p>
             <div class="d-flex flex-wrap gap-2">
                 @foreach($pendingTerminations as $termination)
-                    <button class="btn btn-sm btn-outline-primary" wire:click="openModalFromRequest('{{ $termination->id }}')">
+                    <button class="btn btn-sm btn-outline-primary" wire:click="openModalFromRequest({{ Js::from((string) ($termination->id)) }})">
                         <i class="fa-solid fa-user me-1"></i>
                         {{ $termination->employee?->getFullName() }}
                     </button>
@@ -172,22 +172,21 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-primary" wire:click="viewCertificate('{{ $certificate->id }}')" title="View">
+                                        <button class="btn btn-sm btn-outline-primary" wire:click="viewCertificate({{ Js::from((string) ($certificate->id)) }})" title="View">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                         @if($certificate->canBeEdited())
-                                            <button class="btn btn-sm btn-outline-warning" wire:click="openModal('{{ $certificate->id }}')" title="Edit">
+                                            <button class="btn btn-sm btn-outline-warning" wire:click="openModal({{ Js::from((string) ($certificate->id)) }})" title="Edit">
                                                 <i class="fa-solid fa-pencil"></i>
                                             </button>
                                         @endif
                                         @if($certificate->canBePrinted())
-                                            <button class="btn btn-sm btn-outline-success" wire:click="openPrintModal('{{ $certificate->id }}')" title="Print">
+                                            <button class="btn btn-sm btn-outline-success" wire:click="openPrintModal({{ Js::from((string) ($certificate->id)) }})" title="Print">
                                                 <i class="fa-solid fa-print"></i>
                                             </button>
                                         @endif
                                         @if(in_array($certificate->status, ['draft', 'pending_approval']))
-                                            <button class="btn btn-sm btn-outline-danger" wire:click="cancelCertificate('{{ $certificate->id }}')"
-                                                    onclick="return confirm('Cancel this certificate?')" title="Cancel">
+                                            <button class="btn btn-sm btn-outline-danger" wire:click="cancelCertificate({{ Js::from((string) ($certificate->id)) }})" wire:confirm="Cancel this certificate?" title="Cancel">
                                                 <i class="fa-solid fa-times"></i>
                                             </button>
                                         @endif
@@ -479,15 +478,15 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closeViewModal">Close</button>
                         @if($viewingCertificate->canBeApproved())
-                            <button type="button" class="btn btn-danger" wire:click="rejectCertificate('{{ $viewingCertificate->id }}')">
+                            <button type="button" class="btn btn-danger" wire:click="rejectCertificate({{ Js::from((string) ($viewingCertificate->id)) }})">
                                 <i class="fa-solid fa-times me-1"></i> Return for Revision
                             </button>
-                            <button type="button" class="btn btn-success" wire:click="approveCertificate('{{ $viewingCertificate->id }}')">
+                            <button type="button" class="btn btn-success" wire:click="approveCertificate({{ Js::from((string) ($viewingCertificate->id)) }})">
                                 <i class="fa-solid fa-check me-1"></i> Approve
                             </button>
                         @endif
                         @if($viewingCertificate->canBePrinted())
-                            <button type="button" class="btn btn-primary" wire:click="openPrintModal('{{ $viewingCertificate->id }}')">
+                            <button type="button" class="btn btn-primary" wire:click="openPrintModal({{ Js::from((string) ($viewingCertificate->id)) }})">
                                 <i class="fa-solid fa-print me-1"></i> Print Certificate
                             </button>
                         @endif
@@ -611,7 +610,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closePrintModal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="printCertificate()" wire:click="markAsPrinted('{{ $viewingCertificate->id }}')">
+                        <button type="button" class="btn btn-primary" data-print="printCertificate" wire:click="markAsPrinted({{ Js::from((string) ($viewingCertificate->id)) }})">
                             <i class="fa-solid fa-print me-1"></i> Print
                         </button>
                     </div>
@@ -619,7 +618,7 @@
             </div>
         </div>
 
-        <script>
+        <script nonce="{{ Vite::cspNonce() }}">
             function printCertificate() {
                 var printContents = document.getElementById('printable-certificate').innerHTML;
                 var originalContents = document.body.innerHTML;
@@ -628,7 +627,6 @@
                     <html>
                     <head>
                         <title>Certificate of Service</title>
-                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
                         <style>
                             @media print {
                                 body { padding: 20px; }

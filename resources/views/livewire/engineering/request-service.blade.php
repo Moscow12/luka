@@ -33,7 +33,7 @@
                         <div class="row g-2">
                             @foreach($sections as $section)
                                 <div class="col-4" wire:key="section-{{ $section->id }}">
-                                    <button type="button" wire:click="selectSection('{{ $section->id }}')"
+                                    <button type="button" wire:click="selectSection({{ Js::from((string) ($section->id)) }})"
                                             class="card eng-tile w-100 h-100 text-center py-3 px-1 {{ $sectionId === $section->id ? 'border-primary border-2 bg-primary-subtle' : '' }}">
                                         <i class="fa-solid {{ $section->icon ?? 'fa-screwdriver-wrench' }} fa-lg mb-2 {{ $sectionId === $section->id ? 'text-primary' : 'text-muted' }}"></i>
                                         <span class="small fw-semibold d-block">{{ $section->name }}</span>
@@ -138,7 +138,7 @@
                                         @if($matches->isNotEmpty())
                                             <div class="list-group mt-1 shadow-sm">
                                                 @foreach($matches as $equipment)
-                                                    <button type="button" class="list-group-item list-group-item-action" wire:click="pickEquipment('{{ $equipment->id }}')" wire:key="match-{{ $equipment->id }}">
+                                                    <button type="button" class="list-group-item list-group-item-action" wire:click="pickEquipment({{ Js::from((string) ($equipment->id)) }})" wire:key="match-{{ $equipment->id }}">
                                                         <span class="fw-semibold">{{ $equipment->name }}</span>
                                                         <span class="text-muted small ms-1">{{ $equipment->code }} · S/N {{ $equipment->serial_number }} · {{ $equipment->room?->name }}</span>
                                                     </button>

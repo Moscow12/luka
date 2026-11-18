@@ -104,7 +104,7 @@
         </div>
     </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 (function () {
     let chart = null;
     const draw = (data) => {

@@ -62,9 +62,8 @@
                                     <td class="name">{{ $district->name }}</td>
                                     <td class="task_type">{{ $district->regions->name ?? 'N/A' }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $district->id }}')">Edit</button>
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $district->id }}')"
-                                            onclick="return confirm('Delete this department?')">Delete</button>
+                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($district->id)) }})">Edit</button>
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($district->id)) }})" wire:confirm="Delete this department?">Delete</button>
                                     </td>
 
                                 </tr>

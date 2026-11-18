@@ -25,6 +25,12 @@ import './dasher/theme-switcher.js';
 // Import Sidebar Toggle
 import './dasher/sidebar-toggle.js';
 
+// CSP-safe replacements for inline on* handlers (data-print, data-alert, ...)
+import './dasher/csp-actions.js';
+
+// Escape toast messages: the toast library renders them with innerHTML
+import './dasher/toast-safety.js';
+
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
 

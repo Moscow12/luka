@@ -3,7 +3,7 @@
 {{-- Quill editor bound to a Livewire property (deferred, like wire:model). Output is sanitised server-side. --}}
 <div wire:ignore {{ $attributes->merge(['class' => 'rich-editor bg-body']) }}
      x-data="{
-        value: $wire.entangle('{{ $model }}'),
+        value: $wire.entangle({{ Js::from((string) ($model)) }}),
         quill: null,
         init() {
             if (typeof Quill === 'undefined') { return; }

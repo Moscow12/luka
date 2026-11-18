@@ -66,9 +66,9 @@
                                         </td>
                                         <td><x-record-status-badge :active="$dept->isActive()" :in-use="isset($usedIds[$dept->id])" /></td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $dept->id }}')">Edit</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($dept->id)) }})">Edit</button>
                                             <x-record-status-actions :active="$dept->isActive()" :in-use="isset($usedIds[$dept->id])"
-                                                toggle="toggleStatus('{{ $dept->id }}')" delete="delete('{{ $dept->id }}')" confirm="Delete this department?" />
+                                                toggle="toggleStatus({{ Js::from((string) ($dept->id)) }})" delete="delete({{ Js::from((string) ($dept->id)) }})" confirm="Delete this department?" />
                                         </td>
                                        
                                     </tr>

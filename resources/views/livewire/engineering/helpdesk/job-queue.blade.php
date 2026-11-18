@@ -124,7 +124,7 @@
                             <td class="text-center text-nowrap">{{ Eng::elapsed($requisition->requested_at) }}</td>
                             <td class="text-end text-nowrap">
                                 @if($job->status === \App\Enums\Engineering\JobStatus::Submitted)
-                                    <button type="button" class="btn btn-sm {{ $requisition->isEmergency() ? 'btn-danger' : 'btn-primary' }}" wire:click="process('{{ $job->id }}')">
+                                    <button type="button" class="btn btn-sm {{ $requisition->isEmergency() ? 'btn-danger' : 'btn-primary' }}" wire:click="process({{ Js::from((string) ($job->id)) }})">
                                         Process requisition
                                     </button>
                                 @else

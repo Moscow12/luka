@@ -184,7 +184,7 @@
                                     <div class="card-footer bg-transparent">
                                         <button
                                             class="btn btn-sm btn-outline-primary w-100"
-                                            wire:click="openDetailsModal('{{ $loan->id }}')"
+                                            wire:click="openDetailsModal({{ Js::from((string) ($loan->id)) }})"
                                         >
                                             <i class="fa-solid fa-eye me-1"></i>
                                             View Details & Payment History

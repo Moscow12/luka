@@ -80,9 +80,9 @@
                                             <div class="d-flex justify-content-end gap-1">
                                                 <input type="number" min="0" max="{{ $outstanding }}" step="any" class="form-control form-control-sm" style="width: 80px;"
                                                        placeholder="{{ $outstanding + 0 }}" wire:model="issueQty.{{ $line->id }}" title="Quantity to issue (blank = all)">
-                                                <button type="button" class="btn btn-sm btn-success" wire:click="issue('{{ $line->id }}')">Issue</button>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="sendToProcurement('{{ $line->id }}')" title="Not in store: procure through a job card">Procure</button>
-                                                <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openReject('{{ $line->id }}')">Reject</button>
+                                                <button type="button" class="btn btn-sm btn-success" wire:click="issue({{ Js::from((string) ($line->id)) }})">Issue</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="sendToProcurement({{ Js::from((string) ($line->id)) }})" title="Not in store: procure through a job card">Procure</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openReject({{ Js::from((string) ($line->id)) }})">Reject</button>
                                             </div>
                                         @elseif($line->issued_at)
                                             <span class="small text-muted">{{ Eng::dt($line->issued_at) }}</span>

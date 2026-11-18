@@ -84,9 +84,8 @@
                                     </td>
                                     <td>{{ Str::limit($deduction->description, 30) }}</td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $deduction->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $deduction->id }}')"
-                                            onclick="return confirm('Delete this deduction?')">
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($deduction->id)) }})" />
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($deduction->id)) }})" wire:confirm="Delete this deduction?">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>

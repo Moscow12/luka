@@ -77,7 +77,7 @@
                                     <td>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" role="switch"
-                                                   wire:click="toggleStatus('{{ $reason->id }}')"
+                                                   wire:click="toggleStatus({{ Js::from((string) ($reason->id)) }})"
                                                    {{ $reason->is_active ? 'checked' : '' }}>
                                             <label class="form-check-label">
                                                 {{ $reason->is_active ? 'Active' : 'Inactive' }}
@@ -85,11 +85,10 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" wire:click="openModal('{{ $reason->id }}')" title="Edit">
+                                        <button class="btn btn-sm btn-outline-primary" wire:click="openModal({{ Js::from((string) ($reason->id)) }})" title="Edit">
                                             <i class="fa-solid fa-pencil"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger" wire:click="delete('{{ $reason->id }}')"
-                                                onclick="return confirm('Are you sure you want to delete this termination reason?')" title="Delete">
+                                        <button class="btn btn-sm btn-outline-danger" wire:click="delete({{ Js::from((string) ($reason->id)) }})" wire:confirm="Are you sure you want to delete this termination reason?" title="Delete">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>

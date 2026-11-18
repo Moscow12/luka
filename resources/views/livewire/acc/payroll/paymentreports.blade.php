@@ -279,29 +279,29 @@
                                     <td>
                                         <div class="d-flex gap-1 justify-content-center">
                                             <button
-                                                wire:click="viewSalarySlip('{{ $payroll->id }}')"
+                                                wire:click="viewSalarySlip({{ Js::from((string) ($payroll->id)) }})"
                                                 class="btn btn-sm btn-primary"
                                                 title="View Salary Slip">
                                                 <i class="fa-solid fa-eye"></i>
                                             </button>
                                             <button
-                                                wire:click="downloadSalarySlipPdf('{{ $payroll->id }}')"
+                                                wire:click="downloadSalarySlipPdf({{ Js::from((string) ($payroll->id)) }})"
                                                 wire:loading.attr="disabled"
-                                                wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"
+                                                wire:target="downloadSalarySlipPdf({{ Js::from((string) ($payroll->id)) }})"
                                                 class="btn btn-sm btn-danger"
                                                 title="Download PDF">
-                                                <i class="fa-solid fa-file-pdf" wire:loading.remove wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"></i>
-                                                <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="downloadSalarySlipPdf('{{ $payroll->id }}')"></i>
+                                                <i class="fa-solid fa-file-pdf" wire:loading.remove wire:target="downloadSalarySlipPdf({{ Js::from((string) ($payroll->id)) }})"></i>
+                                                <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="downloadSalarySlipPdf({{ Js::from((string) ($payroll->id)) }})"></i>
                                             </button>
                                             <button
-                                                wire:click="regeneratePayroll('{{ $payroll->id }}')"
+                                                wire:click="regeneratePayroll({{ Js::from((string) ($payroll->id)) }})"
                                                 wire:confirm="{{ $payroll->status === 'paid' ? 'This payroll is already marked as PAID. Regenerating will recalculate and overwrite its figures using the current contract, allowances and deductions. Continue?' : 'Regenerate this payroll for '.$payroll->employee->first_name.' '.$payroll->employee->last_name.' ('.$payroll->period.')? This will recalculate and overwrite the current figures.' }}"
                                                 wire:loading.attr="disabled"
-                                                wire:target="regeneratePayroll('{{ $payroll->id }}')"
+                                                wire:target="regeneratePayroll({{ Js::from((string) ($payroll->id)) }})"
                                                 class="btn btn-sm btn-warning"
                                                 title="Regenerate Salary">
-                                                <i class="fa-solid fa-rotate" wire:loading.remove wire:target="regeneratePayroll('{{ $payroll->id }}')"></i>
-                                                <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="regeneratePayroll('{{ $payroll->id }}')"></i>
+                                                <i class="fa-solid fa-rotate" wire:loading.remove wire:target="regeneratePayroll({{ Js::from((string) ($payroll->id)) }})"></i>
+                                                <i class="fa-solid fa-spinner fa-spin" wire:loading wire:target="regeneratePayroll({{ Js::from((string) ($payroll->id)) }})"></i>
                                             </button>
                                         </div>
                                     </td>

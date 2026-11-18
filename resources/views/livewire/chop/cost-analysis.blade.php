@@ -166,7 +166,7 @@
                         @forelse ($activities as $activity)
                             <tr class="activity-row">
                                 <td>
-                                    <button class="btn btn-sm btn-link p-0" wire:click="toggleActivity('{{ $activity->id }}')">
+                                    <button class="btn btn-sm btn-link p-0" wire:click="toggleActivity({{ Js::from((string) ($activity->id)) }})">
                                         <i class="fa-solid fa-{{ $expandedActivity === $activity->id ? 'chevron-down' : 'chevron-right' }}"></i>
                                     </button>
                                 </td>

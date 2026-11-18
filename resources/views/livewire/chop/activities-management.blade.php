@@ -149,19 +149,18 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-outline-secondary" wire:click="openModal('view', '{{ $activity->id }}')"
+                                    <button class="btn btn-outline-secondary" wire:click="openModal('view', {{ Js::from((string) ($activity->id)) }})"
                                             title="View Activity">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
                                     @can('manage-chop')
-                                    <button class="btn btn-outline-primary" wire:click="openModal('edit', '{{ $activity->id }}')"
+                                    <button class="btn btn-outline-primary" wire:click="openModal('edit', {{ Js::from((string) ($activity->id)) }})"
                                             title="Edit Activity">
                                         <i class="fa-solid fa-pencil"></i>
                                     </button>
                                     @endcan
                                     @can('manage-chop')
-                                    <button class="btn btn-outline-danger" wire:click="delete('{{ $activity->id }}')"
-                                            onclick="return confirm('Delete this activity and all its items/personnel?')"
+                                    <button class="btn btn-outline-danger" wire:click="delete({{ Js::from((string) ($activity->id)) }})" wire:confirm="Delete this activity and all its items/personnel?"
                                             title="Delete Activity">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
@@ -325,7 +324,7 @@
                                                             <strong>{{ $item->name }}</strong>
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-success"
-                                                                wire:click="addItem('{{ $item->id }}', '{{ $item->name }}')">
+                                                                wire:click="addItem({{ Js::from((string) ($item->id)) }}, {{ Js::from((string) ($item->name)) }})">
                                                             <i class="fa-solid fa-plus"></i> Add
                                                         </button>
                                                     </div>
@@ -445,7 +444,7 @@
                                                     <div class="col-md-4 col-sm-6">
                                                         <div class="form-check p-2 border rounded hover-bg-white">
                                                             <input type="checkbox" class="form-check-input" id="title_{{ $title->id }}"
-                                                                   wire:click="togglePersonnel('{{ $title->id }}')"
+                                                                   wire:click="togglePersonnel({{ Js::from((string) ($title->id)) }})"
                                                                    @if(in_array($title->id, $selectedPersonnel)) checked @endif>
                                                             <label class="form-check-label" for="title_{{ $title->id }}">
                                                                 {{ $title->name }}
@@ -628,7 +627,7 @@
     </style>
 
     @script
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         let choicesInstances = [];
 
         // Initialize Choices.js on searchable selects

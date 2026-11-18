@@ -144,7 +144,7 @@
                             </td>
                             <td class="text-center">
                                 @if ($canManage)
-                                    <button wire:click="toggleActive('{{ $item->id }}')"
+                                    <button wire:click="toggleActive({{ Js::from((string) ($item->id)) }})"
                                         class="badge border-0 bg-{{ $item->is_active ? 'success' : 'danger' }}-subtle text-{{ $item->is_active ? 'success' : 'danger' }}"
                                         style="cursor: pointer;">
                                         {{ $item->is_active ? 'Active' : 'Inactive' }}
@@ -158,14 +158,14 @@
                             <td>
                                 <div class="d-flex gap-1 justify-content-end">
                                     @if ($canManage)
-                                        <button wire:click="editItem('{{ $item->id }}')"
+                                        <button wire:click="editItem({{ Js::from((string) ($item->id)) }})"
                                             class="btn btn-sm btn-ghost-secondary rounded-circle"
                                             title="Edit">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
                                     @endif
                                     @if ($canManage && $item->employee_plan_items_count == 0)
-                                        <button wire:click="deleteItem('{{ $item->id }}')"
+                                        <button wire:click="deleteItem({{ Js::from((string) ($item->id)) }})"
                                             wire:confirm="Are you sure you want to delete this item?"
                                             class="btn btn-sm btn-ghost-danger rounded-circle"
                                             title="Delete">

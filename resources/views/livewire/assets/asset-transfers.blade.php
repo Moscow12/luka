@@ -35,7 +35,7 @@
         <ul class="nav nav-pills">
             @foreach(\App\Livewire\Assets\AssetTransfers::TABS as $key => $label)
                 <li class="nav-item">
-                    <button type="button" class="nav-link {{ $tab === $key ? 'active' : '' }}" wire:click="$set('tab', '{{ $key }}')">
+                    <button type="button" class="nav-link {{ $tab === $key ? 'active' : '' }}" wire:click="$set('tab', {{ Js::from((string) ($key)) }})">
                         {{ $label }}
                         @if($key === 'pending' && $pendingCount)<span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>@endif
                     </button>
@@ -74,11 +74,11 @@
                             <td class="text-end text-nowrap">
                                 @if($transfer->isPending())
                                     @if($canApprove)
-                                        <button type="button" class="btn btn-sm btn-success" wire:click="openDecision('{{ $transfer->id }}', 'approve')"><i class="fa-solid fa-check"></i> Approve</button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openDecision('{{ $transfer->id }}', 'reject')"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                        <button type="button" class="btn btn-sm btn-success" wire:click="openDecision({{ Js::from((string) ($transfer->id)) }}, 'approve')"><i class="fa-solid fa-check"></i> Approve</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openDecision({{ Js::from((string) ($transfer->id)) }}, 'reject')"><i class="fa-solid fa-xmark"></i> Reject</button>
                                     @endif
                                     @if($transfer->requested_by === auth()->id())
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="cancel('{{ $transfer->id }}')" wire:confirm="Cancel this transfer request?">Cancel</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="cancel({{ Js::from((string) ($transfer->id)) }})" wire:confirm="Cancel this transfer request?">Cancel</button>
                                     @endif
                                 @endif
                             </td>

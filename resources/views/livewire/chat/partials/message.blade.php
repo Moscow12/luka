@@ -88,7 +88,7 @@
             <div class="chat-reactions">
                 @foreach($reactions as $emoji => $group)
                     <button type="button" class="chat-reaction {{ $group->contains('user_id', auth()->id()) ? 'mine' : '' }}"
-                            wire:click="react('{{ $m->id }}', '{{ $emoji }}')" title="{{ $group->count() }} reaction{{ $group->count() > 1 ? 's' : '' }}">
+                            wire:click="react({{ Js::from((string) ($m->id)) }}, {{ Js::from((string) ($emoji)) }})" title="{{ $group->count() }} reaction{{ $group->count() > 1 ? 's' : '' }}">
                         <span>{{ $emoji }}</span>@if($group->count() > 1)<span class="small">{{ $group->count() }}</span>@endif
                     </button>
                 @endforeach
@@ -98,17 +98,17 @@
         @unless($m->trashed() || $editingId === $m->id)
             <div class="chat-actions" role="toolbar" aria-label="Message actions">
                 @foreach(['👍', '❤️', '😂'] as $quick)
-                    <button type="button" class="chat-icon-btn" wire:click="react('{{ $m->id }}', '{{ $quick }}')" title="React {{ $quick }}">{{ $quick }}</button>
+                    <button type="button" class="chat-icon-btn" wire:click="react({{ Js::from((string) ($m->id)) }}, {{ Js::from((string) ($quick)) }})" title="React {{ $quick }}">{{ $quick }}</button>
                 @endforeach
-                <button type="button" class="chat-icon-btn" @click="toggleEmoji('{{ $m->id }}')" title="More reactions"><i class="fa-regular fa-face-smile"></i></button>
-                <button type="button" class="chat-icon-btn" wire:click="setReply('{{ $m->id }}')" title="Reply"><i class="fa-solid fa-reply"></i></button>
-                <button type="button" class="chat-icon-btn" @click="copy('{{ $m->id }}')" title="Copy text"><i class="fa-regular fa-copy"></i></button>
+                <button type="button" class="chat-icon-btn" @click="toggleEmoji({{ Js::from((string) ($m->id)) }})" title="More reactions"><i class="fa-regular fa-face-smile"></i></button>
+                <button type="button" class="chat-icon-btn" wire:click="setReply({{ Js::from((string) ($m->id)) }})" title="Reply"><i class="fa-solid fa-reply"></i></button>
+                <button type="button" class="chat-icon-btn" @click="copy({{ Js::from((string) ($m->id)) }})" title="Copy text"><i class="fa-regular fa-copy"></i></button>
                 @if($editable)
-                    <button type="button" class="chat-icon-btn" wire:click="startEdit('{{ $m->id }}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" class="chat-icon-btn" wire:click="deleteMessage('{{ $m->id }}')" wire:confirm="Delete this message for everyone?" title="Delete"><i class="fa-regular fa-trash-can"></i></button>
+                    <button type="button" class="chat-icon-btn" wire:click="startEdit({{ Js::from((string) ($m->id)) }})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="chat-icon-btn" wire:click="deleteMessage({{ Js::from((string) ($m->id)) }})" wire:confirm="Delete this message for everyone?" title="Delete"><i class="fa-regular fa-trash-can"></i></button>
                 @endif
                 @if($canModerate)
-                    <button type="button" class="chat-icon-btn {{ $m->pinned_at ? 'active' : '' }}" wire:click="togglePin('{{ $m->id }}')" title="{{ $m->pinned_at ? 'Unpin' : 'Pin' }}"><i class="fa-solid fa-thumbtack"></i></button>
+                    <button type="button" class="chat-icon-btn {{ $m->pinned_at ? 'active' : '' }}" wire:click="togglePin({{ Js::from((string) ($m->id)) }})" title="{{ $m->pinned_at ? 'Unpin' : 'Pin' }}"><i class="fa-solid fa-thumbtack"></i></button>
                 @endif
             </div>
         @endunless

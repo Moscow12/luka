@@ -2,7 +2,7 @@
 
 <x-engineering.page title="MRV dashboard" :subtitle="'Every requisition raised · '.$periodLabel">
     <x-slot:actions>
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
+        <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
         <button type="button" class="btn btn-outline-success" wire:click="export"><i class="fa-solid fa-file-excel me-1"></i>Export all columns</button>
     </x-slot:actions>
 

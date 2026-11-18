@@ -204,7 +204,7 @@
                             <li class="list-group-item" wire:key="test-{{ $type }}">
                                 <div class="d-flex flex-wrap align-items-center gap-2">
                                     <div class="form-check mb-0 flex-grow-1">
-                                        <input class="form-check-input" type="checkbox" id="test-{{ $type }}" @checked($test?->isSatisfied()) @disabled(! $canWork) wire:click="toggleTest('{{ $type }}')">
+                                        <input class="form-check-input" type="checkbox" id="test-{{ $type }}" @checked($test?->isSatisfied()) @disabled(! $canWork) wire:click="toggleTest({{ Js::from((string) ($type)) }})">
                                         <label class="form-check-label" for="test-{{ $type }}">{{ $label }}</label>
                                         @if($test?->isSatisfied())
                                             <div class="small text-muted">
@@ -217,7 +217,7 @@
                                     @if($canWork && ! $test?->isSatisfied())
                                         <div class="input-group input-group-sm" style="max-width: 320px;">
                                             <input type="text" class="form-control" placeholder="Result / comment" wire:model="testComments.{{ $type }}">
-                                            <button type="button" class="btn btn-outline-secondary" wire:click="markTestNotApplicable('{{ $type }}')" title="Not applicable (comment required)">N/A</button>
+                                            <button type="button" class="btn btn-outline-secondary" wire:click="markTestNotApplicable({{ Js::from((string) ($type)) }})" title="Not applicable (comment required)">N/A</button>
                                         </div>
                                     @endif
                                 </div>
@@ -385,7 +385,7 @@
                 @if($productMatches->isNotEmpty())
                     <div class="list-group mt-1 shadow-sm">
                         @foreach($productMatches as $product)
-                            <button type="button" class="list-group-item list-group-item-action" wire:click="addStockItem('{{ $product->id }}')" wire:key="product-{{ $product->id }}">
+                            <button type="button" class="list-group-item list-group-item-action" wire:click="addStockItem({{ Js::from((string) ($product->id)) }})" wire:key="product-{{ $product->id }}">
                                 {{ $product->name }} <span class="text-muted small">{{ $product->code }} · {{ $product->unit }}</span>
                             </button>
                         @endforeach

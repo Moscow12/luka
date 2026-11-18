@@ -56,9 +56,8 @@
                                         <td class="name">{{ $violation->violation_type }}</td>
                                         <td class="task_type">{{ $violation->description }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $violation->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $violation->id }}')" 
-                                                onclick="return confirm('Delete this violation?')">Delete</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($violation->id)) }})">Edit</button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($violation->id)) }})" wire:confirm="Delete this violation?">Delete</button>
                                         </td>
                                        
                                     </tr>

@@ -2,7 +2,7 @@
 
 <x-engineering.page title="Department executive summary" :subtitle="'Engineering department report · '.$periodLabel">
     <x-slot:actions>
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
+        <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
         <button type="button" class="btn btn-outline-success" wire:click="export"><i class="fa-solid fa-file-excel me-1"></i>Export to Excel</button>
     </x-slot:actions>
 

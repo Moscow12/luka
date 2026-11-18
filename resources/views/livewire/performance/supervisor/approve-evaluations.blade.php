@@ -110,11 +110,11 @@
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-outline-info me-1"
-                                                    wire:click="viewEvaluation('{{ $eval->id }}')">
+                                                    wire:click="viewEvaluation({{ Js::from((string) ($eval->id)) }})">
                                                 <i class="fa-solid fa-eye"></i>
                                             </button>
                                             <button class="btn btn-sm btn-primary"
-                                                    wire:click="openApprovalModal('{{ $eval->id }}')">
+                                                    wire:click="openApprovalModal({{ Js::from((string) ($eval->id)) }})">
                                                 <i class="fa-solid fa-check-circle"></i> Review
                                             </button>
                                         </td>
@@ -372,7 +372,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">Close</button>
-                            <button type="button" class="btn btn-primary" wire:click="closeDetailModal" wire:click="openApprovalModal('{{ $selectedEvaluation->id }}')">
+                            <button type="button" class="btn btn-primary" wire:click="closeDetailModal" wire:click="openApprovalModal({{ Js::from((string) ($selectedEvaluation->id)) }})">
                                 <i class="fa-solid fa-clipboard-check me-1"></i> Review & Approve
                             </button>
                         </div>

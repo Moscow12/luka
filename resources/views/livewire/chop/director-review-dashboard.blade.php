@@ -179,28 +179,28 @@
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <!-- View Button - Always available -->
-                                        <button wire:click="openViewModal('{{ $request->id }}')"
+                                        <button wire:click="openViewModal({{ Js::from((string) ($request->id)) }})"
                                                 class="btn btn-outline-info" title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
 
                                         @if($request->status === 'submitted')
-                                            <button wire:click="setUnderReview('{{ $request->id }}')"
+                                            <button wire:click="setUnderReview({{ Js::from((string) ($request->id)) }})"
                                                     class="btn btn-outline-secondary" title="Mark as Under Review">
                                                 <i class="fa-solid fa-tasks"></i>
                                             </button>
                                         @endif
 
                                         @if(in_array($request->status, ['submitted', 'under_review']))
-                                            <button wire:click="openReviewModal('{{ $request->id }}')"
+                                            <button wire:click="openReviewModal({{ Js::from((string) ($request->id)) }})"
                                                     class="btn btn-outline-primary" title="Review & Approve">
                                                 <i class="fa-solid fa-clipboard-check"></i>
                                             </button>
                                         @endif
 
                                         @if($request->status === 'approved')
-                                            <button onclick="document.getElementById('view-modal-{{ $request->id }}') ? printBudgetRequest() : null"
-                                                    wire:click="openViewModal('{{ $request->id }}')"
+                                            <button data-print="printBudgetRequest" data-print-if-exists="{{ 'view-modal-'.$request->id }}"
+                                                    wire:click="openViewModal({{ Js::from((string) ($request->id)) }})"
                                                     class="btn btn-outline-success" title="Print Approved Budget">
                                                 <i class="fa-solid fa-print"></i>
                                             </button>
@@ -356,16 +356,13 @@
                         <button type="button" class="btn btn-secondary" wire:click="closeReviewModal">
                             <i class="fa-solid fa-times me-2"></i>Cancel
                         </button>
-                        <button type="button" class="btn btn-warning" wire:click="requestRevision"
-                                onclick="return confirm('Request revision from HoD?')">
+                        <button type="button" class="btn btn-warning" wire:click="requestRevision" wire:confirm="Request revision from HoD?">
                             <i class="fa-solid fa-edit me-2"></i>Request Revision
                         </button>
-                        <button type="button" class="btn btn-danger" wire:click="reject"
-                                onclick="return confirm('Are you sure you want to reject this request?')">
+                        <button type="button" class="btn btn-danger" wire:click="reject" wire:confirm="Are you sure you want to reject this request?">
                             <i class="fa-solid fa-times-circle me-2"></i>Reject
                         </button>
-                        <button type="button" class="btn btn-success" wire:click="approve"
-                                onclick="return confirm('Are you sure you want to approve this request?')">
+                        <button type="button" class="btn btn-success" wire:click="approve" wire:confirm="Are you sure you want to approve this request?">
                             <i class="fa-solid fa-check-circle me-2"></i>Approve
                         </button>
                     </div>
@@ -496,7 +493,7 @@
                     </div>
                     <div class="modal-footer no-print">
                         @if($viewingRequest->status === 'approved')
-                            <button type="button" class="btn btn-secondary" onclick="printBudgetRequest()">
+                            <button type="button" class="btn btn-secondary" data-print="printBudgetRequest">
                                 <i class="fa-solid fa-print me-2"></i>Print
                             </button>
                         @endif
@@ -545,7 +542,7 @@
         }
     </style>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         function printBudgetRequest() {
             window.print();
         }

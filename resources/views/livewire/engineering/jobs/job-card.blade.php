@@ -11,7 +11,7 @@
 <x-engineering.page :title="'Engineering job card · '.$card->number" :subtitle="$job->number.' · '.$job->equipmentName()">
     <x-slot:actions>
         <span class="badge fs-6 {{ Lookups::JOB_CARD_STATUS_BADGES[$card->status] }}">{{ Lookups::JOB_CARD_STATUSES[$card->status] }}@if($card->revision > 1) · rev {{ $card->revision }}@endif</span>
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print</button>
+        <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print</button>
         <a href="{{ route('engineering.jobs.summary', $job) }}" class="btn btn-outline-secondary"><i class="fa-solid fa-file-lines me-1"></i>MRV summary</a>
     </x-slot:actions>
 

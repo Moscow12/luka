@@ -59,8 +59,8 @@
                                 @if($displineissue->attachment)
                                     <a href="{{ route('hr.documents.show', ['type' => 'disciplinary', 'id' => $displineissue->id]) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">View attachment</a>
                                 @endif
-                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $displineissue->id }}')" />
-                                <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $displineissue->id }}')">Delete</a>
+                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ Js::from((string) ($displineissue->id)) }})" />
+                                <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($displineissue->id)) }})">Delete</a>
                             </td>
                         </tr>
                         @empty

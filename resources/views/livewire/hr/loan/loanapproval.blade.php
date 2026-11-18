@@ -166,7 +166,7 @@
                                                         @if($loan->status === 'pending')
                                                             <button
                                                                 class="btn btn-sm btn-outline-info"
-                                                                wire:click="markUnderReview('{{ $loan->id }}')"
+                                                                wire:click="markUnderReview({{ Js::from((string) ($loan->id)) }})"
                                                                 title="Mark Under Review"
                                                             >
                                                                 <i class="fa-solid fa-eye"></i>
@@ -174,14 +174,14 @@
                                                         @endif
                                                         <button
                                                             class="btn btn-sm btn-success"
-                                                            wire:click="openApproveModal('{{ $loan->id }}')"
+                                                            wire:click="openApproveModal({{ Js::from((string) ($loan->id)) }})"
                                                             title="Approve"
                                                         >
                                                             <i class="fa-solid fa-check"></i>
                                                         </button>
                                                         <button
                                                             class="btn btn-sm btn-danger"
-                                                            wire:click="openRejectModal('{{ $loan->id }}')"
+                                                            wire:click="openRejectModal({{ Js::from((string) ($loan->id)) }})"
                                                             title="Reject"
                                                         >
                                                             <i class="fa-solid fa-xmark"></i>

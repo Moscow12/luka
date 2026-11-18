@@ -239,7 +239,7 @@
                                         <div class="d-flex gap-1 justify-content-center">
                                             {{-- Edit Button --}}
                                             <button
-                                                wire:click="openModal('edit', '{{ $shift->id }}')"
+                                                wire:click="openModal('edit', {{ Js::from((string) ($shift->id)) }})"
                                                 class="btn btn-sm btn-primary"
                                                 title="Edit">
                                                 <i class="fa-solid fa-edit"></i>
@@ -247,7 +247,7 @@
 
                                             {{-- Toggle Status Button --}}
                                             <button
-                                                wire:click="toggleStatus('{{ $shift->id }}')"
+                                                wire:click="toggleStatus({{ Js::from((string) ($shift->id)) }})"
                                                 class="btn btn-sm btn-{{ $shift->status === 'active' ? 'warning' : 'success' }}"
                                                 title="{{ $shift->status === 'active' ? 'Deactivate' : 'Activate' }}">
                                                 <i class="fa-solid fa-{{ $shift->status === 'active' ? 'ban' : 'check' }}"></i>
@@ -256,7 +256,7 @@
                                             {{-- Set Default Button --}}
                                             @unless($shift->is_default)
                                                 <button
-                                                    wire:click="setDefault('{{ $shift->id }}')"
+                                                    wire:click="setDefault({{ Js::from((string) ($shift->id)) }})"
                                                     wire:confirm="Make this the default shift? It will be used for employees without a roster."
                                                     class="btn btn-sm btn-outline-primary"
                                                     title="Set as default shift">
@@ -266,7 +266,7 @@
 
                                             {{-- Delete Button --}}
                                             <button
-                                                wire:click="delete('{{ $shift->id }}')"
+                                                wire:click="delete({{ Js::from((string) ($shift->id)) }})"
                                                 wire:confirm="Are you sure you want to delete this shift?"
                                                 class="btn btn-sm btn-danger"
                                                 title="Delete">

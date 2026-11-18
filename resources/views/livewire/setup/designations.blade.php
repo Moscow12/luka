@@ -58,9 +58,9 @@
                                         <td class="task_type">{{ $designation->code }}</td>
                                         <td><x-record-status-badge :active="$designation->isActive()" :in-use="isset($usedIds[$designation->id])" /></td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $designation->id }}')">Edit</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($designation->id)) }})">Edit</button>
                                             <x-record-status-actions :active="$designation->isActive()" :in-use="isset($usedIds[$designation->id])"
-                                                toggle="toggleStatus('{{ $designation->id }}')" delete="delete('{{ $designation->id }}')" confirm="Delete this designation?" />
+                                                toggle="toggleStatus({{ Js::from((string) ($designation->id)) }})" delete="delete({{ Js::from((string) ($designation->id)) }})" confirm="Delete this designation?" />
                                         </td>
                                        
                                     </tr>

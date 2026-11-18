@@ -225,13 +225,13 @@
                                                 title="Manage Items">
                                                 <i class="fa-solid fa-list"></i>
                                             </a>
-                                            <button wire:click="editPlan('{{ $plan->id }}')"
+                                            <button wire:click="editPlan({{ Js::from((string) ($plan->id)) }})"
                                                 class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                 title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
                                             @if ($plan->status === 'draft' && !$plan->approved_at)
-                                                <button wire:click="approvePlan('{{ $plan->id }}')"
+                                                <button wire:click="approvePlan({{ Js::from((string) ($plan->id)) }})"
                                                     wire:confirm="Are you sure you want to approve this plan? Total weight must equal 100%."
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
                                                     title="Approve & Activate">
@@ -239,7 +239,7 @@
                                                 </button>
                                             @endif
                                             @if (!$plan->approved_at)
-                                                <button wire:click="deletePlan('{{ $plan->id }}')"
+                                                <button wire:click="deletePlan({{ Js::from((string) ($plan->id)) }})"
                                                     wire:confirm="Are you sure you want to delete this plan?"
                                                     class="btn btn-sm btn-ghost-danger rounded-circle"
                                                     title="Delete">
@@ -452,10 +452,10 @@
                                             <td class="text-center">{{ $item->target_value ?? '-' }} {{ $item->target_unit ?? '' }}</td>
                                             <td>
                                                 <div class="d-flex gap-1 justify-content-end">
-                                                    <button wire:click="editItem('{{ $item->id }}')" class="btn btn-sm btn-ghost-secondary" title="Edit">
+                                                    <button wire:click="editItem({{ Js::from((string) ($item->id)) }})" class="btn btn-sm btn-ghost-secondary" title="Edit">
                                                         <i class="fa-solid fa-pen"></i>
                                                     </button>
-                                                    <button wire:click="deleteItem('{{ $item->id }}')"
+                                                    <button wire:click="deleteItem({{ Js::from((string) ($item->id)) }})"
                                                         wire:confirm="Are you sure you want to delete this item?"
                                                         class="btn btn-sm btn-ghost-danger" title="Delete">
                                                         <i class="fa-solid fa-trash"></i>

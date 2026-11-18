@@ -116,11 +116,11 @@
                                         @if($locked)
                                             <span class="text-muted small"><i class="fa-solid fa-lock"></i> Locked</span>
                                         @else
-                                            <button type="button" class="btn btn-sm btn-success" wire:click="openReview('{{ $entry->id }}', 'verified')">
+                                            <button type="button" class="btn btn-sm btn-success" wire:click="openReview({{ Js::from((string) ($entry->id)) }}, 'verified')">
                                                 <i class="fa-solid fa-{{ $entry->status === 'verified' ? 'pen' : 'check' }} me-1"></i> {{ $entry->status === 'verified' ? 'Edit score' : 'Verify' }}
                                             </button>
                                             @if($entry->status !== 'rejected')
-                                                <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openReview('{{ $entry->id }}', 'rejected')">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openReview({{ Js::from((string) ($entry->id)) }}, 'rejected')">
                                                     <i class="fa-solid fa-times me-1"></i> Reject
                                                 </button>
                                             @endif

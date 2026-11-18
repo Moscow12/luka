@@ -131,23 +131,22 @@
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <!-- View Button - Always available -->
-                                        <button wire:click="openViewModal('{{ $request->id }}')"
+                                        <button wire:click="openViewModal({{ Js::from((string) ($request->id)) }})"
                                                 class="btn btn-outline-info" title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
 
                                         @if($request->canEdit())
-                                            <button wire:click="openModal('edit', '{{ $request->id }}')"
+                                            <button wire:click="openModal('edit', {{ Js::from((string) ($request->id)) }})"
                                                     class="btn btn-outline-primary" title="Edit">
                                                 <i class="fa-solid fa-edit"></i>
                                             </button>
                                         @endif
 
                                         @if($request->canSubmit())
-                                            <button wire:click="submit('{{ $request->id }}')"
+                                            <button wire:click="submit({{ Js::from((string) ($request->id)) }})"
                                                     class="btn btn-outline-success"
-                                                    title="{{ $request->status === 'revision_required' ? 'Re-submit to Director' : 'Submit to Director' }}"
-                                                    onclick="return confirm('{{ $request->status === 'revision_required' ? 'Re-submit this request to the Director?' : 'Submit this request to the Director for review?' }}')">
+                                                    title="{{ $request->status === 'revision_required' ? 'Re-submit to Director' : 'Submit to Director' }}" wire:confirm="{{ $request->status === 'revision_required' ? 'Re-submit this request to the Director?' : 'Submit this request to the Director for review?' }}">
                                                 <i class="fa-solid fa-paper-plane"></i>
                                                 @if($request->status === 'revision_required')
                                                     <span class="d-none d-md-inline ms-1">Re-submit</span>
@@ -157,16 +156,15 @@
 
                                         <!-- Print Button for Approved Requests -->
                                         @if($request->status === 'approved')
-                                            <button wire:click="printRequest('{{ $request->id }}')"
+                                            <button wire:click="printRequest({{ Js::from((string) ($request->id)) }})"
                                                     class="btn btn-outline-secondary" title="Print">
                                                 <i class="fa-solid fa-print"></i>
                                             </button>
                                         @endif
 
                                         @if($request->isDraft())
-                                            <button wire:click="delete('{{ $request->id }}')"
-                                                    class="btn btn-outline-danger" title="Delete"
-                                                    onclick="return confirm('Are you sure you want to delete this request?')">
+                                            <button wire:click="delete({{ Js::from((string) ($request->id)) }})"
+                                                    class="btn btn-outline-danger" title="Delete" wire:confirm="Are you sure you want to delete this request?">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         @endif
@@ -175,7 +173,7 @@
                                             <button type="button" class="btn btn-outline-warning"
                                                     title="View Director Notes"
                                                     data-bs-toggle="tooltip"
-                                                    onclick="alert('Director Notes:\n\n{{ addslashes($request->director_notes) }}')">
+                                                    data-alert="{{ "Director Notes:\n\n".$request->director_notes }}">
                                                 <i class="fa-solid fa-comment"></i>
                                             </button>
                                         @endif
@@ -364,7 +362,7 @@
                                 @endphp
                                 <button type="button"
                                         class="list-group-item list-group-item-action {{ $alreadySelected ? 'disabled' : '' }}"
-                                        wire:click="addItem('{{ $item->id }}', '{{ $item->name }}', '{{ $item->category_id }}', '{{ $item->category->name }}')"
+                                        wire:click="addItem({{ Js::from((string) ($item->id)) }}, {{ Js::from((string) ($item->name)) }}, {{ Js::from((string) ($item->category_id)) }}, {{ Js::from((string) ($item->category->name)) }})"
                                         {{ $alreadySelected ? 'disabled' : '' }}>
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">{{ $item->name }}</h6>
@@ -512,7 +510,7 @@
                     </div>
                     <div class="modal-footer no-print">
                         @if($viewingRequest->status === 'approved')
-                            <button type="button" class="btn btn-secondary" onclick="printBudgetRequest()">
+                            <button type="button" class="btn btn-secondary" data-print="printBudgetRequest">
                                 <i class="fa-solid fa-print me-2"></i>Print
                             </button>
                         @endif
@@ -561,7 +559,7 @@
         }
     </style>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         function printBudgetRequest() {
             window.print();
         }

@@ -17,8 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\UpdateLastSeen::class,
         ]);
+
+        // Browsers POST CSP violation reports without a CSRF token
+        $middleware->validateCsrfTokens(except: ['csp-report']);
 
         $middleware->alias([
             'api.token' => \App\Http\Middleware\VerifyApiToken::class,

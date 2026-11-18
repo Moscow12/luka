@@ -60,8 +60,8 @@
 
                                 </td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $otherdocument->id }}')" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $otherdocument->id }}')">Delete</a>
+                                    <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ Js::from((string) ($otherdocument->id)) }})" />
+                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($otherdocument->id)) }})">Delete</a>
                                 </td>
                             </tr>
                             @endforeach

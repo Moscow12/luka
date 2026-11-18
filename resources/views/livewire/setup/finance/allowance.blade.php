@@ -73,9 +73,8 @@
                                     </td>
                                     <td>{{ Str::limit($allowance->description, 30) }}</td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $allowance->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $allowance->id }}')"
-                                            onclick="return confirm('Delete this allowance?')">
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($allowance->id)) }})" />
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($allowance->id)) }})" wire:confirm="Delete this allowance?">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>

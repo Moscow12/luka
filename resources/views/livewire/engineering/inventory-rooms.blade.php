@@ -50,10 +50,10 @@
                             </td>
                             <td><span class="badge {{ $room->status === 'active' ? 'bg-success' : 'bg-secondary' }}">{{ ucfirst($room->status) }}</span></td>
                             <td class="text-end text-nowrap">
-                                @if($canAssign)<button type="button" class="btn btn-sm btn-outline-primary" wire:click="openAssign('{{ $room->id }}')">Assign staff</button>@endif
+                                @if($canAssign)<button type="button" class="btn btn-sm btn-outline-primary" wire:click="openAssign({{ Js::from((string) ($room->id)) }})">Assign staff</button>@endif
                                 @if($canManage)
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="editRoom('{{ $room->id }}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="toggleRoom('{{ $room->id }}')" title="{{ $room->status === 'active' ? 'Deactivate' : 'Activate' }}">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="editRoom({{ Js::from((string) ($room->id)) }})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="toggleRoom({{ Js::from((string) ($room->id)) }})" title="{{ $room->status === 'active' ? 'Deactivate' : 'Activate' }}">
                                         <i class="fa-solid {{ $room->status === 'active' ? 'fa-ban' : 'fa-check' }}"></i>
                                     </button>
                                 @endif
@@ -79,7 +79,7 @@
                         @foreach($unassignedRooms as $room)
                             <tr wire:key="unassigned-{{ $room->id }}">
                                 <td>{{ $room->label() }}</td>
-                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" wire:click="claimRoom('{{ $room->id }}')">Belongs to this department</button></td>
+                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" wire:click="claimRoom({{ Js::from((string) ($room->id)) }})">Belongs to this department</button></td>
                             </tr>
                         @endforeach
                     </tbody>

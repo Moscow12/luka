@@ -145,12 +145,12 @@
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openCategoryModal('{{ $category->id }}')"
+                                                    wire:click="openCategoryModal({{ Js::from((string) ($category->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-danger"
-                                                    wire:click="confirmDelete('category', '{{ $category->id }}')"
+                                                    wire:click="confirmDelete('category', {{ Js::from((string) ($category->id)) }})"
                                                     title="Delete">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
@@ -304,12 +304,12 @@
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openProductModal('{{ $product->id }}')"
+                                                    wire:click="openProductModal({{ Js::from((string) ($product->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-danger"
-                                                    wire:click="confirmDelete('product', '{{ $product->id }}')"
+                                                    wire:click="confirmDelete('product', {{ Js::from((string) ($product->id)) }})"
                                                     title="Delete">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>

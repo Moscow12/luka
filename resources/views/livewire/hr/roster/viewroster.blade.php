@@ -285,7 +285,7 @@
                                                 <td class="text-center p-0 roster-cell {{ $statusClass }}"
                                                     @if($canEdit)
                                                         style="cursor: pointer; vertical-align: middle;"
-                                                        wire:click="editCell('{{ $employee->id }}', '{{ $dateStr }}')"
+                                                        wire:click="editCell({{ Js::from((string) ($employee->id)) }}, {{ Js::from((string) ($dateStr)) }})"
                                                     @else
                                                         style="vertical-align: middle;"
                                                     @endif
@@ -405,7 +405,7 @@
 
                         @if($editShiftId)
                             <button type="button" class="btn btn-danger me-auto"
-                                wire:click="deleteCell('{{ $employeeId }}', '{{ $dateStr }}')"
+                                wire:click="deleteCell({{ Js::from((string) ($employeeId)) }}, {{ Js::from((string) ($dateStr)) }})"
                                 wire:confirm="Are you sure you want to remove this shift assignment?">
                                 <i class="fa-solid fa-trash"></i> Remove
                             </button>
@@ -414,7 +414,7 @@
                         <button type="button" class="btn btn-secondary" wire:click="closeEditModal">
                             <i class="fa-solid fa-times"></i> Cancel
                         </button>
-                        <button type="button" class="btn btn-primary" wire:click="saveCell('{{ $employeeId }}', '{{ $dateStr }}')">
+                        <button type="button" class="btn btn-primary" wire:click="saveCell({{ Js::from((string) ($employeeId)) }}, {{ Js::from((string) ($dateStr)) }})">
                             <i class="fa-solid fa-save"></i> Save
                         </button>
                     </div>

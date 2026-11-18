@@ -79,14 +79,14 @@
                                             <div class="d-flex gap-2 justify-content-end">
                                                 <button
                                                     class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openModal('edit', '{{ $item->id }}')"
+                                                    wire:click="openModal('edit', {{ Js::from((string) ($item->id)) }})"
                                                     title="Edit"
                                                 >
                                                     <i class="fa-solid fa-pencil"></i>
                                                 </button>
                                                 <button
                                                     class="btn btn-sm btn-outline-danger"
-                                                    wire:click="delete('{{ $item->id }}')"
+                                                    wire:click="delete({{ Js::from((string) ($item->id)) }})"
                                                     wire:confirm="Are you sure you want to delete this loan item?"
                                                     title="Delete"
                                                 >

@@ -19,7 +19,7 @@
         <ul class="nav nav-pills flex-nowrap overflow-auto">
             @foreach(IndividualKpi::TABS as $key => $label)
                 @if($seesOthers || in_array($key, ['scores', 'oxygen']))
-                    <li class="nav-item"><button type="button" class="nav-link text-nowrap {{ $tab === $key ? 'active' : '' }}" wire:click="setTab('{{ $key }}')">{{ $label }}</button></li>
+                    <li class="nav-item"><button type="button" class="nav-link text-nowrap {{ $tab === $key ? 'active' : '' }}" wire:click="setTab({{ Js::from((string) ($key)) }})">{{ $label }}</button></li>
                 @endif
             @endforeach
         </ul>
@@ -54,7 +54,7 @@
                             <tr wire:key="kpi-{{ $row['employee_id'] }}" class="{{ $monthlyEmployeeId === $row['employee_id'] ? 'table-active' : '' }}">
                                 <td class="text-start">{{ $loop->iteration }}</td>
                                 <td class="text-start">
-                                    <a href="#" class="text-decoration-none fw-semibold" wire:click.prevent="showMonth('{{ $row['employee_id'] }}')" title="Show the month">{{ $row['name'] }}</a>
+                                    <a href="#" class="text-decoration-none fw-semibold" wire:click.prevent="showMonth({{ Js::from((string) ($row['employee_id'])) }})" title="Show the month">{{ $row['name'] }}</a>
                                     <div class="small text-muted">{{ $row['section'] }}</div>
                                 </td>
                                 <td>{{ $row['metrics']['assigned'] }}</td>
@@ -155,8 +155,8 @@
                                 <td>
                                     @if($canRecordFiveS)
                                         <div class="input-group input-group-sm">
-                                            <input type="number" min="0" max="100" step="any" class="form-control @error('fiveS.'.$row['employee_id']) is-invalid @enderror" wire:model="fiveS.{{ $row['employee_id'] }}" wire:keydown.enter="saveFiveS('{{ $row['employee_id'] }}')">
-                                            <button type="button" class="btn btn-outline-primary" wire:click="saveFiveS('{{ $row['employee_id'] }}')">Save</button>
+                                            <input type="number" min="0" max="100" step="any" class="form-control @error('fiveS.'.$row['employee_id']) is-invalid @enderror" wire:model="fiveS.{{ $row['employee_id'] }}" wire:keydown.enter="saveFiveS({{ Js::from((string) ($row['employee_id'])) }})">
+                                            <button type="button" class="btn btn-outline-primary" wire:click="saveFiveS({{ Js::from((string) ($row['employee_id'])) }})">Save</button>
                                         </div>
                                     @endif
                                 </td>

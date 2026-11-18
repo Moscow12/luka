@@ -235,7 +235,7 @@
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
                                             <button
-                                                wire:click="viewAllowanceDetails('{{ $employee->id }}')"
+                                                wire:click="viewAllowanceDetails({{ Js::from((string) ($employee->id)) }})"
                                                 class="btn btn-sm btn-ghost-primary rounded-circle"
                                                 title="View Allowance Details">
                                                 <i class="fa-solid fa-eye"></i>

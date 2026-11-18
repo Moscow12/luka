@@ -176,7 +176,7 @@
                                 <span class="text-muted">{{ $log->created_at->format('M d, Y H:i') }}</span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-primary" wire:click="viewDetails('{{ $log->id }}')" title="View Details">
+                                <button class="btn btn-sm btn-primary" wire:click="viewDetails({{ Js::from((string) ($log->id)) }})" title="View Details">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </td>

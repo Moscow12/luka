@@ -7,7 +7,7 @@
             <input type="date" class="form-control rounded-0" wire:model.live="date" style="width: 170px;" title="Any date in the week">
             <button type="button" class="btn btn-outline-secondary" wire:click="shiftWeek(1)" title="Next week"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print</button>
+        <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print</button>
         <button type="button" class="btn btn-outline-success" wire:click="export"><i class="fa-solid fa-file-excel me-1"></i>Export to Excel</button>
     </x-slot:actions>
 

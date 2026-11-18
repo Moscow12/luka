@@ -237,12 +237,12 @@
                                                 </td>
                                                 <td class="py-3 text-center">
                                                     <div class="d-inline-flex gap-2">
-                                                        <button wire:click="openLink('{{ $user->id }}')"
+                                                        <button wire:click="openLink({{ Js::from((string) ($user->id)) }})"
                                                                 class="btn btn-sm btn-outline-primary rounded-pill px-3"
                                                                 title="Link to employee">
                                                             <i class="fa-solid fa-link me-1"></i>Link
                                                         </button>
-                                                        <button wire:click="deleteUser('{{ $user->id }}')"
+                                                        <button wire:click="deleteUser({{ Js::from((string) ($user->id)) }})"
                                                                 wire:confirm="Are you sure you want to delete this user?"
                                                                 class="btn btn-sm btn-outline-danger rounded-pill px-3"
                                                                 title="Delete user">
@@ -467,7 +467,7 @@
                                                             <span class="badge bg-success">
                                                                 <i class="fa-solid fa-check me-1"></i>Linked
                                                             </span>
-                                                            <button wire:click="unlinkEmployee('{{ $candidate['id'] }}')"
+                                                            <button wire:click="unlinkEmployee({{ Js::from((string) ($candidate['id'])) }})"
                                                                     wire:confirm="Unlink this employee from device ID {{ $linkingDeviceId }}?"
                                                                     class="btn btn-sm btn-outline-danger rounded-pill px-3">
                                                                 <i class="fa-solid fa-link-slash me-1"></i>Unlink
@@ -475,13 +475,13 @@
                                                         </div>
                                                     @elseif($candidate['current_fpid'])
                                                         {{-- Linked to a DIFFERENT device id --}}
-                                                        <button wire:click="updateEmployeeFpid('{{ $candidate['id'] }}')"
+                                                        <button wire:click="updateEmployeeFpid({{ Js::from((string) ($candidate['id'])) }})"
                                                                 wire:confirm="This employee is already on FP ID {{ $candidate['current_fpid'] }}. Re-link to {{ $linkingDeviceId }}?"
                                                                 class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                                             <i class="fa-solid fa-rotate me-1"></i>Re-link
                                                         </button>
                                                     @else
-                                                        <button wire:click="updateEmployeeFpid('{{ $candidate['id'] }}')"
+                                                        <button wire:click="updateEmployeeFpid({{ Js::from((string) ($candidate['id'])) }})"
                                                                 wire:confirm="Set this employee's fingerprint ID to {{ $linkingDeviceId }}?"
                                                                 class="btn btn-sm btn-primary rounded-pill px-3">
                                                             <i class="fa-solid fa-link me-1"></i>Update FP ID

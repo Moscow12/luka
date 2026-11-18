@@ -101,14 +101,13 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button wire:click="openViewModal('{{ $requisition->id }}')"
+                                        <button wire:click="openViewModal({{ Js::from((string) ($requisition->id)) }})"
                                                 class="btn btn-outline-info" title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                         @if($requisition->canApprove() && (auth()->user()->isSuperAdmin() || auth()->user()->can('approve-requisition')))
-                                            <button wire:click="approveRequisition('{{ $requisition->id }}')"
-                                                    class="btn btn-outline-success" title="Approve"
-                                                    onclick="return confirm('Approve requisition {{ $requisition->requisition_number }}?')">
+                                            <button wire:click="approveRequisition({{ Js::from((string) ($requisition->id)) }})"
+                                                    class="btn btn-outline-success" title="Approve" wire:confirm="{{ 'Approve requisition '.$requisition->requisition_number.'?' }}">
                                                 <i class="fa-solid fa-check"></i>
                                             </button>
                                         @endif
@@ -317,13 +316,13 @@
                                                     <td class="text-nowrap">
                                                         @if($itemsEditable)
                                                             <button type="button" class="btn btn-sm btn-outline-success mb-1"
-                                                                    wire:click="saveItemStatus('{{ $item->id }}')" title="Save status/remarks">
+                                                                    wire:click="saveItemStatus({{ Js::from((string) ($item->id)) }})" title="Save status/remarks">
                                                                 <i class="fa-solid fa-save"></i>
                                                             </button>
                                                         @endif
                                                         @if($viewingRequisition->isApproved())
                                                             <button type="button" class="btn btn-sm btn-outline-primary"
-                                                                    wire:click="openQuotationModal('{{ $item->id }}')">
+                                                                    wire:click="openQuotationModal({{ Js::from((string) ($item->id)) }})">
                                                                 <i class="fa-solid fa-edit"></i> Fill
                                                             </button>
                                                         @else
@@ -367,8 +366,7 @@
                     <div class="modal-footer">
                         @if($viewingRequisition->canGenerateLpo() && (auth()->user()->isSuperAdmin() || auth()->user()->can('manage-requisition')))
                             <button type="button" class="btn btn-dark"
-                                    wire:click="generateLpo('{{ $viewingRequisition->id }}')"
-                                    onclick="return confirm('Generate a Local Purchase Order for this requisition?')">
+                                    wire:click="generateLpo({{ Js::from((string) ($viewingRequisition->id)) }})" wire:confirm="Generate a Local Purchase Order for this requisition?">
                                 <i class="fa-solid fa-file-contract me-2"></i>Generate LPO
                             </button>
                         @endif

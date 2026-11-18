@@ -29,9 +29,9 @@
                                 <td class="text-center">{{ $category->default_sla_hours ?? '—' }}</td>
                                 <td class="text-center">{{ $category->tickets_count }}</td>
                                 <td class="text-center">
-                                    <button class="badge border-0 {{ $category->status === 'active' ? 'bg-success' : 'bg-secondary' }}" wire:click="toggleStatus('{{ $category->id }}')">{{ ucfirst($category->status) }}</button>
+                                    <button class="badge border-0 {{ $category->status === 'active' ? 'bg-success' : 'bg-secondary' }}" wire:click="toggleStatus({{ Js::from((string) ($category->id)) }})">{{ ucfirst($category->status) }}</button>
                                 </td>
-                                <td class="text-end"><button class="btn btn-sm btn-outline-primary" wire:click="openModal('{{ $category->id }}')"><i class="fa-solid fa-pen"></i></button></td>
+                                <td class="text-end"><button class="btn btn-sm btn-outline-primary" wire:click="openModal({{ Js::from((string) ($category->id)) }})"><i class="fa-solid fa-pen"></i></button></td>
                             </tr>
                         @empty
                             <tr><td colspan="6" class="text-center text-muted py-4">No categories yet.</td></tr>

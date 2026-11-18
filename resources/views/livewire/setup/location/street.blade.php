@@ -64,9 +64,8 @@
                                     <td class="name">{{ $street->name }}</td>
                                     <td class="task_type">{{ $street->ward->name ?? 'N/A' }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $street->id }}')">Edit</button>
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $street->id }}')"
-                                            onclick="return confirm('Delete this streets?')">Delete</button>
+                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($street->id)) }})">Edit</button>
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($street->id)) }})" wire:confirm="Delete this streets?">Delete</button>
                                     </td>
 
                                 </tr>

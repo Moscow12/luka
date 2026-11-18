@@ -518,12 +518,12 @@
                                         <td>{{ $approval->updated_at->format('M d, Y H:i') }}</td>
                                         <td>
                                             @if($approval->status === 'pending')
-                                                <button wire:click="approveContract('{{ $approval->id }}')"
+                                                <button wire:click="approveContract({{ Js::from((string) ($approval->id)) }})"
                                                         class="btn btn-sm btn-success"
                                                         wire:confirm="Are you sure you want to approve this stage?">
                                                     <i class="bi bi-check-circle"></i> Approve
                                                 </button>
-                                                <button wire:click="rejectContract('{{ $approval->id }}')"
+                                                <button wire:click="rejectContract({{ Js::from((string) ($approval->id)) }})"
                                                         class="btn btn-sm btn-danger"
                                                         wire:confirm="Are you sure you want to reject this stage?">
                                                     <i class="bi bi-x-circle"></i> Reject

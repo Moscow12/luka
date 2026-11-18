@@ -63,7 +63,7 @@
                             <td>{{ Eng::name($job->engineer) }}<div class="small text-muted">{{ $job->section->name }} · {{ $job->daysOpen() }} {{ Str::plural('day', $job->daysOpen()) }}</div></td>
                             <td><x-engineering.job-badges :job="$job" /></td>
                             <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="open('{{ $job->id }}')"><i class="fa-solid fa-right-left me-1"></i>Reassign</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="open({{ Js::from((string) ($job->id)) }})"><i class="fa-solid fa-right-left me-1"></i>Reassign</button>
                             </td>
                         </tr>
                     @empty

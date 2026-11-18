@@ -205,7 +205,7 @@
                                     <td>{{ $bracket->description ?? '-' }}</td>
                                     <td>
                                         <button class="btn btn-sm {{ $bracket->is_active ? 'btn-success' : 'btn-outline-secondary' }}"
-                                                wire:click="toggleActive('{{ $bracket->id }}')"
+                                                wire:click="toggleActive({{ Js::from((string) ($bracket->id)) }})"
                                                 title="Click to toggle">
                                             @if($bracket->is_active)
                                                 <i class="fa-solid fa-check"></i> Active
@@ -215,9 +215,9 @@
                                         </button>
                                     </td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $bracket->id }}')" />
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($bracket->id)) }})" />
                                         <button class="btn btn-sm btn-danger"
-                                                wire:click="delete('{{ $bracket->id }}')"
+                                                wire:click="delete({{ Js::from((string) ($bracket->id)) }})"
                                                 wire:confirm="Are you sure you want to delete this tax bracket?">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>

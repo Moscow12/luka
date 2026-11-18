@@ -57,7 +57,7 @@
                                 @foreach($groupMembers as $id => $name)
                                     <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border d-inline-flex align-items-center gap-1 py-2" wire:key="gm-{{ $id }}">
                                         {{ $name }}
-                                        <button type="button" class="btn-close" style="font-size: 0.5rem;" wire:click="removeGroupMember('{{ $id }}')" aria-label="Remove {{ $name }}"></button>
+                                        <button type="button" class="btn-close" style="font-size: 0.5rem;" wire:click="removeGroupMember({{ Js::from((string) ($id)) }})" aria-label="Remove {{ $name }}"></button>
                                     </span>
                                 @endforeach
                             </div>
@@ -67,7 +67,7 @@
                                 @if($groupCandidates->isNotEmpty())
                                     <div class="chat-search-results">
                                         @foreach($groupCandidates as $person)
-                                            <button type="button" class="chat-room" wire:key="gc-{{ $person['user_id'] }}" wire:click="addGroupMember('{{ $person['user_id'] }}')">
+                                            <button type="button" class="chat-room" wire:key="gc-{{ $person['user_id'] }}" wire:click="addGroupMember({{ Js::from((string) ($person['user_id'])) }})">
                                                 <span class="chat-avatar" style="width: 32px; height: 32px; font-size: 12px;">@if($person['avatar'])<img src="{{ $person['avatar'] }}" alt="">@else{{ $person['initials'] }}@endif</span>
                                                 <span class="chat-truncate"><span class="d-block small fw-semibold">{{ $person['name'] }}</span><span class="d-block small text-muted chat-truncate">{{ $person['job_title'] }} · {{ $person['department'] }}</span></span>
                                                 <i class="fa-solid fa-plus ms-auto text-primary"></i>

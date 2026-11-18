@@ -62,9 +62,8 @@
                                     </td>
                                     <td style="width: 20%" class="text-center">
                                         <div class="d-flex gap-2">
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $level->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $level->id }}')"
-                                            onclick="return confirm('Delete this approval level?')">
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($level->id)) }})" />
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($level->id)) }})" wire:confirm="Delete this approval level?">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                         </div>

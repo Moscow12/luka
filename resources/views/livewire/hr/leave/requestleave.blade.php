@@ -44,7 +44,7 @@
                     <ul class="nav nav-pills gap-2" role="tablist" aria-label="Filter by status">
                         @foreach($tabs as $key => $tab)
                             <li class="nav-item">
-                                <button type="button" wire:click="$set('statusFilter', '{{ $key }}')"
+                                <button type="button" wire:click="$set('statusFilter', {{ Js::from((string) ($key)) }})"
                                         class="nav-link {{ $statusFilter === $key ? 'active' : '' }}" role="tab" aria-selected="{{ $statusFilter === $key ? 'true' : 'false' }}">
                                     {{ $tab['label'] }}
                                     <span class="badge {{ $statusFilter === $key ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary-emphasis' }} ms-1">{{ $statusCounts[$key] ?? 0 }}</span>
@@ -81,14 +81,14 @@
                                     <th scope="col" style="width: 50px;">#</th>
                                     <th scope="col">Leave Type</th>
                                     @foreach(['start_date', 'end_date', 'days'] as $field)
-                                        <th scope="col" role="button" class="user-select-none text-nowrap" wire:click="sortBy('{{ $field }}')"
+                                        <th scope="col" role="button" class="user-select-none text-nowrap" wire:click="sortBy({{ Js::from((string) ($field)) }})"
                                             aria-sort="{{ $sortField === $field ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}">
                                             {{ $sortable[$field] }} <i class="fa-solid {{ $sortIcon($field) }} ms-1"></i>
                                         </th>
                                     @endforeach
                                     <th scope="col">Travel To</th>
                                     @foreach(['created_at', 'status'] as $field)
-                                        <th scope="col" role="button" class="user-select-none text-nowrap" wire:click="sortBy('{{ $field }}')"
+                                        <th scope="col" role="button" class="user-select-none text-nowrap" wire:click="sortBy({{ Js::from((string) ($field)) }})"
                                             aria-sort="{{ $sortField === $field ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}">
                                             {{ $sortable[$field] }} <i class="fa-solid {{ $sortIcon($field) }} ms-1"></i>
                                         </th>
@@ -110,12 +110,12 @@
                                     <td>@include('livewire.hr.leave.partials.status-badge', ['status' => $leave->status])</td>
                                     <td style="min-width: 220px;">@include('livewire.hr.leave.partials.progress-cell', ['leave' => $leave])</td>
                                     <td class="text-end text-nowrap">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="viewProgress('{{ $leave->id }}')" title="View approval progress">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="viewProgress({{ Js::from((string) ($leave->id)) }})" title="View approval progress">
                                             <i class="fa-solid fa-eye me-1"></i>View
                                         </button>
                                         @if($leave->editable)
-                                            <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $leave->id }}')" />
-                                            <button type="button" class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')" wire:confirm="Withdraw this leave request?">Delete</button>
+                                            <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ Js::from((string) ($leave->id)) }})" />
+                                            <button type="button" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($leave->id)) }})" wire:confirm="Withdraw this leave request?">Delete</button>
                                         @endif
                                     </td>
                                 </tr>

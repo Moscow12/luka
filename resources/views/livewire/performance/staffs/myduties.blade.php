@@ -240,7 +240,7 @@
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary" wire:click="viewDuty('{{ $duty->id }}')" title="View Details">
+                                                <button class="btn btn-outline-primary" wire:click="viewDuty({{ Js::from((string) ($duty->id)) }})" title="View Details">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </button>
                                                 @if($duty->tickets_count)
@@ -248,7 +248,7 @@
                                                         <i class="fa-solid fa-ticket"></i> {{ $duty->tickets_count }}
                                                     </span>
                                                 @elseif($duty->status !== 'completed')
-                                                    <button class="btn btn-outline-success" wire:click="openUpdateModal('{{ $duty->id }}')" title="Update Progress">
+                                                    <button class="btn btn-outline-success" wire:click="openUpdateModal({{ Js::from((string) ($duty->id)) }})" title="Update Progress">
                                                         <i class="fa-solid fa-edit"></i>
                                                     </button>
                                                 @endif
@@ -497,7 +497,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeDetailModal">Close</button>
                             @if($selectedDuty->status !== 'completed')
-                                <button type="button" class="btn btn-primary" wire:click="closeDetailModal" wire:click.prevent="openUpdateModal('{{ $selectedDuty->id }}')">
+                                <button type="button" class="btn btn-primary" wire:click="closeDetailModal" wire:click.prevent="openUpdateModal({{ Js::from((string) ($selectedDuty->id)) }})">
                                     <i class="fa-solid fa-edit me-1"></i>Update Progress
                                 </button>
                             @endif

@@ -54,7 +54,7 @@
                                             {{ \App\Models\chopactivities::getFrequencyOptions()[$activity->frequence_monitoring] ?? 'N/A' }}
                                         </span>
                                     </p>
-                                    <button class="btn btn-sm btn-primary w-100" wire:click="openReportModal('{{ $activity->id }}')">
+                                    <button class="btn btn-sm btn-primary w-100" wire:click="openReportModal({{ Js::from((string) ($activity->id)) }})">
                                         <i class="fa-solid fa-plus"></i> Submit Report
                                     </button>
                                 </div>
@@ -178,11 +178,10 @@
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
                                         @if(!$report->is_approved)
-                                            <button class="btn btn-outline-primary" wire:click="editReport('{{ $report->id }}')" title="Edit Report">
+                                            <button class="btn btn-outline-primary" wire:click="editReport({{ Js::from((string) ($report->id)) }})" title="Edit Report">
                                                 <i class="fa-solid fa-pencil"></i>
                                             </button>
-                                            <button class="btn btn-outline-danger" wire:click="deleteReport('{{ $report->id }}')"
-                                                    onclick="return confirm('Delete this report?')" title="Delete Report">
+                                            <button class="btn btn-outline-danger" wire:click="deleteReport({{ Js::from((string) ($report->id)) }})" wire:confirm="Delete this report?" title="Delete Report">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         @else

@@ -207,14 +207,14 @@
                                 <div class="card-footer bg-transparent">
                                     <div class="d-flex gap-2 flex-wrap">
                                         <!-- Test Connection Button -->
-                                        <button wire:click="testConnection('{{ $device->id }}')"
+                                        <button wire:click="testConnection({{ Js::from((string) ($device->id)) }})"
                                             wire:loading.attr="disabled"
-                                            wire:target="testConnection('{{ $device->id }}')"
+                                            wire:target="testConnection({{ Js::from((string) ($device->id)) }})"
                                             class="btn btn-sm btn-outline-primary flex-grow-1">
-                                            <span wire:loading.remove wire:target="testConnection('{{ $device->id }}')">
+                                            <span wire:loading.remove wire:target="testConnection({{ Js::from((string) ($device->id)) }})">
                                                 <i class="fa-solid fa-plug me-1"></i> Test
                                             </span>
-                                            <span wire:loading wire:target="testConnection('{{ $device->id }}')">
+                                            <span wire:loading wire:target="testConnection({{ Js::from((string) ($device->id)) }})">
                                                 <span class="spinner-border spinner-border-sm me-1"></span>
                                                 Testing...
                                             </span>
@@ -222,15 +222,15 @@
 
                                         @if($device->device_type === 'anviz')
                                         <!-- Diagnostic Button (Anviz only) -->
-                                        <button wire:click="diagnoseAnvizDevice('{{ $device->id }}')"
+                                        <button wire:click="diagnoseAnvizDevice({{ Js::from((string) ($device->id)) }})"
                                             wire:loading.attr="disabled"
-                                            wire:target="diagnoseAnvizDevice('{{ $device->id }}')"
+                                            wire:target="diagnoseAnvizDevice({{ Js::from((string) ($device->id)) }})"
                                             class="btn btn-sm btn-outline-info flex-grow-1"
                                             title="Run diagnostic to identify device protocol">
-                                            <span wire:loading.remove wire:target="diagnoseAnvizDevice('{{ $device->id }}')">
+                                            <span wire:loading.remove wire:target="diagnoseAnvizDevice({{ Js::from((string) ($device->id)) }})">
                                                 <i class="fa-solid fa-stethoscope me-1"></i> Diagnose
                                             </span>
-                                            <span wire:loading wire:target="diagnoseAnvizDevice('{{ $device->id }}')">
+                                            <span wire:loading wire:target="diagnoseAnvizDevice({{ Js::from((string) ($device->id)) }})">
                                                 <span class="spinner-border spinner-border-sm me-1"></span>
                                                 Scanning...
                                             </span>
@@ -238,14 +238,14 @@
                                         @endif
 
                                         <!-- Sync Button -->
-                                        <button wire:click="syncAttendance('{{ $device->id }}')"
+                                        <button wire:click="syncAttendance({{ Js::from((string) ($device->id)) }})"
                                             wire:loading.attr="disabled"
-                                            wire:target="syncAttendance('{{ $device->id }}')"
+                                            wire:target="syncAttendance({{ Js::from((string) ($device->id)) }})"
                                             class="btn btn-sm btn-outline-success flex-grow-1">
-                                            <span wire:loading.remove wire:target="syncAttendance('{{ $device->id }}')">
+                                            <span wire:loading.remove wire:target="syncAttendance({{ Js::from((string) ($device->id)) }})">
                                                 <i class="fa-solid fa-sync me-1"></i> Sync
                                             </span>
-                                            <span wire:loading wire:target="syncAttendance('{{ $device->id }}')">
+                                            <span wire:loading wire:target="syncAttendance({{ Js::from((string) ($device->id)) }})">
                                                 <span class="spinner-border spinner-border-sm me-1"></span>
                                                 Syncing...
                                             </span>
@@ -258,19 +258,19 @@
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 <li>
-                                                    <a class="dropdown-item" href="#" wire:click.prevent="editDevice('{{ $device->id }}')">
+                                                    <a class="dropdown-item" href="#" wire:click.prevent="editDevice({{ Js::from((string) ($device->id)) }})">
                                                         <i class="fa-solid fa-pen-to-square me-2"></i> Edit
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a class="dropdown-item" href="#" wire:click.prevent="toggleActive('{{ $device->id }}')">
+                                                    <a class="dropdown-item" href="#" wire:click.prevent="toggleActive({{ Js::from((string) ($device->id)) }})">
                                                         <i class="fa-solid fa-{{ $device->is_active ? 'pause' : 'play' }} me-2"></i>
                                                         {{ $device->is_active ? 'Disable' : 'Enable' }}
                                                     </a>
                                                 </li>
                                                 <li>
                                                     <a class="dropdown-item text-warning" href="#"
-                                                        wire:click.prevent="clearDeviceLogs('{{ $device->id }}')"
+                                                        wire:click.prevent="clearDeviceLogs({{ Js::from((string) ($device->id)) }})"
                                                         wire:confirm="This will DELETE all attendance logs from the device. Make sure you have synced first! Continue?">
                                                         <i class="fa-solid fa-broom me-2"></i> Clear Device Logs
                                                     </a>
@@ -278,7 +278,7 @@
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item text-danger" href="#"
-                                                        wire:click.prevent="deleteDevice('{{ $device->id }}')"
+                                                        wire:click.prevent="deleteDevice({{ Js::from((string) ($device->id)) }})"
                                                         wire:confirm="Are you sure you want to delete this device?">
                                                         <i class="fa-solid fa-trash me-2"></i> Delete
                                                     </a>

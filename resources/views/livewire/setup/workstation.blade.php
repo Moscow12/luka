@@ -113,12 +113,12 @@
                         <td class="text-end pe-4">
                             <div class="d-flex justify-content-end gap-2">
                                 <button class="btn btn-sm btn-outline-primary"
-                                    wire:click="openModal('edit', '{{ $station->id }}')"
+                                    wire:click="openModal('edit', {{ Js::from((string) ($station->id)) }})"
                                     title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 <x-record-status-actions :active="$station->isActive()" :in-use="isset($usedIds[$station->id])"
-                                    toggle="toggleStatus('{{ $station->id }}')" delete="confirmDelete('{{ $station->id }}')" :confirm="null" />
+                                    toggle="toggleStatus({{ Js::from((string) ($station->id)) }})" delete="confirmDelete({{ Js::from((string) ($station->id)) }})" :confirm="null" />
                             </div>
                         </td>
                     </tr>

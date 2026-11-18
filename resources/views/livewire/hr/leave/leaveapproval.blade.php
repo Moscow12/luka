@@ -209,19 +209,19 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             <button type="button"
-                                                    wire:click="viewApprovalHistory('{{ $leave->id }}')"
+                                                    wire:click="viewApprovalHistory({{ Js::from((string) ($leave->id)) }})"
                                                     class="btn btn-sm btn-outline-secondary" title="View Approval History">
                                                 <i class="fa-solid fa-eye"></i>
                                             </button>
                                             @if($leave->canUserApprove && in_array(strtolower($leave->status ?? ''), ['awaiting', 'active', 'pending']))
                                             <button type="button"
-                                                    wire:click="openApproveModal('{{ $leave->id }}')"
+                                                    wire:click="openApproveModal({{ Js::from((string) ($leave->id)) }})"
                                                     wire:loading.attr="disabled"
                                                     class="btn btn-sm btn-success">
                                                 <i class="fa-solid fa-check"></i> Approve
                                             </button>
                                             <button type="button"
-                                                    wire:click="openRejectModal('{{ $leave->id }}')"
+                                                    wire:click="openRejectModal({{ Js::from((string) ($leave->id)) }})"
                                                     wire:loading.attr="disabled"
                                                     class="btn btn-sm btn-danger">
                                                 <i class="fa-solid fa-times"></i> Reject

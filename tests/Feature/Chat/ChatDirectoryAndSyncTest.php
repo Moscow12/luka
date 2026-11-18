@@ -87,7 +87,7 @@ it('renders safe markdown with ticket chips', function () {
         ->not->toContain('javascript:')
         ->toContain('class="chat-ticket-ref" data-ticket="HRP-2026-00042"')
         ->toContain('<code>HRP-2026-00001</code>')                 // not linked inside code
-        ->toContain('href="https://example.com" target="_blank" rel="noopener noreferrer"');
+        ->toContain('href="https://example.com" target="_blank" rel="noopener noreferrer nofollow"');
 
     expect(MessageRenderer::isEmojiOnly('🎉🎉'))->toBeTruthy()
         ->and(MessageRenderer::isEmojiOnly('ok 🎉'))->toBeFalsy();

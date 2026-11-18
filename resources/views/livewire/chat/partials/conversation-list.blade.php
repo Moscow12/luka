@@ -37,7 +37,7 @@
         @endphp
         <button type="button" wire:key="room-{{ $conversation->id }}"
                 class="chat-room {{ $activeId === $conversation->id ? 'active' : '' }} {{ $unread ? 'unread' : '' }} {{ $conversation->my_muted === 'yes' ? 'muted' : '' }}"
-                wire:click="{{ $openAction }}('{{ $conversation->id }}')">
+                wire:click="{{ $openAction }}({{ Js::from((string) ($conversation->id)) }})">
             @include('livewire.chat.partials.room-icon', ['conversation' => $conversation, 'size' => 36])
             <span class="flex-fill chat-truncate">
                 <span class="d-flex justify-content-between align-items-baseline gap-2">

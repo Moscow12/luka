@@ -5,7 +5,7 @@
         @if($openJob)
             <button type="button" class="btn btn-outline-secondary" wire:click="close"><i class="fa-solid fa-arrow-left me-1"></i>All reports</button>
             @if($openJob->technicalReport)
-                <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
+                <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
                 <button type="button" class="btn btn-outline-primary" wire:click="downloadWord"><i class="fa-solid fa-file-word me-1"></i>Download for Word</button>
             @endif
         @endif
@@ -84,7 +84,7 @@
                                 <td>{{ $report->job->equipmentName() }} <span class="text-muted small">{{ $report->job->equipment?->code }}</span></td>
                                 <td>{{ $report->job->requisition->department?->name ?? '—' }}</td>
                                 <td>{{ $report->reportedBy?->full_name }}</td>
-                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" wire:click="open('{{ $report->job_id }}')">View report</button></td>
+                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" wire:click="open({{ Js::from((string) ($report->job_id)) }})">View report</button></td>
                             </tr>
                         @empty
                             <x-engineering.empty colspan="7" icon="fa-file-signature" text="No technical reports yet. An engineer writes one from a job." />

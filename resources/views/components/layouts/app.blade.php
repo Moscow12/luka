@@ -59,7 +59,7 @@
     @endauth
 
     <!-- Libs JS -->
-    {!! ToastMagic::scripts() !!}
+    {!! \App\Support\Csp::withNonce(ToastMagic::scripts()) !!}
   </body>
 
 </html>

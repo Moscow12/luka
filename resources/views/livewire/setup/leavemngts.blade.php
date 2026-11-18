@@ -84,9 +84,8 @@
                                     <td class="task_date">{{ $leave->gender }}</td>
                                     <td class="task_priority">{{ $leave->status }}</td>
                                     <td class="text-center">
-                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $leave->id }}')"><i class="fa fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $leave->id }}')"
-                                            onclick="return confirm('Delete this leave?')"><i class="fa fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($leave->id)) }})"><i class="fa fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($leave->id)) }})" wire:confirm="Delete this leave?"><i class="fa fa-trash"></i></button>
                                     </td>
                                 </tr>
                                 @endforeach

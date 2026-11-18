@@ -56,9 +56,8 @@
                                         <td class="name">{{ $religion->name }}</td>
                                         <td class="task_type">{{ $religion->description }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $religion->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $religion->id }}')" 
-                                                onclick="return confirm('Delete this Religion?')">Delete</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($religion->id)) }})">Edit</button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($religion->id)) }})" wire:confirm="Delete this Religion?">Delete</button>
                                         </td>
                                        
                                     </tr>

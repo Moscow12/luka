@@ -236,7 +236,7 @@
                                         <div class="d-flex gap-1 justify-content-end">
                                             @if($employee->activeContract)
                                                 <button
-                                                    wire:click="viewContractDetails('{{ $employee->activeContract->id }}')"
+                                                    wire:click="viewContractDetails({{ Js::from((string) ($employee->activeContract->id)) }})"
                                                     class="btn btn-sm btn-ghost-primary rounded-circle"
                                                     title="View Contract Details">
                                                     <i class="fa-solid fa-eye"></i>

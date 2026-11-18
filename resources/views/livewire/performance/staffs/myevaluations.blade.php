@@ -52,7 +52,7 @@
                                             </span>
                                         </div>
                                         <button class="btn btn-sm btn-primary mt-2 w-100"
-                                                wire:click="openSubmitModal('{{ $plan->id }}')">
+                                                wire:click="openSubmitModal({{ Js::from((string) ($plan->id)) }})">
                                             <i class="fa-solid fa-paper-plane me-1"></i> Submit for Evaluation
                                         </button>
                                     </div>
@@ -148,7 +148,7 @@
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-sm btn-outline-primary"
-                                                            wire:click="viewEvaluation('{{ $eval->id }}')">
+                                                            wire:click="viewEvaluation({{ Js::from((string) ($eval->id)) }})">
                                                         <i class="fa-solid fa-eye"></i> View
                                                     </button>
                                                 </td>

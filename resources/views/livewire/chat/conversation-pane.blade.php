@@ -8,7 +8,7 @@
     $placeholder = $conversation->isDirect() ? 'Message '.($other?->first_name ?? $title) : 'Message '.($conversation->isDepartment() ? '#' : '').$title;
 @endphp
 <div class="d-flex flex-fill position-relative" style="min-height: 0; min-width: 0;"
-     x-data="chatPane('{{ $conversation->id }}')"
+     x-data="chatPane({{ Js::from((string) ($conversation->id)) }})"
      @dragover.prevent="dragging = true" @dragleave.self="dragging = false" @drop.prevent="onDrop($event)">
 
     <section class="chat-pane" aria-label="{{ $title }}">
@@ -29,7 +29,7 @@
                 </div>
                 <div class="small text-muted chat-truncate">
                     @if($other)
-                        <span x-data x-text="$store.presence.status('{{ $other->id }}') === 'offline' ? @js($other->last_seen_at ? 'Last seen '.$other->last_seen_at->diffForHumans() : 'Offline') : $store.presence.label('{{ $other->id }}')"></span>
+                        <span x-data x-text="$store.presence.status({{ Js::from((string) ($other->id)) }}) === 'offline' ? @js($other->last_seen_at ? 'Last seen '.$other->last_seen_at->diffForHumans() : 'Offline') : $store.presence.label({{ Js::from((string) ($other->id)) }})"></span>
                     @else
                         {{ $conversation->members_count }} {{ Str::plural('member', $conversation->members_count) }}@if($conversation->topic) · {{ $conversation->topic }}@endif
                     @endif
@@ -37,8 +37,8 @@
             </button>
 
             @if(\Illuminate\Support\Facades\Route::has('chat.call.start') && $other)
-                <button type="button" class="chat-icon-btn" @click="window.dispatchEvent(new CustomEvent('chat-call', { detail: { userId: '{{ $other->id }}', type: 'audio' } }))" title="Voice call"><i class="fa-solid fa-phone"></i></button>
-                <button type="button" class="chat-icon-btn" @click="window.dispatchEvent(new CustomEvent('chat-call', { detail: { userId: '{{ $other->id }}', type: 'video' } }))" title="Video call"><i class="fa-solid fa-video"></i></button>
+                <button type="button" class="chat-icon-btn" @click="window.dispatchEvent(new CustomEvent('chat-call', { detail: { userId: {{ Js::from((string) ($other->id)) }}, type: 'audio' } }))" title="Voice call"><i class="fa-solid fa-phone"></i></button>
+                <button type="button" class="chat-icon-btn" @click="window.dispatchEvent(new CustomEvent('chat-call', { detail: { userId: {{ Js::from((string) ($other->id)) }}, type: 'video' } }))" title="Video call"><i class="fa-solid fa-video"></i></button>
             @endif
 
             @if($compact)

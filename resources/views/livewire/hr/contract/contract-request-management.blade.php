@@ -183,11 +183,11 @@
                                 </td>
                                 <td>
                                     @if($request->isPending())
-                                        <button class="btn btn-sm btn-primary" wire:click="openReviewModal('{{ $request->id }}')" title="Review Request">
+                                        <button class="btn btn-sm btn-primary" wire:click="openReviewModal({{ Js::from((string) ($request->id)) }})" title="Review Request">
                                             <i class="fa-solid fa-eye me-1"></i> Review
                                         </button>
                                     @else
-                                        <button class="btn btn-sm btn-outline-secondary" wire:click="openReviewModal('{{ $request->id }}')" title="View Details">
+                                        <button class="btn btn-sm btn-outline-secondary" wire:click="openReviewModal({{ Js::from((string) ($request->id)) }})" title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                     @endif

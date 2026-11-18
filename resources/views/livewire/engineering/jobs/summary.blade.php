@@ -9,7 +9,7 @@
 
 <x-engineering.page :title="'Maintenance requisition · '.$job->number" subtitle="Read-only summary">
     <x-slot:actions>
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print / save as PDF</button>
+        <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print / save as PDF</button>
         @if($canOpenWorkspace)
             <a href="{{ route('engineering.jobs.show', $job) }}" class="btn btn-primary"><i class="fa-solid fa-screwdriver-wrench me-1"></i>Open job</a>
         @endif

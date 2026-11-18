@@ -431,7 +431,7 @@
     </div>
 
     <!-- Close modals after a successful bulk update -->
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         document.addEventListener('livewire:init', () => {
             Livewire.on('close-bulk-dept-modal', () => {
                 bootstrap.Modal.getInstance(document.getElementById('bulkDeptModal'))?.hide();

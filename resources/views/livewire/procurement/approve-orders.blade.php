@@ -152,7 +152,7 @@
                                     <td>{{ $orderItem->storeOrder->department->name ?? '-' }}</td>
                                     <td>{{ $orderItem->storeOrder->created_at?->format('M d, Y H:i') ?? '-' }}</td>
                                     <td>
-                                        <button wire:click="openViewModal('{{ $orderItem->store_order_id }}')"
+                                        <button wire:click="openViewModal({{ Js::from((string) ($orderItem->store_order_id)) }})"
                                                 class="btn btn-sm btn-outline-info" title="View Order">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
@@ -220,18 +220,17 @@
                                     @endif
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <button wire:click="openViewModal('{{ $order->id }}')"
+                                            <button wire:click="openViewModal({{ Js::from((string) ($order->id)) }})"
                                                     class="btn btn-outline-info" title="View Details">
                                                 <i class="fa-solid fa-eye"></i>
                                             </button>
 
                                             @if($activeTab === 'pending' && $canFirstApprove)
-                                                <button wire:click="approve('{{ $order->id }}')"
-                                                        class="btn btn-outline-success" title="Move to Review"
-                                                        onclick="return confirm('Move order {{ $order->order_number }} to review?')">
+                                                <button wire:click="approve({{ Js::from((string) ($order->id)) }})"
+                                                        class="btn btn-outline-success" title="Move to Review" wire:confirm="{{ 'Move order '.$order->order_number.' to review?' }}">
                                                     <i class="fa-solid fa-check"></i>
                                                 </button>
-                                                <button wire:click="openRejectModal('{{ $order->id }}')"
+                                                <button wire:click="openRejectModal({{ Js::from((string) ($order->id)) }})"
                                                         class="btn btn-outline-danger" title="Reject">
                                                     <i class="fa-solid fa-xmark"></i>
                                                 </button>
@@ -318,7 +317,7 @@
                                         <div class="list-group mt-1" style="max-height: 200px; overflow-y: auto;">
                                             @forelse($this->assignableEmployees as $employee)
                                                 <button type="button" class="list-group-item list-group-item-action"
-                                                        wire:click="selectAssignEmployee('{{ $employee->id }}')">
+                                                        wire:click="selectAssignEmployee({{ Js::from((string) ($employee->id)) }})">
                                                     {{ $employee->getFullName() }}
                                                     <small class="text-muted">({{ $employee->employee_no }})</small>
                                                 </button>
@@ -543,7 +542,7 @@
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-primary" wire:click="openAssignModal('{{ $viewingOrder->id }}')">
+                        <button type="button" class="btn btn-outline-primary" wire:click="openAssignModal({{ Js::from((string) ($viewingOrder->id)) }})">
                             <i class="fa-solid fa-user-plus me-2"></i>Assign for Remarks
                         </button>
                         @php
@@ -551,12 +550,11 @@
                                 || ($viewingOrder->canFinalApprove() && $canFinalApprove);
                         @endphp
                         @if($canActOnThis)
-                            <button type="button" class="btn btn-danger" wire:click="openRejectModal('{{ $viewingOrder->id }}')">
+                            <button type="button" class="btn btn-danger" wire:click="openRejectModal({{ Js::from((string) ($viewingOrder->id)) }})">
                                 <i class="fa-solid fa-xmark me-2"></i>Reject
                             </button>
                             <button type="button" class="btn btn-success"
-                                    wire:click="approve('{{ $viewingOrder->id }}')"
-                                    onclick="return confirm('{{ $viewingOrder->canFirstApprove() ? 'Move' : 'Approve' }} order {{ $viewingOrder->order_number }}{{ $viewingOrder->canFirstApprove() ? ' to review' : '' }}?')">
+                                    wire:click="approve({{ Js::from((string) ($viewingOrder->id)) }})" wire:confirm="{{ ($viewingOrder->canFirstApprove() ? 'Move' : 'Approve').' order '.$viewingOrder->order_number.($viewingOrder->canFirstApprove() ? ' to review' : '').'?' }}">
                                 <i class="fa-solid fa-check me-2"></i>{{ $viewingOrder->canFirstApprove() ? 'Move to Review' : 'Approve' }}
                             </button>
                         @endif

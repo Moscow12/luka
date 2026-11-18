@@ -62,8 +62,8 @@
                                     </a>
                             </td>
                             <td>
-                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $promotion->id }}')" />
-                                <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $promotion->id }}')">Delete</a>
+                                <x-forms.button-model name="EDIT" wire:click="openModal('edit', {{ Js::from((string) ($promotion->id)) }})" />
+                                <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($promotion->id)) }})">Delete</a>
                             </td>
                         </tr>
                         @empty

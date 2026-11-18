@@ -19,7 +19,7 @@
     <div class="row mb-3 g-3">
         @foreach($buckets as $key => $b)
             <div class="col-6 col-md-3">
-                <button type="button" wire:click="setBucket('{{ $key }}')"
+                <button type="button" wire:click="setBucket({{ Js::from((string) ($key)) }})"
                         class="card w-100 text-start h-100 {{ $bucket === $key ? 'border-primary border-2' : '' }} {{ $key === 'overdue' && $b['count'] > 0 ? 'border-danger' : '' }}">
                     <div class="card-body py-3">
                         <div class="text-muted small">{{ $b['label'] }}</div>
@@ -184,8 +184,8 @@
                                 </td>
                                 <td class="text-end text-nowrap">
                                     @if($scope === 'mine' && $ticket->status === \App\Enums\TicketStatus::Resolved)
-                                        <button class="btn btn-sm btn-success" wire:click="openAction('{{ $ticket->id }}', 'close')" title="Verify and close"><i class="fa-solid fa-check"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" wire:click="openAction('{{ $ticket->id }}', 'reopen')" title="Reopen"><i class="fa-solid fa-rotate-left"></i></button>
+                                        <button class="btn btn-sm btn-success" wire:click="openAction({{ Js::from((string) ($ticket->id)) }}, 'close')" title="Verify and close"><i class="fa-solid fa-check"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" wire:click="openAction({{ Js::from((string) ($ticket->id)) }}, 'reopen')" title="Reopen"><i class="fa-solid fa-rotate-left"></i></button>
                                     @endif
                                     <a href="{{ route('tickets.view', $ticket) }}" class="btn btn-sm btn-outline-primary" title="Open"><i class="fa-solid fa-eye"></i></a>
                                 </td>

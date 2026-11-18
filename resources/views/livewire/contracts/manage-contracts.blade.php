@@ -223,13 +223,13 @@
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 @if($contract->status === 'draft')
-                                                    <button wire:click="initiateApproval('{{ $contract->id }}')"
+                                                    <button wire:click="initiateApproval({{ Js::from((string) ($contract->id)) }})"
                                                             class="btn btn-sm btn-outline-success"
                                                             title="Initiate Approval">
                                                         <i class="bi bi-check2-square"></i>
                                                     </button>
                                                 @endif
-                                                <button wire:click="deleteContract('{{ $contract->id }}')"
+                                                <button wire:click="deleteContract({{ Js::from((string) ($contract->id)) }})"
                                                         wire:confirm="Are you sure you want to delete this contract?"
                                                         class="btn btn-sm btn-outline-danger"
                                                         title="Delete">

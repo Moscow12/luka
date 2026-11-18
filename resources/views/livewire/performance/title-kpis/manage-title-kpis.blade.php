@@ -225,7 +225,7 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <button wire:click="toggleActive('{{ $kpi->id }}')"
+                                        <button wire:click="toggleActive({{ Js::from((string) ($kpi->id)) }})"
                                             class="badge border-0 bg-{{ $kpi->is_active ? 'success' : 'danger' }}-subtle text-{{ $kpi->is_active ? 'success' : 'danger' }}"
                                             style="cursor: pointer;">
                                             {{ $kpi->is_active ? 'Active' : 'Inactive' }}
@@ -233,12 +233,12 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
-                                            <button wire:click="openEditModal('{{ $kpi->id }}')"
+                                            <button wire:click="openEditModal({{ Js::from((string) ($kpi->id)) }})"
                                                 class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                 title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                            <button wire:click="delete('{{ $kpi->id }}')"
+                                            <button wire:click="delete({{ Js::from((string) ($kpi->id)) }})"
                                                 wire:confirm="Are you sure you want to delete this KPI?"
                                                 class="btn btn-sm btn-ghost-danger rounded-circle"
                                                 title="Delete">

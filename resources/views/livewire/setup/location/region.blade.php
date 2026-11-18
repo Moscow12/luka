@@ -53,9 +53,8 @@
                                         <td class="name">{{ $region->name }}</td>
                                         <td class="task_type">{{ $region->code }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $region->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $region->id }}')" 
-                                                onclick="return confirm('Delete this department?')">Delete</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($region->id)) }})">Edit</button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($region->id)) }})" wire:confirm="Delete this department?">Delete</button>
                                         </td>
                                        
                                     </tr>

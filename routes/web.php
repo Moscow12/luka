@@ -88,6 +88,10 @@ Route::group(['prefix' => 'auth'], function () {
     Route::get('logout', \App\Livewire\Auth\Logout::class)->name('logout')->middleware('auth');
 });
 
+// Content-Security-Policy violation reports (logged; see SecurityHeaders middleware)
+Route::post('csp-report', \App\Http\Controllers\CspReportController::class)
+    ->name('csp.report')->middleware('throttle:30,1');
+
 // One-time new-account setup links (sent by SMS/e-mail instead of passwords)
 Route::get('account/setup/{token}', \App\Http\Controllers\AccountSetupLinkController::class)
     ->name('account.setup.link')->middleware(['guest', 'throttle:20,1']);

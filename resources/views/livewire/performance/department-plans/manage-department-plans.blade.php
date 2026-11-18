@@ -233,7 +233,7 @@
                                                 <i class="fa-solid fa-list"></i>
                                             </a>
                                             @if ($canManage && $deptPlan->department_plan_items_count == 0)
-                                                <button wire:click="distributePlanItems('{{ $deptPlan->id }}')"
+                                                <button wire:click="distributePlanItems({{ Js::from((string) ($deptPlan->id)) }})"
                                                     wire:confirm="This will copy all items from the organizational plan. Continue?"
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
                                                     title="Distribute Items from Org Plan">
@@ -241,14 +241,14 @@
                                                 </button>
                                             @endif
                                             @if ($canManage)
-                                                <button wire:click="editPlan('{{ $deptPlan->id }}')"
+                                                <button wire:click="editPlan({{ Js::from((string) ($deptPlan->id)) }})"
                                                     class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                             @endif
                                             @if ($canManage && $deptPlan->status === 'draft')
-                                                <button wire:click="deletePlan('{{ $deptPlan->id }}')"
+                                                <button wire:click="deletePlan({{ Js::from((string) ($deptPlan->id)) }})"
                                                     wire:confirm="Are you sure you want to delete this department plan?"
                                                     class="btn btn-sm btn-ghost-danger rounded-circle"
                                                     title="Delete">

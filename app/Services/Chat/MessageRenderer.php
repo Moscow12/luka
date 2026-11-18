@@ -72,7 +72,23 @@ class MessageRenderer
 
         foreach ($root->getElementsByTagName('a') as $a) {
             $a->setAttribute('target', '_blank');
-            $a->setAttribute('rel', 'noopener noreferrer');
+            $a->setAttribute('rel', 'noopener noreferrer nofollow');
+        }
+
+        // Markdown images would load from any host (tracking pixels, IP leaks): show them as links
+        foreach (iterator_to_array($root->getElementsByTagName('img')) as $img) {
+            $src = (string) $img->getAttribute('src');
+            $label = trim((string) $img->getAttribute('alt')) ?: $src;
+            $replacement = \App\Support\HtmlSanitizer::isSafeHref($src) ? $doc->createElement('a') : $doc->createElement('span');
+
+            if ($replacement->tagName === 'a') {
+                $replacement->setAttribute('href', $src);
+                $replacement->setAttribute('target', '_blank');
+                $replacement->setAttribute('rel', 'noopener noreferrer nofollow');
+            }
+
+            $replacement->appendChild($doc->createTextNode($label));
+            $img->parentNode->replaceChild($replacement, $img);
         }
 
         $this->linkTickets($root, $doc);
@@ -108,6 +124,7 @@ class MessageRenderer
                     $chip->setAttribute('class', 'chat-ticket-ref');
                     $chip->setAttribute('data-ticket', $part);
                     $chip->setAttribute('target', '_blank');
+                    $chip->setAttribute('rel', 'noopener noreferrer');
                     $chip->appendChild($doc->createTextNode($part));
                     $node->insertBefore($chip, $child);
                 } elseif ($part !== '') {

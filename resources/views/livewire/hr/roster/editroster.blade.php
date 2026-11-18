@@ -320,10 +320,10 @@
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group btn-group-sm">
-                                            <button wire:click="openEditModal('{{ $roster->id }}')" class="btn btn-outline-primary" title="Edit">
+                                            <button wire:click="openEditModal({{ Js::from((string) ($roster->id)) }})" class="btn btn-outline-primary" title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                            <button wire:click="openDeleteModal('{{ $roster->id }}')" class="btn btn-outline-danger" title="Delete">
+                                            <button wire:click="openDeleteModal({{ Js::from((string) ($roster->id)) }})" class="btn btn-outline-danger" title="Delete">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </div>

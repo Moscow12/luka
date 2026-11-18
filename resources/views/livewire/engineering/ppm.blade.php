@@ -118,18 +118,18 @@
                             </td>
                             <td class="text-end text-nowrap">
                                 @if($schedule->performer === 'engineering' && ! $instance?->job && $dueState !== PpmSchedule::STATE_SCHEDULED)
-                                    <button type="button" class="btn btn-sm {{ $dueState === PpmSchedule::STATE_OVERDUE ? 'btn-danger' : 'btn-primary' }}" wire:click="generate('{{ $schedule->id }}')" wire:loading.attr="disabled">
+                                    <button type="button" class="btn btn-sm {{ $dueState === PpmSchedule::STATE_OVERDUE ? 'btn-danger' : 'btn-primary' }}" wire:click="generate({{ Js::from((string) ($schedule->id)) }})" wire:loading.attr="disabled">
                                         Generate PPM requisition
                                     </button>
                                 @endif
                                 @if($instance || $schedule->performer === 'user')
-                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openChecklist('{{ $schedule->id }}')">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openChecklist({{ Js::from((string) ($schedule->id)) }})">
                                         <i class="fa-solid fa-list-check me-1"></i>Checklist
                                         @if($instance)<span class="badge bg-secondary ms-1">{{ $instance->entries->filter->isSatisfied()->count() }}/{{ $instance->entries->count() }}</span>@endif
                                     </button>
                                 @endif
                                 @if($canManage)
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="edit('{{ $schedule->id }}')" title="Edit schedule"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="edit({{ Js::from((string) ($schedule->id)) }})" title="Edit schedule"><i class="fa-solid fa-pen"></i></button>
                                 @endif
                             </td>
                         </tr>
@@ -238,7 +238,7 @@
                             @if($equipmentMatches->isNotEmpty())
                                 <div class="list-group mt-1 shadow-sm">
                                     @foreach($equipmentMatches as $match)
-                                        <button type="button" class="list-group-item list-group-item-action" wire:click="pickEquipment('{{ $match->id }}')">{{ $match->name }} <span class="text-muted small">{{ $match->code }}</span></button>
+                                        <button type="button" class="list-group-item list-group-item-action" wire:click="pickEquipment({{ Js::from((string) ($match->id)) }})">{{ $match->name }} <span class="text-muted small">{{ $match->code }}</span></button>
                                     @endforeach
                                 </div>
                             @endif

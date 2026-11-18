@@ -32,11 +32,10 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                                 <button type="button"
                                         wire:key="paginator-{{ $paginator->getPageName() }}-page-{{ $page }}"
                                         class="btn btn-sm d-inline-flex align-items-center justify-content-center border"
-                                        wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')"
+                                        wire:click="gotoPage({{ $page }}, {{ Js::from((string) ($paginator->getPageName())) }})"
                                         x-on:click="{{ $scrollIntoViewJsSnippet }}"
                                         style="width: 36px; height: 36px; background-color: white; border-color: #dee2e6; color: #495057; border-radius: 4px; font-size: 14px; transition: all 0.2s;"
-                                        onmouseover="this.style.backgroundColor='#f8f9fa';"
-                                        onmouseout="this.style.backgroundColor='white';">
+                                        data-hover-bg="#f8f9fa">
                                     {{ $page }}
                                 </button>
                             @endif

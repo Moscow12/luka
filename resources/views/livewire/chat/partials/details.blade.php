@@ -26,7 +26,7 @@
 
     <ul class="nav nav-tabs nav-fill flex-nowrap small px-2 pt-2">
         @foreach(['members' => $conversation->isDirect() ? 'People' : 'Members', 'pinned' => 'Pinned', 'files' => 'Files', 'tickets' => 'Tickets'] as $tab => $label)
-            <li class="nav-item"><button type="button" class="nav-link py-1 px-2 text-nowrap {{ $detailsTab === $tab ? 'active' : '' }}" wire:click="$set('detailsTab', '{{ $tab }}')">{{ $label }}</button></li>
+            <li class="nav-item"><button type="button" class="nav-link py-1 px-2 text-nowrap {{ $detailsTab === $tab ? 'active' : '' }}" wire:click="$set('detailsTab', {{ Js::from((string) ($tab)) }})">{{ $label }}</button></li>
         @endforeach
     </ul>
 
@@ -38,7 +38,7 @@
                     @if(($memberCandidates ?? collect())->isNotEmpty())
                         <div class="chat-search-results">
                             @foreach($memberCandidates as $person)
-                                <button type="button" class="chat-room" wire:key="cand-{{ $person['user_id'] }}" wire:click="addMember('{{ $person['user_id'] }}')">
+                                <button type="button" class="chat-room" wire:key="cand-{{ $person['user_id'] }}" wire:click="addMember({{ Js::from((string) ($person['user_id'])) }})">
                                     <span class="chat-avatar" style="width: 28px; height: 28px; font-size: 11px;">@if($person['avatar'])<img src="{{ $person['avatar'] }}" alt="">@else{{ $person['initials'] }}@endif</span>
                                     <span class="chat-truncate small">{{ $person['name'] }} <span class="text-muted">· {{ $person['department'] }}</span></span>
                                     <i class="fa-solid fa-plus ms-auto text-primary"></i>
@@ -58,8 +58,8 @@
                     </div>
                     @if($canManageMembers && $member->role !== 'owner' && $member->user_id !== auth()->id())
                         <div class="chat-person-actions">
-                            <button type="button" class="chat-icon-btn" wire:click="setRole('{{ $member->user_id }}', '{{ $member->role === 'admin' ? 'member' : 'admin' }}')" title="{{ $member->role === 'admin' ? 'Remove admin' : 'Make admin' }}"><i class="fa-solid fa-user-shield"></i></button>
-                            <button type="button" class="chat-icon-btn" wire:click="removeMember('{{ $member->user_id }}')" wire:confirm="Remove {{ $member->user?->first_name }} from the group?" title="Remove"><i class="fa-solid fa-user-minus"></i></button>
+                            <button type="button" class="chat-icon-btn" wire:click="setRole({{ Js::from((string) ($member->user_id)) }}, {{ Js::from((string) ($member->role === 'admin' ? 'member' : 'admin')) }})" title="{{ $member->role === 'admin' ? 'Remove admin' : 'Make admin' }}"><i class="fa-solid fa-user-shield"></i></button>
+                            <button type="button" class="chat-icon-btn" wire:click="removeMember({{ Js::from((string) ($member->user_id)) }})" wire:confirm="Remove {{ $member->user?->first_name }} from the group?" title="Remove"><i class="fa-solid fa-user-minus"></i></button>
                         </div>
                     @endif
                 </div>

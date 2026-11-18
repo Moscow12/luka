@@ -103,7 +103,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary" wire:click="viewAssignmentDetails('{{ $assignment->id }}')">
+                                    <button class="btn btn-sm btn-primary" wire:click="viewAssignmentDetails({{ Js::from((string) ($assignment->id)) }})">
                                         <i class="fa fa-eye"></i> View
                                     </button>
                                 </td>
@@ -237,25 +237,25 @@
                 <div class="modal-footer">
                     @if($canApprove)
                         @if($selectedAssignment->status === 'pending')
-                            <button class="btn btn-success" wire:click="approveAssignment('{{ $selectedAssignment->id }}')">
+                            <button class="btn btn-success" wire:click="approveAssignment({{ Js::from((string) ($selectedAssignment->id)) }})">
                                 <i class="fa fa-check"></i> Approve
                             </button>
-                            <button class="btn btn-danger" wire:click="openRejectModal('{{ $selectedAssignment->id }}')">
+                            <button class="btn btn-danger" wire:click="openRejectModal({{ Js::from((string) ($selectedAssignment->id)) }})">
                                 <i class="fa fa-times"></i> Reject
                             </button>
                         @endif
                         @if($selectedAssignment->status === 'approved' && $selectedAssignment->start_date <= now())
-                            <button class="btn btn-primary" wire:click="activateAssignment('{{ $selectedAssignment->id }}')">
+                            <button class="btn btn-primary" wire:click="activateAssignment({{ Js::from((string) ($selectedAssignment->id)) }})">
                                 <i class="fa fa-play"></i> Activate
                             </button>
                         @endif
                         @if($selectedAssignment->status === 'active' && $selectedAssignment->end_date < now())
-                            <button class="btn btn-secondary" wire:click="completeAssignment('{{ $selectedAssignment->id }}')">
+                            <button class="btn btn-secondary" wire:click="completeAssignment({{ Js::from((string) ($selectedAssignment->id)) }})">
                                 <i class="fa fa-check-circle"></i> Mark Complete
                             </button>
                         @endif
                         @if(in_array($selectedAssignment->status, ['pending', 'approved']))
-                            <button class="btn btn-warning" wire:click="cancelAssignment('{{ $selectedAssignment->id }}')">
+                            <button class="btn btn-warning" wire:click="cancelAssignment({{ Js::from((string) ($selectedAssignment->id)) }})">
                                 <i class="fa fa-ban"></i> Cancel
                             </button>
                         @endif

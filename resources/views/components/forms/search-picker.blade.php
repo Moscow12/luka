@@ -70,7 +70,7 @@
                        class="form-control @error($errorKey) is-invalid @enderror"
                        placeholder="{{ $disabled && $disabledText ? $disabledText : $searchPlaceholder }}"
                        wire:model.live.debounce.300ms="{{ $searchProp }}"
-                       wire:focus="$set('{{ $dropdownProp }}', true)"
+                       wire:focus="$set({{ Js::from((string) ($dropdownProp)) }}, true)"
                        @if($disabled) disabled @endif
                        autocomplete="off" />
             </div>
@@ -82,7 +82,7 @@
                         <button type="button"
                                 class="dropdown-item d-flex justify-content-between px-3 py-2 text-wrap"
                                 wire:key="picker-{{ $name }}-{{ $item->id ?? $loop->index }}"
-                                wire:click="{{ $selectMethod }}('{{ $item->id ?? $loop->index }}')">
+                                wire:click="{{ $selectMethod }}({{ Js::from((string) ($item->id ?? $loop->index)) }})">
                             <span>{{ $resolveLabel($item) }}</span>
                             @if($resolveSub($item))
                                 <small class="text-muted">{{ $resolveSub($item) }}</small>

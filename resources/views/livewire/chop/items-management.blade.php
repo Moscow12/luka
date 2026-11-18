@@ -95,7 +95,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $item->id }}')" />
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($item->id)) }})" />
                                     </td>
                                 </tr>
                                 @empty

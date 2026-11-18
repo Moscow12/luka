@@ -60,8 +60,8 @@
                                 </td>
                                 <td>{{ $qualification->comments }}</td>
                                 <td>
-                                    <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $qualification->id }}')" />
-                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $qualification->id }}')">Delete</a>
+                                    <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($qualification->id)) }})" />
+                                    <a href="#" class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($qualification->id)) }})">Delete</a>
                                 </td>
                             </tr>
                             @endforeach

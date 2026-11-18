@@ -186,7 +186,7 @@
                                         <small class="text-muted">{{ $row['actual_hours'] }}h worked</small>
                                     </td>
                                     <td class="sticky-col-last text-center bg-white">
-                                        <button wire:click="showScore('{{ $row['user']->fpdevice_id }}')"
+                                        <button wire:click="showScore({{ Js::from((string) ($row['user']->fpdevice_id)) }})"
                                                 wire:loading.attr="disabled"
                                                 class="btn btn-sm btn-info text-white">
                                             <i class="fa-solid fa-chart-simple me-1"></i> SCORE

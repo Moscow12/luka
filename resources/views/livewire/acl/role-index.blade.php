@@ -26,7 +26,7 @@
             <div class="list-group list-group-flush border rounded">
                 @foreach($roles as $role)
                     <div wire:key="role-{{ $role->id }}"
-                         wire:click="selectRole('{{ $role->id }}')"
+                         wire:click="selectRole({{ Js::from((string) ($role->id)) }})"
                          class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ $selectedRoleId === $role->id ? 'active' : '' }}"
                          role="button">
                         <span>{{ $role->name }}</span>

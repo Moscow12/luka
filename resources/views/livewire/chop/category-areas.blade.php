@@ -58,7 +58,7 @@
                                     </td>
                                     <td>{{ Str::limit($category->description, 40) }}</td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $category->id }}')" />
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($category->id)) }})" />
                                         
                                     </td>
                                 </tr>

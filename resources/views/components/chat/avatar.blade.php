@@ -11,6 +11,6 @@
         {{ $initials ?: '?' }}
     @endif
     @if($presence && $user)
-        <span class="chat-presence" x-data :class="$store.presence.status('{{ $user->id }}')" :title="$store.presence.label('{{ $user->id }}')"></span>
+        <span class="chat-presence" x-data :class="$store.presence.status({{ Js::from((string) ($user->id)) }})" :title="$store.presence.label({{ Js::from((string) ($user->id)) }})"></span>
     @endif
 </span>

@@ -91,9 +91,8 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $mapping->id }}')" />
-                                        <button class="btn btn-sm btn-danger" wire:click="delete('{{ $mapping->id }}')"
-                                            onclick="return confirm('Delete this employee mapping?')">
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($mapping->id)) }})" />
+                                        <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($mapping->id)) }})" wire:confirm="Delete this employee mapping?">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                         </div>
@@ -176,7 +175,7 @@
                                 <button type="button"
                                         class="dropdown-item d-flex justify-content-between px-3 py-2 text-wrap"
                                         wire:key="emp-{{ $emp->id }}"
-                                        wire:click="selectEmployee('{{ $emp->id }}')">
+                                        wire:click="selectEmployee({{ Js::from((string) ($emp->id)) }})">
                                     <span>{{ $emp->getFullName() }}</span>
                                     <small class="text-muted">{{ $emp->employee_no }}</small>
                                 </button>

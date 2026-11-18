@@ -51,7 +51,7 @@
                             <td>{{ $row['name'] }}</td>
                             <td class="text-center">
                                 @if($row['open'] > 0)
-                                    <button type="button" class="btn btn-sm {{ $drillEmployeeId === $row['id'] ? 'btn-primary' : 'btn-outline-primary' }} px-3" wire:click="drill('{{ $row['id'] }}')" title="Show open jobs">
+                                    <button type="button" class="btn btn-sm {{ $drillEmployeeId === $row['id'] ? 'btn-primary' : 'btn-outline-primary' }} px-3" wire:click="drill({{ Js::from((string) ($row['id'])) }})" title="Show open jobs">
                                         {{ $row['open'] }}
                                     </button>
                                 @else

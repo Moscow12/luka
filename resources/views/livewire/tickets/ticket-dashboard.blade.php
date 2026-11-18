@@ -137,7 +137,7 @@
         </div>
     </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 (function () {
     const isDark = () => document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const palette = () => isDark()

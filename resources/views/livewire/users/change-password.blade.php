@@ -281,7 +281,7 @@
         }
     </style>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         document.addEventListener('livewire:initialized', () => {
             Livewire.hook('morph.updated', ({ el, component }) => {
                 const progressBar = el.querySelector('.progress-bar[data-width]');

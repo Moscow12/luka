@@ -79,7 +79,7 @@
                                                 <i class="fa-solid fa-check"></i> Yes
                                             </span>
                                         @else
-                                            <button wire:click="setAsCurrent('{{ $financialYear->id }}')"
+                                            <button wire:click="setAsCurrent({{ Js::from((string) ($financialYear->id)) }})"
                                                     class="btn btn-sm btn-outline-primary"
                                                     title="Set as current financial year">
                                                 <i class="fa-solid fa-calendar-check"></i> Set Current
@@ -95,10 +95,9 @@
                                     </td>
                                     <td>{{ Str::limit($financialYear->description, 30) }}</td>
                                     <td>
-                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $financialYear->id }}')" />
+                                        <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($financialYear->id)) }})" />
                                         @if(!$financialYear->is_current)
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $financialYear->id }}')"
-                                                onclick="return confirm('Delete this financial year?')">
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($financialYear->id)) }})" wire:confirm="Delete this financial year?">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         @else

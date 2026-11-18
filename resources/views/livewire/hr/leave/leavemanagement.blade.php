@@ -228,17 +228,17 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1">
-                                            <button wire:click="viewLeaveDetails('{{ $leave->id }}')"
+                                            <button wire:click="viewLeaveDetails({{ Js::from((string) ($leave->id)) }})"
                                                     class="btn btn-sm btn-primary">
                                                 <i class="fa-solid fa-eye"></i>
                                             </button>
                                             @if($canApprove && in_array($leave->status, ['Awaiting', 'pending']))
-                                            <button wire:click="approveLeave('{{ $leave->id }}')"
+                                            <button wire:click="approveLeave({{ Js::from((string) ($leave->id)) }})"
                                                     wire:confirm="Are you sure you want to approve this leave request?"
                                                     class="btn btn-sm btn-success">
                                                 <i class="fa-solid fa-check"></i>
                                             </button>
-                                            <button wire:click="openRejectModal('{{ $leave->id }}')"
+                                            <button wire:click="openRejectModal({{ Js::from((string) ($leave->id)) }})"
                                                     class="btn btn-sm btn-danger">
                                                 <i class="fa-solid fa-times"></i>
                                             </button>
@@ -466,11 +466,11 @@
                 Close
             </button>
             @if($canApprove && in_array($selectedLeave->status, ['Awaiting', 'pending']))
-            <button type="button" class="btn btn-danger" wire:click="openRejectModal('{{ $selectedLeave->id }}')">
+            <button type="button" class="btn btn-danger" wire:click="openRejectModal({{ Js::from((string) ($selectedLeave->id)) }})">
                 <i class="fa-solid fa-times me-1"></i> Reject
             </button>
             <button type="button" class="btn btn-success"
-                    wire:click="approveLeave('{{ $selectedLeave->id }}')"
+                    wire:click="approveLeave({{ Js::from((string) ($selectedLeave->id)) }})"
                     wire:confirm="Are you sure you want to approve this leave request?">
                 <i class="fa-solid fa-check me-1"></i> Approve
             </button>
@@ -518,7 +518,7 @@
     @endif
 
     @script
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         let modalInstance = null;
 
         $wire.on('open-leave-modal', () => {

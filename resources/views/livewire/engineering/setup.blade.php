@@ -3,7 +3,7 @@
 <x-engineering.page title="Engineering setup" subtitle="Sections, staff, problem categories, KPI weights and oxygen plants">
     <ul class="nav nav-pills mb-3 flex-nowrap overflow-auto">
         @foreach(Setup::TABS as $key => $label)
-            <li class="nav-item"><button type="button" class="nav-link text-nowrap {{ $tab === $key ? 'active' : '' }}" wire:click="setTab('{{ $key }}')">{{ $label }}</button></li>
+            <li class="nav-item"><button type="button" class="nav-link text-nowrap {{ $tab === $key ? 'active' : '' }}" wire:click="setTab({{ Js::from((string) ($key)) }})">{{ $label }}</button></li>
         @endforeach
     </ul>
 
@@ -14,7 +14,7 @@
                 <div class="card">
                     <div class="list-group list-group-flush">
                         @foreach($sections as $item)
-                            <button type="button" wire:click="$set('sectionId', '{{ $item->id }}')" wire:key="section-{{ $item->id }}"
+                            <button type="button" wire:click="$set('sectionId', {{ Js::from((string) ($item->id)) }})" wire:key="section-{{ $item->id }}"
                                     class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ $sectionId === $item->id ? 'active' : '' }}">
                                 <span><i class="fa-solid {{ $item->icon ?? 'fa-screwdriver-wrench' }} fa-fw me-2"></i>{{ $item->name }}
                                     @if($item->status !== 'active')<span class="badge bg-secondary ms-1">Inactive</span>@endif
@@ -43,7 +43,7 @@
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">{{ $section->name }} · staff</h6>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="toggleSection('{{ $section->id }}')">{{ $section->status === 'active' ? 'Deactivate section' : 'Activate section' }}</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="toggleSection({{ Js::from((string) ($section->id)) }})">{{ $section->status === 'active' ? 'Deactivate section' : 'Activate section' }}</button>
                         </div>
                         <div class="card-body">
                             <label class="form-label">Add staff to this section</label>
@@ -51,7 +51,7 @@
                             @if($staffMatches->isNotEmpty())
                                 <div class="list-group mt-1 shadow-sm">
                                     @foreach($staffMatches as $employee)
-                                        <button type="button" class="list-group-item list-group-item-action" wire:click="addStaff('{{ $employee->id }}')" wire:key="match-{{ $employee->id }}">
+                                        <button type="button" class="list-group-item list-group-item-action" wire:click="addStaff({{ Js::from((string) ($employee->id)) }})" wire:key="match-{{ $employee->id }}">
                                             {{ Eng::name($employee) }} <span class="text-muted small">{{ $employee->employee_no }} · {{ $employee->department?->name }}</span>
                                         </button>
                                     @endforeach
@@ -73,10 +73,10 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="form-check form-switch d-inline-block mb-0">
-                                                    <input class="form-check-input" type="checkbox" role="switch" @checked($employee->pivot->is_head) wire:click="toggleHead('{{ $employee->id }}')">
+                                                    <input class="form-check-input" type="checkbox" role="switch" @checked($employee->pivot->is_head) wire:click="toggleHead({{ Js::from((string) ($employee->id)) }})">
                                                 </div>
                                             </td>
-                                            <td class="text-end"><button type="button" class="btn btn-sm btn-link text-danger" wire:click="removeStaff('{{ $employee->id }}')" wire:confirm="Remove {{ Eng::name($employee) }} from {{ $section->name }}?"><i class="fa-solid fa-user-minus"></i></button></td>
+                                            <td class="text-end"><button type="button" class="btn btn-sm btn-link text-danger" wire:click="removeStaff({{ Js::from((string) ($employee->id)) }})" wire:confirm="Remove {{ Eng::name($employee) }} from {{ $section->name }}?"><i class="fa-solid fa-user-minus"></i></button></td>
                                         </tr>
                                     @empty
                                         <x-engineering.empty colspan="5" icon="fa-people-group" text="No staff in this section yet." />
@@ -108,7 +108,7 @@
                                         @if($category->isEmergency())<span class="badge bg-danger me-1">{{ $category->emergency_code }}</span>@endif
                                         {{ $category->name }}
                                     </span>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="toggleCategory('{{ $category->id }}')">{{ $category->status === 'active' ? 'Disable' : 'Enable' }}</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="toggleCategory({{ Js::from((string) ($category->id)) }})">{{ $category->status === 'active' ? 'Disable' : 'Enable' }}</button>
                                 </li>
                             @empty
                                 <li class="list-group-item text-muted">No categories for this section yet.</li>
@@ -164,13 +164,13 @@
                             <tr wire:key="plant-{{ $plant->id }}">
                                 <td class="fw-semibold">{{ $plant->name }}</td>
                                 <td>
-                                    <select class="form-select form-select-sm" wire:change="setPlantResponsible('{{ $plant->id }}', $event.target.value)">
+                                    <select class="form-select form-select-sm" wire:change="setPlantResponsible({{ Js::from((string) ($plant->id)) }}, $event.target.value)">
                                         <option value="">Nobody</option>
                                         @foreach($engineers as $engineer)<option value="{{ $engineer->id }}" @selected($plant->responsible_employee_id === $engineer->id)>{{ $engineer->first_name }} {{ $engineer->last_name }}</option>@endforeach
                                     </select>
                                 </td>
                                 <td><span class="badge {{ $plant->status === 'active' ? 'bg-success' : 'bg-secondary' }}">{{ ucfirst($plant->status) }}</span></td>
-                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" wire:click="togglePlant('{{ $plant->id }}')">{{ $plant->status === 'active' ? 'Deactivate' : 'Activate' }}</button></td>
+                                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" wire:click="togglePlant({{ Js::from((string) ($plant->id)) }})">{{ $plant->status === 'active' ? 'Deactivate' : 'Activate' }}</button></td>
                             </tr>
                         @empty
                             <x-engineering.empty colspan="4" icon="fa-lungs" text="No oxygen plants yet." />

@@ -17,7 +17,7 @@
 
     <ul class="nav nav-pills mb-3 flex-nowrap overflow-auto">
         @foreach(\App\Livewire\Engineering\Inventory::VIEWS as $key => $label)
-            <li class="nav-item"><button type="button" class="nav-link text-nowrap {{ $view === $key ? 'active' : '' }}" wire:click="setView('{{ $key }}')">{{ $label }}</button></li>
+            <li class="nav-item"><button type="button" class="nav-link text-nowrap {{ $view === $key ? 'active' : '' }}" wire:click="setView({{ Js::from((string) ($key)) }})">{{ $label }}</button></li>
         @endforeach
     </ul>
 
@@ -75,7 +75,7 @@
                         @php $nextPpm = $item->ppmSchedules->where('status', 'active')->pluck('next_due_at')->filter()->min(); @endphp
                         <tr wire:key="equipment-{{ $item->id }}">
                             <td>{{ $paginated ? $equipment->firstItem() + $loop->index : $loop->iteration }}</td>
-                            <td class="text-nowrap"><a href="#" class="fw-semibold text-decoration-none" wire:click.prevent="showDetail('{{ $item->id }}')">{{ $item->code }}</a></td>
+                            <td class="text-nowrap"><a href="#" class="fw-semibold text-decoration-none" wire:click.prevent="showDetail({{ Js::from((string) ($item->id)) }})">{{ $item->code }}</a></td>
                             <td>{{ $item->name }}<div class="small text-muted">{{ $item->section->name }} · {{ $item->manufacturer }}</div></td>
                             <td>{{ $item->serial_number }}</td>
                             <td>{{ $item->room->name }}<div class="small text-muted">{{ $item->department->name }}</div></td>
@@ -94,13 +94,13 @@
                                 @endif
                             </td>
                             <td class="text-end text-nowrap">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="showDetail('{{ $item->id }}')" title="View"><i class="fa-solid fa-eye"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="showDetail({{ Js::from((string) ($item->id)) }})" title="View"><i class="fa-solid fa-eye"></i></button>
                                 @if($canManage && $view !== 'removed')
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="openStatus('{{ $item->id }}')" title="Change status"><i class="fa-solid fa-heart-pulse"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="edit('{{ $item->id }}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="requestTransfer('{{ $item->id }}')" title="Request transfer to another department / room"><i class="fa-solid fa-right-left"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="openStatus({{ Js::from((string) ($item->id)) }})" title="Change status"><i class="fa-solid fa-heart-pulse"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="edit({{ Js::from((string) ($item->id)) }})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="requestTransfer({{ Js::from((string) ($item->id)) }})" title="Request transfer to another department / room"><i class="fa-solid fa-right-left"></i></button>
                                     @if($canRemove)
-                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openRemove('{{ $item->id }}')" title="Remove from inventory"><i class="fa-solid fa-box-archive"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openRemove({{ Js::from((string) ($item->id)) }})" title="Remove from inventory"><i class="fa-solid fa-box-archive"></i></button>
                                     @endif
                                 @endif
                             </td>
@@ -201,7 +201,7 @@
                                     @error('form.asset_registry_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     <div class="list-group mt-1" style="max-height: 240px; overflow-y: auto;">
                                         @forelse($registryCandidates as $row)
-                                            <button type="button" class="list-group-item list-group-item-action" wire:click="pickRegistry('{{ $row->id }}')" wire:key="reg-{{ $row->id }}">
+                                            <button type="button" class="list-group-item list-group-item-action" wire:click="pickRegistry({{ Js::from((string) ($row->id)) }})" wire:key="reg-{{ $row->id }}">
                                                 <strong>{{ $row->label() }}</strong> <span class="badge bg-light text-dark">{{ $row->assetClass?->name }}</span>
                                                 <div class="small text-muted">{{ $row->department?->name }} · {{ $row->facilityLocation?->label() }} · Qty {{ $row->quantity }} @if($row->serial_number)· S/N {{ $row->serial_number }}@endif</div>
                                             </button>
@@ -306,7 +306,7 @@
                                         @if($editingEquipment?->assetRegistry?->pendingTransfer)<span class="badge bg-warning text-dark ms-1">Transfer pending</span>@endif
                                     </div>
                                     @unless($editingEquipment?->assetRegistry?->pendingTransfer)
-                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="requestTransfer('{{ $editingId }}')"><i class="fa-solid fa-right-left me-1"></i>Request transfer</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="requestTransfer({{ Js::from((string) ($editingId)) }})"><i class="fa-solid fa-right-left me-1"></i>Request transfer</button>
                                     @endunless
                                 </div>
                                 <div class="form-text">Department, room and quantity change only through an approved asset transfer.</div>

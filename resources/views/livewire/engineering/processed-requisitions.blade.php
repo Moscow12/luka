@@ -50,11 +50,11 @@
                                 @if($job->currentFeedback)
                                     <span class="badge {{ $job->currentFeedback->rating->badgeClass() }}">{{ $job->currentFeedback->rating->label() }}</span>
                                 @else
-                                    <button type="button" class="btn btn-sm btn-primary eng-blink" wire:click="openRating('{{ $job->id }}')"><i class="fa-solid fa-star me-1"></i>Rate now</button>
+                                    <button type="button" class="btn btn-sm btn-primary eng-blink" wire:click="openRating({{ Js::from((string) ($job->id)) }})"><i class="fa-solid fa-star me-1"></i>Rate now</button>
                                 @endif
                             </td>
                             <td class="text-end text-nowrap">
-                                <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openRework('{{ $job->id }}')" title="Resend for rework"><i class="fa-solid fa-rotate-left"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" wire:click="openRework({{ Js::from((string) ($job->id)) }})" title="Resend for rework"><i class="fa-solid fa-rotate-left"></i></button>
                                 <a href="{{ route('engineering.jobs.summary', $job) }}" class="btn btn-sm btn-outline-secondary" title="Preview completed MRV"><i class="fa-solid fa-eye"></i></a>
                             </td>
                         </tr>

@@ -156,12 +156,12 @@
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openBuildingModal('{{ $building->id }}')"
+                                                    wire:click="openBuildingModal({{ Js::from((string) ($building->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                                 <x-record-status-actions :active="$building->isActive()" :in-use="isset($usedIds['building'][$building->id])"
-                                                    toggle="toggleStatus('building', '{{ $building->id }}')" delete="confirmDelete('building', '{{ $building->id }}')" :confirm="null" />
+                                                    toggle="toggleStatus('building', {{ Js::from((string) ($building->id)) }})" delete="confirmDelete('building', {{ Js::from((string) ($building->id)) }})" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
@@ -301,12 +301,12 @@
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openLocationModal('{{ $location->id }}')"
+                                                    wire:click="openLocationModal({{ Js::from((string) ($location->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                                 <x-record-status-actions :active="$location->isActive()" :in-use="isset($usedIds['location'][$location->id])"
-                                                    toggle="toggleStatus('location', '{{ $location->id }}')" delete="confirmDelete('location', '{{ $location->id }}')" :confirm="null" />
+                                                    toggle="toggleStatus('location', {{ Js::from((string) ($location->id)) }})" delete="confirmDelete('location', {{ Js::from((string) ($location->id)) }})" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
@@ -443,12 +443,12 @@
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openClassModal('{{ $class->id }}')"
+                                                    wire:click="openClassModal({{ Js::from((string) ($class->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                                 <x-record-status-actions :active="$class->isActive()" :in-use="isset($usedIds['class'][$class->id])"
-                                                    toggle="toggleStatus('class', '{{ $class->id }}')" delete="confirmDelete('class', '{{ $class->id }}')" :confirm="null" />
+                                                    toggle="toggleStatus('class', {{ Js::from((string) ($class->id)) }})" delete="confirmDelete('class', {{ Js::from((string) ($class->id)) }})" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>
@@ -583,12 +583,12 @@
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-2">
                                                 <button class="btn btn-sm btn-outline-primary"
-                                                    wire:click="openAssetModal('{{ $asset->id }}')"
+                                                    wire:click="openAssetModal({{ Js::from((string) ($asset->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                                 <x-record-status-actions :active="$asset->isActive()" :in-use="isset($usedIds['asset'][$asset->id])"
-                                                    toggle="toggleStatus('asset', '{{ $asset->id }}')" delete="confirmDelete('asset', '{{ $asset->id }}')" :confirm="null" />
+                                                    toggle="toggleStatus('asset', {{ Js::from((string) ($asset->id)) }})" delete="confirmDelete('asset', {{ Js::from((string) ($asset->id)) }})" :confirm="null" />
                                             </div>
                                         </td>
                                     </tr>

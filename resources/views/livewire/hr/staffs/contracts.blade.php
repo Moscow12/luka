@@ -103,35 +103,34 @@
                                 <td>
                                     <div class="d-flex flex-row gap-2 justify-content-start">
                                         @if($contract->status !== 'terminated')
-                                            <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', '{{ $contract->id }}')" />
+                                            <x-forms.button-model name="EDIT" :classbtn="'fa-solid fa-pencil'" wire:click="openModal('edit', {{ Js::from((string) ($contract->id)) }})" />
 
                                             @if($contract->status === 'active' && !$contract->isExpired())
-                                                <button wire:click="suspendContract('{{ $contract->id }}')"
+                                                <button wire:click="suspendContract({{ Js::from((string) ($contract->id)) }})"
                                                         class="btn btn-sm btn-warning"
                                                         title="Suspend Contract">
                                                     <i class="fa-solid fa-pause"></i>
                                                 </button>
-                                                <button wire:click="openTerminateModal('{{ $contract->id }}')"
+                                                <button wire:click="openTerminateModal({{ Js::from((string) ($contract->id)) }})"
                                                         class="btn btn-sm btn-dark"
                                                         title="Terminate Contract">
                                                     <i class="fa-solid fa-ban"></i>
                                                 </button>
                                             @elseif($contract->status === 'suspended')
-                                                <button wire:click="activateContract('{{ $contract->id }}')"
+                                                <button wire:click="activateContract({{ Js::from((string) ($contract->id)) }})"
                                                         class="btn btn-sm btn-success"
                                                         title="Activate Contract">
                                                     <i class="fa-solid fa-play"></i>
                                                 </button>
-                                                <button wire:click="openTerminateModal('{{ $contract->id }}')"
+                                                <button wire:click="openTerminateModal({{ Js::from((string) ($contract->id)) }})"
                                                         class="btn btn-sm btn-dark"
                                                         title="Terminate Contract">
                                                     <i class="fa-solid fa-ban"></i>
                                                 </button>
                                             @endif
 
-                                            <button wire:click="delete('{{ $contract->id }}')"
-                                                    class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Are you sure you want to delete this contract?')">
+                                            <button wire:click="delete({{ Js::from((string) ($contract->id)) }})"
+                                                    class="btn btn-sm btn-danger" wire:confirm="Are you sure you want to delete this contract?">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         @else

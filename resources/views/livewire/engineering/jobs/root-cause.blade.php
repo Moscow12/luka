@@ -7,7 +7,7 @@
 <x-engineering.page :title="'Root cause analysis (5-Why)'.($rca ? ' · '.$rca->number : '')" :subtitle="$job->number.' · '.$job->equipmentName()">
     <x-slot:actions>
         @if($rca)<span class="badge fs-6 {{ $rca->status === 'draft' ? 'bg-secondary' : ($rca->status === 'completed' ? 'bg-success' : 'bg-dark') }}">{{ ucfirst($rca->status) }}</span>@endif
-        <button type="button" class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
+        <button type="button" class="btn btn-outline-secondary" data-print><i class="fa-solid fa-print me-1"></i>Print / PDF</button>
         <a href="{{ route('engineering.jobs.show', $job) }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i>Back to job</a>
     </x-slot:actions>
 

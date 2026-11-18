@@ -172,13 +172,13 @@
                         <td class="text-end pe-4">
                             <div class="d-flex justify-content-end gap-2">
                                 <button class="btn btn-sm btn-outline-primary"
-                                    wire:click="openModal('{{ $registry->id }}')"
+                                    wire:click="openModal({{ Js::from((string) ($registry->id)) }})"
                                     title="Edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 @if(! $registry->pendingTransfer && $registry->status !== 'disposed')
                                 <button class="btn btn-sm btn-outline-secondary"
-                                    wire:click="requestTransfer('{{ $registry->id }}')"
+                                    wire:click="requestTransfer({{ Js::from((string) ($registry->id)) }})"
                                     title="Request transfer to another department / room">
                                     <i class="fa-solid fa-right-left"></i>
                                 </button>
@@ -186,7 +186,7 @@
                                 @can('delete-asset')
                                 @unless(isset($usedIds[$registry->id]))
                                 <button class="btn btn-sm btn-outline-danger"
-                                    wire:click="confirmDelete('{{ $registry->id }}')"
+                                    wire:click="confirmDelete({{ Js::from((string) ($registry->id)) }})"
                                     title="Delete">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -322,7 +322,7 @@
                                                             <li>
                                                                 <button type="button"
                                                                         class="btn btn-link btn-sm p-0 align-baseline"
-                                                                        wire:click="selectAsset('{{ $dup['id'] }}')">
+                                                                        wire:click="selectAsset({{ Js::from((string) ($dup['id'])) }})">
                                                                     {{ $dup['name'] }}
                                                                 </button>
                                                                 @if($dup['type'])
@@ -402,7 +402,7 @@
                                         <div class="small text-muted">Department and location change only through an approved asset transfer.</div>
                                     </div>
                                     @if(! $editingRegistry->pendingTransfer && $editingRegistry->status !== 'disposed')
-                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="requestTransfer('{{ $editingId }}')">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="requestTransfer({{ Js::from((string) ($editingId)) }})">
                                             <i class="fa-solid fa-right-left me-1"></i> Request transfer
                                         </button>
                                     @endif

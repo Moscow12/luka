@@ -75,9 +75,8 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $store->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $store->id }}')"
-                                                onclick="return confirm('Delete this store?')">Delete</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($store->id)) }})">Edit</button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($store->id)) }})" wire:confirm="Delete this store?">Delete</button>
                                         </td>
 
                                     </tr>

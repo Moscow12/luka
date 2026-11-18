@@ -77,12 +77,12 @@
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-outline-success"
-                        wire:click="openPermissionModal('create', null, '{{ $category->id }}')"
+                        wire:click="openPermissionModal('create', null, {{ Js::from((string) ($category->id)) }})"
                         title="Add Permission">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-primary"
-                        wire:click="openCategoryModal('edit', '{{ $category->id }}')"
+                        wire:click="openCategoryModal('edit', {{ Js::from((string) ($category->id)) }})"
                         title="Edit Category">
                         <i class="fa-solid fa-edit"></i>
                     </button>
@@ -119,7 +119,7 @@
                                         <td class="text-center pe-4">
                                             <div class="btn-group btn-group-sm">
                                                 <button type="button" class="btn btn-outline-primary"
-                                                    wire:click="openPermissionModal('edit', '{{ $permission->id }}')"
+                                                    wire:click="openPermissionModal('edit', {{ Js::from((string) ($permission->id)) }})"
                                                     title="Edit">
                                                     <i class="fa-solid fa-edit"></i>
                                                 </button>
@@ -140,7 +140,7 @@
                         <i class="fa-solid fa-inbox fa-2x mb-2"></i>
                         <p class="mb-0">No permissions in this category</p>
                         <button type="button" class="btn btn-sm btn-link"
-                            wire:click="openPermissionModal('create', null, '{{ $category->id }}')">
+                            wire:click="openPermissionModal('create', null, {{ Js::from((string) ($category->id)) }})">
                             Add the first permission
                         </button>
                     </div>

@@ -146,12 +146,12 @@
                     <tbody>
                         @forelse($employees as $row)
                             @php($stage = \App\Services\Performance\PerformanceDashboard::EVALUATION_STAGES[$row['evaluation']['stage']])
-                            <tr class="pd-row" wire:key="emp-{{ $row['id'] }}" wire:click="openEmployee('{{ $row['id'] }}')">
+                            <tr class="pd-row" wire:key="emp-{{ $row['id'] }}" wire:click="openEmployee({{ Js::from((string) ($row['id'])) }})">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="pd-avatar rounded-circle bg-primary-subtle text-primary-emphasis d-inline-flex align-items-center justify-content-center fw-semibold flex-shrink-0">{{ $row['initials'] }}</span>
                                         <div>
-                                            <button type="button" class="btn btn-link p-0 text-start fw-semibold text-decoration-none" wire:click.stop="openEmployee('{{ $row['id'] }}')">{{ $row['employee_name'] }}</button>
+                                            <button type="button" class="btn btn-link p-0 text-start fw-semibold text-decoration-none" wire:click.stop="openEmployee({{ Js::from((string) ($row['id'])) }})">{{ $row['employee_name'] }}</button>
                                             <div class="small text-muted">{{ $row['employee_no'] }} · {{ count($row['goals']) }} goals</div>
                                         </div>
                                     </div>

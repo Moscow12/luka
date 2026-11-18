@@ -355,7 +355,7 @@
                         <i class="fa-solid fa-spinner fa-spin"></i> Generating...
                     </span>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="printSalarySlip()">
+                <button type="button" class="btn btn-primary" data-print="printSalarySlip">
                     <i class="fa-solid fa-print"></i> Print
                 </button>
             </div>
@@ -363,7 +363,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     function printSalarySlip() {
         // Ensure the modal content is fully loaded before printing
         const printContent = document.getElementById('salary-slip-print');

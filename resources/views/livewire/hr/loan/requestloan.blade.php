@@ -139,7 +139,7 @@
                                                 @if($loan->status === 'pending')
                                                     <button
                                                         class="btn btn-sm btn-outline-danger"
-                                                        wire:click="cancelRequest('{{ $loan->id }}')"
+                                                        wire:click="cancelRequest({{ Js::from((string) ($loan->id)) }})"
                                                         wire:confirm="Are you sure you want to cancel this loan request?"
                                                         title="Cancel Request"
                                                     >

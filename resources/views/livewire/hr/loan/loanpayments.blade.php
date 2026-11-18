@@ -151,7 +151,7 @@
                                                 <div class="d-flex gap-1 justify-content-end">
                                                     <button
                                                         class="btn btn-sm btn-outline-info"
-                                                        wire:click="openHistoryModal('{{ $loan->id }}')"
+                                                        wire:click="openHistoryModal({{ Js::from((string) ($loan->id)) }})"
                                                         title="View Payment History"
                                                     >
                                                         <i class="fa-solid fa-history"></i>
@@ -159,7 +159,7 @@
                                                     @if($loan->status === 'approved')
                                                         <button
                                                             class="btn btn-sm btn-warning"
-                                                            wire:click="disburse('{{ $loan->id }}')"
+                                                            wire:click="disburse({{ Js::from((string) ($loan->id)) }})"
                                                             wire:confirm="Mark this loan as disbursed?"
                                                             title="Mark as Disbursed"
                                                         >
@@ -169,7 +169,7 @@
                                                     @if(in_array($loan->status, ['approved', 'disbursed', 'active']) && $loan->progress['balance'] > 0)
                                                         <button
                                                             class="btn btn-sm btn-success"
-                                                            wire:click="openPaymentModal('{{ $loan->id }}')"
+                                                            wire:click="openPaymentModal({{ Js::from((string) ($loan->id)) }})"
                                                             title="Record Payment"
                                                         >
                                                             <i class="fa-solid fa-plus"></i>
@@ -524,7 +524,7 @@
                                     type="button"
                                     class="btn btn-success"
                                     wire:click="$set('showHistoryModal', false)"
-                                    x-on:click="$nextTick(() => $wire.openPaymentModal('{{ $selectedLoan->id }}'))"
+                                    x-on:click="$nextTick(() => $wire.openPaymentModal({{ Js::from((string) ($selectedLoan->id)) }}))"
                                 >
                                     <i class="fa-solid fa-plus me-1"></i>
                                     Record Payment

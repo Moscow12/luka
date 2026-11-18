@@ -47,7 +47,7 @@
                                 @foreach($myPlans as $plan)
                                     <button type="button"
                                             class="list-group-item list-group-item-action {{ $selectedPlan && $selectedPlan->id === $plan->id ? 'active' : '' }}"
-                                            wire:click="selectPlan('{{ $plan->id }}')">
+                                            wire:click="selectPlan({{ Js::from((string) ($plan->id)) }})">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <strong>{{ $plan->plan_name }}</strong>
@@ -184,11 +184,11 @@
                                                 <td>
                                                     @if($impl->status !== 'verified')
                                                         <button class="btn btn-sm btn-outline-primary"
-                                                                wire:click="openModal('edit', '{{ $impl->id }}')">
+                                                                wire:click="openModal('edit', {{ Js::from((string) ($impl->id)) }})">
                                                             <i class="fa-solid fa-pencil"></i>
                                                         </button>
                                                         <button class="btn btn-sm btn-outline-danger"
-                                                                wire:click="delete('{{ $impl->id }}')"
+                                                                wire:click="delete({{ Js::from((string) ($impl->id)) }})"
                                                                 wire:confirm="Delete this implementation record?">
                                                             <i class="fa-solid fa-trash"></i>
                                                         </button>

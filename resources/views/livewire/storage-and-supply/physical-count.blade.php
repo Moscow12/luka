@@ -58,12 +58,10 @@
                                         </td>
                                         <td>{{ $count->addedBy->name ?? 'N/A' }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-secondary" wire:click="view('{{ $count->id }}')">View</button>
+                                            <button class="btn btn-sm btn-secondary" wire:click="view({{ Js::from((string) ($count->id)) }})">View</button>
                                             @if($count->status !== 'approved')
-                                                <button class="btn btn-sm btn-success" wire:click="approve('{{ $count->id }}')"
-                                                    onclick="return confirm('Approve this count and post stock adjustments for any variances?')">Approve</button>
-                                                <button class="btn btn-sm btn-danger" wire:click="delete('{{ $count->id }}')"
-                                                    onclick="return confirm('Delete this physical count?')">Delete</button>
+                                                <button class="btn btn-sm btn-success" wire:click="approve({{ Js::from((string) ($count->id)) }})" wire:confirm="Approve this count and post stock adjustments for any variances?">Approve</button>
+                                                <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($count->id)) }})" wire:confirm="Delete this physical count?">Delete</button>
                                             @endif
                                         </td>
                                     </tr>

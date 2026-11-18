@@ -44,7 +44,7 @@
                         <button class="btn btn-outline-danger" wire:click="openModal('reopen')"><i class="fa-solid fa-rotate-left me-1"></i>Reopen</button>
                     @elseif(isset($statusButtons[$t->value]))
                         @php [$label, $class, $icon] = $statusButtons[$t->value]; @endphp
-                        <button class="btn {{ $class }}" wire:click="quickTransition('{{ $t->value }}')" wire:loading.attr="disabled"><i class="fa-solid {{ $icon }} me-1"></i>{{ $label }}</button>
+                        <button class="btn {{ $class }}" wire:click="quickTransition({{ Js::from((string) ($t->value)) }})" wire:loading.attr="disabled"><i class="fa-solid {{ $icon }} me-1"></i>{{ $label }}</button>
                     @endif
                 @endforeach
                 @if($canReassign)

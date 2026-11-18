@@ -53,9 +53,8 @@
                                         <td class="name">{{ $title->name }}</td>
                                         <td class="task_type">{{ $title->description }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit','{{ $title->id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $title->id }}')" 
-                                                onclick="return confirm('Delete this Job Title?')">Delete</button>
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit',{{ Js::from((string) ($title->id)) }})">Edit</button>
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($title->id)) }})" wire:confirm="Delete this Job Title?">Delete</button>
                                         </td>
                                        
                                     </tr>

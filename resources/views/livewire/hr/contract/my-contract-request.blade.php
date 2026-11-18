@@ -123,15 +123,14 @@
                                     </td>
                                     <td>{{ $request->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" wire:click="viewRequest('{{ $request->id }}')" title="View Details">
+                                        <button class="btn btn-sm btn-outline-primary" wire:click="viewRequest({{ Js::from((string) ($request->id)) }})" title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                         @if($request->isPending())
-                                            <button class="btn btn-sm btn-outline-warning" wire:click="editRequest('{{ $request->id }}')" title="Edit Request">
+                                            <button class="btn btn-sm btn-outline-warning" wire:click="editRequest({{ Js::from((string) ($request->id)) }})" title="Edit Request">
                                                 <i class="fa-solid fa-pencil"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger" wire:click="cancelRequest('{{ $request->id }}')"
-                                                    onclick="return confirm('Are you sure you want to cancel this request?')" title="Cancel Request">
+                                            <button class="btn btn-sm btn-outline-danger" wire:click="cancelRequest({{ Js::from((string) ($request->id)) }})" wire:confirm="Are you sure you want to cancel this request?" title="Cancel Request">
                                                 <i class="fa-solid fa-times"></i>
                                             </button>
                                         @endif

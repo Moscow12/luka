@@ -212,7 +212,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-end">
-                                            <button wire:click="openEmployeeTasksModal('{{ $summary->id }}')"
+                                            <button wire:click="openEmployeeTasksModal({{ Js::from((string) ($summary->id)) }})"
                                                 class="btn btn-sm btn-outline-primary"
                                                 title="View Tasks">
                                                 <i class="fa-solid fa-eye me-1"></i> View Tasks
@@ -363,7 +363,7 @@
                                         </div>
                                         <div class="text-end" style="min-width: 160px;">
                                             @if ($canManage && $task->status === 'completed' && ! $task->reviewed_at)
-                                                <button wire:click="openApproveModal('{{ $task->id }}')"
+                                                <button wire:click="openApproveModal({{ Js::from((string) ($task->id)) }})"
                                                     class="btn btn-sm btn-success">
                                                     <i class="fa-solid fa-check me-1"></i> Approve
                                                 </button>

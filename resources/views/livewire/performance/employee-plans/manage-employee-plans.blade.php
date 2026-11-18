@@ -243,7 +243,7 @@
                                                 <i class="fa-solid fa-list"></i>
                                             </a>
                                             @if ($canManage && $empPlan->employee_plan_items_count == 0)
-                                                <button wire:click="distributePlanItems('{{ $empPlan->id }}')"
+                                                <button wire:click="distributePlanItems({{ Js::from((string) ($empPlan->id)) }})"
                                                     wire:confirm="This will copy all items from the department plan. Continue?"
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
                                                     title="Distribute Items from Dept Plan">
@@ -251,7 +251,7 @@
                                                 </button>
                                             @endif
                                             @if ($canManage && $empPlan->status === 'draft' && $empPlan->employee_plan_items_count > 0)
-                                                <button wire:click="activatePlan('{{ $empPlan->id }}')"
+                                                <button wire:click="activatePlan({{ Js::from((string) ($empPlan->id)) }})"
                                                     wire:confirm="Activate this plan?"
                                                     class="btn btn-sm btn-ghost-primary rounded-circle"
                                                     title="Activate Plan">
@@ -259,7 +259,7 @@
                                                 </button>
                                             @endif
                                             @if ($canManage && $empPlan->status === 'active' && !$empPlan->reviewed_at)
-                                                <button wire:click="reviewPlan('{{ $empPlan->id }}')"
+                                                <button wire:click="reviewPlan({{ Js::from((string) ($empPlan->id)) }})"
                                                     wire:confirm="Mark this plan as reviewed?"
                                                     class="btn btn-sm btn-ghost-info rounded-circle"
                                                     title="Mark as Reviewed">
@@ -267,7 +267,7 @@
                                                 </button>
                                             @endif
                                             @if ($canManage && $empPlan->status === 'active' && $empPlan->reviewed_at)
-                                                <button wire:click="completePlan('{{ $empPlan->id }}')"
+                                                <button wire:click="completePlan({{ Js::from((string) ($empPlan->id)) }})"
                                                     wire:confirm="Mark this plan as completed?"
                                                     class="btn btn-sm btn-ghost-success rounded-circle"
                                                     title="Mark as Completed">
@@ -275,14 +275,14 @@
                                                 </button>
                                             @endif
                                             @if ($canManage)
-                                                <button wire:click="editPlan('{{ $empPlan->id }}')"
+                                                <button wire:click="editPlan({{ Js::from((string) ($empPlan->id)) }})"
                                                     class="btn btn-sm btn-ghost-secondary rounded-circle"
                                                     title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                             @endif
                                             @if ($canManage && in_array($empPlan->status, ['draft', 'cancelled']) && !$empPlan->reviewed_at)
-                                                <button wire:click="deletePlan('{{ $empPlan->id }}')"
+                                                <button wire:click="deletePlan({{ Js::from((string) ($empPlan->id)) }})"
                                                     wire:confirm="Are you sure you want to delete this employee plan?"
                                                     class="btn btn-sm btn-ghost-danger rounded-circle"
                                                     title="Delete">

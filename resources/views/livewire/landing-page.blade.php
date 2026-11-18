@@ -418,7 +418,7 @@
     {{-- Chart init. Livewire's root-element detector skips <script> tags, so
          keeping this inline <script> inside the root <div> is safe. It runs on
          first load and after each Livewire SPA navigation. --}}
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 function initDashboardCharts() {
     // ApexCharts is exposed globally from resources/js/app.js
     if (typeof ApexCharts === 'undefined') {

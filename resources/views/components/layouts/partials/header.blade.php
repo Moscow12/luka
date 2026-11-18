@@ -30,7 +30,7 @@
     <meta name="theme-color" content="#ffffff" />
     <!-- Color modes -->
     <script src="{{ asset('assets/js/vendors/color-modes.js') }}"></script>
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
       if (localStorage.getItem('sidebarExpanded') === 'false') {
         document.documentElement.classList.add('collapsed');
         document.documentElement.classList.remove('expanded');

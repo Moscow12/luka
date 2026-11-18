@@ -129,31 +129,29 @@
                                 <td>{{ $order->submitted_at ? $order->submitted_at->format('M d, Y') : '-' }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button wire:click="openViewModal('{{ $order->id }}')"
+                                        <button wire:click="openViewModal({{ Js::from((string) ($order->id)) }})"
                                                 class="btn btn-outline-info" title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
 
                                         @if($order->requested_by === auth()->id())
                                             @if($order->canEdit())
-                                                <button wire:click="openModal('edit', '{{ $order->id }}')"
+                                                <button wire:click="openModal('edit', {{ Js::from((string) ($order->id)) }})"
                                                         class="btn btn-outline-primary" title="Edit">
                                                     <i class="fa-solid fa-edit"></i>
                                                 </button>
                                             @endif
 
                                             @if($order->canSubmit())
-                                                <button wire:click="submit('{{ $order->id }}')"
-                                                        class="btn btn-outline-success" title="Submit"
-                                                        onclick="return confirm('Submit this order for approval?')">
+                                                <button wire:click="submit({{ Js::from((string) ($order->id)) }})"
+                                                        class="btn btn-outline-success" title="Submit" wire:confirm="Submit this order for approval?">
                                                     <i class="fa-solid fa-paper-plane"></i>
                                                 </button>
                                             @endif
 
                                             @if($order->isDraft())
-                                                <button wire:click="delete('{{ $order->id }}')"
-                                                        class="btn btn-outline-danger" title="Delete"
-                                                        onclick="return confirm('Are you sure you want to delete this order?')">
+                                                <button wire:click="delete({{ Js::from((string) ($order->id)) }})"
+                                                        class="btn btn-outline-danger" title="Delete" wire:confirm="Are you sure you want to delete this order?">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             @endif
@@ -317,7 +315,7 @@
                                     @endphp
                                     <button type="button"
                                             class="list-group-item list-group-item-action {{ $alreadySelected ? 'disabled' : '' }}"
-                                            wire:click="addItem('{{ $item->id }}', '{{ $item->name }}', '{{ $item->product_category_id }}', '{{ $item->category->name ?? 'Uncategorized' }}', '{{ $item->unit }}')"
+                                            wire:click="addItem({{ Js::from((string) ($item->id)) }}, {{ Js::from((string) ($item->name)) }}, {{ Js::from((string) ($item->product_category_id)) }}, {{ Js::from((string) ($item->category->name ?? 'Uncategorized')) }}, {{ Js::from((string) ($item->unit)) }})"
                                             {{ $alreadySelected ? 'disabled' : '' }}>
                                         <div class="d-flex w-100 justify-content-between">
                                             <h6 class="mb-1">{{ $item->name }}</h6>

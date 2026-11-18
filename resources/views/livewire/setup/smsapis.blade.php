@@ -99,8 +99,7 @@
                                                 <i class="fa-solid fa-check"></i> Yes
                                             </span>
                                         @else
-                                            <button class="btn btn-sm btn-outline-primary" wire:click="setDefault('{{ $setting->id }}')"
-                                                onclick="return confirm('Set this as default SMS API?')">
+                                            <button class="btn btn-sm btn-outline-primary" wire:click="setDefault({{ Js::from((string) ($setting->id)) }})" wire:confirm="Set this as default SMS API?">
                                                 Set as Default
                                             </button>
                                         @endif
@@ -114,16 +113,15 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit', '{{ $setting->id }}')" title="Edit">
+                                            <button class="btn btn-sm btn-warning" wire:click="openModal('edit', {{ Js::from((string) ($setting->id)) }})" title="Edit">
                                                 <i class="fa-solid fa-pencil"></i>
                                             </button>
                                             <button class="btn btn-sm {{ $setting->is_active ? 'btn-secondary' : 'btn-success' }}"
-                                                wire:click="toggleActive('{{ $setting->id }}')"
+                                                wire:click="toggleActive({{ Js::from((string) ($setting->id)) }})"
                                                 title="{{ $setting->is_active ? 'Deactivate' : 'Activate' }}">
                                                 <i class="fa-solid fa-{{ $setting->is_active ? 'toggle-on' : 'toggle-off' }}"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-danger" wire:click="delete('{{ $setting->id }}')"
-                                                onclick="return confirm('Delete this SMS API setting?')" title="Delete">
+                                            <button class="btn btn-sm btn-danger" wire:click="delete({{ Js::from((string) ($setting->id)) }})" wire:confirm="Delete this SMS API setting?" title="Delete">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </div>

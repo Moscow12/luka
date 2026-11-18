@@ -101,12 +101,12 @@
                                         </td>
                                         <td class="py-3 text-center">
                                             <div class="btn-group" role="group">
-                                                <button wire:click="openModal('edit', '{{ $vendor->id }}')"
+                                                <button wire:click="openModal('edit', {{ Js::from((string) ($vendor->id)) }})"
                                                         class="btn btn-sm btn-outline-primary"
                                                         title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
-                                                <button wire:click="deleteVendor('{{ $vendor->id }}')"
+                                                <button wire:click="deleteVendor({{ Js::from((string) ($vendor->id)) }})"
                                                         wire:confirm="Are you sure you want to delete this vendor?"
                                                         class="btn btn-sm btn-outline-danger"
                                                         title="Delete">
