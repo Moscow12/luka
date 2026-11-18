@@ -568,7 +568,7 @@
     @endif
 
     <!-- CHOP Management -->
-    @if($isSuperAdmin || $user?->canAny(['view-chop', 'manage-chop']))
+    @if($isSuperAdmin || $user?->canAny(['view-chop', 'manage-chop', 'manage-chop-budget-items']))
     <li class="nav-item dropdown {{ request()->routeIs($chopRoutes) ? 'show' : '' }}">
         <a class="nav-link dropdown-toggle {{ request()->routeIs($chopRoutes) ? 'active' : '' }}" href="{{ route('chop.budget.requests') }}" role="button" data-bs-toggle="dropdown" aria-expanded="{{ request()->routeIs($chopRoutes) ? 'true' : 'false' }}">
             <span class="nav-icon">
@@ -583,6 +583,11 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('chop.reporting') ? 'active' : '' }}" href="{{ route('chop.reporting') }}"><i class="fa-solid fa-file-alt"></i> My Activity Reports</a>
+            </li>
+            @endif
+            @if($isSuperAdmin || $user?->canAny(['manage-chop', 'manage-chop-budget-items']))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('chop.budget.items') ? 'active' : '' }}" href="{{ route('chop.budget.items') }}"><i class="fa-solid fa-list-check"></i> Requested Items</a>
             </li>
             @endif
             @if($isSuperAdmin || $user?->can('manage-chop'))

@@ -11,6 +11,7 @@ use App\Livewire\Chat\ChatAnalytics;
 use App\Livewire\Chat\Workspace;
 use App\Livewire\Chop\ActivitiesManagement;
 use App\Livewire\Chop\ActivityReporting;
+use App\Livewire\Chop\BudgetRequestItems;
 use App\Livewire\Chop\Chopsetting;
 use App\Livewire\Chop\CostAnalysis;
 use App\Livewire\Chop\DepartmentBudgetRequest;
@@ -236,6 +237,7 @@ Route::prefix('chop')->middleware('auth')->group(function () {
     // Budget Requests
     Route::get('budget-requests', DepartmentBudgetRequest::class)->name('chop.budget.requests');
     Route::get('director-review', DirectorReviewDashboard::class)->name('chop.director.review');
+    Route::get('budget-request-items', BudgetRequestItems::class)->name('chop.budget.items');
 
     // Cost Analysis
     Route::get('cost-analysis', CostAnalysis::class)->name('chop.cost.analysis');

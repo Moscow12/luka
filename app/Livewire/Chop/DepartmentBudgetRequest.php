@@ -8,8 +8,10 @@ use App\Models\chopcategoryarea;
 use App\Models\chopitems;
 use App\Models\departments;
 use App\Models\FinancialYear;
+use App\Services\Chop\SimilarItemFinder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -45,6 +47,15 @@ class DepartmentBudgetRequest extends Component
     public $showItemSelector = false;
 
     public $filterCategory = '';
+
+    // Quick add of an item missing from the catalogue
+    public $showQuickAdd = false;
+
+    public $newItemName = '';
+
+    public $newItemCategory = '';
+
+    public $confirmNotDuplicate = false;
 
     public function mount()
     {
@@ -121,6 +132,75 @@ class DepartmentBudgetRequest extends Component
         $this->showItemSelector = false;
         $this->itemSearch = '';
         $this->filterCategory = '';
+    }
+
+    public function openQuickAdd()
+    {
+        $this->resetErrorBag(['newItemName', 'newItemCategory']);
+        $this->newItemName = trim((string) $this->itemSearch);
+        $this->newItemCategory = $this->filterCategory;
+        $this->confirmNotDuplicate = false;
+        $this->showQuickAdd = true;
+    }
+
+    public function closeQuickAdd()
+    {
+        $this->showQuickAdd = false;
+        $this->reset(['newItemName', 'newItemCategory', 'confirmNotDuplicate']);
+        $this->resetErrorBag(['newItemName', 'newItemCategory']);
+    }
+
+    public function updatedNewItemName()
+    {
+        // A different name means different look-alikes, so ask again
+        $this->confirmNotDuplicate = false;
+        $this->resetErrorBag('newItemName');
+    }
+
+    /** Pick an existing look-alike instead of creating a new item. */
+    public function useExistingItem($itemId)
+    {
+        $item = chopitems::with('category')->where('is_active', true)->findOrFail($itemId);
+
+        $this->closeQuickAdd();
+        $this->addItem($item->id, $item->name, $item->category_id, $item->category?->name ?? '');
+    }
+
+    public function saveQuickAdd(SimilarItemFinder $finder)
+    {
+        $this->newItemName = Str::squish((string) $this->newItemName);
+
+        $this->validate([
+            'newItemName' => ['required', 'string', 'min:3', 'max:255', 'unique:chopitems,name'],
+            'newItemCategory' => ['required', 'exists:chopcategoryareas,id'],
+        ], [], ['newItemName' => 'item name', 'newItemCategory' => 'category']);
+
+        if ($duplicate = $finder->findDuplicate($this->newItemName)) {
+            $this->addError('newItemName', $duplicate->is_active
+                ? "\"{$duplicate->name}\" already exists. Select it from the list instead."
+                : "\"{$duplicate->name}\" already exists but is inactive. Ask the CHOP administrator to activate it.");
+
+            return;
+        }
+
+        if (! $this->confirmNotDuplicate && $finder->similar($this->newItemName)->isNotEmpty()) {
+            $this->addError('newItemName', 'Similar items already exist. Use one of them, or confirm that none of them is the item you need.');
+
+            return;
+        }
+
+        $item = chopitems::create([
+            'name' => $this->newItemName,
+            'slug' => Str::slug($this->newItemName),
+            'is_active' => true,
+            'category_id' => $this->newItemCategory,
+            'added_by' => Auth::id(),
+        ]);
+        $item->load('category');
+
+        $this->closeQuickAdd();
+        $this->addItem($item->id, $item->name, $item->category_id, $item->category?->name ?? '');
+        session()->flash('success', "Item \"{$item->name}\" added to the catalogue and to this request.");
     }
 
     public function removeItem($index)
@@ -292,8 +372,19 @@ class DepartmentBudgetRequest extends Component
             ->limit(20)
             ->get();
 
+        $finder = app(SimilarItemFinder::class);
+
+        // Nothing matched the search: offer look-alikes (e.g. typos) before suggesting a new item
+        $suggestedItems = $this->showItemSelector && ! $this->showQuickAdd && $availableItems->isEmpty() && trim((string) $this->itemSearch) !== ''
+            ? $finder->similar($this->itemSearch)
+            : collect();
+
+        $similarItems = $this->showQuickAdd ? $finder->similar((string) $this->newItemName) : collect();
+
         return view('livewire.chop.department-budget-request', [
             'requests' => $requests,
+            'suggestedItems' => $suggestedItems,
+            'similarItems' => $similarItems,
             'financialYears' => $financialYears,
             'categories' => $categories,
             'availableItems' => $availableItems,

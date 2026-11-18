@@ -373,12 +373,126 @@
                                     <small class="text-muted">Category: {{ $item->category->name }}</small>
                                 </button>
                             @empty
-                                <div class="text-center py-4 text-muted">
-                                    No items found matching your criteria.
+                                <div class="text-center py-3 text-muted">
+                                    <i class="fa-solid fa-magnifying-glass me-1"></i>
+                                    No items found{{ $itemSearch !== '' ? ' for "'.$itemSearch.'"' : '' }}.
                                 </div>
+                                @if($suggestedItems->isNotEmpty())
+                                    <div class="px-2 pb-2">
+                                        <div class="small fw-semibold text-muted mb-2">Did you mean:</div>
+                                        @foreach($suggestedItems as $suggestion)
+                                            @php $alreadySelected = collect($selectedItems)->firstWhere('item_id', $suggestion->id); @endphp
+                                            <button type="button" wire:key="suggest-{{ $suggestion->id }}"
+                                                    class="list-group-item list-group-item-action border rounded mb-1 {{ $alreadySelected ? 'disabled' : '' }}"
+                                                    wire:click="addItem({{ Js::from((string) $suggestion->id) }}, {{ Js::from((string) $suggestion->name) }}, {{ Js::from((string) $suggestion->category_id) }}, {{ Js::from((string) ($suggestion->category?->name ?? '')) }})"
+                                                    {{ $alreadySelected ? 'disabled' : '' }}>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>{{ $suggestion->name }}</span>
+                                                    @if($alreadySelected)
+                                                        <span class="badge bg-success">Added</span>
+                                                    @endif
+                                                </div>
+                                                <small class="text-muted">Category: {{ $suggestion->category?->name ?? '-' }}</small>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @endif
                             @endforelse
                         </div>
+
+                        <!-- Item not in the catalogue -->
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-top mt-3 pt-3">
+                            <small class="text-muted">Can't find the item you need?</small>
+                            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openQuickAdd">
+                                <i class="fa-solid fa-plus me-1"></i>Add new item{{ trim($itemSearch) !== '' ? ' "'.trim($itemSearch).'"' : '' }}
+                            </button>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Quick Add Item Modal -->
+    @if($showQuickAdd)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6); z-index: 1070;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form wire:submit="saveQuickAdd">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title"><i class="fa-solid fa-box me-2"></i>Add New Item</h5>
+                            <button type="button" class="btn-close btn-close-white" wire:click="closeQuickAdd"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Item Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('newItemName') is-invalid @enderror"
+                                       wire:model.live.debounce.400ms="newItemName" maxlength="255" autofocus
+                                       placeholder="e.g. Surgical gloves">
+                                @error('newItemName')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Category <span class="text-danger">*</span></label>
+                                <select class="form-select @error('newItemCategory') is-invalid @enderror" wire:model="newItemCategory">
+                                    <option value="">Select category</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('newItemCategory')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Look-alikes already in the catalogue -->
+                            @if($similarItems->isNotEmpty())
+                                <div class="alert alert-warning mb-0">
+                                    <div class="fw-semibold mb-2">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i>Similar items already exist
+                                    </div>
+                                    <div class="list-group mb-2">
+                                        @foreach($similarItems as $similar)
+                                            @php $alreadySelected = collect($selectedItems)->firstWhere('item_id', $similar->id); @endphp
+                                            <div class="list-group-item d-flex justify-content-between align-items-center" wire:key="similar-{{ $similar->id }}">
+                                                <div>
+                                                    <div>{{ $similar->name }}</div>
+                                                    <small class="text-muted">{{ $similar->category?->name ?? '-' }} · {{ $similar->similarity }}% match</small>
+                                                </div>
+                                                @if($alreadySelected)
+                                                    <span class="badge bg-success">Added</span>
+                                                @else
+                                                    <button type="button" class="btn btn-sm btn-outline-success"
+                                                            wire:click="useExistingItem({{ Js::from((string) $similar->id) }})">
+                                                        Use this
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="confirmNotDuplicate" wire:model.live="confirmNotDuplicate">
+                                        <label class="form-check-label small" for="confirmNotDuplicate">
+                                            None of these is the item I need
+                                        </label>
+                                    </div>
+                                </div>
+                            @elseif(strlen(trim($newItemName)) >= 3)
+                                <div class="small text-success">
+                                    <i class="fa-solid fa-circle-check me-1"></i>No similar items found.
+                                </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeQuickAdd">Cancel</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="saveQuickAdd"
+                                    @disabled($similarItems->isNotEmpty() && ! $confirmNotDuplicate)>
+                                <i class="fa-solid fa-save me-1"></i>Add Item
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

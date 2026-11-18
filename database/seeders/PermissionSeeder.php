@@ -110,6 +110,7 @@ class PermissionSeeder extends Seeder
             'CHOP Management' => [
                 ['name' => 'view-chop', 'description' => 'View CHOP budget requests and activity reports'],
                 ['name' => 'manage-chop', 'description' => 'Manage CHOP activities, reviews, and settings'],
+                ['name' => 'manage-chop-budget-items', 'description' => 'View all requested budget items, edit prices and export'],
             ],
             'System Settings' => [
                 ['name' => 'manage-settings', 'description' => 'Manage system settings, locations, and configurations'],
