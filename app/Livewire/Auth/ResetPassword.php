@@ -8,18 +8,20 @@ use App\Models\PasswordResetToken;
 use App\Models\TrustedDevice;
 use App\Models\User;
 use App\Models\workstations;
-use App\Services\DeviceFingerprinter;
-use Illuminate\Support\Facades\Auth;
+use App\Support\AuthThrottle;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Spatie\Activitylog\Facades\CauserResolver;
 
 class ResetPassword extends Component
 {
+    /** Display only; the authoritative address is session('password_reset_email'). */
+    #[Locked]
     public string $email = '';
 
     #[Validate('required|string|size:6')]
@@ -30,15 +32,20 @@ class ResetPassword extends Component
 
     public string $password_confirmation = '';
 
+    #[Locked]
     public bool $showTokenForm = true;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function mount(): void
+    public function mount(): mixed
     {
-        $this->email = request()->get('email', '');
+        $this->email = (string) session('password_reset_email', '');
+
+        if ($this->email === '') {
+            return redirect()->route('forgot-password');
+        }
+
+        $this->showTokenForm = ! $this->verifiedToken();
+
+        return null;
     }
 
     public function render(): View
@@ -53,14 +60,39 @@ class ResetPassword extends Component
     {
         $this->validate(['token' => 'required|string|size:6']);
 
-        $resetToken = PasswordResetToken::findValidToken($this->email, $this->token);
+        $email = $this->sessionEmail();
+        $emailKey = AuthThrottle::key('reset-verify', $email);
+        $limits = [
+            $emailKey => AuthThrottle::RESET_VERIFY_PER_EMAIL,
+            AuthThrottle::key('reset-verify-ip', (string) request()->ip()) => AuthThrottle::RESET_VERIFY_PER_IP,
+        ];
+
+        AuthThrottle::ensureNotBlocked($limits, 'token');
+
+        $resetToken = PasswordResetToken::findValidToken($email, $this->token);
 
         if (! $resetToken) {
+            AuthThrottle::hit($limits);
+
+            if (AuthThrottle::exhausted($emailKey, AuthThrottle::RESET_VERIFY_PER_EMAIL[0])) {
+                // Too many wrong guesses: the code is burned and a new one must be requested
+                PasswordResetToken::invalidateForEmail($email);
+                $this->addError('token', 'Too many incorrect attempts. Please request a new reset code.');
+
+                return;
+            }
+
             $this->addError('token', 'The reset code is invalid or has expired.');
 
             return;
         }
 
+        AuthThrottle::clear($emailKey);
+
+        // Step 2 trusts this server-side marker, not anything the client sends back
+        session(['password_reset_verified' => ['email' => $email, 'token' => $resetToken->token]]);
+
+        $this->token = '';
         $this->showTokenForm = false;
         $this->dispatch('toastMagic',
             status: 'success',
@@ -81,70 +113,70 @@ class ResetPassword extends Component
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $resetToken = PasswordResetToken::findValidToken($this->email, $this->token);
+        $resetToken = $this->verifiedToken();
+        $user = $resetToken ? User::where('email', $resetToken->email)->first() : null;
 
-        if (! $resetToken) {
+        if (! $resetToken || ! $user || ! $resetToken->markAsUsed()) {
+            session()->forget('password_reset_verified');
+            $this->showTokenForm = true;
             $this->addError('token', 'The reset session has expired. Please request a new reset code.');
 
             return null;
         }
 
-        $user = User::where('email', $this->email)->first();
-
-        if (! $user) {
-            $this->addError('email', 'User not found.');
-
-            return null;
-        }
-
-        // Update password. The causer is set explicitly since the user isn't
-        // authenticated yet at this point in the reset flow (Auth::user() is null,
-        // which is what LogsActivity's auto-logging would otherwise use).
+        // The causer is set explicitly since the user isn't authenticated in the reset flow
         CauserResolver::setCauser($user);
 
-        $user->update([
+        $user->forceFill([
             'password' => Hash::make($this->password),
-        ]);
+            'remember_token' => Str::random(60), // kills "remember me" cookies
+        ])->save();
 
-        PasswordResetToken::query()->where('email', $this->email)->update(['used' => true]);
+        PasswordResetToken::invalidateForEmail($user->email);
 
-        // Invalidate other sessions for security
-        Auth::logoutOtherDevices($this->password);
+        // A password change revokes every existing trust: devices and sessions
+        TrustedDevice::where('user_id', $user->id)->update(['is_active' => false]);
 
-        // Regenerate session
-        session()->regenerate();
-
-        // Check device fingerprint
-        $fingerprinter = new DeviceFingerprinter(request());
-        $deviceFingerprint = $fingerprinter->generateFingerprint();
-
-        // Check if this device is already trusted
-        $trustedDevice = TrustedDevice::findValidDevice($user->id, $deviceFingerprint);
-
-        if ($trustedDevice) {
-            // Update last used for existing trusted device
-            $trustedDevice->updateLastUsed();
-        } else {
-            // Create new trusted device (auto-trust after password reset)
-            TrustedDevice::createForUser(
-                userId: $user->id,
-                deviceFingerprint: $deviceFingerprint,
-                deviceName: $fingerprinter->generateDeviceName(),
-                ipAddress: $fingerprinter->getCurrentIpAddress(),
-                userAgent: request()->userAgent() ?? '',
-                trustDays: 30
-            );
+        if (config('session.driver') === 'database') {
+            DB::connection(config('session.connection'))
+                ->table(config('session.table', 'sessions'))
+                ->where('user_id', $user->id)
+                ->delete();
         }
 
-        // Log the user in
-        Auth::login($user);
+        // No automatic login and no trusted-device grant: the next login goes through
+        // the normal password + 2FA flow.
+        session()->forget(['password_reset_email', 'password_reset_verified']);
+        session()->regenerate();
+        session()->flash('status', 'Your password has been updated. Please sign in with your new password.');
 
         $this->dispatch('toastMagic',
             status: 'success',
-            title: 'Welcome Back!',
-            message: 'Your password has been updated successfully. You are now logged in.'
+            title: 'Password Updated',
+            message: 'Please sign in with your new password.'
         );
 
-        return redirect()->route('dashboard');
+        return redirect()->route('login');
+    }
+
+    private function sessionEmail(): string
+    {
+        $email = (string) session('password_reset_email', '');
+
+        abort_if($email === '', 419, 'Your reset session has expired. Please request a new reset code.');
+
+        return $email;
+    }
+
+    private function verifiedToken(): ?PasswordResetToken
+    {
+        $marker = session('password_reset_verified');
+        $email = (string) session('password_reset_email', '');
+
+        if (! is_array($marker) || $email === '' || ($marker['email'] ?? null) !== $email) {
+            return null;
+        }
+
+        return PasswordResetToken::findValidToken($email, (string) ($marker['token'] ?? ''));
     }
 }

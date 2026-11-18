@@ -2,25 +2,24 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\LoginActivity;
 use App\Models\TrustedDevice;
 use App\Models\User;
 use App\Models\workstations;
 use App\Services\DeviceFingerprinter;
+use App\Support\AuthThrottle;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use Jenssegers\Agent\Agent;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Login extends Component
 {
-    #[Validate('required')]
+    #[Validate('required|string|max:255')]
     public string $login = ''; // email | phone_number | username
 
-    #[Validate('required')]
+    #[Validate('required|string|max:255')]
     public string $password = '';
 
     /**
@@ -28,8 +27,16 @@ class Login extends Component
      */
     public function loginUser(): mixed
     {
-
         $this->validate();
+
+        $ip = (string) request()->ip();
+        $accountKey = AuthThrottle::key('login', $this->login, $ip);
+        $limits = [
+            $accountKey => AuthThrottle::LOGIN_PER_ACCOUNT,
+            AuthThrottle::key('login-ip', $ip) => AuthThrottle::LOGIN_PER_IP,
+        ];
+
+        AuthThrottle::ensureNotBlocked($limits, 'login');
 
         // Find the user by email, username, or phone
         $user = User::query()
@@ -38,11 +45,23 @@ class Login extends Component
             ->orWhere('phone_number', $this->login)
             ->first();
 
-        if (! $user || ! Hash::check($this->password, $user->password)) {
+        if ($user) {
+            $valid = Hash::check($this->password, $user->password);
+        } else {
+            // Spend the same hashing time so response time doesn't reveal unknown accounts
+            Hash::make($this->password);
+            $valid = false;
+        }
+
+        if (! $valid) {
+            AuthThrottle::hit($limits);
+
             throw ValidationException::withMessages([
                 'login' => __('The provided credentials are incorrect.'),
             ]);
         }
+
+        AuthThrottle::clear($accountKey);
 
         session()->regenerate();
 
@@ -52,17 +71,6 @@ class Login extends Component
         $deviceFingerprint = $fingerprinter->generateFingerprint();
 
         $trustedDevice = TrustedDevice::findValidDevice($user->id, $deviceFingerprint);
-
-        // $agent = new Agent;
-        // LoginActivity::create([
-        //     'user_id' => $user->id,
-        //     'ip_address' => request()->ip(),
-        //     'user_agent' => request()->userAgent(),
-        //     'platform' => $agent->platform(),
-        //     'browser' => $agent->browser(),
-        //     'device' => $agent->device(),
-        //     'login_at' => now(),
-        // ]);
 
         // Check if 2FA is enabled in config
         $twoFactorEnabled = config('auth.two_factor_enabled', true);
@@ -94,8 +102,8 @@ class Login extends Component
             return redirect()->route('dashboard');
         }
 
-        // Device is not trusted and 2FA is enabled - enforce 2FA
-        // Store device details in session for potential saving after 2FA
+        // Device is not trusted and 2FA is enabled - enforce 2FA.
+        // The pending identity lives only in the server-side session.
         session([
             '2fa_user_email' => $user->email,
             '2fa_device_fingerprint' => $deviceFingerprint,

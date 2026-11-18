@@ -49,8 +49,10 @@ class PasswordResetToken extends Model
 
     public function markAsUsed(): bool
     {
+        // Atomic: only one concurrent request can flip used=false -> true
         $result = self::where('email', $this->email)
             ->where('token', $this->token)
+            ->where('used', false)
             ->update([
                 'used' => true,
                 'updated_at' => now(),
@@ -67,10 +69,19 @@ class PasswordResetToken extends Model
 
     public static function findValidToken(string $email, string $token): ?self
     {
-        return self::where('email', $email)
-            ->where('token', $token)
+        $record = self::where('email', $email)
             ->where('used', false)
             ->where('expires_at', '>', now())
+            ->latest()
             ->first();
+
+        // Constant-time comparison instead of matching the code in SQL
+        return $record && hash_equals((string) $record->token, $token) ? $record : null;
+    }
+
+    /** Burns every outstanding code for the address (e.g. after too many wrong attempts). */
+    public static function invalidateForEmail(string $email): void
+    {
+        self::where('email', $email)->where('used', false)->update(['used' => true, 'updated_at' => now()]);
     }
 }

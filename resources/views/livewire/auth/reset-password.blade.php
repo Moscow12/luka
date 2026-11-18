@@ -102,7 +102,7 @@
                             @if ($showTokenForm)
                                 <h4 class="fw-bold text-dark mb-2">Reset Code Verification</h4>
                                 <p class="text-muted mb-0 small">
-                                    We sent a code to<br>
+                                    If an account exists, we sent a code to<br>
                                     <span class="fw-medium text-dark">{{ $email }}</span>
                                 </p>
                             @else

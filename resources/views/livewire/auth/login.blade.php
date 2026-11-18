@@ -102,6 +102,10 @@
                             </p>
                         </div>
 
+                        @if (session('status'))
+                            <div class="alert alert-success small py-2" role="status">{{ session('status') }}</div>
+                        @endif
+
                         {{-- Login Form --}}
                         <form wire:submit="loginUser">
                             {{-- Login Field --}}
