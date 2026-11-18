@@ -54,7 +54,7 @@
                                 <td>{{ $qualification->start_date }}</td>
                                 <td>{{ $qualification->end_date }}</td>
                                 <td>
-                                    <a href="{{ asset('storage/' . $qualification->attachment) }}" target="_blank">
+                                    <a href="{{ route('hr.documents.show', ['type' => 'qualification', 'id' => $qualification->id]) }}" target="_blank">
                                         Preview
                                     </a>
                                 </td>
@@ -85,7 +85,7 @@
             <x-forms.input type="text" name="institution" label="Institution" required />
             <x-forms.input type="date" name="start_date" label="Start Date" required />
             <x-forms.input type="date" name="end_date" label="End Date" required />
-            <x-forms.input type="file" name="attachment" label="Attachment" />
+            <x-forms.input type="file" name="attachment" label="Attachment (PDF, JPG or PNG, max 10MB)" accept=".pdf,.jpg,.jpeg,.png" />
             <x-forms.input type="textarea" name="comments" label="Comments" rows="3" />
         </div>
         

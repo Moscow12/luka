@@ -96,9 +96,9 @@ class Workstation extends Component
             'ward_id' => ['required', 'exists:wards,id'],
             'postal_code' => ['required', 'string', 'max:20'],
             'physical_address' => ['required', 'string', 'max:500'],
-            'logo' => ['nullable', 'image', 'max:2048'],
-            'official_stamp' => ['nullable', 'image', 'max:2048'],
-            'letter_head' => ['nullable', 'image', 'max:2048'],
+            'logo' => ['nullable', 'image', 'max:2048', 'extensions:jpg,jpeg,png', 'mimes:jpg,jpeg,png', 'mimetypes:image/jpeg,image/png'],
+            'official_stamp' => ['nullable', 'image', 'max:2048', 'extensions:jpg,jpeg,png', 'mimes:jpg,jpeg,png', 'mimetypes:image/jpeg,image/png'],
+            'letter_head' => ['nullable', 'image', 'max:2048', 'extensions:jpg,jpeg,png', 'mimes:jpg,jpeg,png', 'mimetypes:image/jpeg,image/png'],
         ];
     }
 

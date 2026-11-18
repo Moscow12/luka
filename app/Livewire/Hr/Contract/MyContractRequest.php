@@ -6,8 +6,11 @@ use App\Models\ContractRequest;
 use App\Models\Employee;
 use App\Models\Employeecontracts;
 use App\Models\TerminationReason;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -168,13 +171,10 @@ class MyContractRequest extends Component
             $rules['last_working_day'] = 'required|date|after_or_equal:today';
             $rules['termination_reason_id'] = 'required|uuid|exists:termination_reasons,id';
             $rules['handover_notes'] = 'nullable|string|max:2000';
-            // Attachment is recommended for termination
-            if (! $this->editingId || ! $this->existing_attachment) {
-                $rules['employee_attachment'] = 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120';
-            } else {
-                $rules['employee_attachment'] = 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120';
-            }
         }
+
+        // Validated for every request type: an attachment is stored whenever one is present
+        $rules['employee_attachment'] = HrDocumentStore::rules(HrDocumentType::ContractRequest, maxKilobytes: 5120);
 
         return $rules;
     }
@@ -224,8 +224,8 @@ class MyContractRequest extends Component
             }
 
             // Handle attachment upload
-            if ($this->employee_attachment) {
-                $data['employee_attachment'] = $this->employee_attachment->store('contract-requests', 'public');
+            if ($this->employee_attachment instanceof TemporaryUploadedFile) {
+                $data['employee_attachment'] = app(HrDocumentStore::class)->replace(HrDocumentType::ContractRequest, $request->employee_attachment, $this->employee_attachment);
             }
 
             $request->update($data);
@@ -271,8 +271,8 @@ class MyContractRequest extends Component
         }
 
         // Handle attachment upload
-        if ($this->employee_attachment) {
-            $data['employee_attachment'] = $this->employee_attachment->store('contract-requests', 'public');
+        if ($this->employee_attachment instanceof TemporaryUploadedFile) {
+            $data['employee_attachment'] = app(HrDocumentStore::class)->store(HrDocumentType::ContractRequest, $this->employee_attachment);
         }
 
         ContractRequest::create($data);

@@ -7,8 +7,12 @@ use App\Models\Employee;
 use App\Models\Employeepromotions;
 use App\Models\Jobtitle;
 use App\Models\workstations;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 
 class Promotions extends Component
@@ -19,6 +23,7 @@ class Promotions extends Component
 
     public $showModal = false;
 
+    #[Locked]
     public $employee_id;
 
     public $promotions = [];
@@ -96,13 +101,13 @@ class Promotions extends Component
         $this->showModal = true;
         if ($mode === 'edit' && $id) {
             // Load promotion data for editing if needed
-            $promotion = Employeepromotions::findOrFail($id);
+            $promotion = Employeepromotions::where('employee_id', $this->employee_id)->findOrFail($id);
             $this->promotion_id = $id;
             $this->title_id = $promotion->title_id;
             $this->workstation_id = $promotion->workstation_id;
             $this->start_date = $promotion->start_date;
             $this->department_id = $promotion->department_id;
-            $this->attachment = $promotion->attachment;
+            $this->attachment = null; // upload slot only; the stored file stays on the record
             $this->comments = $promotion->comments;
 
         } else {
@@ -123,9 +128,9 @@ class Promotions extends Component
 
         // Attachment is required only for new promotions, optional when editing
         if ($this->modalMode === 'create') {
-            $rules['attachment'] = ['required', 'file', 'max:10240'];
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::Promotion, required: true);
         } else {
-            $rules['attachment'] = ['nullable', 'file', 'max:10240'];
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::Promotion);
         }
 
         $this->validate($rules, [
@@ -137,18 +142,21 @@ class Promotions extends Component
             'attachment.required' => 'Please upload the promotion letter or supporting document.',
             'attachment.file' => 'The attachment must be a valid file.',
             'attachment.max' => 'The attachment file size must not exceed 10MB.',
+            'attachment.extensions' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Promotion).' files are accepted.',
+            'attachment.mimes' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Promotion).' files are accepted.',
+            'attachment.mimetypes' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Promotion).' files are accepted.',
         ]);
 
-        // Upload attachment (only if a new file was uploaded)
-        if ($this->attachment && is_object($this->attachment) && method_exists($this->attachment, 'store')) {
-            $path = $this->attachment->store('attachments', 'public');
-            $this->attachment = $path;
-        }
+        // New uploads go to encrypted private storage; the path never comes from the client
+
+        $documents = app(HrDocumentStore::class);
+
+        $upload = $this->attachment instanceof TemporaryUploadedFile ? $this->attachment : null;
 
         if ($this->modalMode === 'edit' && $this->promotion_id) {
             // Update promotion data if needed
-            $promotion = Employeepromotions::findOrFail($this->promotion_id);
-            $promotion->update(['title_id' => $this->title_id, 'workstation_id' => $this->workstation_id, 'start_date' => $this->start_date, 'department_id' => $this->department_id, 'comments' => $this->comments, 'attachment' => $this->attachment]);
+            $promotion = Employeepromotions::where('employee_id', $this->employee_id)->findOrFail($this->promotion_id);
+            $promotion->update(['title_id' => $this->title_id, 'workstation_id' => $this->workstation_id, 'start_date' => $this->start_date, 'department_id' => $this->department_id, 'comments' => $this->comments, 'attachment' => $upload ? $documents->replace(HrDocumentType::Promotion, $promotion->attachment, $upload) : $promotion->attachment]);
             $this->listdata();
             session()->flash('success', 'Promotion updated successfully!');
         } else {
@@ -158,7 +166,7 @@ class Promotions extends Component
                 'workstation_id' => $this->workstation_id,
                 'start_date' => $this->start_date,
                 'department_id' => $this->department_id,
-                'attachment' => $this->attachment,
+                'attachment' => $upload ? $documents->store(HrDocumentType::Promotion, $upload) : null,
                 'comments' => $this->comments,
                 'employee_id' => $this->employee_id,
                 'added_by' => Auth::user()->id,
@@ -173,7 +181,8 @@ class Promotions extends Component
 
     public function delete($uuid)
     {
-        $promotion = Employeepromotions::findOrFail($uuid);
+        $promotion = Employeepromotions::where('employee_id', $this->employee_id)->findOrFail($uuid);
+        app(HrDocumentStore::class)->delete(HrDocumentType::Promotion, $promotion->attachment);
         $promotion->delete();
         $this->listdata();
         session()->flash('success', 'Promotion deleted successfully!');

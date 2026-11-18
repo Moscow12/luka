@@ -6,10 +6,13 @@ use App\Livewire\Hr\Leave\Concerns\ShowsLeaveProgress;
 use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\Leaves;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class Leave extends Component
@@ -172,18 +175,15 @@ class Leave extends Component
             'comments' => ['nullable', 'string'],
         ];
 
-        // Add document validation if leave type requires it
-        if ($this->requiresDocument) {
-            $rules['document'] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
-        }
+        // Always validate an uploaded document; it is required only when the leave type says so
+        $rules['document'] = HrDocumentStore::rules(HrDocumentType::Leave, required: (bool) $this->requiresDocument, maxKilobytes: 2048);
 
         $this->validate($rules);
 
         // Handle document upload
-        $documentPath = null;
-        if ($this->document) {
-            $documentPath = $this->document->store('leave-documents', 'public');
-        }
+        $documentPath = $this->document instanceof TemporaryUploadedFile
+            ? app(HrDocumentStore::class)->store(HrDocumentType::Leave, $this->document)
+            : null;
 
         if ($this->modalMode === 'edit' && $this->editingLeaveId) {
             if (! $this->canManageRecords()) {
@@ -206,6 +206,7 @@ class Leave extends Component
             ];
 
             if ($documentPath) {
+                app(HrDocumentStore::class)->delete(HrDocumentType::Leave, $leave->document);
                 $updateData['document'] = $documentPath;
             }
 

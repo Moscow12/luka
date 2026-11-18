@@ -8,6 +8,8 @@ use App\Models\contract_documents;
 use App\Models\contract_renewals;
 use App\Models\ContractParty;
 use App\Models\contracts;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -89,12 +91,12 @@ class ContractDetails extends Component
     public function uploadDocument()
     {
         $this->validate([
-            'document' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'document' => HrDocumentStore::rules(HrDocumentType::InstitutionalContract, required: true),
             'documentName' => 'required|string|max:255',
         ]);
 
         try {
-            $path = $this->document->store('contracts/documents', 'public');
+            $path = app(HrDocumentStore::class)->store(HrDocumentType::InstitutionalContract, $this->document);
 
             contract_documents::create([
                 'contract_id' => $this->contract->id,

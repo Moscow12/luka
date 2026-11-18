@@ -7,8 +7,11 @@ use App\Models\Employee;
 use App\Models\Employeecontracts;
 use App\Models\Jobtitle;
 use App\Models\workstations;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class Contracts extends Component
@@ -127,20 +130,22 @@ class Contracts extends Component
 
         // Require attachment only when creating
         if ($this->editmode) {
-            $rules['attachment'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::EmployeeContract, maxKilobytes: 2048);
         } else {
-            $rules['attachment'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::EmployeeContract, required: true, maxKilobytes: 2048);
         }
 
         $this->validate($rules);
         // store attachment in storage
-        $paths = null;
-        if ($this->attachment) {
-            $paths = $this->attachment->store('contracts', 'public');
-        }
+        $paths = $this->attachment instanceof TemporaryUploadedFile
+            ? app(HrDocumentStore::class)->store(HrDocumentType::EmployeeContract, $this->attachment)
+            : null;
         // save contract / edit contract if editmode is on / create new contract if editmode is off
         if ($this->editmode) {
-            $contract = Employeecontracts::findOrFail($this->contract_id);
+            $contract = Employeecontracts::where('employee_id', $this->employee_id)->findOrFail($this->contract_id);
+            if ($paths) {
+                app(HrDocumentStore::class)->delete(HrDocumentType::EmployeeContract, $contract->attachment);
+            }
             $contract->update([
                 'workstation_id' => $this->workstation_id,
                 'department_id' => $this->department_id,

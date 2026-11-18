@@ -330,7 +330,7 @@
                                             @if($reviewingRequest->employee_attachment)
                                                 <div class="col-12 mt-2">
                                                     <p class="text-muted mb-1 small">Employee's Termination Letter</p>
-                                                    <a href="{{ Storage::url($reviewingRequest->employee_attachment) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                    <a href="{{ route('hr.documents.show', ['type' => 'contract-request', 'id' => $reviewingRequest->id]) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                                                         <i class="fa-solid fa-paperclip me-1"></i> View Attachment
                                                     </a>
                                                 </div>
@@ -400,9 +400,9 @@
                                         </label>
                                         <input type="file" class="form-control @error('hr_confirmation_letter') is-invalid @enderror"
                                                wire:model="hr_confirmation_letter"
-                                               accept=".pdf,.doc,.docx">
+                                               accept=".pdf,.jpg,.jpeg,.png">
                                         @error('hr_confirmation_letter') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                        <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max: 5MB)</small>
+                                        <small class="text-muted">Accepted formats: PDF, JPG, PNG (Max: 5MB)</small>
                                         <div wire:loading wire:target="hr_confirmation_letter" class="text-primary mt-1">
                                             <span class="spinner-border spinner-border-sm"></span> Uploading...
                                         </div>
@@ -414,9 +414,9 @@
                                         </label>
                                         <input type="file" class="form-control @error('hr_confirmation_letter') is-invalid @enderror"
                                                wire:model="hr_confirmation_letter"
-                                               accept=".pdf,.doc,.docx">
+                                               accept=".pdf,.jpg,.jpeg,.png">
                                         @error('hr_confirmation_letter') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                        <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max: 5MB)</small>
+                                        <small class="text-muted">Accepted formats: PDF, JPG, PNG (Max: 5MB)</small>
                                         <div wire:loading wire:target="hr_confirmation_letter" class="text-primary mt-1">
                                             <span class="spinner-border spinner-border-sm"></span> Uploading...
                                         </div>
@@ -456,7 +456,7 @@
                                         @if($reviewingRequest->hr_confirmation_letter)
                                             <div class="col-12 mt-2">
                                                 <p class="text-muted mb-1 small">HR Confirmation Letter</p>
-                                                <a href="{{ Storage::url($reviewingRequest->hr_confirmation_letter) }}" target="_blank" class="btn btn-outline-success btn-sm">
+                                                <a href="{{ route('hr.documents.show', ['type' => 'contract-request-letter', 'id' => $reviewingRequest->id]) }}" target="_blank" class="btn btn-outline-success btn-sm">
                                                     <i class="fa-solid fa-file-signature me-1"></i> View Confirmation Letter
                                                 </a>
                                             </div>
@@ -464,7 +464,7 @@
                                         @if($reviewingRequest->employee_attachment)
                                             <div class="col-12 mt-2">
                                                 <p class="text-muted mb-1 small">Employee Attachment</p>
-                                                <a href="{{ Storage::url($reviewingRequest->employee_attachment) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <a href="{{ route('hr.documents.show', ['type' => 'contract-request', 'id' => $reviewingRequest->id]) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                                                     <i class="fa-solid fa-paperclip me-1"></i> View Attachment
                                                 </a>
                                             </div>

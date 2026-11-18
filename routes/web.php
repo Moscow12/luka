@@ -155,6 +155,11 @@ Route::prefix('hr')->middleware('auth')->group(function () {
     Route::get('/staffs/otherdocuments/{id}', Otherdocuments::class)->name('hr.otherdocuments');
     Route::get('/staffs/digitalsignature/{id}', Digitalsignature::class)->name('hr.digitalsignature');
 
+    // Sensitive HR files: authorized, decrypted streaming (see HrDocumentAccess)
+    Route::get('/documents/{type}/{id}', App\Http\Controllers\HrDocumentController::class)
+        ->whereIn('type', array_column(App\Services\HrDocuments\HrDocumentType::cases(), 'value'))
+        ->name('hr.documents.show');
+
     // attendance routes
     Route::get('/attendance/managefpattendance', Managefpattendance::class)->name('fp.attendance');
     Route::get('/attendance/managefpusers', Managefpusers::class)->name('managefpusers');

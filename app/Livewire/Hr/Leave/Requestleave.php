@@ -10,11 +10,14 @@ use App\Models\Employee;
 use App\Models\Employeeleaves;
 use App\Models\Leaves;
 use App\Models\LeaveSetting;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -461,9 +464,8 @@ class Requestleave extends Component
         ];
 
         // Add document validation if leave type requires it
-        if ($this->requiresDocument) {
-            $rules['document'] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
-        }
+        // Always validate an uploaded document; it is required only when the leave type says so
+        $rules['document'] = HrDocumentStore::rules(HrDocumentType::Leave, required: (bool) $this->requiresDocument, maxKilobytes: 2048);
 
         // Add acting assignment validation if required
         if ($this->actingAssignmentRequired && $this->showActingAssignment) {
@@ -473,10 +475,9 @@ class Requestleave extends Component
         $this->validate($rules);
 
         // Handle document upload
-        $documentPath = null;
-        if ($this->document) {
-            $documentPath = $this->document->store('leave-documents', 'public');
-        }
+        $documentPath = $this->document instanceof TemporaryUploadedFile
+            ? app(HrDocumentStore::class)->store(HrDocumentType::Leave, $this->document)
+            : null;
 
         $leaveRequest = Employeeleaves::create([
             'leave_id' => $this->leave_id,
@@ -534,9 +535,7 @@ class Requestleave extends Component
         ];
 
         // Add document validation if leave type requires it
-        if ($this->requiresDocument) {
-            $rules['document'] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
-        }
+        $rules['document'] = HrDocumentStore::rules(HrDocumentType::Leave, maxKilobytes: 2048);
 
         $this->validate($rules);
 
@@ -560,8 +559,8 @@ class Requestleave extends Component
         ];
 
         // Handle document upload
-        if ($this->document) {
-            $updateData['document'] = $this->document->store('leave-documents', 'public');
+        if ($this->document instanceof TemporaryUploadedFile) {
+            $updateData['document'] = app(HrDocumentStore::class)->replace(HrDocumentType::Leave, $leave->document, $this->document);
         }
 
         $leave->update($updateData);

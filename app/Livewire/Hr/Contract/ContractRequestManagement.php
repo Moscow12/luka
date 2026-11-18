@@ -4,9 +4,12 @@ namespace App\Livewire\Hr\Contract;
 
 use App\Models\ContractRequest;
 use App\Models\Employee;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -100,9 +103,9 @@ class ContractRequestManagement extends Component
 
         // Require confirmation letter for early termination
         if ($this->reviewingRequest && $this->reviewingRequest->requiresConfirmationLetter()) {
-            $rules['hr_confirmation_letter'] = 'required|file|mimes:pdf,doc,docx|max:5120';
+            $rules['hr_confirmation_letter'] = HrDocumentStore::rules(HrDocumentType::ContractRequestLetter, required: true, maxKilobytes: 5120);
         } else {
-            $rules['hr_confirmation_letter'] = 'nullable|file|mimes:pdf,doc,docx|max:5120';
+            $rules['hr_confirmation_letter'] = HrDocumentStore::rules(HrDocumentType::ContractRequestLetter, maxKilobytes: 5120);
         }
 
         $this->validate($rules, [
@@ -127,8 +130,8 @@ class ContractRequestManagement extends Component
             ];
 
             // Handle HR confirmation letter upload
-            if ($this->hr_confirmation_letter) {
-                $updateData['hr_confirmation_letter'] = $this->hr_confirmation_letter->store('contract-requests/hr', 'public');
+            if ($this->hr_confirmation_letter instanceof TemporaryUploadedFile) {
+                $updateData['hr_confirmation_letter'] = app(HrDocumentStore::class)->replace(HrDocumentType::ContractRequestLetter, $request->hr_confirmation_letter, $this->hr_confirmation_letter);
             }
 
             // Update request status

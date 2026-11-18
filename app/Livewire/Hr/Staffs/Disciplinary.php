@@ -5,8 +5,12 @@ namespace App\Livewire\Hr\Staffs;
 use App\Models\Employee;
 use App\Models\Employeedisplineissue;
 use App\Models\violations;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 
 class Disciplinary extends Component
@@ -17,6 +21,7 @@ class Disciplinary extends Component
 
     public $showModal = false;
 
+    #[Locked]
     public $employee_id;
 
     public $displineissues = [];
@@ -81,11 +86,11 @@ class Disciplinary extends Component
         $this->showModal = true;
         if ($mode === 'edit' && $id) {
             // Load displine data for editing if needed
-            $displine = Employeedisplineissue::findOrFail($id);
+            $displine = Employeedisplineissue::where('employee_id', $this->employee_id)->findOrFail($id);
             $this->displine_id = $id;
             $this->violation_id = $displine->violation_id;
             $this->violation_date = $displine->violation_date;
-            $this->attachment = $displine->attachment;
+            $this->attachment = null; // upload slot only; the stored file stays on the record
             $this->notes = $displine->notes;
 
         } else {
@@ -104,9 +109,9 @@ class Disciplinary extends Component
 
         // Attachment is required only for new records, optional when editing
         if ($this->modalMode === 'create') {
-            $rules['attachment'] = ['required', 'file', 'max:10240'];
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::Disciplinary, required: true);
         } else {
-            $rules['attachment'] = ['nullable', 'file', 'max:10240'];
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::Disciplinary);
         }
 
         $this->validate($rules, [
@@ -116,18 +121,21 @@ class Disciplinary extends Component
             'attachment.required' => 'Please upload supporting documentation.',
             'attachment.file' => 'The attachment must be a valid file.',
             'attachment.max' => 'The attachment file size must not exceed 10MB.',
+            'attachment.extensions' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Disciplinary).' files are accepted.',
+            'attachment.mimes' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Disciplinary).' files are accepted.',
+            'attachment.mimetypes' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Disciplinary).' files are accepted.',
         ]);
 
-        // Upload attachment (only if a new file was uploaded)
-        if ($this->attachment && is_object($this->attachment) && method_exists($this->attachment, 'store')) {
-            $path = $this->attachment->store('attachments', 'public');
-            $this->attachment = $path;
-        }
+        // New uploads go to encrypted private storage; the path never comes from the client
+
+        $documents = app(HrDocumentStore::class);
+
+        $upload = $this->attachment instanceof TemporaryUploadedFile ? $this->attachment : null;
 
         if ($this->modalMode === 'edit' && $this->displine_id) {
             // Update displine data if needed
-            $displine = Employeedisplineissue::findOrFail($this->displine_id);
-            $displine->update(['violation_id' => $this->violation_id, 'violation_date' => $this->violation_date, 'notes' => $this->notes, 'attachment' => $this->attachment]);
+            $displine = Employeedisplineissue::where('employee_id', $this->employee_id)->findOrFail($this->displine_id);
+            $displine->update(['violation_id' => $this->violation_id, 'violation_date' => $this->violation_date, 'notes' => $this->notes, 'attachment' => $upload ? $documents->replace(HrDocumentType::Disciplinary, $displine->attachment, $upload) : $displine->attachment]);
             $this->listdata();
             session()->flash('success', 'Disciplinary record updated successfully!');
         } else {
@@ -136,7 +144,7 @@ class Disciplinary extends Component
                 'violation_id' => $this->violation_id,
                 'violation_date' => $this->violation_date,
                 'notes' => $this->notes,
-                'attachment' => $this->attachment,
+                'attachment' => $upload ? $documents->store(HrDocumentType::Disciplinary, $upload) : null,
                 'employee_id' => $this->employee_id,
                 'added_by' => Auth::user()->id,
 
@@ -150,7 +158,8 @@ class Disciplinary extends Component
 
     public function delete($uuid)
     {
-        $displine = Employeedisplineissue::findOrFail($uuid);
+        $displine = Employeedisplineissue::where('employee_id', $this->employee_id)->findOrFail($uuid);
+        app(HrDocumentStore::class)->delete(HrDocumentType::Disciplinary, $displine->attachment);
         $displine->delete();
         $this->listdata();
         session()->flash('success', 'Displine deleted successfully!');

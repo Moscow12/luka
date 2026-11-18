@@ -4,8 +4,12 @@ namespace App\Livewire\Hr\Staffs;
 
 use App\Models\Employee;
 use App\Models\Employeequalifications;
+use App\Services\HrDocuments\HrDocumentStore;
+use App\Services\HrDocuments\HrDocumentType;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 
 class Qualifications extends Component
@@ -30,6 +34,7 @@ class Qualifications extends Component
 
     public $qualification_id;
 
+    #[Locked]
     public $employee_id;
 
     public $qualifications;
@@ -79,13 +84,13 @@ class Qualifications extends Component
         $this->showModal = true;
         if ($mode === 'edit' && $id) {
             // Load qualification data for editing if needed
-            $qualification = Employeequalifications::findOrFail($id);
+            $qualification = Employeequalifications::where('employee_id', $this->employee_id)->findOrFail($id);
             $this->qualification_id = $id;
             $this->education_level = $qualification->education_level;
             $this->institution = $qualification->institution;
             $this->start_date = $qualification->start_date;
             $this->end_date = $qualification->end_date;
-            $this->attachment = $qualification->attachment;
+            $this->attachment = null; // upload slot only; the stored file stays on the record
             $this->comments = $qualification->comments;
 
         } else {
@@ -106,31 +111,31 @@ class Qualifications extends Component
 
         // Attachment is required only for new qualifications, optional when editing
         if ($this->modalMode === 'create') {
-            $rules['attachment'] = ['required', 'file', 'max:10240'];
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::Qualification, required: true);
         } else {
-            $rules['attachment'] = ['nullable', 'file', 'max:10240'];
+            $rules['attachment'] = HrDocumentStore::rules(HrDocumentType::Qualification);
         }
 
         $this->validate($rules, [
             'attachment.required' => 'Please upload a certificate or document for this qualification.',
             'attachment.file' => 'The attachment must be a valid file.',
             'attachment.max' => 'The attachment file size must not exceed 10MB.',
+            'attachment.extensions' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Qualification).' files are accepted.',
+            'attachment.mimes' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Qualification).' files are accepted.',
+            'attachment.mimetypes' => 'Only '.HrDocumentStore::acceptedLabel(HrDocumentType::Qualification).' files are accepted.',
             'education_level.required' => 'Please select an education level.',
             'institution.required' => 'Please enter the institution name.',
             'start_date.required' => 'Please enter the start date.',
             'end_date.required' => 'Please enter the end date.',
             'comments.required' => 'Please add comments about this qualification.',
         ]);
-        // upload attachment (only if a new file was uploaded)
-        if ($this->attachment && is_object($this->attachment) && method_exists($this->attachment, 'store')) {
-            // Store file in "attachments" folder inside /storage/app/public/
-            $path = $this->attachment->store('attachments', 'public');
-            $this->attachment = $path;
-        }
+        // New uploads go to encrypted private storage; the path never comes from the client
+        $documents = app(HrDocumentStore::class);
+        $upload = $this->attachment instanceof TemporaryUploadedFile ? $this->attachment : null;
         if ($this->modalMode === 'edit' && $this->qualification_id) {
             // Update qualification data if needed
-            $qualification = Employeequalifications::findOrFail($this->qualification_id);
-            $qualification->update(['education_level' => $this->education_level, 'institution' => $this->institution, 'start_date' => $this->start_date, 'end_date' => $this->end_date, 'attachment' => $this->attachment, 'comments' => $this->comments]);
+            $qualification = Employeequalifications::where('employee_id', $this->employee_id)->findOrFail($this->qualification_id);
+            $qualification->update(['education_level' => $this->education_level, 'institution' => $this->institution, 'start_date' => $this->start_date, 'end_date' => $this->end_date, 'attachment' => $upload ? $documents->replace(HrDocumentType::Qualification, $qualification->attachment, $upload) : $qualification->attachment, 'comments' => $this->comments]);
             $this->listdata();
             session()->flash('success', 'Qualification updated successfully!');
         } else {
@@ -140,7 +145,7 @@ class Qualifications extends Component
                 'institution' => $this->institution,
                 'start_date' => $this->start_date,
                 'end_date' => $this->end_date,
-                'attachment' => $this->attachment,
+                'attachment' => $upload ? $documents->store(HrDocumentType::Qualification, $upload) : null,
                 'comments' => $this->comments,
                 'employee_id' => $this->employee_id,
                 'added_by' => Auth::user()->id,
@@ -155,7 +160,8 @@ class Qualifications extends Component
 
     public function delete($uuid)
     {
-        $qualification = Employeequalifications::findOrFail($uuid);
+        $qualification = Employeequalifications::where('employee_id', $this->employee_id)->findOrFail($uuid);
+        app(HrDocumentStore::class)->delete(HrDocumentType::Qualification, $qualification->attachment);
         $qualification->delete();
         $this->listdata();
         session()->flash('success', 'Qualification deleted successfully!');

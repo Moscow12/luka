@@ -57,7 +57,7 @@
                             <td>{{ $promotion->start_date }}</td>
                             <td>{{ $promotion->comments }}</td>
                             <td>
-                                <a href="{{ asset('storage/' . $promotion->attachment) }}" target="_blank">
+                                <a href="{{ route('hr.documents.show', ['type' => 'promotion', 'id' => $promotion->id]) }}" target="_blank">
                                         Preview
                                     </a>
                             </td>
@@ -83,7 +83,8 @@
             <x-forms.input type="textarea" name="comments" label="comments" rows="2" required />
 
             <label class="form-label">Upload attachment</label>
-            <input type="file" class="form-control" wire:model="attachment">
+            <input type="file" class="form-control" wire:model="attachment" accept=".pdf,.jpg,.jpeg,.png">
+            <small class="text-muted">PDF, JPG or PNG (max 10MB)</small>
             @error('attachment') <small class="text-danger">{{ $message }}</small> @enderror
             {{-- Show loading indicator while uploading --}}
             <div wire:loading wire:target="attachment" class="text-muted mt-2">

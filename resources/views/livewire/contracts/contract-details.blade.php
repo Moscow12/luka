@@ -273,8 +273,8 @@
                                             <textarea wire:model="documentDescription" class="form-control" rows="2"></textarea>
                                         </div>
                                         <div class="col-md-12">
-                                            <label class="form-label">File* (PDF, DOC, DOCX - Max 10MB)</label>
-                                            <input type="file" wire:model="document" class="form-control" accept=".pdf,.doc,.docx">
+                                            <label class="form-label">File* (PDF, JPG, PNG - Max 10MB)</label>
+                                            <input type="file" wire:model="document" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                                             @error('document') <span class="text-danger small">{{ $message }}</span> @enderror
                                         </div>
                                         <div class="col-12">
@@ -312,7 +312,7 @@
                                         <td>{{ $doc->addedBy->name }}</td>
                                         <td>{{ $doc->created_at->format('M d, Y') }}</td>
                                         <td>
-                                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ route('hr.documents.show', ['type' => 'institutional-contract', 'id' => $doc->id]) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-download"></i>
                                             </a>
                                         </td>

@@ -93,7 +93,7 @@
                                 </td>
                                 <td>
                                     @if($contract->attachment)
-                                        <a href="{{ asset('storage/' . $contract->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('hr.documents.show', ['type' => 'contract', 'id' => $contract->id]) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="fa-solid fa-paperclip"></i> View
                                         </a>
                                     @else
@@ -191,7 +191,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label">Upload attachment</label>
-                    <input type="file" class="form-control" wire:model="attachment">
+                    <input type="file" class="form-control" wire:model="attachment" accept=".pdf,.jpg,.jpeg,.png">
                     @error('attachment') <small class="text-danger">{{ $message }}</small> @enderror
                     {{-- Show loading indicator while uploading --}}
                     <div wire:loading wire:target="attachment" class="text-muted mt-2">

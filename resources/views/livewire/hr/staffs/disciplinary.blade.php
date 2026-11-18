@@ -56,6 +56,9 @@
                             <td>{{ $displineissue->violation_date }}</td>
                             <td>{{ $displineissue->notes }}</td>
                             <td>
+                                @if($displineissue->attachment)
+                                    <a href="{{ route('hr.documents.show', ['type' => 'disciplinary', 'id' => $displineissue->id]) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">View attachment</a>
+                                @endif
                                 <x-forms.button-model name="EDIT" wire:click="openModal('edit', '{{ $displineissue->id }}')" />
                                 <a href="#" class="btn btn-sm btn-danger" wire:click="delete('{{ $displineissue->id }}')">Delete</a>
                             </td>
@@ -74,7 +77,8 @@
             <x-forms.input type="date" name="violation_date" label="Violation Date" required />
             <x-forms.input type="textarea" name="notes" label="Notes" rows="2" required />
             <label class="form-label">Upload attachment</label>
-            <input type="file" class="form-control" wire:model="attachment">
+            <input type="file" class="form-control" wire:model="attachment" accept=".pdf,.jpg,.jpeg,.png">
+            <small class="text-muted">PDF, JPG or PNG (max 10MB)</small>
             @error('attachment') <small class="text-danger">{{ $message }}</small> @enderror
             {{-- Show loading indicator while uploading --}}
             <div wire:loading wire:target="attachment" class="text-muted mt-2">

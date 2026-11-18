@@ -21,8 +21,14 @@ class EncryptedFileStore
     /** Encrypts and stores the file under $directory, returning its path. */
     public function put(UploadedFile $file, string $directory): string
     {
+        return $this->putContents($file->get(), $directory);
+    }
+
+    /** Encrypts raw contents (e.g. a legacy file being migrated) and stores them under $directory. */
+    public function putContents(string $contents, string $directory): string
+    {
         $path = trim($directory, '/').'/'.Str::uuid().'.enc';
-        Storage::disk(self::DISK)->put($path, Crypt::encryptString($file->get()));
+        Storage::disk(self::DISK)->put($path, Crypt::encryptString($contents));
 
         return $path;
     }

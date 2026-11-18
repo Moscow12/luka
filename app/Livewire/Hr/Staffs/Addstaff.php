@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class Addstaff extends Component
@@ -566,12 +567,19 @@ class Addstaff extends Component
             $messages['phone.unique'] = 'This phone number is already registered to another user.';
         }
 
+        // Photos are shown publicly, so only real JPEG/PNG images are accepted
+        if ($this->photo instanceof TemporaryUploadedFile) {
+            $rules['photo'] = ['image', 'max:2048', 'extensions:jpg,jpeg,png', 'mimes:jpg,jpeg,png', 'mimetypes:image/jpeg,image/png'];
+            $messages['photo.extensions'] = $messages['photo.mimes'] = $messages['photo.mimetypes'] = 'The photo must be a JPG or PNG image.';
+        }
+
         $this->validate($rules, $messages);
 
-        // add photo upload
-        if ($this->photo && is_object($this->photo)) {
-            $photoPath = $this->photo->store('photos', 'public');
-            $this->photo = $photoPath;
+        if ($this->photo instanceof TemporaryUploadedFile) {
+            $this->photo = $this->photo->store('photos', 'public');
+        } else {
+            // Never trust a path string from the client: keep whatever the record already has
+            $this->photo = $this->employee_id ? Employee::whereKey($this->employee_id)->value('photo') : null;
         }
 
         $createdUser = null;
