@@ -37,7 +37,7 @@ class EngineeringTableExport implements FromArray, ShouldAutoSize, WithStyles, W
             [config('app.name')],
             [$this->title],
             ...array_map(fn (string $line) => [$line], $this->meta),
-            [],
+            [''], // a truly empty row is dropped on write, which would shift the styled heading row
             $this->headings,
             ...$this->rows,
         ];

@@ -43,8 +43,8 @@ class ChopReportPdfController extends Controller
         $activities = $report->activities();
 
         return PdfReport::make('exports.chop.cost-analysis-pdf', [
-            'activities' => $activities,
-            'stats' => $report->stats($activities),
+            'sheet' => $report->sheet($activities),
+            'sheetTitle' => $report->sheetTitle(),
             'filters' => $report->filterSummary(),
         ])->landscape()->footer('CHOP Cost Analysis');
     }

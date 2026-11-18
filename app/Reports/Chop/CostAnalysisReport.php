@@ -105,6 +105,14 @@ class CostAnalysisReport
         ];
     }
 
+    /** "COST ANALYSIS 2025-2026", as on the official template. */
+    public function sheetTitle(): string
+    {
+        $year = $this->financialYearId ? FinancialYear::find($this->financialYearId)?->name : null;
+
+        return 'COST ANALYSIS '.($year ? str_replace('/', '-', $year) : '(ALL FINANCIAL YEARS)');
+    }
+
     /** Human-readable filter line for report headers. */
     public function filterSummary(): array
     {
@@ -147,5 +155,110 @@ class CostAnalysisReport
         $rows[] = ['', 'TOTAL', '', '', '', '', '', $stats['total_planned'], $stats['total_actual'], $stats['total_variance'], round($stats['variance_percentage'], 1), $stats['total_variance'] >= 0 ? 'Under budget' : 'Over budget'];
 
         return [$headings, $rows, $fills];
+    }
+
+    /**
+     * The official CHOP cost analysis layout: objectives → targets → planned interventions,
+     * each with its costed inputs and a subtotal per source of fund.
+     *
+     * Mapping (no dedicated fields exist yet): objective = category area,
+     * target = the activity's expected outcome.
+     *
+     * @return array{objectives: array, by_source: array, grand_total: float}
+     */
+    public function sheet(Collection $activities): array
+    {
+        $objectives = [];
+        $bySource = [];
+
+        $grouped = $activities
+            ->sortBy(fn ($a) => [
+                mb_strtolower($a->category?->name ?? "\u{10FFFF}"),
+                mb_strtolower(trim((string) $a->expected_outcome)),
+                (string) $a->created_at,
+            ])
+            ->groupBy(fn ($a) => $a->category_id ?? 'none');
+
+        foreach ($grouped->values() as $o => $objectiveActivities) {
+            $targets = [];
+            $interventionNumber = 0;
+
+            foreach ($objectiveActivities->groupBy(fn ($a) => mb_strtolower(trim((string) $a->expected_outcome)))->values() as $t => $targetActivities) {
+                $interventions = [];
+
+                foreach ($targetActivities as $activity) {
+                    $inputs = $activity->items->map(function ($line) {
+                        $quantity = (float) ($line->quantity ?? 0);
+                        $unitCost = (float) preg_replace('/[^0-9.]/', '', (string) ($line->price ?? '0'));
+
+                        return [
+                            'gfc_code' => $line->item?->gfc_code,
+                            'name' => $line->item?->name ?? 'N/A',
+                            'unit' => $line->item?->unit,
+                            'unit_cost' => $unitCost,
+                            'quantity' => $quantity,
+                            'estimate' => $quantity * $unitCost,
+                        ];
+                    })->values()->all();
+
+                    $total = (float) array_sum(array_column($inputs, 'estimate'));
+                    $source = $activity->source?->name ?? 'Unspecified';
+                    $bySource[$source] = [
+                        'total' => ($bySource[$source]['total'] ?? 0) + $total,
+                        'colour' => $activity->source?->colorcode,
+                    ];
+
+                    $interventions[] = [
+                        'number' => ++$interventionNumber,
+                        'name' => $activity->planned_activity,
+                        'inputs' => $inputs,
+                        'total' => $total,
+                        'source' => $source,
+                        'colour' => self::hexColour($activity->source?->colorcode),
+                    ];
+                }
+
+                $targets[] = [
+                    'number' => $t + 1,
+                    'text' => trim((string) $targetActivities->first()->expected_outcome),
+                    'interventions' => $interventions,
+                ];
+            }
+
+            $objectives[] = [
+                'number' => $o + 1,
+                'name' => $objectiveActivities->first()->category?->name ?? 'Uncategorised',
+                'targets' => $targets,
+                'total' => (float) collect($targets)->flatMap(fn ($t) => $t['interventions'])->sum('total'),
+            ];
+        }
+
+        ksort($bySource);
+
+        return [
+            'objectives' => $objectives,
+            'by_source' => $bySource,
+            'grand_total' => (float) array_sum(array_column($bySource, 'total')),
+        ];
+    }
+
+    /** "#3366ff" / "36f" → "3366FF"; grey when missing or invalid. */
+    public static function hexColour(?string $colour): string
+    {
+        $hex = ltrim(trim((string) $colour), '#');
+
+        if (preg_match('/^[0-9a-fA-F]{3}$/', $hex)) {
+            $hex = preg_replace('/(.)/', '$1$1', $hex);
+        }
+
+        return preg_match('/^[0-9a-fA-F]{6}$/', $hex) ? strtoupper($hex) : '6C757D';
+    }
+
+    /** Black or white text, whichever reads better on the colour. */
+    public static function textOn(string $hex): string
+    {
+        [$r, $g, $b] = array_map('hexdec', str_split($hex, 2));
+
+        return (0.299 * $r + 0.587 * $g + 0.114 * $b) > 150 ? '000000' : 'FFFFFF';
     }
 }
