@@ -88,6 +88,12 @@ Route::group(['prefix' => 'auth'], function () {
     Route::get('logout', \App\Livewire\Auth\Logout::class)->name('logout')->middleware('auth');
 });
 
+// One-time new-account setup links (sent by SMS/e-mail instead of passwords)
+Route::get('account/setup/{token}', \App\Http\Controllers\AccountSetupLinkController::class)
+    ->name('account.setup.link')->middleware(['guest', 'throttle:20,1']);
+Route::get('account/setup', \App\Livewire\Auth\SetupAccount::class)
+    ->name('account.setup')->middleware('guest');
+
 Route::group(['prefix' => 'users', 'middleware' => 'auth'], function () {
     Route::get('profile', App\Livewire\Users\Profile\ProfileIndex::class)->name('user.profile');
     Route::get('change-password', App\Livewire\Users\ChangePassword::class)->name('user.change-password');

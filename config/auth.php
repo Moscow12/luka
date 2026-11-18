@@ -16,6 +16,9 @@ return [
 
     'two_factor_enabled' => env('TWO_FACTOR_ENABLED', true),
 
+    // Hours a new-account setup link stays valid (links are single-use)
+    'account_setup_expire_hours' => (int) env('ACCOUNT_SETUP_EXPIRE_HOURS', 72),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults

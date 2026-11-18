@@ -92,8 +92,8 @@
                                             <li>
                                                 <button type="button" class="dropdown-item"
                                                     wire:click="sendCredentialsToSelected"
-                                                    wire:confirm="Create accounts (where missing) and send login credentials via SMS + email to the selected staff?">
-                                                    <i class="fa-solid fa-key me-2"></i>Send Credentials
+                                                    wire:confirm="Create accounts (where missing) and send a one-time password setup link by email + SMS to the selected staff?">
+                                                    <i class="fa-solid fa-key me-2"></i>Send Setup Links
                                                 </button>
                                             </li>
                                             <li>

@@ -9,9 +9,9 @@ use App\Models\Role;
 use App\Models\SmsApiSetting;
 use App\Models\User;
 use App\Models\workstations;
-use App\Notifications\StaffCredentials;
+use App\Services\Auth\AccountSetupService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -184,13 +184,6 @@ class Stafflist extends Component
 
                     continue;
                 }
-                $password = (string) $employee->employee_no;
-                if ($password === '') {
-                    $skipped[] = "{$name} (no employee number)";
-
-                    continue;
-                }
-
                 DB::beginTransaction();
 
                 // Link to a pre-existing user with this email/username instead of erroring on the unique constraint.
@@ -220,7 +213,8 @@ class Stafflist extends Component
                     'email' => $employee->email,
                     'phone_number' => $phoneTaken ? null : $employee->phone,
                     'username' => $employee->email,
-                    'password' => Hash::make($password),
+                    // Unusable random password: the staff member chooses theirs via the setup link
+                    'password' => AccountSetupService::unusablePassword(),
                     'profile_picture' => $employee->photo,
                 ]);
 
@@ -234,26 +228,17 @@ class Stafflist extends Component
                     $user->assignRole($defaultRole);
                 }
 
-                // Email leg (email is required, so always attempted).
-                try {
-                    $user->notify(new StaffCredentials($employee->email, $password, $employee->first_name ?? 'Staff'));
-                } catch (\Throwable $e) {
+                // One-time setup link (no password is ever sent). E-mail is required, so always attempted.
+                $setup = app(AccountSetupService::class);
+                $url = $setup->issue($user, Auth::user());
+
+                if (! $setup->sendEmail($user, $url, $employee->first_name ?? 'Staff')) {
                     $emailFailed++;
-                    Log::error('StaffCredentials email failed', ['employee' => $employee->id, 'error' => $e->getMessage()]);
                 }
 
                 // SMS leg (only when a provider is active and the staff has a phone).
-                if ($hasSmsProvider && $employee->phone) {
-                    $msg = "Dear {$employee->first_name},\n";
-                    $msg .= "Login Details:\n";
-                    $msg .= "Username: {$employee->email}\n";
-                    $msg .= "Password: {$password}\n";
-                    $msg .= '-HRP System Link https://hrp.stjosephhospitalmoshi.or.tz/auth/login';
-
-                    $result = send_sms($employee->phone, $msg);
-                    if (! empty($result['success'])) {
-                        $smsSent++;
-                    }
+                if ($hasSmsProvider && $employee->phone && $setup->sendSms($user, $employee->phone, $url, $employee->first_name ?? 'Staff')) {
+                    $smsSent++;
                 }
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -267,7 +252,7 @@ class Stafflist extends Component
             $summary[] = "{$created} account(s) created";
         }
         if ($smsSent) {
-            $summary[] = "{$smsSent} SMS sent";
+            $summary[] = "{$smsSent} setup-link SMS sent";
         }
         if ($emailFailed) {
             $summary[] = "{$emailFailed} email(s) failed";

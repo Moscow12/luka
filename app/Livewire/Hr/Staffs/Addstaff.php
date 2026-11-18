@@ -16,6 +16,7 @@ use App\Models\street;
 use App\Models\User;
 use App\Models\wards;
 use App\Models\workstations;
+use App\Services\Auth\AccountSetupService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -50,7 +51,7 @@ class Addstaff extends Component
 
     public $selected_role;
 
-    // SMS notification toggle
+    // Send a one-time setup link by SMS instead of choosing a password (no password is ever sent)
     public $sendSmsNotification = false;
 
     public $hasSmsProvider = false;
@@ -546,7 +547,10 @@ class Addstaff extends Component
         // Add validation rules for user creation if enabled
         if ($this->createUserAccount) {
             $rules['username'] = ['required', 'string', 'min:3', 'max:50', 'unique:users,username'];
-            $rules['user_password'] = ['required', 'string', 'min:8', 'confirmed'];
+            // With a setup link the staff member chooses their own password
+            if (! $this->sendSmsNotification) {
+                $rules['user_password'] = ['required', 'string', 'min:8', 'confirmed'];
+            }
             $rules['selected_role'] = ['required', 'exists:roles,id'];
 
             // Validate email is unique in users table (it must be unique in both tables)
@@ -605,7 +609,9 @@ class Addstaff extends Component
                         'email' => $this->email,
                         'phone_number' => $this->phone,
                         'username' => $this->username,
-                        'password' => Hash::make($this->user_password),
+                        'password' => $this->sendSmsNotification
+                            ? AccountSetupService::unusablePassword()
+                            : Hash::make($this->user_password),
                         'profile_picture' => $this->photo,
                     ]);
                 } catch (\Illuminate\Database\QueryException $e) {
@@ -669,12 +675,12 @@ class Addstaff extends Component
                     $createdUser->assignRole($selectedRoleName);
                 }
 
-                // Send SMS notification if enabled
-                if ($this->createUserAccount && $this->sendSmsNotification && $this->phone) {
-                    $this->sendCredentialsSms($this->phone, $this->username, $this->user_password, $this->first_name);
+                session()->flash('success', $this->createUserAccount ? 'Staff updated and user account created successfully!' : 'Staff updated successfully!');
+
+                if ($createdUser && $this->sendSmsNotification) {
+                    $this->sendSetupLink($createdUser);
                 }
 
-                session()->flash('success', $this->createUserAccount ? 'Staff updated and user account created successfully!' : 'Staff updated successfully!');
             } else {
                 Employee::create([
                     'first_name' => $this->first_name,
@@ -715,13 +721,13 @@ class Addstaff extends Component
                     $createdUser->assignRole($selectedRoleName);
                 }
 
-                // Send SMS notification if enabled
-                if ($this->createUserAccount && $this->sendSmsNotification && $this->phone) {
-                    $this->sendCredentialsSms($this->phone, $this->username, $this->user_password, $this->first_name);
-                }
-
                 $this->listdata();
                 session()->flash('success', $this->createUserAccount ? 'Staff added with user account successfully!' : 'Staff added successfully!');
+
+                if ($createdUser && $this->sendSmsNotification) {
+                    $this->sendSetupLink($createdUser);
+                }
+
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -774,25 +780,30 @@ class Addstaff extends Component
     }
 
     /**
-     * Send user credentials via SMS
+     * Send a one-time setup link (never a password): by SMS, falling back to e-mail.
      */
-    private function sendCredentialsSms($phoneNumber, $username, $password, $firstName)
+    private function sendSetupLink(User $user): void
     {
         try {
-            $message = "Dear {$firstName},\n";
-            $message .= "Login Details:\n";
-            $message .= "Username: {$username}\n";
-            $message .= "Password: {$password}\n";
-            $message .= '-HRP System Link https://hrp.stjosephhospitalmoshi.or.tz/auth/login';
+            $setup = app(AccountSetupService::class);
+            $url = $setup->issue($user, Auth::user());
 
-            $result = send_sms($phoneNumber, $message);
+            if ($this->phone && $setup->sendSms($user, $this->phone, $url, $this->first_name)) {
+                session()->flash('success', session('success').' A password setup link was sent by SMS.');
 
-            if ($result['success']) {
-                session()->flash('success', session('success').' SMS notification sent successfully!');
+                return;
             }
-        } catch (\Exception $e) {
-            // Don't fail the entire process if SMS fails, just log it
-            \Illuminate\Support\Facades\Log::error('Failed to send credentials SMS: '.$e->getMessage());
+
+            if ($setup->sendEmail($user, $url, $this->first_name)) {
+                session()->flash('success', session('success').' SMS could not be sent, so the setup link was e-mailed instead.');
+
+                return;
+            }
+
+            session()->flash('error', 'The account was created, but the setup link could not be sent by SMS or e-mail. The staff member can use "Forgot password" with their e-mail address.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send account setup link', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            session()->flash('error', 'The account was created, but the setup link could not be sent.');
         }
     }
 

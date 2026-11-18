@@ -20,6 +20,8 @@ class SecretRedactor
     private const SENSITIVE_PAIRS = ['api_key', 'access_key', 'private_key', 'auth_header'];
 
     private const TEXT_PATTERNS = [
+        // One-time account setup links: /account/setup/<token>
+        '#(/account/setup/)[A-Za-z0-9]+#',
         // "Authorization: Basic abc" / "Authorization: Bearer abc"
         '/(authorization["\']?\s*[:=]\s*["\']?(?:basic|bearer|digest|token)?\s*)[^\s"\',}]+/i',
         '/(\bbearer\s+)[A-Za-z0-9._~+\/=-]+/i',

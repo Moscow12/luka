@@ -566,6 +566,7 @@
                                 @error('username') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
+                            @if (! $sendSmsNotification)
                             <div>
                                 <label class="form-label fw-medium small text-muted mb-1">
                                     Password <span class="text-danger">*</span>
@@ -594,6 +595,8 @@
                                 @error('user_password_confirmation') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
+                            @endif
+
                             <div>
                                 <label class="form-label fw-medium small text-muted mb-1">
                                     User Role <span class="text-danger">*</span>
@@ -612,23 +615,27 @@
                             <div class="border-top pt-3">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="sendSmsNotification"
-                                        wire:model="sendSmsNotification">
+                                        wire:model.live="sendSmsNotification">
                                     <label class="form-check-label fw-medium" for="sendSmsNotification">
                                         <i class="fa-solid fa-mobile-screen me-1 text-success"></i>
-                                        Send credentials via SMS
+                                        Send a password setup link by SMS
                                     </label>
                                 </div>
                                 <small class="text-muted d-block mt-2">
                                     <i class="fa-solid fa-info-circle me-1"></i>
-                                    Username and password will be sent to the staff's phone number
+                                    The staff member receives a one-time link to choose their own password
+                                    (valid {{ config('auth.account_setup_expire_hours') }}h). No password is sent.
+                                    If the SMS fails, the link is e-mailed instead.
                                 </small>
                             </div>
                             @endif
 
+                            @if (! $sendSmsNotification)
                             <small class="text-muted">
                                 <i class="fa-solid fa-info-circle me-1"></i>
                                 Password must be at least 8 characters
                             </small>
+                            @endif
                         </div>
                         @endif
                     </div>
