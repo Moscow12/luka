@@ -55,6 +55,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'view-staff', 'description' => 'View staff list and details'],
                 ['name' => 'manage-staff', 'description' => 'Add, edit, and manage staff records'],
                 ['name' => 'view-attendance', 'description' => 'View attendance records and fingerprint data'],
+                ['name' => 'manage-fp-devices', 'description' => 'Register fingerprint devices, sync attendance and clear device logs'],
             ],
             'Payroll Management' => [
                 ['name' => 'view-payroll', 'description' => 'View payroll records and reports'],

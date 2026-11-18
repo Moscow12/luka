@@ -435,9 +435,11 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('managefpusers') ? 'active' : '' }}" href="{{ route('managefpusers') }}"><i class="fa-solid fa-id-card"></i> Manage FP Users</a>
             </li>
+            @if($isSuperAdmin || $user?->can('manage-fp-devices'))
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('fp.devices') ? 'active' : '' }}" href="{{ route('fp.devices') }}"><i class="fa-solid fa-desktop"></i> Manage FP Devices</a>
             </li>
+            @endif
             @endif
             @if($isSuperAdmin || $user?->canAny(['view-loan', 'manage-loan']))
             <li class="nav-item">

@@ -5,17 +5,22 @@ namespace App\Livewire\Hr\Attendance;
 use App\Models\employeeattendances;
 use App\Models\FpDevice;
 use App\Models\fpusers;
+use App\Services\Attendance\AttendanceBridgeClient;
+use App\Services\Attendance\AttendanceBridgeException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Fpdevices extends Component
 {
     use WithPagination;
+
+    public const MANAGE_PERMISSION = 'manage-fp-devices';
 
     // Search and Filters
     public $search = '';
@@ -27,9 +32,15 @@ class Fpdevices extends Component
     // Modal States
     public $showModal = false;
 
+    #[Locked]
     public $modalMode = 'create';
 
+    #[Locked]
     public $editingDeviceId = null;
+
+    /** Whether the device being edited already has a stored password (the password itself is never sent to the browser). */
+    #[Locked]
+    public $hasStoredPassword = false;
 
     // Device Form
     public $deviceForm = [
@@ -48,6 +59,15 @@ class Fpdevices extends Component
     public $testResult = null;
 
     public $testStatus = null;
+
+    /**
+     * Runs on every Livewire request (initial render and every action call),
+     * so no public method is reachable without the permission.
+     */
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->can(self::MANAGE_PERMISSION), 403);
+    }
 
     // Pagination reset
     public function updatingSearch()
@@ -73,6 +93,7 @@ class Fpdevices extends Component
         $this->resetValidation();
         $this->modalMode = 'create';
         $this->editingDeviceId = null;
+        $this->hasStoredPassword = false;
         $this->deviceForm = [
             'name' => '',
             'device_type' => 'zkteco',
@@ -91,17 +112,19 @@ class Fpdevices extends Component
     {
         $this->resetErrorBag();
         $this->resetValidation();
-        $this->modalMode = 'edit';
-        $this->editingDeviceId = $deviceId;
 
         $device = FpDevice::findOrFail($deviceId);
+
+        $this->modalMode = 'edit';
+        $this->editingDeviceId = $device->id;
+        $this->hasStoredPassword = filled($device->password);
         $this->deviceForm = [
             'name' => $device->name,
             'device_type' => $device->device_type ?? 'zkteco',
             'ip_address' => $device->ip_address,
             'port' => $device->port ?? 4370,
             'username' => $device->username ?? '',
-            'password' => $device->password ?? '',
+            'password' => '', // write-only: leave blank to keep the stored password
             'location' => $device->location,
             'description' => $device->description,
             'is_active' => $device->is_active,
@@ -144,11 +167,15 @@ class Fpdevices extends Component
                 'ip_address' => $this->deviceForm['ip_address'],
                 'port' => $this->deviceForm['device_type'] === 'zkteco' ? $this->deviceForm['port'] : null,
                 'username' => $this->deviceForm['username'],
-                'password' => $this->deviceForm['password'],
                 'location' => $this->deviceForm['location'],
                 'description' => $this->deviceForm['description'],
                 'is_active' => $this->deviceForm['is_active'],
             ];
+
+            // Blank password on edit keeps the stored one
+            if (filled($this->deviceForm['password'])) {
+                $data['password'] = $this->deviceForm['password'];
+            }
 
             if ($this->modalMode === 'edit' && $this->editingDeviceId) {
                 $device = FpDevice::findOrFail($this->editingDeviceId);
@@ -165,7 +192,8 @@ class Fpdevices extends Component
             $this->closeModal();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An error occurred: '.$e->getMessage());
+            Log::error('FP device save failed', ['error' => $e->getMessage()]);
+            session()->flash('error', 'An error occurred while saving the device.');
         }
     }
 
@@ -173,6 +201,8 @@ class Fpdevices extends Component
     {
         $this->showModal = false;
         $this->editingDeviceId = null;
+        $this->hasStoredPassword = false;
+        $this->deviceForm['password'] = '';
         $this->resetErrorBag();
     }
 
@@ -237,7 +267,6 @@ class Fpdevices extends Component
                     $socketResult = $this->testSocketConnection($device->ip_address, $device->port);
 
                     if ($socketResult) {
-                        // Update device status
                         $device->update([
                             'status' => 'active',
                             'last_connected_at' => now(),
@@ -266,17 +295,25 @@ class Fpdevices extends Component
         }
     }
 
-    private function pingDevice($ip): bool
+    private function pingDevice(?string $ip): bool
     {
-        // Use system ping command
-        $result = Process::timeout(5)->run("ping -c 1 -W 2 {$ip}");
+        if (! filter_var($ip, FILTER_VALIDATE_IP)) {
+            return false;
+        }
+
+        // Array form: executed directly, never through a shell
+        $result = Process::timeout(5)->run(['ping', '-c', '1', '-W', '2', $ip]);
 
         return $result->successful();
     }
 
     private function testSocketConnection($ip, $port): bool
     {
-        $connection = @fsockopen($ip, $port, $errno, $errstr, 5);
+        if (! filter_var($ip, FILTER_VALIDATE_IP) || ! $port) {
+            return false;
+        }
+
+        $connection = @fsockopen($ip, (int) $port, $errno, $errstr, 5);
 
         if ($connection) {
             fclose($connection);
@@ -287,126 +324,57 @@ class Fpdevices extends Component
         return false;
     }
 
-    // Sync Attendance
+    // Sync Attendance (via the external attendance service API)
     public function syncAttendance($deviceId)
     {
+        $bridge = app(AttendanceBridgeClient::class);
+
         try {
             $device = FpDevice::findOrFail($deviceId);
 
-            // Handle different device types
-            if ($device->device_type === 'anviz') {
-                return $this->syncAnvizDevice($device);
-            }
+            $data = $bridge->sync($device, daysBack: 1);
+            $syncStats = $this->processSyncData($device, $data);
 
-            // Check if device is reachable first (ZKTeco only)
-            if ($device->device_type === 'zkteco' && ! $this->testSocketConnection($device->ip_address, $device->port)) {
-                $device->update(['status' => 'offline']);
-                session()->flash('error', 'Cannot sync - device is offline!');
+            $device->update([
+                'status' => 'active',
+                'last_sync_at' => now(),
+                'total_synced_logs' => $device->total_synced_logs + $syncStats['new_attendance'],
+            ]);
 
-                return;
-            }
-
-            // Call Python script to get attendance data (ZKTeco)
-            $pythonScript = base_path('public/zkteco_sync.py');
-            $pythonVenv = base_path('zkteco_venv/bin/python3');
-
-            // Check if Python script exists
-            if (! file_exists($pythonScript)) {
-                Log::warning('ZKTeco sync script not found');
-                session()->flash('error', 'Sync script not found!');
-
-                return;
-            }
-
-            // Use virtual environment if available, otherwise system python
-            $pythonCmd = file_exists($pythonVenv) ? $pythonVenv : 'python3';
-            $daysBack = 1; // Only sync last 1 day of attendance
-            $result = Process::timeout(200)->run("{$pythonCmd} {$pythonScript} {$device->ip_address} {$device->port} {$daysBack} 2>&1");
-
-            // Try to parse JSON from output (regardless of exit code)
-            $outputText = $result->output();
-            $output = json_decode($outputText, true);
-
-            if ($output && isset($output['success'])) {
-                if ($output['success']) {
-                    // Process the sync data
-                    $syncStats = $this->processSyncData($device, $output);
-
-                    // Update device stats
-                    $device->update([
-                        'status' => 'active',
-                        'last_sync_at' => now(),
-                        'total_synced_logs' => $device->total_synced_logs + $syncStats['new_attendance'],
-                    ]);
-
-                    session()->flash('success', "Synced {$syncStats['new_attendance']} attendance records from {$syncStats['total_users']} users!");
-                } else {
-                    $errorMsg = $output['error'] ?? 'Unknown error during sync';
-                    session()->flash('error', $errorMsg);
-                }
-            } else {
-                // Could not parse JSON - show raw output
-                $errorOutput = $outputText ?: $result->errorOutput() ?: 'Unknown error';
-                session()->flash('error', 'Sync script error: '.substr($errorOutput, 0, 200));
-                Log::error('ZKTeco sync failed', ['output' => $outputText, 'error' => $result->errorOutput()]);
-            }
-        } catch (\Illuminate\Process\Exceptions\ProcessTimedOutException $e) {
-            session()->flash('error', 'Sync timed out - device has too many records. Try clearing old attendance logs from the device.');
-            Log::error('ZKTeco sync timeout', ['device_id' => $deviceId]);
+            session()->flash('success', "Synced {$syncStats['new_attendance']} attendance records from {$syncStats['total_users']} users!");
+        } catch (AttendanceBridgeException $e) {
+            session()->flash('error', 'Sync failed: '.$e->getMessage());
         } catch (\Exception $e) {
+            Log::error('FP device sync exception', ['device_id' => $deviceId, 'error' => $e->getMessage()]);
             session()->flash('error', 'Sync error: '.$e->getMessage());
-            Log::error('ZKTeco sync exception', ['error' => $e->getMessage()]);
         }
     }
 
-    // Clear attendance logs from device
+    // Clear attendance logs from device (via the external attendance service API)
     public function clearDeviceLogs($deviceId)
     {
+        $bridge = app(AttendanceBridgeClient::class);
+
         try {
             $device = FpDevice::findOrFail($deviceId);
 
-            $pythonVenv = base_path('zkteco_venv/bin/python3');
-            $pythonCmd = file_exists($pythonVenv) ? $pythonVenv : 'python3';
+            $bridge->clearLogs($device);
 
-            $script = <<<PYTHON
-from zk import ZK
-import json
-
-zk = ZK('{$device->ip_address}', port={$device->port}, timeout=30)
-try:
-    conn = zk.connect()
-    if conn:
-        conn.disable_device()
-        conn.clear_attendance()
-        conn.enable_device()
-        conn.disconnect()
-        print(json.dumps({"success": True}))
-    else:
-        print(json.dumps({"success": False, "error": "Connection failed"}))
-except Exception as e:
-    print(json.dumps({"success": False, "error": str(e)}))
-PYTHON;
-
-            $result = Process::timeout(60)->run("{$pythonCmd} -c '{$script}' 2>&1");
-            $output = json_decode($result->output(), true);
-
-            if ($output && $output['success']) {
-                session()->flash('success', 'Attendance logs cleared from device successfully!');
-            } else {
-                $error = $output['error'] ?? 'Unknown error';
-                session()->flash('error', 'Failed to clear logs: '.$error);
-            }
+            Log::info('FP device logs cleared', ['device_id' => $device->id, 'user_id' => Auth::id()]);
+            session()->flash('success', 'Attendance logs cleared from device successfully!');
+        } catch (AttendanceBridgeException $e) {
+            session()->flash('error', 'Failed to clear logs: '.$e->getMessage());
         } catch (\Exception $e) {
             session()->flash('error', 'Error clearing logs: '.$e->getMessage());
         }
     }
 
     /**
-     * Process sync data from Python script
+     * Process sync data returned by the attendance service
      * - Create new fpusers if they don't exist
      * - Insert attendance records into employeeattendances
      */
-    private function processSyncData($device, $data): array
+    private function processSyncData($device, array $data): array
     {
         $stats = [
             'total_users' => 0,
@@ -418,18 +386,16 @@ PYTHON;
 
         try {
             // Process users from device
-            $users = $data['users'] ?? [];
+            $users = array_filter($data['users'] ?? [], fn ($u) => is_array($u) && is_scalar($u['user_id'] ?? null));
             $stats['total_users'] = count($users);
 
             foreach ($users as $user) {
                 $userId = (string) $user['user_id'];
-                $userName = $user['name'] ?? 'User '.$userId;
+                $userName = is_string($user['name'] ?? null) && $user['name'] !== '' ? mb_substr($user['name'], 0, 255) : 'User '.$userId;
 
-                // Check if fpuser exists
                 $fpuser = fpusers::where('fpdevice_id', $userId)->first();
 
                 if (! $fpuser) {
-                    // Create new fpuser
                     fpusers::create([
                         'name' => $userName,
                         'fpdevice_id' => $userId,
@@ -437,37 +403,36 @@ PYTHON;
                         'added_by' => Auth::id(),
                     ]);
                     $stats['new_users']++;
-                } else {
-                    // Update device address if changed
-                    if ($fpuser->fpdevice_address !== $device->ip_address) {
-                        $fpuser->update(['fpdevice_address' => $device->ip_address]);
-                    }
+                } elseif ($fpuser->fpdevice_address !== $device->ip_address) {
+                    $fpuser->update(['fpdevice_address' => $device->ip_address]);
                 }
             }
 
             // Process attendance records
-            $attendances = $data['attendance'] ?? [];
+            foreach ($data['attendance'] ?? [] as $att) {
+                if (! is_array($att) || ! is_scalar($att['user_id'] ?? null) || ! is_string($att['timestamp'] ?? null)) {
+                    continue;
+                }
 
-            foreach ($attendances as $att) {
+                try {
+                    $punchTime = Carbon::createFromFormat('Y-m-d H:i:s', $att['timestamp']);
+                } catch (\Throwable) {
+                    continue;
+                }
+
                 $userId = (string) $att['user_id'];
-                $timestamp = $att['timestamp'];
-
-                // Parse the timestamp
-                $punchTime = Carbon::parse($timestamp);
+                $timestamp = $punchTime->format('Y-m-d H:i:s');
                 $clockDate = $punchTime->format('Y-m-d');
                 $clockTime = $punchTime->format('H:i:s');
 
-                // Check if this attendance record already exists
                 $exists = employeeattendances::where('fpuser_id', $userId)
                     ->where('clocktimestamp', $timestamp)
                     ->exists();
 
                 if (! $exists) {
                     // Determine clock status (check_in or check_out based on time)
-                    $hour = (int) $punchTime->format('H');
-                    $clockStatus = $hour < 12 ? 'check_in' : 'check_out';
+                    $clockStatus = (int) $punchTime->format('H') < 12 ? 'check_in' : 'check_out';
 
-                    // Insert new attendance record
                     employeeattendances::create([
                         'fpuser_id' => $userId,
                         'clockdate' => $clockDate,
@@ -493,86 +458,10 @@ PYTHON;
         return $stats;
     }
 
-    /**
-     * Sync Anviz device attendance data
-     */
-    private function syncAnvizDevice($device)
-    {
-        // Determine which protocol to use
-        // If device has been diagnosed and uses TCP (port 5010), use TCP script
-        $useTcpProtocol = false;
-
-        // Try TCP first if ping succeeds (TCP is more common for Anviz)
-        if ($this->pingDevice($device->ip_address)) {
-            // Quick check if port 5010 is open
-            $useTcpProtocol = $this->testSocketConnection($device->ip_address, 5010);
-        }
-
-        $pythonCmd = 'python3';
-        $daysBack = 1;
-
-        if ($useTcpProtocol) {
-            // Use TCP protocol script
-            $pythonScript = base_path('public/anviz_tcp_sync.py');
-
-            if (! file_exists($pythonScript)) {
-                session()->flash('error', 'Anviz TCP sync script not found!');
-
-                return;
-            }
-
-            $port = 5010;
-            $result = Process::timeout(200)->run("{$pythonCmd} {$pythonScript} {$device->ip_address} {$daysBack} {$port} 2>&1");
-        } else {
-            // Use HTTP API script
-            $pythonScript = base_path('public/anviz_sync_v2.py');
-
-            if (! file_exists($pythonScript)) {
-                $pythonScript = base_path('public/anviz_sync.py');
-            }
-
-            if (! file_exists($pythonScript)) {
-                session()->flash('error', 'Anviz HTTP sync script not found!');
-
-                return;
-            }
-
-            $username = $device->username ?? 'admin';
-            $password = $device->password ?? 'admin';
-            $result = Process::timeout(200)->run("{$pythonCmd} {$pythonScript} {$device->ip_address} {$daysBack} '{$username}' '{$password}' 2>&1");
-        }
-
-        // Try to parse JSON from output
-        $outputText = $result->output();
-        $output = json_decode($outputText, true);
-
-        if ($output && isset($output['success'])) {
-            if ($output['success']) {
-                // Process the sync data
-                $syncStats = $this->processSyncData($device, $output);
-
-                // Update device stats
-                $device->update([
-                    'status' => 'active',
-                    'last_sync_at' => now(),
-                    'total_synced_logs' => $device->total_synced_logs + $syncStats['new_attendance'],
-                ]);
-
-                session()->flash('success', "Synced {$syncStats['new_attendance']} attendance records from {$syncStats['total_users']} users!");
-            } else {
-                $errorMsg = $output['error'] ?? 'Unknown error during sync';
-                session()->flash('error', 'Anviz sync error: '.$errorMsg);
-            }
-        } else {
-            // Could not parse JSON - show raw output
-            $errorOutput = $outputText ?: $result->errorOutput() ?: 'Unknown error';
-            session()->flash('error', 'Anviz sync failed: '.substr($errorOutput, 0, 200));
-            Log::error('Anviz sync failed', ['output' => $outputText, 'error' => $result->errorOutput()]);
-        }
-    }
-
     public function diagnoseAnvizDevice($deviceId)
     {
+        $bridge = app(AttendanceBridgeClient::class);
+
         try {
             $device = FpDevice::findOrFail($deviceId);
 
@@ -582,22 +471,15 @@ PYTHON;
                 return;
             }
 
-            $pythonScript = base_path('public/anviz_diagnostic.py');
+            $report = $bridge->diagnose($device);
 
-            if (! file_exists($pythonScript)) {
-                session()->flash('error', 'Diagnostic script not found!');
-
-                return;
-            }
-
-            $result = Process::timeout(30)->run("python3 {$pythonScript} {$device->ip_address} 2>&1");
-            $output = $result->output();
-
-            Log::info('Anviz diagnostic output', ['device' => $device->name, 'output' => $output]);
+            Log::info('Anviz diagnostic output', ['device' => $device->name, 'output' => $report]);
 
             session()->flash('success', 'Diagnostic completed! Check logs for details or contact support with this info.');
-            $this->testResult = "Diagnostic scan completed. Output logged for review.\n\n".substr($output, 0, 500);
+            $this->testResult = "Diagnostic scan completed. Output logged for review.\n\n".mb_substr($report, 0, 500);
             $this->testStatus = 'success';
+        } catch (AttendanceBridgeException $e) {
+            session()->flash('error', 'Diagnostic failed: '.$e->getMessage());
         } catch (\Exception $e) {
             session()->flash('error', 'Diagnostic failed: '.$e->getMessage());
         }

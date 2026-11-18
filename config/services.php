@@ -46,4 +46,18 @@ return [
         'sync_token' => env('EXPORT_API_TOKEN'),
     ],
 
+    /*
+    | External Python service that talks to the fingerprint devices (ZKTeco /
+    | Anviz) on the LAN. HRP never runs device code itself; it calls this API
+    | with a bearer token. Device credentials travel only in the JSON request
+    | body, so use an https:// URL whenever the service is not on localhost.
+    | If the URL or token is unset, device actions fail closed.
+    */
+    'attendance_bridge' => [
+        'url' => env('ATTENDANCE_BRIDGE_URL'),
+        'token' => env('ATTENDANCE_BRIDGE_TOKEN'),
+        'timeout' => (int) env('ATTENDANCE_BRIDGE_TIMEOUT', 200),
+        'verify_tls' => (bool) env('ATTENDANCE_BRIDGE_VERIFY_TLS', true),
+    ],
+
 ];

@@ -23,3 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /tests
+
+# Device integration lives in the external attendance service (ATTENDANCE_BRIDGE_URL); never ship scripts in the web root
+/public/*.py
+/public/__pycache__/
+/zkteco_venv/

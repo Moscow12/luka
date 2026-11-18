@@ -417,12 +417,13 @@
                                         <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
                                         <input type="password" wire:model="deviceForm.password"
                                             class="form-control @error('deviceForm.password') is-invalid @enderror"
-                                            id="password" placeholder="admin">
+                                            id="password" autocomplete="new-password"
+                                            placeholder="{{ $hasStoredPassword ? '•••••• (unchanged)' : 'admin' }}">
                                     </div>
                                     @error('deviceForm.password')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Default: admin</div>
+                                    <div class="form-text">{{ $hasStoredPassword ? 'Leave blank to keep the stored password.' : 'Default: admin' }}</div>
                                 </div>
                                 @endif
 

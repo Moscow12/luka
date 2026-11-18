@@ -28,7 +28,12 @@ class FpDevice extends Model
         'created_by',
     ];
 
+    protected $hidden = [
+        'password',
+    ];
+
     protected $casts = [
+        'password' => 'encrypted',
         'port' => 'integer',
         'total_synced_logs' => 'integer',
         'is_active' => 'boolean',
