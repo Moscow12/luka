@@ -10,9 +10,9 @@
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^2.0.0",
+        "laravel-vite-plugin": "^2.1.0",
         "rollup-plugin-visualizer": "^6.0.11",
-        "vite": "^7.0.7"
+        "vite": "^7.3.8"
     },
     "dependencies": {
         "@fullcalendar/core": "^6.1.15",
@@ -35,11 +35,11 @@
         "list.js": "^2.3.1",
         "prismjs": "^1.29.0",
         "pusher-js": "^8.6.0",
-        "quill": "^2.0.3",
+        "quill": "^2.0.2",
         "sass": "^1.93.2",
         "simplebar": "^6.3.2",
         "sticky-sidebar": "^3.3.1",
-        "swiper": "^11.2.0",
+        "swiper": "^12.2.0",
         "tiny-slider": "^2.9.4",
         "tippy.js": "^6.3.7"
     }
