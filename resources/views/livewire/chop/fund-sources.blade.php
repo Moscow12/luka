@@ -22,8 +22,21 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4 d-flex align-items-end">
+            <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
                 <x-forms.button-model name="ADD SOURCE OF FUNDS" />
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->canAny(['manage-chop', 'view-chop']))
+                    @php
+                        $pdfFilters = array_filter(['search' => trim((string) $search), 'financial_year' => $filterFinancialYear]);
+                    @endphp
+                    <a href="{{ route('chop.fund-sources.pdf', $pdfFilters) }}" target="_blank" rel="noopener"
+                       class="btn btn-outline-secondary" title="Open the PDF to print">
+                        <i class="fa-solid fa-print me-1"></i>Print
+                    </a>
+                    <a href="{{ route('chop.fund-sources.pdf', $pdfFilters + ['download' => 1]) }}"
+                       class="btn btn-outline-danger" title="Download as PDF">
+                        <i class="fa-solid fa-file-pdf me-1"></i>Export PDF
+                    </a>
+                @endif
             </div>
         </div>
 

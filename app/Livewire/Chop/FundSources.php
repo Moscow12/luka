@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Chop;
 
-use App\Models\sourceoffunds;
 use App\Models\FinancialYear;
+use App\Models\sourceoffunds;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -14,20 +14,29 @@ class FundSources extends Component
     use WithPagination;
 
     public $search = '';
+
     public $source_id;
+
     public $modalMode = 'create';
+
     public $showModal = false;
+
     public $filterFinancialYear = ''; // Filter for financial year
 
     // Required fields
     public $name;
+
     public $slug;
+
     public $is_active = true;
+
     public $financial_year_id;
 
     // Optional fields
     public $description;
+
     public $colorcode;
+
     public $estimated_cost;
 
     public function updatedName()
@@ -58,7 +67,7 @@ class FundSources extends Component
 
             // Set default to current financial year
             $currentFY = FinancialYear::where('is_current', true)->first();
-            if (!$currentFY) {
+            if (! $currentFY) {
                 // If no current FY, get the most recent active one
                 $currentFY = FinancialYear::where('status', 'active')
                     ->orderBy('start_date', 'desc')
@@ -84,8 +93,9 @@ class FundSources extends Component
         ]);
 
         // Additional validation to ensure financial year exists
-        if (!FinancialYear::where('id', $this->financial_year_id)->exists()) {
+        if (! FinancialYear::where('id', $this->financial_year_id)->exists()) {
             $this->addError('financial_year_id', 'The selected financial year is invalid.');
+
             return;
         }
 
@@ -138,36 +148,17 @@ class FundSources extends Component
 
     public function render()
     {
-        $query = sourceoffunds::query()
+        $sources = sourceoffunds::query()
             ->with(['financialYear'])
-            ->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('slug', 'like', '%' . $this->search . '%');
-            });
+            ->filtered($this->search, $this->filterFinancialYear)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        // Apply financial year filter
-        if ($this->filterFinancialYear) {
-            $query->where('financial_year_id', $this->filterFinancialYear);
-        }
-
-        $sources = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        // Calculate total estimated cost for filtered results
+        // Total estimated cost for the filtered results
         $totalEstimatedCost = sourceoffunds::query()
-            ->when($this->filterFinancialYear, function ($q) {
-                $q->where('financial_year_id', $this->filterFinancialYear);
-            })
-            ->when($this->search, function ($q) {
-                $q->where(function ($query) {
-                    $query->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('slug', 'like', '%' . $this->search . '%');
-                });
-            })
-            ->get()
-            ->sum(function ($source) {
-                // Extract numeric value from estimated_cost string
-                return (float) preg_replace('/[^0-9.]/', '', $source->estimated_cost ?? '0');
-            });
+            ->filtered($this->search, $this->filterFinancialYear)
+            ->get(['estimated_cost'])
+            ->sum('estimated_cost_value');
 
         $financialYears = FinancialYear::active()->orderBy('start_date', 'desc')->get();
 

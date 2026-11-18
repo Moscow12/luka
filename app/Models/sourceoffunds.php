@@ -37,4 +37,22 @@ class sourceoffunds extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /** Search by name/slug and limit to a financial year: shared by the list and its printout. */
+    public function scopeFiltered($query, ?string $search, ?string $financialYearId)
+    {
+        $search = trim((string) $search);
+
+        return $query
+            ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->where('name', 'like', '%'.$search.'%')
+                ->orWhere('slug', 'like', '%'.$search.'%')))
+            ->when($financialYearId, fn ($q) => $q->where('financial_year_id', $financialYearId));
+    }
+
+    /** estimated_cost is free text ("1,200,000 TZS"); this is its numeric value. */
+    public function getEstimatedCostValueAttribute(): float
+    {
+        return (float) preg_replace('/[^0-9.]/', '', $this->estimated_cost ?? '0');
+    }
 }

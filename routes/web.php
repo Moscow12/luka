@@ -232,6 +232,9 @@ Route::prefix('contracts')->middleware('auth')->group(function () {
 Route::prefix('chop')->middleware('auth')->group(function () {
     // Chop Management
     Route::get('chopsettings', Chopsetting::class)->name('chop.settings');
+    Route::get('fund-sources/pdf', \App\Http\Controllers\Chop\FundSourcesPdfController::class)->name('chop.fund-sources.pdf');
+    Route::get('reports/{report}/pdf', \App\Http\Controllers\Chop\ChopReportPdfController::class)
+        ->whereIn('report', ['cost-analysis', 'monitoring'])->name('chop.reports.pdf');
     Route::get('activitiesmanagement', ActivitiesManagement::class)->name('chop.activities');
 
     // Budget Requests

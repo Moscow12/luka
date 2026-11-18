@@ -316,72 +316,8 @@
     </style>
 </head>
 <body>
-    @php
-        $workstation = $payroll->employee->workstation ?? null;
-
-        // Resolve a storage file to a base64 data URI so dompdf can embed it reliably.
-        $embedImage = function (?string $path) {
-            if (! $path) {
-                return null;
-            }
-
-            $fullPath = storage_path('app/public/' . ltrim($path, '/'));
-
-            if (! is_file($fullPath)) {
-                return null;
-            }
-
-            $mime = match (strtolower(pathinfo($fullPath, PATHINFO_EXTENSION))) {
-                'png' => 'image/png',
-                'gif' => 'image/gif',
-                'svg' => 'image/svg+xml',
-                'webp' => 'image/webp',
-                default => 'image/jpeg',
-            };
-
-            return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
-        };
-
-        $letterHeadImg = $workstation ? $embedImage($workstation->letter_head) : null;
-        $logoImg = $workstation ? $embedImage($workstation->logo) : null;
-    @endphp
-
-    <!-- Workstation Letter Head -->
-    <div class="letterhead">
-        @if($letterHeadImg)
-            {{-- Use the uploaded letter head banner as-is --}}
-            <img src="{{ $letterHeadImg }}" alt="Letter Head" class="letterhead-banner">
-        @elseif($workstation)
-            {{-- Build a letter head from the workstation details --}}
-            <table class="letterhead-table">
-                <tr>
-                    @if($logoImg)
-                        <td class="letterhead-logo-cell">
-                            <img src="{{ $logoImg }}" alt="Logo" class="letterhead-logo">
-                        </td>
-                    @endif
-                    <td class="letterhead-info">
-                        <div class="org-name">{{ $workstation->workstation_name }}</div>
-                        <div class="org-detail">
-                            @if($workstation->physical_address){{ $workstation->physical_address }}@endif
-                            @if($workstation->postal_code), P.O. Box {{ $workstation->postal_code }}@endif
-                            @if($workstation->location), {{ $workstation->location }}@endif
-                            <br>
-                            @if($workstation->phone_number)Tel: {{ $workstation->phone_number }}@endif
-                            @if($workstation->email_address) &nbsp;|&nbsp; Email: {{ $workstation->email_address }}@endif
-                            @if($workstation->tin_number)<br>TIN: {{ $workstation->tin_number }}@endif
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        @else
-            {{-- Fallback to application identity when no workstation is set --}}
-            <div style="text-align: center;">
-                <div class="org-name">{{ config('app.name', 'STAFF MANAGEMENT SYSTEM') }}</div>
-                <div class="org-detail">HRP SYSTEM</div>
-            </div>
-        @endif
-    </div>
+    <!-- Workstation Letter Head (shared with other printouts) -->
+    <x-pdf.letterhead :workstation="$payroll->employee->workstation ?? null" />
 
     <!-- Header -->
     <div class="header">

@@ -9,9 +9,24 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="mb-4">
-        <h2 class="mb-1"><i class="fa-solid fa-chart-line text-primary"></i> CHOP Monitoring & Evaluation</h2>
-        <p class="text-muted">Track and monitor activities across the financial year</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fa-solid fa-chart-line text-primary"></i> CHOP Monitoring & Evaluation</h2>
+            <p class="text-muted mb-0">Track and monitor activities across the financial year</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button wire:click="exportExcel" wire:loading.attr="disabled" wire:target="exportExcel" class="btn btn-outline-success">
+                <span wire:loading.remove wire:target="exportExcel"><i class="fa-solid fa-file-excel me-1"></i>Export Excel</span>
+                <span wire:loading wire:target="exportExcel"><span class="spinner-border spinner-border-sm me-1"></span>Exporting...</span>
+            </button>
+            <button wire:click="exportPdf" wire:loading.attr="disabled" wire:target="exportPdf" class="btn btn-outline-danger">
+                <span wire:loading.remove wire:target="exportPdf"><i class="fa-solid fa-file-pdf me-1"></i>Export PDF</span>
+                <span wire:loading wire:target="exportPdf"><span class="spinner-border spinner-border-sm me-1"></span>Preparing...</span>
+            </button>
+            <a href="{{ route('chop.reports.pdf', ['report' => 'monitoring'] + $pdfFilters) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary" title="Open the PDF to print">
+                <i class="fa-solid fa-print me-1"></i>Print
+            </a>
+        </div>
     </div>
 
     <!-- Summary Statistics Cards -->
@@ -199,7 +214,7 @@
                                     @foreach($months as $month)
                                         @php
                                             $monthYear = sprintf('%04d-%02d', $month['year'], $month['number']);
-                                            $report = $this->getReportForActivityMonth($activity->id, $monthYear);
+                                            $report = $this->getReportForActivityMonth($activity, $monthYear);
                                             $shouldMonitor = $this->shouldMonitorInMonth($activity, $month['number']);
                                         @endphp
                                         <td class="text-center monitoring-cell">
